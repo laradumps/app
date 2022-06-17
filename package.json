@@ -1,0 +1,149 @@
+{
+  "name": "laradumps",
+  "version": "0.1.0",
+  "description": "LaraDumps is designed to improve your Laravel application debugging experience. https://github.com/laradumps/app",
+  "author": "Luan Freitas <luanfreitas10@protonmail.com>",
+  "main": "dist/main.js",
+  "scripts": {
+    "watch": "webpack serve",
+    "dev": "node build.js --dev && electron .",
+    "prod": "cross-env NODE_ENV=production webpack --mode production && node build.js --prod",
+    "start": "electron .",
+    "release": "electron-builder --publish always",
+    "fix": "eslint --fix --ext .js src/renderer/js/alpinejs/",
+    "lint": "npx eslint src/renderer/js/alpinejs/**"
+  },
+  "dependencies": {
+    "@ryangjchandler/alpine-clipboard": "^2.2.0",
+    "alpinejs": "^3.10.2",
+    "anser": "^2.1.1",
+    "basename": "^0.1.2",
+    "body-parser": "^1.19.0",
+    "electron-json-storage": "^4.5.0",
+    "electron-tray-window": "^1.2.5",
+    "electron-updater": "^5.0.1",
+    "electron-window-state": "^5.0.3",
+    "express": "^4.18.1",
+    "highlight.js": "^11.5.1",
+    "highlightjs-line-numbers.js": "^2.8.0",
+    "json-viewer-js": "^1.0.8",
+    "moment": "^2.29.1",
+    "moment-timezone": "^0.5.34",
+    "reveal.js": "^4.3.0",
+    "sql-formatter": "^6.1.2",
+    "strip-ansi": "^7.0.1",
+    "tree-kill": "^1.2.2",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.18.5",
+    "@babel/preset-env": "^7.17.10",
+    "autoprefixer": "^10.4.7",
+    "babel-loader": "^8.2.5",
+    "clean-webpack-plugin": "^4.0.0",
+    "cross-env": "^7.0.3",
+    "css-loader": "^6.7.1",
+    "css-minimizer-webpack-plugin": "^4.0.0",
+    "electron": "^19.0.3",
+    "electron-builder": "^23.0.3",
+    "electron-devtools-installer": "^3.2.0",
+    "esbuild": "^0.12.9",
+    "eslint": "^7.32.0 || ^8.2.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.3.1",
+    "mini-css-extract-plugin": "^2.6.0",
+    "postcss": "^8.4.14",
+    "postcss-loader": "^7.0.0",
+    "postcss-preset-env": "^7.7.1",
+    "prettier": "^2.3.1",
+    "style-loader": "^3.3.1",
+    "tailwindcss": "^3.1.3",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/laradumps/app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/laradumps/app/issues"
+  },
+  "build": {
+    "appId": "com.laradumps.app",
+    "productName": "laradumps",
+    "files": [
+      "**/*",
+      "!node_modules${/*}"
+    ],
+    "extraResources": [
+      "build/*"
+    ],
+    "extraFiles": [
+      "build/**/*"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "laradumps",
+      "repo": "app",
+      "private": false
+    },
+    "directories": {
+      "output": "release"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "win": {
+      "icon": "./src/img/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32",
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "executableName": "laradumps",
+      "description": "LaraDumps is designed to improve your Laravel application debugging experience. https://github.com/laradumps/app",
+      "icon": "./build/icon.icns",
+      "target": [
+        "AppImage"
+      ],
+      "maintainer": "Luan Freitas",
+      "category": "Development"
+    },
+    "deb": {
+      "packageCategory": "Development",
+      "depends": [
+        "gconf2",
+        "gconf-service",
+        "libnotify4",
+        "libappindicator1",
+        "libxtst6",
+        "libnss3"
+      ]
+    },
+    "dmg": {
+      "icon": "./src/img/icon_mac.png",
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  }
+}

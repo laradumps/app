@@ -1,0 +1,41 @@
+name: Build/release
+
+on:
+  push:
+    branches:
+      - main
+      - pre-release
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v1
+
+      - name: Install Node.js and Yarn
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Bundle with webpack and esbuild
+        run: yarn run prod
+
+      - name: Updater
+        run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Build
+        run: npm run release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
