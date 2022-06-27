@@ -47,7 +47,7 @@ const welcomeHtml = `
                            </div>
                         </button>
                      </span>
-                     <span>to install Dumps in your Laravel app.</span>
+                     <span>to install LaraDumps in your Laravel app.</span>
                   </div>
                   <div class="mt-5">
                      <span>2. Add</span>
@@ -135,32 +135,47 @@ export default () => ({
             this.$refs.togglePrivacyMode.setAttribute('class', 'block justify-center cursor-pointer text-gray-900 group flex items-center p-2');
         });
 
-        ipcRenderer.on('screen', (event, arg) => {
+        ipcRenderer.on('screen', (event, { content }) => {
             this.maximizeApp();
-            const lastIndex = this.screenList[this.screenList.length - 1].index + 1;
 
-            const screen = arg.content.content.screen ?? this.defaultScreenName;
-            const classAttr = arg.content.content.classAttr ?? [];
+            const resolvePayloadScreen = () => {
+                const lastIndex = this.screenList[this.screenList.length - 1].index + 1;
 
-            this.screenList.forEach((element) => element.active = element.label === screen);
+                const screen = content.content.screen ?? this.defaultScreenName;
+                const classAttr = content.content.classAttr ?? [];
+                const focus = content.content.focus ?? 0;
 
-            const btnScreenItem = {
-                index: lastIndex,
-                label: screen,
-                classAttr,
-                active: true,
+                this.screenList.forEach((element) => element.active = element.label === screen);
+
+                const btnScreenItem = {
+                    index: lastIndex,
+                    label: screen,
+                    classAttr,
+                    active: true,
+                };
+
+                if (this.screenList.filter((screen) => screen.label === (content.content.screen ?? this.defaultScreenName))
+                    .length === 0) {
+                    this.screenList.push(btnScreenItem);
+                }
+
+                this.$dispatch('dumper:screen', btnScreenItem);
+
+                this.filterScreen(screen);
+
+                this.activeScreen = screen;
+
+                return { screen, focus };
             };
 
-            if (this.screenList.filter((screen) => screen.label === (arg.content.content.screen ?? this.defaultScreenName))
-                .length === 0) {
-                this.screenList.push(btnScreenItem);
+            const payloadScreen = resolvePayloadScreen();
+
+            if (payloadScreen.focus > 0) {
+                setTimeout(() => {
+                    this.filterScreen(payloadScreen.screen);
+                    this.activeScreen = payloadScreen.screen;
+                }, payloadScreen.focus);
             }
-
-            this.$dispatch('dumper:screen', btnScreenItem);
-
-            this.filterScreen(screen);
-
-            this.activeScreen = screen;
         });
 
         ipcRenderer.on('preload:server-failed', (event, arg) => {
@@ -307,6 +322,18 @@ export default () => ({
         this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
         this.$refs.main.innerHTML = welcomeHtml;
     },
+    clearScreen() {
+        const active = this.screenList.filter((element) => element.active)[0];
+
+        const elements = document.getElementsByClassName(active.label);
+
+        [...elements].map((el) => el.remove());
+
+        this.screenList = this.screenList.filter((element) => element.label !== active.label);
+
+        this.filterScreen('screen 1');
+        this.activeScreen = this.defaultScreenName;
+    },
     dispatchDump(type, content) {
         this.$dispatch(`dumper:${type}`, content);
 
@@ -422,6 +449,7 @@ export default () => ({
         }
 
         this.screenList.forEach((element) => element.active = element.label === screen);
+        this.activeScreen = screen;
     },
     addClass(element, name) {
         let i;
