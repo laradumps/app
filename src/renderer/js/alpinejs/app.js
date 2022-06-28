@@ -143,7 +143,7 @@ export default () => ({
 
                 const screen = content.content.screen ?? this.defaultScreenName;
                 const classAttr = content.content.classAttr ?? [];
-                const focus = content.content.focus ?? 0;
+                const raiseIn = content.content.raiseIn ?? 0;
 
                 this.screenList.forEach((element) => element.active = element.label === screen);
 
@@ -165,16 +165,16 @@ export default () => ({
 
                 this.activeScreen = screen;
 
-                return { screen, focus };
+                return { screen, raiseIn };
             };
 
             const payloadScreen = resolvePayloadScreen();
 
-            if (payloadScreen.focus > 0) {
+            if (payloadScreen.raiseIn > 0) {
                 setTimeout(() => {
                     this.filterScreen(payloadScreen.screen);
                     this.activeScreen = payloadScreen.screen;
-                }, payloadScreen.focus);
+                }, payloadScreen.raiseIn);
             }
         });
 
