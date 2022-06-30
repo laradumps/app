@@ -124,13 +124,13 @@ export default () => ({
     totalPayloadSaved: [],
     dragdropEnabled: false,
     clipboard(text, el) {
+        clipboard.writeText(text);
+
         const icon = this.$refs[el];
 
         icon.style.stroke = '#FAC429';
 
         setTimeout(() => icon.style.stroke = '#485569', 500);
-
-        clipboard.writeText(text);
     },
     init() {
         supportZoom();
