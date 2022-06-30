@@ -254,13 +254,14 @@ export default () => ({
         connectionInfo.innerHTML = `
             <div class="flex justify-between">
                 <div class="text-sm text-slate-500 dark:text-slate-400">
-                     connection/database
-                     <div class="text-sm text-slate-500 dark:text-slate-400 font-bold">
+                     <span class="privacyMode">connection/database</span>
+                     <div class="privacyMode text-sm text-slate-500 dark:text-slate-400 font-bold">
                          ${queries.connectionName}/${queries.database}
                      </div>
                  </div>
                  <div class="text-sm text-slate-500 dark:text-slate-400">
-                     time: <span class="text-base font-bold text-slate-600 dark:text-slate-200">${queries.time}</span>
+                     time: <span class="text-base font-bold text-slate-600 dark:text-slate-200">${queries.time}</span><span class="text-xs text-slate-500 dark:text-slate-400"> ms</span>
+
                  </div>
             </div>`;
 
