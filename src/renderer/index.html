@@ -78,6 +78,7 @@
                             <!-- clear -->
                             <a x-on:click="clear()"
                                id="clear"
+                               title="Clear all dumps"
                                x-cloak
                                x-show="dumpBatch.length > 0 && !savedDumpsWindow"
                                class="items-center  justify-center cursor-pointer text-slate-500 group flex items-center p-2">
@@ -284,7 +285,16 @@
                                         class="btn flex-shrink-0 btn-white rounded-t-sm text-xs">
                                 </button>
                             </template>
+                            <div :title="`Clear \'${activeScreen}\' screen`"
+                                 x-on:click="clearScreen" class="bg-slate-100 dark:bg-slate-900 flex ml-auto cursor-pointer right-0 pl-2">
+                                <template x-if="dumpBatch.length > 0 && activeScreen != defaultScreenName">
+                                    <svg class="h-5 w-5 text-slate-500 dark:text-slate-300 hover:text-slate-600 dark:hover:text-slate-400 " fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </template>
+                            </div>
                         </div>
+
                     </div>
                 </div>
                 <div x-ref="main" class="dark:bg-slate-900" x-html="main"></div>
