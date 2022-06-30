@@ -3,6 +3,7 @@ import * as JsonViewer from 'json-viewer-js';
 import moment from 'moment/moment';
 import { makeHightlight } from '@/js/plugins/hightlight';
 import * as Helper from '../helpers';
+import { isJson } from '../helpers';
 
 const hljs = require('highlight.js/lib/common');
 const htmldiff = require('../plugins/diff');
@@ -13,6 +14,7 @@ export default () => ({
     type: null,
     content: null,
     ideHandle: null,
+    originalContent: [],
     init() {
         window.addEventListener('dumper:screen', ({ detail }) => {
             const { label } = detail;
@@ -89,6 +91,8 @@ export default () => ({
         const original = document.createElement('div');
 
         const { dump, originalContent } = this.content;
+
+        this.originalContent[this.notificationId] = originalContent;
 
         original.setAttribute('class', 'hidden');
         original.setAttribute('id', `original-content-${this.notificationId}`);
@@ -180,30 +184,36 @@ export default () => ({
         this.handleIdeProtocol('', '', notificationId);
     },
     handleDiff() {
+        document.getElementById(this.notificationId).remove();
         const diff = document.createElement('div');
-        const originalText = this.content.first;
+        const { argument, splitDiff } = this.content;
 
-        let { first, second } = this.content;
-        const { col } = this.content;
+        let originalContent;
 
-        if (col === true) {
-            first = makeHightlight(first, second);
-            second = makeHightlight(second, originalText, true);
+        if (typeof this.originalContent[this.notificationId] === 'object') {
+            originalContent = JSON.stringify(this.originalContent[this.notificationId]);
+        } else {
+            originalContent = this.originalContent[this.notificationId];
+        }
+
+        if (splitDiff) {
+            originalContent = makeHightlight(originalContent, argument);
+            const second = makeHightlight(argument, originalContent, true);
 
             diff.innerHTML = `
-                <div>
+                <div class="divide-y divide-slate-300 dark:divide-slate-200">
                      <div class="w-auto">                             
-                          <div class="font-semibold text-left mt-3 ml-3">Original</div>
-                          <div class="px-2 py-3 overflow-auto whitespace-nowrap">${first}</div>
+                          <div class="font-semibold text-slate-600 dark:text-slate-300 text-left mt-3 ml-3">Original</div>
+                          <div class="px-2 py-3 overflow-auto whitespace-nowrap">${originalContent}</div>
                      </div>
                      <div class="w-auto">
-                          <div class="font-semibold text-left mt-3 ml-3">Diff</div>
+                          <div class="font-semibold text-slate-600 dark:text-slate-300 text-left mt-3 ml-3">Diff</div>
                           <div class="px-2 py-3 overflow-auto whitespace-nowrap">${second}</div>
                      </div>
                 </div>`;
         } else {
             diff.setAttribute('class', 'p-3');
-            diff.innerHTML = htmldiff(first, second);
+            diff.innerHTML = htmldiff(originalContent, argument);
         }
 
         this.handleDebugElement();
