@@ -468,7 +468,7 @@ export default () => ({
                     id: '${notificationId}', 
                     type: '${this.type}',
                     content: '${new Buffer(JSON.stringify(this.content)).toString('base64')}', 
-                    ideHandle: '${new Buffer(JSON.stringify(this.ideHandle)).toString('base64')}',
+                    ideHandle: '${new Buffer(JSON.stringify(this.ideHandle)).toString('base64')}'
                 }" 
                 x-init="initCollapsableElements" 
                 id="${notificationId}"
