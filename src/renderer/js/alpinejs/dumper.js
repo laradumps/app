@@ -216,6 +216,7 @@ export default () => ({
         const div = document.createElement('div');
         const pre = document.createElement('pre');
         const code = document.createElement('code');
+        const copy = document.createElement('div');
 
         div.setAttribute('class', 'text-lg p-4 text-slate-600 dark:text-slate-300 text-sm font-light');
         code.setAttribute('class', 'language-sql hljs');
@@ -226,11 +227,24 @@ export default () => ({
 
         const html = hljs.highlight(format(sql, { indent: '    ' }), { language: 'sql' }).value;
 
-        pre.setAttribute('x-on:click', `$clipboard('${sql.replace(/'/g, "\\'")}')`);
+        pre.setAttribute('class', 'flex justify-center relative group');
+        pre.setAttribute('x-on:click', `clipboard('${sql.replace(/'/g, "\\'")}', 'copyQueryIcon-${this.notificationId}')`);
 
         code.innerHTML = html;
-
         pre.appendChild(code);
+
+        copy.setAttribute('class', 'absolute inset-y-0 right-0 pr-2.5 flex opacity-0 cursor-pointer group-hover:opacity-100 transition text-gray-400');
+
+        copy.innerHTML = `
+           <svg class="w-5 h-5 hover:text-slate-800" fill="none"
+                     x-ref="copyQueryIcon-${this.notificationId}"
+                     viewBox="0 0 24 24" stroke="#485569">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+           </svg>
+        `;
+
+        pre.appendChild(copy);
 
         div.appendChild(pre);
 
@@ -245,6 +259,7 @@ export default () => ({
         const connectionInfo = document.createElement('div');
         const pre = document.createElement('pre');
         const code = document.createElement('code');
+        const copy = document.createElement('div');
 
         div.setAttribute('class', 'text-lg p-4 text-slate-600 dark:text-slate-300 text-sm font-light');
         code.setAttribute('class', 'language-sql hljs');
@@ -268,12 +283,26 @@ export default () => ({
 
         const html = hljs.highlight(format(sql, { indent: '    ' }), { language: 'sql' }).value;
 
-        pre.setAttribute('x-on:click', `$clipboard('${sql.replace(/'/g, "\\'")}')`);
+        pre.setAttribute('class', 'flex justify-center relative group');
+        pre.setAttribute('x-on:click', `clipboard('${sql.replace(/'/g, "\\'")}', 'copyQueryIcon-${this.notificationId}')`);
 
         code.innerHTML = html;
 
         pre.appendChild(code);
         div.appendChild(connectionInfo);
+
+        copy.setAttribute('class', 'absolute inset-y-0 right-0 pr-2.5 flex opacity-0 cursor-pointer group-hover:opacity-100 transition text-gray-400');
+
+        copy.innerHTML = `
+           <svg class="w-5 h-5 hover:text-slate-800" fill="none"
+                     x-ref="copyQueryIcon-${this.notificationId}"
+                     viewBox="0 0 24 24" stroke="#485569">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+           </svg>
+        `;
+
+        pre.appendChild(copy);
         div.appendChild(pre);
 
         this.debugElement().appendChild(div);

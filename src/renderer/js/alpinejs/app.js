@@ -123,8 +123,12 @@ export default () => ({
     savedDumpsWindow: false,
     totalPayloadSaved: [],
     dragdropEnabled: false,
-    clipboard(text, el) {
+    clipboard(text, el = null) {
         clipboard.writeText(text);
+
+        if (!el) {
+            return;
+        }
 
         const icon = this.$refs[el];
 

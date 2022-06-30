@@ -10,9 +10,16 @@ import initIpcMain from './ipc.js';
 import fixPath from './fix-path.js';
 
 const { autoUpdater } = updater;
+const contextMenu = require('electron-context-menu');
 
 let mainWindow;
 const isDev = process.env.NODE_ENV === 'development';
+
+if (isDev) {
+    contextMenu({
+        showInspectElement: true,
+    });
+}
 
 fixPath();
 
