@@ -404,7 +404,14 @@ export default () => ({
             });
         }
 
-        this.maximizeApp(content.meta.auto_invoke_app);
+        let autoInvokeApp;
+        if (typeof content.meta === 'object') {
+            autoInvokeApp = content.meta.auto_invoke_app;
+        } else {
+            autoInvokeApp = true;
+        }
+
+        this.maximizeApp(autoInvokeApp);
 
         this.filterScreen(this.activeScreen);
         this.activeScreen = this.defaultScreenName;
