@@ -307,8 +307,10 @@ export default () => ({
             active: true,
         });
     },
-    maximizeApp() {
-        ipcRenderer.send('main:show');
+    maximizeApp(autoInvoke) {
+        if (autoInvoke) {
+            ipcRenderer.send('main:show');
+        }
     },
     openLink(link) {
         shell.openExternal(link);
@@ -369,7 +371,8 @@ export default () => ({
             });
         }
 
-        this.maximizeApp();
+        this.maximizeApp(content.meta.auto_invoke_app);
+
         this.filterScreen(this.activeScreen);
         this.activeScreen = this.defaultScreenName;
     },
