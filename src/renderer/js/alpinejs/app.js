@@ -72,7 +72,7 @@ const welcomeHtml = `
                   <div class="mt-5">
                      <span>3. Add</span>
                      <span  class="p-1.5 text-slate-600 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
-                     <button title="Click to copy" x-on:click="clipboard('ds(\\'Hello World\\')', 'copyDsIcon')">
+                     <button title="Click to copy" x-on:click="clipboard('ds(\\'Hello World\\');', 'copyDsIcon')">
                            <div class="flex justify-between">
                               <span>ds('Hello world!')</span>
                               <div title="Click to copy">
