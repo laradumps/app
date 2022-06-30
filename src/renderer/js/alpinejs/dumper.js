@@ -233,12 +233,12 @@ export default () => ({
         code.innerHTML = html;
         pre.appendChild(code);
 
-        copy.setAttribute('class', 'absolute inset-y-0 right-0 pr-2.5 flex opacity-0 cursor-pointer group-hover:opacity-100 transition text-gray-400');
+        copy.setAttribute('class', 'absolute inset-y-0 right-0 pr-2.5 flex opacity-0 cursor-pointer group-hover:opacity-100 transition');
 
         copy.innerHTML = `
            <svg class="w-5 h-5 hover:text-slate-800" fill="none"
                      x-ref="copyQueryIcon-${this.notificationId}"
-                     viewBox="0 0 24 24" stroke="#485569">
+                     viewBox="0 0 24 24" x-bind:stroke="dark ? '#e2e8f0' : '#485569'">
                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
            </svg>
@@ -291,12 +291,12 @@ export default () => ({
         pre.appendChild(code);
         div.appendChild(connectionInfo);
 
-        copy.setAttribute('class', 'absolute inset-y-0 right-0 pr-2.5 flex opacity-0 cursor-pointer group-hover:opacity-100 transition text-gray-400');
+        copy.setAttribute('class', 'absolute inset-y-0 right-0 pr-2.5 flex opacity-0 cursor-pointer group-hover:opacity-100 transition');
 
         copy.innerHTML = `
            <svg class="w-5 h-5 hover:text-slate-800" fill="none"
                      x-ref="copyQueryIcon-${this.notificationId}"
-                     viewBox="0 0 24 24" stroke="#485569">
+                     viewBox="0 0 24 24" x-bind:stroke="dark ? '#e2e8f0' : '#485569'">
                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
            </svg>
