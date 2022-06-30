@@ -3,6 +3,8 @@ import storage from 'electron-json-storage';
 import os from 'os';
 import supportZoom from '@/js/zoom';
 import dragdropHandler from '@/js/draganddrop';
+import filterScreen from '@/js/filterScreen';
+import searchableTable from '@/js/searchableTable';
 
 const welcomeHtml = `
     <!-- debug -->
@@ -370,9 +372,6 @@ export default () => ({
         }
         return (this.privacyMode ? '#9dabbf' : '#64748b');
     },
-    filesColor() {
-        return this.dark ? '#6B7280' : '#a4a3a3';
-    },
     collapseAllButtonColor() {
         if (this.dark) {
             return (this.isAlwaysOnTop ? '#a4b0c2' : '#64748b');
@@ -412,60 +411,10 @@ export default () => ({
         ipcRenderer.send('main:toggle-always-on-top', this.isAlwaysOnTop);
     },
     filterScreen(screen) {
-        let i;
-
-        const x = document.getElementsByClassName('filterScreen');
-        if (screen === 'all') screen = '';
-        for (i = 0; i < x.length; i += 1) {
-            this.removeClass(x[i], 'show');
-            if (x[i].className.indexOf(screen) > -1) this.addClass(x[i], 'show');
-        }
-
+        filterScreen(screen);
         this.screenList.forEach((element) => element.active = element.label === screen);
     },
-    addClass(element, name) {
-        let i;
-        const arr1 = element.className.split(' ');
-        const arr2 = name.split(' ');
-        for (i = 0; i < arr2.length; i += 1) {
-            if (arr1.indexOf(arr2[i]) === -1) {
-                element.className += ` ${arr2[i]}`;
-            }
-        }
-    },
-    removeClass(element, name) {
-        let i;
-        const arr1 = element.className.split(' ');
-        const arr2 = name.split(' ');
-        for (i = 0; i < arr2.length; i += 1) {
-            while (arr1.indexOf(arr2[i]) > -1) {
-                arr1.splice(arr1.indexOf(arr2[i]), 1);
-            }
-        }
-        element.className = arr1.join(' ');
-    },
-    searchTable(id) {
-        let td; let cell; let i; let
-            j;
-        const input = this.$refs[`search-${id}`];
-        const table = this.$refs[`table-${id}`];
-        const filter = input.value.toUpperCase();
-        const tr = table.getElementsByTagName('tr');
-        // eslint-disable-next-line no-plusplus
-        for (i = 1; i < tr.length; i++) {
-            tr[i].style.display = 'none';
-
-            td = tr[i].getElementsByTagName('td');
-            // eslint-disable-next-line no-plusplus
-            for (j = 0; j < td.length; j++) {
-                cell = tr[i].getElementsByTagName('td')[j];
-                if (cell) {
-                    if (cell.innerHTML.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = '';
-                        break;
-                    }
-                }
-            }
-        }
+    searchableTable(id) {
+        searchableTable(id);
     },
 });

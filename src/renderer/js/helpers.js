@@ -23,13 +23,13 @@ const createTable = (objectArray, fields, fieldTitles, notificationId) => {
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                  </div>
-                 <input x-ref="search-${notificationId}" 
-                        x-on:keyup="searchTable('${notificationId}')" type="text" autocomplete="off"
+                 <input id="search-${notificationId}" 
+                        x-on:keyup="searchableTable('${notificationId}')" type="text" autocomplete="off"
                         class="p-2 placeholder-gray-400 dark:bg-slate-800 dark:text-slate-400 dark:placeholder-gray-500 border border-slate-300 focus:ring-slate-600 focus:border-slate-500 dark:border-slate-600 form-input block w-full sm:text-sm rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm pl-8">
             </div>`;
 
     div.setAttribute('class', 'overflow-x-auto m-3 rounded-lg');
-    table.setAttribute('x-ref', `table-${notificationId}`);
+    table.setAttribute('id', `table-${notificationId}`);
 
     fieldTitles.forEach((fieldTitle) => {
         const th = document.createElement('th');
