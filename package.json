@@ -48,7 +48,7 @@
     "electron-builder": "^23.0.3",
     "electron-devtools-installer": "^3.2.0",
     "esbuild": "^0.12.9",
-    "eslint": "^7.32.0 || ^8.2.0",
+    "eslint": "^8.18.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.2",
     "file-loader": "^6.2.0",
