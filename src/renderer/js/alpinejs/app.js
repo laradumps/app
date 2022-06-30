@@ -3,6 +3,8 @@ import storage from 'electron-json-storage';
 import os from 'os';
 import supportZoom from '@/js/zoom';
 import dragdropHandler from '@/js/draganddrop';
+import filterScreen from '@/js/filterScreen';
+import searchableTable from '@/js/searchableTable';
 
 const { clipboard } = require('electron');
 
@@ -168,32 +170,47 @@ export default () => ({
             this.$refs.togglePrivacyMode.setAttribute('class', 'block justify-center cursor-pointer text-gray-900 group flex items-center p-2');
         });
 
-        ipcRenderer.on('screen', (event, arg) => {
+        ipcRenderer.on('screen', (event, { content }) => {
             this.maximizeApp();
-            const lastIndex = this.screenList[this.screenList.length - 1].index + 1;
 
-            const screen = arg.content.content.screen ?? this.defaultScreenName;
-            const classAttr = arg.content.content.classAttr ?? [];
+            const resolvePayloadScreen = () => {
+                const lastIndex = this.screenList[this.screenList.length - 1].index + 1;
 
-            this.screenList.forEach((element) => element.active = element.label === screen);
+                const screen = content.content.screen ?? this.defaultScreenName;
+                const classAttr = content.content.classAttr ?? [];
+                const raiseIn = content.content.raiseIn ?? 0;
 
-            const btnScreenItem = {
-                index: lastIndex,
-                label: screen,
-                classAttr,
-                active: true,
+                this.screenList.forEach((element) => element.active = element.label === screen);
+
+                const btnScreenItem = {
+                    index: lastIndex,
+                    label: screen,
+                    classAttr,
+                    active: true,
+                };
+
+                if (this.screenList.filter((screen) => screen.label === (content.content.screen ?? this.defaultScreenName))
+                    .length === 0) {
+                    this.screenList.push(btnScreenItem);
+                }
+
+                this.$dispatch('dumper:screen', btnScreenItem);
+
+                this.filterScreen(screen);
+
+                this.activeScreen = screen;
+
+                return { screen, raiseIn };
             };
 
-            if (this.screenList.filter((screen) => screen.label === (arg.content.content.screen ?? this.defaultScreenName))
-                .length === 0) {
-                this.screenList.push(btnScreenItem);
+            const payloadScreen = resolvePayloadScreen();
+
+            if (payloadScreen.raiseIn > 0) {
+                setTimeout(() => {
+                    this.filterScreen(payloadScreen.screen);
+                    this.activeScreen = payloadScreen.screen;
+                }, payloadScreen.raiseIn);
             }
-
-            this.$dispatch('dumper:screen', btnScreenItem);
-
-            this.filterScreen(screen);
-
-            this.activeScreen = screen;
         });
 
         ipcRenderer.on('preload:server-failed', (event, arg) => {
@@ -323,8 +340,10 @@ export default () => ({
             active: true,
         });
     },
-    maximizeApp() {
-        ipcRenderer.send('main:show');
+    maximizeApp(autoInvoke) {
+        if (autoInvoke) {
+            ipcRenderer.send('main:show');
+        }
     },
     openLink(link) {
         shell.openExternal(link);
@@ -339,6 +358,18 @@ export default () => ({
         this.defaultScreen();
         this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
         this.$refs.main.innerHTML = welcomeHtml;
+    },
+    clearScreen() {
+        const active = this.screenList.filter((element) => element.active)[0];
+
+        const elements = document.getElementsByClassName(active.label);
+
+        [...elements].map((el) => el.remove());
+
+        this.screenList = this.screenList.filter((element) => element.label !== active.label);
+
+        this.filterScreen('screen 1');
+        this.activeScreen = this.defaultScreenName;
     },
     dispatchDump(type, content) {
         this.$dispatch(`dumper:${type}`, content);
@@ -373,7 +404,8 @@ export default () => ({
             });
         }
 
-        this.maximizeApp();
+        this.maximizeApp(content.meta.auto_invoke_app);
+
         this.filterScreen(this.activeScreen);
         this.activeScreen = this.defaultScreenName;
     },
@@ -402,9 +434,6 @@ export default () => ({
             return (this.privacyMode ? '#53637a' : '#64748b');
         }
         return (this.privacyMode ? '#9dabbf' : '#64748b');
-    },
-    filesColor() {
-        return this.dark ? '#6B7280' : '#a4a3a3';
     },
     collapseAllButtonColor() {
         if (this.dark) {
@@ -445,60 +474,11 @@ export default () => ({
         ipcRenderer.send('main:toggle-always-on-top', this.isAlwaysOnTop);
     },
     filterScreen(screen) {
-        let i;
-
-        const x = document.getElementsByClassName('filterScreen');
-        if (screen === 'all') screen = '';
-        for (i = 0; i < x.length; i += 1) {
-            this.removeClass(x[i], 'show');
-            if (x[i].className.indexOf(screen) > -1) this.addClass(x[i], 'show');
-        }
-
+        filterScreen(screen);
         this.screenList.forEach((element) => element.active = element.label === screen);
+        this.activeScreen = screen;
     },
-    addClass(element, name) {
-        let i;
-        const arr1 = element.className.split(' ');
-        const arr2 = name.split(' ');
-        for (i = 0; i < arr2.length; i += 1) {
-            if (arr1.indexOf(arr2[i]) === -1) {
-                element.className += ` ${arr2[i]}`;
-            }
-        }
-    },
-    removeClass(element, name) {
-        let i;
-        const arr1 = element.className.split(' ');
-        const arr2 = name.split(' ');
-        for (i = 0; i < arr2.length; i += 1) {
-            while (arr1.indexOf(arr2[i]) > -1) {
-                arr1.splice(arr1.indexOf(arr2[i]), 1);
-            }
-        }
-        element.className = arr1.join(' ');
-    },
-    searchTable(id) {
-        let td; let cell; let i; let
-            j;
-        const input = this.$refs[`search-${id}`];
-        const table = this.$refs[`table-${id}`];
-        const filter = input.value.toUpperCase();
-        const tr = table.getElementsByTagName('tr');
-        // eslint-disable-next-line no-plusplus
-        for (i = 1; i < tr.length; i++) {
-            tr[i].style.display = 'none';
-
-            td = tr[i].getElementsByTagName('td');
-            // eslint-disable-next-line no-plusplus
-            for (j = 0; j < td.length; j++) {
-                cell = tr[i].getElementsByTagName('td')[j];
-                if (cell) {
-                    if (cell.innerHTML.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = '';
-                        break;
-                    }
-                }
-            }
-        }
+    searchableTable(id) {
+        searchableTable(id);
     },
 });
