@@ -6,6 +6,8 @@ import dragdropHandler from '@/js/draganddrop';
 import filterScreen from '@/js/filterScreen';
 import searchableTable from '@/js/searchableTable';
 
+const { clipboard } = require('electron');
+
 const welcomeHtml = `
     <!-- debug -->
     <div id="debug"></div>
@@ -28,20 +30,21 @@ const welcomeHtml = `
             </div>
            
             <!-- welcome page -->
-            <div x-show="!savedDumpsWindow" x-ref="welcome" class="shadow-lg w-full p-4 mb-16 text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700">
+            <div x-show="!savedDumpsWindow" x-ref="welcome" class="shadow-lg w-full p-4 mb-16 text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700 leading-6">
                <h3 class="mb-8 text-xl font-bold"><span class="text-lg text-blue-600 dark:text-slate-300">👋</span> Hello dev,</h3>
                <span class="font-semibold text-lg">Welcome to LaraDumps!</span>
-               <div class="mt-6 text-slate-600 dark:text-slate-300">
+               <div class="mt- text-slate-600 dark:text-slate-300">
                   <div class="pt-4"><span class="underline">Quick start</span></div>
                   <div class="mt-6">
-                     <span>1. Run</span>
-                     <span class="p-1.5 bg-slate-200 text-md rounded mr-1 cursor-pointer">
-                        <button title="Click to copy" x-on:click="$clipboard('composer require --dev laradumps/laradumps')">
+                     <span>1. Install LaraDumps, run </span>
+                     <span class="p-1.5 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
+                        <button title="Click to copy" x-on:click="clipboard('composer require --dev laradumps/laradumps', 'copyComposerIcon')">
                            <div class="flex justify-between dark:text-slate-700">
                               <span>composer require laradumps/laradumps --dev</span>
                               <div title="Click to copy">
                                  <svg class="w-5 h-5 hover:text-slate-800" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    x-ref="copyComposerIcon"
+                                    viewBox="0 0 24 24" stroke="#485569">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                  </svg>
@@ -49,17 +52,35 @@ const welcomeHtml = `
                            </div>
                         </button>
                      </span>
-                     <span>to install LaraDumps in your Laravel app.</span>
                   </div>
                   <div class="mt-5">
-                     <span>2. Add</span>
-                     <span  class="p-1.5 text-slate-600 bg-slate-200 text-md rounded mr-1 cursor-pointer">
-                        <button title="Click to copy" x-on:click="$clipboard(example)">
+                     <span>2. Configure your Laravel project, execute</span> 
+                     <span  class="p-1.5 text-slate-600 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
+                     <button title="Click to copy" x-on:click="clipboard('php artisan ds:init', 'copyArtisanIcon')">
+                           <div class="flex justify-between">
+                              <span>php artisan ds:init</span>
+                              <div title="Click to copy">
+                                 <svg class="w-5 h-5 hover:text-slate-800" fill="none"
+                                    x-ref="copyArtisanIcon"
+                                    viewBox="0 0 24 24" stroke="#485569">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                 </svg>
+                              </div>
+                           </div>
+                        </button>
+                     </span>
+                  </div>
+                  <div class="mt-5">
+                     <span>3. Add</span>
+                     <span  class="p-1.5 text-slate-600 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
+                     <button title="Click to copy" x-on:click="clipboard('ds(\\'Hello World\\');', 'copyDsIcon')">
                            <div class="flex justify-between">
                               <span>ds('Hello world!')</span>
                               <div title="Click to copy">
                                  <svg class="w-5 h-5 hover:text-slate-800" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    x-ref="copyDsIcon"
+                                    viewBox="0 0 24 24" stroke="#485569">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                  </svg>
@@ -69,13 +90,13 @@ const welcomeHtml = `
                      </span>
                      <span>somewhere in your code.</span>
                   </div>
-                  <div class="mt-5">3. Run your application and see what happened here! 😎</div>
+                  <div class="mt-5">4. Run your application and see what happens here! 😎</div>
                </div>
                <div class="mt-8 font-light" x-on:click="openLink('https://laradumps.gitbook.io/laradumps')">📚
-                  Check our <span class="text-blue-500 underline cursor-pointer dark:text-blue-300">documentation</span> for more examples.
+                  Check our <span class="text-blue-500 underline cursor-pointer dark:text-blue-300">documentation</span> for more information.
                </div>
                <div class="mt-6 font-light" x-on:click="openLink('https://github.com/laradumps/laradumps')">⭐
-                  Enjoying Dumps? Don’t forget to <span class="text-blue-500 underline cursor-pointer dark:text-blue-300"> star our repository</span>!
+                  Enjoying LaraDumps? Please consider <span class="text-blue-500 underline cursor-pointer dark:text-blue-300"> starring our repository</span>!
                </div>
             </div>        
         </div>
@@ -99,12 +120,24 @@ export default () => ({
     screenList: [],
     dumpBatch: [],
     filesBatch: [],
-    example: 'ds(\'Hello World\')',
     main: null,
     rendered: false,
     savedDumpsWindow: false,
     totalPayloadSaved: [],
     dragdropEnabled: false,
+    clipboard(text, el = null) {
+        clipboard.writeText(text);
+
+        if (!el) {
+            return;
+        }
+
+        const icon = this.$refs[el];
+
+        icon.style.stroke = '#FAC429';
+
+        setTimeout(() => icon.style.stroke = '#485569', 500);
+    },
     init() {
         supportZoom();
 

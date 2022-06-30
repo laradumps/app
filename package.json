@@ -14,11 +14,11 @@
     "lint": "npx eslint src/renderer/js/alpinejs/**"
   },
   "dependencies": {
-    "@ryangjchandler/alpine-clipboard": "^2.2.0",
     "alpinejs": "^3.10.2",
     "anser": "^2.1.1",
     "basename": "^0.1.2",
     "body-parser": "^1.19.0",
+    "electron-context-menu": "^3.3.0",
     "electron-json-storage": "^4.5.0",
     "electron-tray-window": "^1.2.5",
     "electron-updater": "^5.0.1",
@@ -30,7 +30,7 @@
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.34",
     "reveal.js": "^4.3.0",
-    "sql-formatter": "^6.1.2",
+    "sql-formatter": "^7.0.2",
     "strip-ansi": "^7.0.1",
     "tree-kill": "^1.2.2",
     "uuid": "^8.3.2"
