@@ -14,7 +14,6 @@
     "lint": "npx eslint src/renderer/js/alpinejs/**"
   },
   "dependencies": {
-    "@ryangjchandler/alpine-clipboard": "^2.2.0",
     "alpinejs": "^3.10.2",
     "anser": "^2.1.1",
     "basename": "^0.1.2",

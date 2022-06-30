@@ -4,6 +4,8 @@ import os from 'os';
 import supportZoom from '@/js/zoom';
 import dragdropHandler from '@/js/draganddrop';
 
+const { clipboard } = require('electron');
+
 const welcomeHtml = `
     <!-- debug -->
     <div id="debug"></div>
@@ -34,12 +36,13 @@ const welcomeHtml = `
                   <div class="mt-6">
                      <span>1. Install LaraDumps, run </span>
                      <span class="p-1.5 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
-                        <button title="Click to copy" x-on:click="showCopiedComposer = true; setTimeout(() => showCopiedComposer = false, 500); $clipboard(copyComposer)">
+                        <button title="Click to copy" x-on:click="clipboard('composer require --dev laradumps/laradumps', 'copyComposerIcon')">
                            <div class="flex justify-between dark:text-slate-700">
                               <span>composer require laradumps/laradumps --dev</span>
                               <div title="Click to copy">
                                  <svg class="w-5 h-5 hover:text-slate-800" fill="none"
-                                    viewBox="0 0 24 24" x-bind:stroke="showCopiedComposer ? '#FAC429' : '#485569'">
+                                    x-ref="copyComposerIcon"
+                                    viewBox="0 0 24 24" stroke="#485569">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                  </svg>
@@ -51,12 +54,13 @@ const welcomeHtml = `
                   <div class="mt-5">
                      <span>2. Configure your Laravel project, execute</span> 
                      <span  class="p-1.5 text-slate-600 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
-                     <button title="Click to copy" x-on:click="showCopiedArtisan = true; setTimeout(() => showCopiedArtisan = false, 500); $clipboard(copyArtisan)">
+                     <button title="Click to copy" x-on:click="clipboard('php artisan ds:init', 'copyArtisanIcon')">
                            <div class="flex justify-between">
                               <span>php artisan ds:init</span>
                               <div title="Click to copy">
                                  <svg class="w-5 h-5 hover:text-slate-800" fill="none"
-                                    viewBox="0 0 24 24" x-bind:stroke="showCopiedArtisan ? '#FAC429' : '#485569'">
+                                    x-ref="copyArtisanIcon"
+                                    viewBox="0 0 24 24" stroke="#485569">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                  </svg>
@@ -68,12 +72,13 @@ const welcomeHtml = `
                   <div class="mt-5">
                      <span>3. Add</span>
                      <span  class="p-1.5 text-slate-600 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
-                     <button title="Click to copy" x-on:click="showCopiedDs = true; setTimeout(() => showCopiedDs = false, 500); $clipboard(copyDs)">
+                     <button title="Click to copy" x-on:click="clipboard('ds(\\'Hello World\\')', 'copyDsIcon')">
                            <div class="flex justify-between">
                               <span>ds('Hello world!')</span>
                               <div title="Click to copy">
                                  <svg class="w-5 h-5 hover:text-slate-800" fill="none"
-                                    viewBox="0 0 24 24" x-bind:stroke="showCopiedDs ? '#FAC429' : '#485569'">
+                                    x-ref="copyDsIcon"
+                                    viewBox="0 0 24 24" stroke="#485569">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                  </svg>
@@ -113,17 +118,20 @@ export default () => ({
     screenList: [],
     dumpBatch: [],
     filesBatch: [],
-    copyComposer: 'composer require --dev laradumps/laradumps',
-    copyDs: 'ds(\'Hello World\')',
-    copyArtisan: 'php artisan ds:init',
-    showCopiedComposer: false,
-    showCopiedDs: false,
-    showCopiedArtisan: false,
     main: null,
     rendered: false,
     savedDumpsWindow: false,
     totalPayloadSaved: [],
     dragdropEnabled: false,
+    clipboard(text, el) {
+        const icon = this.$refs[el];
+
+        icon.style.stroke = '#FAC429';
+
+        setTimeout(() => icon.style.stroke = '#485569', 500);
+
+        clipboard.writeText(text);
+    },
     init() {
         supportZoom();
 
