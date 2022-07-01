@@ -274,7 +274,7 @@
                     <div class="flex-1 px-3">
                         <div class="my-3 py-1 flex overflow-x-auto" id="screenList">
                             <template x-for="(screen, index) in screenList" :key="index">
-                                <button x-text="screen.label"
+                                <button x-html="screen.label"
                                         x-on:click="filterScreen(screen.label);"
                                         x-bind:class="{
                                              [screen.classAttr.default]: true,
