@@ -13,6 +13,7 @@ module.exports = {
             variants: ['lg', 'hover', 'focus', 'lg:hover'],
         },
         'bg-black',
+        'w-[1rem]',
     ],
     theme: {
         height: {
