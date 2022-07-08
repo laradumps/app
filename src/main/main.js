@@ -172,7 +172,7 @@ function createMenu() {
                     label: 'Documentation',
                     click: async () => {
                         const { shell } = require('electron');
-                        await shell.openExternal('https://laradumps.gitbook.io/laradumps');
+                        await shell.openExternal('https://laradumps.dev');
                     },
                 },
                 { type: 'separator' },
