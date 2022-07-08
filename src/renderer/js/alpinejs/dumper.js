@@ -78,6 +78,14 @@ export default () => ({
         this.content = detail.content;
         this.ideHandle = detail.ideHandle;
 
+        if (typeof detail.content.is_case_sensitive !== 'undefined') {
+            this.is_case_sensitive = detail.content.is_case_sensitive;
+        }
+
+        if (typeof detail.content.is_whole_word !== 'undefined') {
+            this.is_whole_word = detail.content.is_whole_word;
+        }
+
         const welcome = document.querySelector('[x-ref=\'welcome\']');
 
         if (typeof (welcome) !== 'undefined' && welcome != null) {
@@ -101,7 +109,7 @@ export default () => ({
         pre.setAttribute('data-indent-pad', '  ');
 
         pre.innerHTML = dump;
-        original.innerHTML = originalContent;
+        original.innerText = originalContent;
 
         this.handleDebugElement();
 
@@ -410,27 +418,34 @@ export default () => ({
 
         const { textContent } = document.getElementById(`original-content-${this.notificationId}`);
 
+        const searchSettings = {
+            is_case_sensitive: this.is_case_sensitive ?? false,
+            is_whole_word: this.is_whole_word ?? false,
+        };
+
         div.setAttribute('class', 'flex justify-start text-xs');
 
-        const strContains = Helper.strContains(textContent, content);
+        const strContains = Helper.strContains(textContent, content, searchSettings);
 
         let format;
-        if (strContains) {
+        let highlighted;
+
+        if (strContains.success) {
             format = {
                 style: 'bg-green-500',
-                text: 'Text contains',
+                text: 'Text contains:',
             };
         } else {
             format = {
                 style: 'bg-red-500',
-                text: 'Text not contains',
+                text: 'Text does not contain:',
             };
         }
 
         div.innerHTML = `
             <div class="flex items-center justify-center">
                  <div class="items-center w-[0.50rem] h-[0.50rem] mr-2 rounded-full ${format.style}"></div>
-                 <span class="dark:text-slate-300">${format.text} <div class="underline">${content}</div></span>
+                 <span class="dark:text-slate-300">${format.text} <div class="underline">${Helper.escapeHtml(content)}</div></span>
             </div>`;
 
         document.getElementById(`validate-container-${this.notificationId}`).classList.add('!flex');
