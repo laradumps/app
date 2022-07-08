@@ -115,7 +115,7 @@ export default () => ({
     privacyMode: false,
     privacyElements: [],
     ideHandle: null,
-    activeScreen: 'screen 1',
+    activeScreen: 'laraDumpsScrn-screen 1',
     defaultScreenName: null,
     screenList: [],
     dumpBatch: [],
