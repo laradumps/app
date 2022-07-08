@@ -15,20 +15,6 @@ const escapeHtml = (content) => {
     .replace(/'/g, "&#39;");  
 }
 
-const StrContainsHighlight = (strContains,textContent) => {
-
-    let replaceText = "[§LDH§]$&[/§LDH§]";
-    let highlighted = "";
-
-    var regex = new RegExp(strContains.regex, strContains.regex_mode);
-    
-    highlighted = escapeHtml(textContent.replace(regex, replaceText));
-    highlighted = highlighted.replaceAll("[§LDH§]", "<span class='p-0.5 bg-orange-200 dark:text-slate-700 font-semibold'>");
-    highlighted = highlighted.replaceAll("[/§LDH§]", "</span>");
-    
-    return highlighted;
-}
-
 const strContains = (content, searchString, searchSettings) => {
     //@see https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
     searchString = searchString.replace(/[.*+?^$"{}()|[\]\\]/g, '\\$&');
@@ -102,4 +88,4 @@ const createTable = (objectArray, fields, fieldTitles, notificationId) => {
     return div;
 };
 
-export { isJson, strContains, escapeHtml, createTable, StrContainsHighlight };
+export { isJson, strContains, escapeHtml, createTable };

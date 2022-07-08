@@ -76,11 +76,11 @@ export default () => ({
         this.content = detail.content;
         this.ideHandle = detail.ideHandle;
 
-        if (detail.content.hasOwnProperty('is_case_sensitive')) {
+        if (typeof detail.content.is_case_sensitive !== 'undefined') {
             this.is_case_sensitive = detail.content.is_case_sensitive;
         }
 
-        if (detail.content.hasOwnProperty('is_whole_word')) {
+        if (typeof detail.content.is_whole_word !== 'undefined') {
             this.is_whole_word = detail.content.is_whole_word;
         }
 
@@ -378,10 +378,10 @@ export default () => ({
         const { content } = this.content;
 
         const { textContent } = document.getElementById(`original-content-${this.notificationId}`);
-      
+
         const searchSettings = {
             is_case_sensitive: this.is_case_sensitive ?? false,
-            is_whole_word: this.is_whole_word ?? false
+            is_whole_word: this.is_whole_word ?? false,
         };
 
         div.setAttribute('class', 'flex justify-start text-xs');
@@ -396,18 +396,6 @@ export default () => ({
                 style: 'bg-green-500',
                 text: 'Text contains:',
             };
-        
-            //Highlight matching words
-             highlighted = Helper.StrContainsHighlight(strContains,textContent);
- 
-            //@TODO: re-mount the dump now with a highlighted string
-            document.getElementById(`sf-dump-${this.notificationId}`).innerHTML = `
-            <div>
-                 <div class="w-auto">                             
-                      <div class="px-2 py-3 text-overflow: clip; sf-dump-debug">${highlighted}</div>
-                 </div>
-            </div>`;
-
         } else {
             format = {
                 style: 'bg-red-500',
@@ -424,7 +412,6 @@ export default () => ({
         document.getElementById(`validate-container-${this.notificationId}`).classList.add('!flex');
 
         document.getElementById(`validate-${this.notificationId}`).appendChild(div);
-        
     },
     handleDebugElement(customLabel, notificationId = this.notificationId) {
         document.getElementById('debug').removeAttribute('id');
