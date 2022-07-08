@@ -19,7 +19,7 @@ export default () => ({
         window.addEventListener('dumper:screen', ({ detail }) => {
             const { label } = detail;
             if (document.getElementById(this.notificationId) != null) {
-                document.getElementById(this.notificationId).setAttribute('class', `filterScreen ${label} collapsable p-3 mb-4 shadow-md rounded dark:bg-slate-700 bg-white border-slate-300 dark:border-slate-600 cursor-pointer align-middle items-start font-medium text-gray-500 hidden`);
+                document.getElementById(this.notificationId).setAttribute('class', `filterScreen laraDumpsScrn-${label} collapsable p-3 mb-4 shadow-md rounded dark:bg-slate-700 bg-white border-slate-300 dark:border-slate-600 cursor-pointer align-middle items-start font-medium text-gray-500 hidden`);
             }
         });
         window.addEventListener('dumper:dump', ({ detail }) => {
@@ -471,7 +471,7 @@ export default () => ({
                 }" 
                 x-init="initCollapsableElements" 
                 id="${notificationId}"
-               class="filterScreen collapsable screen 1 ${encodedFilePath} rounded-sm collapsable p-4 mb-4 w-full p-3 shadow-lg text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700">
+               class="filterScreen collapsable laraDumpsScrn-screen 1 ${encodedFilePath} rounded-sm collapsable p-4 mb-4 w-full p-3 shadow-lg text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700">
                 <div x-on:click="toggleCollapse" class="flex justify-between w-full cursor-pointer ">
                    <div class="flex items-center justify-center">
                       <div id="color-${notificationId}" class="items-center w-[0.72rem] h-[0.72rem] mr-2 rounded-full bg-slate-300 dark:bg-gray-500"></div>
