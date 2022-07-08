@@ -92,7 +92,7 @@ const welcomeHtml = `
                   </div>
                   <div class="mt-5">4. Run your application and see what happens here! 😎</div>
                </div>
-               <div class="mt-8 font-light" x-on:click="openLink('https://laradumps.gitbook.io/laradumps')">📚
+               <div class="mt-8 font-light" x-on:click="openLink('http://laradumps.dev')">📚
                   Check our <span class="text-blue-500 underline cursor-pointer dark:text-blue-300">documentation</span> for more information.
                </div>
                <div class="mt-6 font-light" x-on:click="openLink('https://github.com/laradumps/laradumps')">⭐
