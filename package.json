@@ -1,7 +1,7 @@
 {
   "name": "laradumps",
   "version": "0.1.0",
-  "description": "LaraDumps is designed to improve your Laravel application debugging experience. https://github.com/laradumps/app",
+  "description": "LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://github.com/laradumps/app",
   "author": "Luan Freitas <luanfreitas10@protonmail.com>",
   "main": "dist/main.js",
   "scripts": {
@@ -73,7 +73,7 @@
   },
   "build": {
     "appId": "com.laradumps.app",
-    "productName": "laradumps",
+    "productName": "LaraDumps",
     "files": [
       "**/*",
       "!node_modules${/*}"
@@ -95,7 +95,9 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "installerSidebar": "./src/img/installerSidebar.bmp",
+      "installerIcon":"./src/img/icon.ico"
     },
     "win": {
       "icon": "./src/img/icon.ico",
@@ -111,7 +113,7 @@
     },
     "linux": {
       "executableName": "laradumps",
-      "description": "LaraDumps is designed to improve your Laravel application debugging experience. https://github.com/laradumps/app",
+      "description": "LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://github.com/laradumps/app",
       "icon": "./build/icon.icns",
       "target": [
         "AppImage"
@@ -131,7 +133,9 @@
       ]
     },
     "dmg": {
-      "icon": "./src/img/icon_mac.png",
+      "title": "${productName} ${version}",
+      "icon": "./build/icon.icns",
+      "background": "./src/img/install_dmg.png",
       "contents": [
         {
           "x": 110,
