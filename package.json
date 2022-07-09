@@ -95,7 +95,9 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "installerSidebar": "./src/img/installerSidebar.bmp",
+      "installerIcon":"./src/img/icon.ico"
     },
     "win": {
       "icon": "./src/img/icon.ico",
