@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 
-const minPackageVersion = '001';
+const minPackageVersion = '1.0.0';
 let packageVersion;
 
 export default async function () {
@@ -8,9 +8,9 @@ export default async function () {
         packageVersion = arg.content.meta.laradumps_version.replaceAll('.', '');
 
         // eslint-disable-next-line no-restricted-globals
-        if (!isNaN(packageVersion) && (packageVersion < minPackageVersion)) {
+        if (!isNaN(packageVersion) && (packageVersion < minPackageVersion.replaceAll('.', ''))) {
             // eslint-disable-next-line no-shadow
-            const arg = {
+            const payload = {
                 packageVersion,
                 minPackageVersion,
                 dialogTitle: '✨ New version available',
@@ -18,7 +18,7 @@ export default async function () {
             <p>Hey Dev, there is a new release of Laradumps!</p>
             <div class="m-2">
               <p>Minimum version: <strong>${minPackageVersion}</strong></p>
-              <p>Package version: <strong>${packageVersion}</strong></p>
+              <p>Package version: <strong>${arg.content.meta.laradumps_version}</strong></p>
             </div>
             <div class="m-2">
                 <span>Consider upgrading your app and package to take advantage of new features, bug fix and major improvements.</span>
@@ -27,7 +27,7 @@ export default async function () {
             </div>          
         `,
             };
-            event.sender.send('ipc:package-down', arg);
+            event.sender.send('ipc:package-down', payload);
         } else {
             event.sender.send(arg.type, arg);
         }

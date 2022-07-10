@@ -223,6 +223,7 @@ export default () => ({
             this.dialog.title = arg.dialogTitle;
             this.dialog.description = arg.dialogDescription;
             this.dialog.open = true;
+            this.maximizeApp(true);
         });
 
         ipcRenderer.on('main:update-failed', (event, arg) => {
