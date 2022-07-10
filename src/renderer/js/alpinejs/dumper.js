@@ -3,7 +3,6 @@ import * as JsonViewer from 'json-viewer-js';
 import moment from 'moment/moment';
 import { makeHightlight } from '@/js/plugins/hightlight';
 import * as Helper from '../helpers';
-import { isJson } from '../helpers';
 
 const hljs = require('highlight.js/lib/common');
 const htmldiff = require('../plugins/diff');

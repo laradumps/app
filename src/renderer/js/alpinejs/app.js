@@ -362,7 +362,7 @@ export default () => ({
     clearScreen() {
         const active = this.screenList.filter((element) => element.active)[0];
 
-        const elements = document.getElementsByClassName(active.label);
+        const elements = document.getElementsByClassName(`laraDumpsScrn-${active.label}`);
 
         [...elements].map((el) => el.remove());
 

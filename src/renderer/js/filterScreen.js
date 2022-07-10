@@ -26,7 +26,7 @@ const filterScreen = (screenName) => {
 
     const x = document.getElementsByClassName('filterScreen');
     if (screenName === 'all') screenName = '';
-    if (screenName != '') screenName = 'laraDumpsScrn-' + screenName;
+    if (screenName !== '') screenName = `laraDumpsScrn-${screenName}`;
 
     for (i = 0; i < x.length; i += 1) {
         removeClass(x[i], 'show');
