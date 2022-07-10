@@ -145,18 +145,20 @@ function createWindow() {
 }
 
 function createMenu() {
-    const menu = Menu.buildFromTemplate([
-        {
+    let menuTemplate = [{
             label: 'Menu',
-            submenu: [
-                {
+            submenu: [{
                     label: 'About LaraDumps',
                     click: async () => {
-                        const { shell } = require('electron');
+                        const {
+                            shell
+                        } = require('electron');
                         await shell.openExternal('https://github.com/laradumps/app');
                     },
                 },
-                { type: 'separator' },
+                {
+                    type: 'separator'
+                },
                 {
                     label: 'Quit LaraDumps',
                     click() {
@@ -167,25 +169,44 @@ function createMenu() {
         },
         {
             label: 'Help',
-            submenu: [
-                {
+            submenu: [{
                     label: 'Documentation',
                     click: async () => {
-                        const { shell } = require('electron');
+                        const {
+                            shell
+                        } = require('electron');
                         await shell.openExternal('https://laradumps.dev');
                     },
                 },
-                { type: 'separator' },
+                {
+                    type: 'separator'
+                },
                 {
                     label: 'Releases',
                     click: async () => {
-                        const { shell } = require('electron');
+                        const {
+                            shell
+                        } = require('electron');
                         await shell.openExternal('https://github.com/laradumps/app/releases');
                     },
                 },
             ],
-        },
-    ]);
+        }
+    ];
+
+    //Enables copy to clipboard in MacOS
+    if (process.platform === 'darwin') {
+        menuTemplate.splice(1, 0, {
+            label: 'Edit',
+            submenu: [{
+                label: 'Copy',
+                accelerator: 'CmdOrCtrl+C',
+                selector: 'copy:'
+            }]
+        });
+    }
+
+    const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
 }
 
