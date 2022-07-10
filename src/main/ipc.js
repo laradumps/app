@@ -21,7 +21,7 @@ export default async function () {
               <p>Package version: <strong>${arg.content.meta.laradumps_version}</strong></p>
             </div>
             <div class="m-2">
-                <span>Consider upgrading your app and package to take advantage of new features, bug fix and major improvements.</span>
+                <span>Consider upgrading to enjoy the benefits of new features, bug fixes and improvements.</span>
                 <div class="mt-2 cursor-pointer font-semibold" 
                       x-on:click="openLink('https://github.com/laradumps/laradumps')">https://github.com/laradumps/laradumps</div>
             </div>          
