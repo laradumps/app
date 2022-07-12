@@ -1,107 +1,62 @@
 <p align="center">
-  <img src="./build/icon.png" height="128"  alt=""/>
+  <img src="./build/icon.png" height="128" alt="" />
 </p>
 <h1 align="center">LaraDumps</h1>
 <div align="center">
-  <br>
-  <sub>Available for Windows, Linux and macOS.</sub>
+  <br />
+  <p align="center">
+    <a href="https://github.com/laradumps/app/releases/download/v1.0.0/laradumps-Setup-1.0.0.exe">
+      <img src="./art/os/windows.png" height="60" alt="LaraDumps Windows App" />
+    </a>
+    <a href="https://github.com/laradumps/app/releases/download/v1.0.0/laradumps-1.0.0.dmg">
+      <img src="./art/os/macos.png" height="60" alt="LaraDumps MacOS App" />
+    </a>
+    <a href="https://github.com/laradumps/app/releases/download/v1.0.0/laradumps-1.0.0.AppImage">
+      <img src="./art/os/linux.png" height="60" alt="LaraDumps Linux App" />
+    </a>
+  </p>
+  <sub>Available for Windows, Linux and macOS. Click on your OS logo to download the app.</sub>
+  <br />
+  <br />
+  <p>
+    <a href="https://laradumps.dev"> 📚 Documentation </a>
+  </p>
 </div>
-<br>
+ <br/>
 <div align="center">
-  <a href="https://github.com/laradumps/app/releases/latest">
+  <p align="center">
+    <a href="https://github.com/laradumps/app/releases/latest">
     <img src="https://badgen.net/github/release/laradumps/app" alt="Latest release">
   </a>
   <a href="https://github.com/laradumps/app/releases">
     <img src="https://img.shields.io/github/downloads/laradumps/app/total" alt="Total">
   </a>
 </div>
-<div align="center">
-  <h3> 
-    <a href="https://laradumps.gitbook.io/get-started/">
-      📚 Documentation
-    </a>
-    <span> | </span>
-    <a href="https://github.com/laradumps/app/blob/main/CONTRIBUTING.md">
-      ⌨️ Contribution
-    </a>
-  </h3>
+  </p>
 </div>
 
-# What is LaraDumps?
+### 👋 Hello Dev,
 
-> LaraDumps is an app designed to boost your Laravel PHP coding and debugging experience. Dumps was inspired by [Spatie Ray](https://github.com/spatie/ray), check it out!.
+<br/>
 
-* This project is free and open source, supports only applications built with Laravel Framework.
+LaraDumps is a friendly app designed to boost your [Laravel](https://larvel.com/) PHP coding and debugging experience.
 
-#### Tech Stack
+When using LaraDumps, you can see the result of your debug displayed in a standalone Desktop application.
 
-* [Electron](https://www.electronjs.org/)
+<br>
 
-#### Renderer
+### Get Started
 
-* VanillaJS
-* [AlpineJS](https://alpinejs.dev/)
-* [TailwindCSS](https://tailwindcss.com/)
+1. Download the App.
 
-## Here's an example:
+2. Proceed to install the [LaraDumps](https://github.com/laradumps/laradumps) Laravel package in your project.
 
-```php
-ds('Hello world');
-
-ds(['a' => 1, 'b' => 2])->danger();
-
-ds('multiple', 'arguments', $foo, $bar);
-
-ds()->queriesOn('label');
-
-User::firstWhere('email', 'you@email.com');
-
-ds()->queriesOff();
-
-ds()->die(); 
-```
-
-### Multiple
-
-<div align="center">
-
-![Multiple](./assets/multiple.png)
-
-</div>
---- 
-
-### Diff
-
-<div align="center">
-
-![Diff](./assets/diff.png)
-
-</div>
-
----
-
-### Livewire
-
-<div align="center">
-
-![livewire](./assets/livewire.png)
-
-</div>
-
----
-
-And also with the blade directive:
-
-> See full documentation
-
-```blade
-<div>
-    @foreach($array as $key => $value)
-        @ds($key, $value);
-    @endforeach
-</div>  
-```
+<br>
 
 ### Credits
 
-- Logo by [Vitor S. Rodrigues](https://twitter.com/V1t0rSOuz4)
+LaraDumps is a free open-source project, and it was inspired by [Spatie Ray](https://github.com/spatie/ray), check it out!
+
+- Author: [Luan Freitas](https://github.com/luanfreitasdev)
+
+- Logo by [Vitor S. Rodrigues](https://github.com/vs0uz4)
