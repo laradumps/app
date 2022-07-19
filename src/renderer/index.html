@@ -274,8 +274,8 @@
                     <div class="flex-1 px-3">
                         <div class="my-3 py-1 flex overflow-x-auto" id="screenList">
                             <template x-for="(screen, index) in screenList" :key="index">
-                                <button x-html="screen.label"
-                                        x-on:click="filterScreen(screen.label);"
+                                <button x-html="screen.screenHtml"
+                                        x-on:click="filterScreen(screen.screenName);"
                                         x-bind:class="{
                                              [screen.classAttr.default]: true,
                                              'ml-2' : index > 0,
@@ -297,7 +297,13 @@
 
                     </div>
                 </div>
-                <div x-ref="main" class="dark:bg-slate-900" x-html="main"></div>
+                <div x-ref="body">
+                    <div x-ref="main"
+                         class="dark:bg-slate-900" x-html="main"></div>
+                    <div id="livewire"
+                         x-ref="livewire"
+                         class="hidden w-full ml-2 p-3 mb-4 shadow-md rounded dark:!bg-slate-700 bg-white border-slate-300 dark:border-slate-600 align-middle items-start"></div>
+                </div>
             </main>
         </div>
     </div>

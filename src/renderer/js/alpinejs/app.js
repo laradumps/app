@@ -1,9 +1,10 @@
 import { ipcRenderer, shell } from 'electron';
 import storage from 'electron-json-storage';
 import os from 'os';
+import * as Console from 'console';
 import supportZoom from '@/js/zoom';
 import dragdropHandler from '@/js/draganddrop';
-import filterScreen from '@/js/filterScreen';
+import { filterScreen, filterComponentScreen } from '@/js/filterScreen';
 import searchableTable from '@/js/searchableTable';
 
 const { clipboard } = require('electron');
@@ -11,9 +12,18 @@ const { clipboard } = require('electron');
 const welcomeHtml = `
     <!-- debug -->
     <div id="debug"></div>
-    <div class="overflow-auto dark:bg-slate-900">
-        <div class="left-[4rem] px-3 right-0 overflow-auto mb-[4rem] dark:bg-slate-900" id="debug">
-            
+    <div class="overflow-auto dark:bg-slate-900 overflow-auto">
+        <div x-ref="filterComponent" class="hidden relative px-3 mb-3 rounded-md shadow-smw w-full">
+               <div class="absolute inset-y-0 left-0 ml-3 p-2 flex items-center pointer-events-none text-slate-400">
+                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+               </div>
+               <input id="search" 
+                      x-on:keyup="searchComponents()" type="text" autocomplete="off"
+                      class="p-2 placeholder-gray-400 dark:bg-slate-800 dark:text-slate-400 dark:placeholder-gray-500 border border-slate-300 focus:ring-slate-600 focus:border-slate-500 dark:border-slate-600 form-input block w-full sm:text-sm rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm pl-8">
+        </div>
+        <div style="height: calc(100vh - 140px)" class="px-3 right-0 mb-[4rem] dark:bg-slate-900" id="debug">
             <div x-show="savedDumpsWindow && dumpBatch.length === 0" class="w-full h-full font-semibold items-center justify-center p-4 text-slate-500 text-sm text-center space-y-5">   
                 <div class="rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-4">
                   <div class="flex">
@@ -115,7 +125,7 @@ export default () => ({
     privacyMode: false,
     privacyElements: [],
     ideHandle: null,
-    activeScreen: 'laraDumpsScrn-screen 1',
+    activeScreen: 'laraDumpsScreen-screen 1',
     defaultScreenName: null,
     screenList: [],
     dumpBatch: [],
@@ -125,6 +135,7 @@ export default () => ({
     savedDumpsWindow: false,
     totalPayloadSaved: [],
     dragdropEnabled: false,
+    bannedComponents: [],
     clipboard(text, el = null) {
         clipboard.writeText(text);
 
@@ -176,40 +187,43 @@ export default () => ({
             const resolvePayloadScreen = () => {
                 const lastIndex = this.screenList[this.screenList.length - 1].index + 1;
 
-                const screen = content.content.screen ?? this.defaultScreenName;
-                const classAttr = content.content.classAttr ?? [];
-                const raiseIn = content.content.raiseIn ?? 0;
+                const screenHtml = content.content.screenHtml ?? this.defaultScreenName;
+                const { screenName, classAttr, raiseIn } = content.content;
 
-                this.screenList.forEach((element) => element.active = element.label === screen);
+                this.screenList.forEach((element) => element.active = element.label === screenHtml);
 
                 const btnScreenItem = {
                     index: lastIndex,
-                    label: screen,
+                    screenHtml,
                     classAttr,
                     active: true,
+                    screenName,
                 };
 
-                if (this.screenList.filter((screen) => screen.label === (content.content.screen ?? this.defaultScreenName))
+                if (this.screenList.filter((screen) => screen.screenName === (content.content.screenName ?? this.defaultScreenName))
                     .length === 0) {
                     this.screenList.push(btnScreenItem);
                 }
 
                 this.$dispatch('dumper:screen', btnScreenItem);
 
-                this.filterScreen(screen);
+                this.filterScreen(screenHtml);
 
-                this.activeScreen = screen;
+                this.activeScreen = screenHtml;
 
-                return { screen, raiseIn };
+                return { screenHtml, screenName, raiseIn };
             };
 
             const payloadScreen = resolvePayloadScreen();
 
             if (payloadScreen.raiseIn > 0) {
                 setTimeout(() => {
-                    this.filterScreen(payloadScreen.screen);
-                    this.activeScreen = payloadScreen.screen;
+                    this.filterScreen(payloadScreen.screenName);
+                    this.activeScreen = payloadScreen.screenName;
                 }, payloadScreen.raiseIn);
+            } else {
+                this.filterScreen(payloadScreen.screenName);
+                this.activeScreen = payloadScreen.screenName;
             }
         });
 
@@ -337,8 +351,10 @@ export default () => ({
         this.screenList.push({
             index: 0,
             classAttr: '',
-            label: this.defaultScreenName,
+            screenHtml: this.defaultScreenName,
+            screenName: this.defaultScreenName,
             active: true,
+            type: null,
         });
     },
     maximizeApp(autoInvoke) {
@@ -359,63 +375,77 @@ export default () => ({
         this.defaultScreen();
         this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
         this.$refs.main.innerHTML = welcomeHtml;
+
+        this.removeLivewirePropertiesCard();
+    },
+    addLivewirePropertiesCard() {
+        this.$refs.body.classList.add('flex', 'mr-3', 'h-full');
+        this.$refs.livewire.classList.remove('hidden');
+        this.$refs.main.classList.add('w-1/2');
+        if (this.$refs.filterComponent != null) {
+            this.$refs.filterComponent.classList.remove('hidden');
+        }
+    },
+    removeLivewirePropertiesCard() {
+        this.$refs.body.classList.remove('flex', 'mr-3', 'h-full');
+        this.$refs.livewire.classList.add('hidden');
+        this.$refs.main.classList.remove('w-1/2');
+        if (this.$refs.filterComponent != null) {
+            this.$refs.filterComponent.classList.add('hidden');
+        }
     },
     clearScreen() {
         const active = this.screenList.filter((element) => element.active)[0];
 
-        const elements = document.getElementsByClassName(`laraDumpsScrn-${active.label}`);
+        const elements = document.getElementsByClassName(`laraDumpsScreen-${active.screenName}`);
 
         [...elements].map((el) => el.remove());
 
-        this.screenList = this.screenList.filter((element) => element.label !== active.label);
+        this.screenList = this.screenList.filter((element) => element.screenName !== active.screenName);
 
         this.filterScreen('screen 1');
         this.activeScreen = this.defaultScreenName;
     },
     dispatchDump(type, content) {
-        this.$dispatch(`dumper:${type}`, content);
+        if (!this.bannedComponents.includes(content.id)) {
+            this.$dispatch(`dumper:${type}`, content);
 
-        const { ideHandle } = content;
+            const { ideHandle } = content;
 
-        this.dumpBatch.push({
-            id: content.id,
-            ideHandle,
-            type,
-        });
-
-        const exists = this.filesBatch.filter((file) => file.ideHandle.path === ideHandle.path)
-            .length > 0;
-
-        if (!exists) {
-            this.filesBatch.push({
-                active: false,
+            this.dumpBatch.push({
+                id: content.id,
                 ideHandle,
+                type,
             });
-        }
 
-        const scrollExceptTypes = [
-            'livewire',
-        ];
+            const exists = this.filesBatch.filter((file) => file.ideHandle.path === ideHandle.path)
+                .length > 0;
 
-        if (!type.includes(scrollExceptTypes)) {
-            this.$nextTick(() => {
-                document.getElementById('output').scrollIntoView({
-                    behavior: 'smooth',
+            if (!exists) {
+                this.filesBatch.push({
+                    active: false,
+                    ideHandle,
                 });
-            });
+            }
+
+            if (type === 'livewire') {
+                this.addLivewirePropertiesCard();
+            } else {
+                this.removeLivewirePropertiesCard();
+                this.$nextTick(() => {
+                    document.getElementById('output').scrollIntoView({
+                        behavior: 'smooth',
+                    });
+                });
+            }
+
+            const autoInvokeApp = typeof content.meta === 'object' ? content.meta.auto_invoke_app : true;
+
+            this.maximizeApp(autoInvokeApp);
+
+            this.filterScreen(this.activeScreen);
+            this.activeScreen = this.defaultScreenName;
         }
-
-        let autoInvokeApp;
-        if (typeof content.meta === 'object') {
-            autoInvokeApp = content.meta.auto_invoke_app;
-        } else {
-            autoInvokeApp = true;
-        }
-
-        this.maximizeApp(autoInvokeApp);
-
-        this.filterScreen(this.activeScreen);
-        this.activeScreen = this.defaultScreenName;
     },
     saveDumps(payload) {
         payload.content = JSON.parse(new Buffer(payload.content, 'base64').toString());
@@ -423,6 +453,10 @@ export default () => ({
 
         ipcRenderer.send('main:save-dumps', payload);
         setTimeout(() => this.savedDumps(), 500);
+    },
+    banComponent(component) {
+        this.bannedComponents.push(component);
+        document.getElementById(component).remove();
     },
     removePayload(payload) {
         storage.setDataPath(os.tmpdir());
@@ -461,6 +495,9 @@ export default () => ({
 
         [...this.privacyElements].map((el) => el.classList.toggle('hidden', this.privacyMode));
     },
+    handleLivewireDumpCard(notificationId) {
+        this.$dispatch('handleLivewireDumpCard', notificationId);
+    },
     toggleCollapse() {
         this.count = 1;
         this.open = !this.open;
@@ -482,11 +519,24 @@ export default () => ({
         ipcRenderer.send('main:toggle-always-on-top', this.isAlwaysOnTop);
     },
     filterScreen(screen) {
+        if (screen === 'Livewire') {
+            this.addLivewirePropertiesCard();
+        } else {
+            this.removeLivewirePropertiesCard();
+        }
+
         filterScreen(screen);
-        this.screenList.forEach((element) => element.active = element.label === screen);
+        this.screenList.forEach((element) => {
+            element.active = element.screenName === screen;
+        });
         this.activeScreen = screen;
     },
     searchableTable(id) {
         searchableTable(id);
+    },
+    searchComponents() {
+        const input = document.getElementById('search');
+        const filter = input.value.toString();
+        filterComponentScreen(filter);
     },
 });

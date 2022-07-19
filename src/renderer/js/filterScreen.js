@@ -26,7 +26,7 @@ const filterScreen = (screenName) => {
 
     const x = document.getElementsByClassName('filterScreen');
     if (screenName === 'all') screenName = '';
-    if (screenName !== '') screenName = `laraDumpsScrn-${screenName}`;
+    if (screenName !== '') screenName = `laraDumpsScreen-${screenName}`;
 
     for (i = 0; i < x.length; i += 1) {
         removeClass(x[i], 'show');
@@ -34,4 +34,17 @@ const filterScreen = (screenName) => {
     }
 };
 
-export default filterScreen;
+const filterComponentScreen = (screenName) => {
+    let i;
+
+    const x = document.getElementsByClassName('filterComponentScreen');
+    if (screenName === 'all') screenName = '';
+    if (screenName !== '') screenName = `laraDumpsComponentScreen-${screenName}`;
+
+    for (i = 0; i < x.length; i += 1) {
+        removeClass(x[i], 'show');
+        if (x[i].className.includes(screenName)) addClass(x[i], 'show');
+    }
+};
+
+export { filterScreen, filterComponentScreen };

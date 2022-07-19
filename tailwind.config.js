@@ -14,6 +14,7 @@ module.exports = {
         },
         'bg-black',
         'w-[1rem]',
+        'w-20',
     ],
     theme: {
         height: {
