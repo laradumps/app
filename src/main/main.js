@@ -145,64 +145,64 @@ function createWindow() {
 }
 
 function createMenu() {
-    let menuTemplate = [{
-            label: 'Menu',
-            submenu: [{
-                    label: 'About LaraDumps',
-                    click: async () => {
-                        const {
-                            shell
-                        } = require('electron');
-                        await shell.openExternal('https://github.com/laradumps/app');
-                    },
-                },
-                {
-                    type: 'separator'
-                },
-                {
-                    label: 'Quit LaraDumps',
-                    click() {
-                        app.quit();
-                    },
-                },
-            ],
+    const menuTemplate = [{
+        label: 'Menu',
+        submenu: [{
+            label: 'About LaraDumps',
+            click: async () => {
+                const {
+                    shell,
+                } = require('electron');
+                await shell.openExternal('https://github.com/laradumps/app');
+            },
         },
         {
-            label: 'Help',
-            submenu: [{
-                    label: 'Documentation',
-                    click: async () => {
-                        const {
-                            shell
-                        } = require('electron');
-                        await shell.openExternal('https://laradumps.dev');
-                    },
-                },
-                {
-                    type: 'separator'
-                },
-                {
-                    label: 'Releases',
-                    click: async () => {
-                        const {
-                            shell
-                        } = require('electron');
-                        await shell.openExternal('https://github.com/laradumps/app/releases');
-                    },
-                },
-            ],
-        }
+            type: 'separator',
+        },
+        {
+            label: 'Quit LaraDumps',
+            click() {
+                app.quit();
+            },
+        },
+        ],
+    },
+    {
+        label: 'Help',
+        submenu: [{
+            label: 'Documentation',
+            click: async () => {
+                const {
+                    shell,
+                } = require('electron');
+                await shell.openExternal('https://laradumps.dev');
+            },
+        },
+        {
+            type: 'separator',
+        },
+        {
+            label: 'Releases',
+            click: async () => {
+                const {
+                    shell,
+                } = require('electron');
+                await shell.openExternal('https://github.com/laradumps/app/releases');
+            },
+        },
+        ],
+    },
     ];
 
-    //Enables copy to clipboard in MacOS
+    // Enables copy to clipboard in MacOS
     if (process.platform === 'darwin') {
         menuTemplate.splice(1, 0, {
             label: 'Edit',
             submenu: [{
                 label: 'Copy',
                 accelerator: 'CmdOrCtrl+C',
-                selector: 'copy:'
-            }]
+                selector: 'copy:',
+            }],
         });
     }
 
