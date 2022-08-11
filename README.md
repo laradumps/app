@@ -48,13 +48,8 @@ When using LaraDumps, you can see the result of your debug displayed in a standa
 
 ### Get Started
 
-1. Download the desktop app:
-
-  -[Windows](https://github.com/laradumps/app/releases/download/v1.1.1/LaraDumps-Setup-1.1.1.exe)
-
-  -[MacOS](https://github.com/laradumps/app/releases/download/v1.1.1/LaraDumps-1.1.1.dmg)
-
-  -[Linux](https://github.com/laradumps/app/releases/download/v1.1.1/LaraDumps-1.1.1.AppImage)
+1. Download the desktop App: [Windows](https://github.com/laradumps/app/releases/download/v1.1.1/LaraDumps-Setup-1.1.1.exe) | [MacOS](https://github.com/laradumps/app/releases/download/v1.1.1/LaraDumps-1.1.1.dmg)
+ | [Linux](https://github.com/laradumps/app/releases/download/v1.1.1/LaraDumps-1.1.1.AppImage)
 
 2. Proceed to install the [LaraDumps](https://github.com/laradumps/laradumps) Laravel package in your project.
 
