@@ -281,6 +281,8 @@ export default () => ({
 
         ipcRenderer.on('events', (event, arg) => this.dispatchDump('events', arg.content));
 
+        ipcRenderer.on('time-track', (event, arg) => this.dispatchDump('time-track', arg.content));
+
         ipcRenderer.on('main:app-version', (event, arg) => {
             document.title = `LaraDumps - ${arg.version}`;
         });
@@ -375,6 +377,8 @@ export default () => ({
         this.defaultScreen();
         this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
         this.$refs.main.innerHTML = welcomeHtml;
+
+        this.$dispatch('dumper:empty-time-trackers');
 
         this.removeLivewirePropertiesCard();
     },
