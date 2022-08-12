@@ -1,9 +1,14 @@
 import { ipcRenderer } from 'electron';
 import express from 'express';
 import bodyParser from 'body-parser';
+import Pusher from 'pusher';
+
+const cors = require('cors');
 
 const port = 9191;
 const app = express();
+
+app.use(cors());
 
 app.use(bodyParser.urlencoded(
     {
@@ -20,6 +25,20 @@ app.use(bodyParser.json(
 
 app.post('/api/dumps', (req, res) => {
     const { body } = req;
+
+    // eslint-disable-next-line no-prototype-builtins
+    if (body.hasOwnProperty('pusher') && body.pusher != '') {
+        window.Pusher = new Pusher({
+            appId: body.pusher.app_id,
+            key: body.pusher.key,
+            secret: body.pusher.secret,
+            cluster: body.pusher.options.cluster,
+            useTLS: true,
+            disableStats: true,
+            forceTLS: false,
+            enabledTransports: ['ws', 'wss'],
+        });
+    }
 
     ipcRenderer.send('dump', {
         type: body.type,

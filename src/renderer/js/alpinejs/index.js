@@ -1,4 +1,5 @@
 import Alpine from 'alpinejs';
+
 import app from './app';
 import dumper from '@/js/alpinejs/dumper';
 import './store';
