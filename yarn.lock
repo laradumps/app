@@ -2136,14 +2136,6 @@ builder-util-runtime@9.0.3:
     debug "^4.3.4"
     sax "^1.2.4"
 
-builder-util-runtime@9.0.3:
-  version "9.0.3"
-  resolved "https://registry.yarnpkg.com/builder-util-runtime/-/builder-util-runtime-9.0.3.tgz#6c62c493ba2b73c2af92432db4013b5a327f02b2"
-  integrity sha512-SfG2wnyjpUbbdtpnqDpWwklujofC6GarGpvdWrEkg9p5AD/xJmTF2buTNaqs3qtsNBEVQDDjZz9xc2GGpVyMfA==
-  dependencies:
-    debug "^4.3.4"
-    sax "^1.2.4"
-
 builder-util@23.3.3:
   version "23.3.3"
   resolved "https://registry.yarnpkg.com/builder-util/-/builder-util-23.3.3.tgz#449ee57ec1ffc7e59f7a3a8a1a33d25cf5e39e43"
@@ -3408,7 +3400,7 @@ eslint-visitor-keys@^3.3.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-3.3.0.tgz#f6480fa6b1f30efe2d1968aa8ac745b862469826"
   integrity sha512-mQ+suqKJVyeuwGYHAdjMFqjCyfl8+Ldnxuyp3ldiMBFKkvytrXUZWaiPCEav8qDHKty44bD+qV1IP4T+w+xXRA==
 
-eslint@^8.19.0:
+eslint@^8.21.0:
   version "8.21.0"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-8.21.0.tgz#1940a68d7e0573cef6f50037addee295ff9be9ef"
   integrity sha512-/XJ1+Qurf1T9G2M5IHrsjp+xrGT73RZf23xA1z5wB1ZzzEAWSZKvRwhWxTFp1rvkvCfwcvAUNAP31bhKTTGfDA==
@@ -6870,10 +6862,10 @@ sprintf-js@^1.1.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.1.2.tgz#da1765262bf8c0f571749f2ad6c26300207ae673"
   integrity sha512-VE0SOVEHCk7Qc8ulkWw3ntAzXuqf7S2lvwQaDLRnUeIEaKNQJzV6BwmLKhOqT61aGhfUMrXeaBk+oDGCzvhcug==
 
-sql-formatter@^8.2.0:
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/sql-formatter/-/sql-formatter-8.2.0.tgz#2b664f02bb6b7bb6fcad1346e850b8f583303469"
-  integrity sha512-5hQOSOk8jfhPkNgUmpm+9Fn2aaLWcf4vKL/dIvUN5q9rsamKHSyN/gL79xpkETNOyL+Zv5BMQfA7z9Rmz/DJJg==
+sql-formatter@^9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/sql-formatter/-/sql-formatter-9.1.0.tgz#330324aee7bb6ba5b9bee6a64564449fc34c5949"
+  integrity sha512-KueIGRG9/nmZH3BFEPmBV1dL4wPWTqiQjLCgZC7sh0OSsoD27GHz+C7P4HJemnSnnVgauWIt8W3mamayz/9Yfg==
   dependencies:
     argparse "^2.0.1"
 
