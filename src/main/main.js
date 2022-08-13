@@ -301,6 +301,10 @@ ipcMain.on('main:toggle-always-on-top', (event, arg) => {
     setTimeout(() => mainWindow.setAlwaysOnTop(arg), 200);
 });
 
+ipcMain.on('main:is-always-on-top', () => {
+    mainWindow.webContents.send('main:is-always-on-top', { is_always_on_top: mainWindow.isAlwaysOnTop() });
+});
+
 ipcMain.on('main:get-app-version', () => {
     mainWindow.webContents.send('main:app-version', { version: app.getVersion() });
 });
