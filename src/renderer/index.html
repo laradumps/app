@@ -235,6 +235,7 @@
                                 </button>
                                 <!-- dark mode -->
                                 <button x-on:click="dark = !dark"
+                                        x-show="!savedDumpsWindow"
                                         x-bind:class="{
                                              'bg-slate-200 shadow border border-slate-300 dark:border-slate-600 dark:bg-slate-800' : dark
                                         }"
