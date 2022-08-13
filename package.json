@@ -48,7 +48,7 @@
     "cross-env": "^7.0.3",
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^4.0.0",
-    "electron": "^19.0.8",
+    "electron": "^20.0.2",
     "electron-builder": "^23.3.3",
     "electron-devtools-installer": "^3.2.0",
     "esbuild": "^0.12.9",
