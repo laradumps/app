@@ -7,6 +7,7 @@ import { makeHightlight } from '@/js/plugins/hightlight';
 import * as Helper from '../helpers';
 
 const hljs = require('highlight.js/lib/common');
+const humanizeDuration = require('humanize-duration');
 const htmldiff = require('../plugins/diff');
 
 export default () => ({
@@ -20,6 +21,7 @@ export default () => ({
     lastContentReturned: [],
     events: [],
     dispatch: [],
+    timeTrackers: [],
     init() {
         this.lastContent = [];
 
@@ -60,9 +62,16 @@ export default () => ({
         window.addEventListener('removeLivewireHighLight', ({ detail }) => {
             this.removeLivewireHighLight(detail);
         });
+        window.addEventListener('dumper:empty-time-trackers', ({ detail }) => {
+            this.timeTrackers = [];
+        });
         window.addEventListener('dumper:dump', ({ detail }) => {
             this.mount(detail, 'dump');
             this.handleDump();
+        });
+        window.addEventListener('dumper:time-track', ({ detail }) => {
+            this.mount(detail, 'time-track');
+            this.handleTimeTrack();
         });
         window.addEventListener('dumper:queries', ({ detail }) => {
             this.mount(detail, 'queries');
@@ -172,6 +181,39 @@ export default () => ({
         this.handleIdeProtocol();
 
         window.Sfdump(`sf-dump-${this.notificationId}`);
+    },
+    handleTimeTrack() {
+        const div = document.createElement('div');
+        const pre = document.createElement('pre');
+        const code = document.createElement('code');
+        const { timeTrackerId, time } = this.content;
+
+        const timeTracker = this.timeTrackers.find((tracker) => tracker.id === timeTrackerId);
+
+        // New tracker request
+        if (timeTracker === undefined) {
+            this.timeTrackers.push({ id: timeTrackerId, time });
+            return;
+        }
+
+        const _end = moment.unix(timeTracker.time);
+        const _start = moment.unix(time);
+        const duration = moment.duration(_start.diff(_end));
+        const elapsedTime = humanizeDuration(duration.asMilliseconds());
+
+        // Remove tracker
+        this.timeTrackers.splice(timeTracker);
+
+        code.innerHTML = `&#8987; Elapsed time: <div class="mt-3 px-5 font-semibold">${elapsedTime} &nbsp;<span class="font-normal"><small>(${duration.asMilliseconds()} ms)</small></span></div>`;
+
+        pre.appendChild(code);
+
+        div.setAttribute('class', 'text-lg p-4 text-slate-600 dark:text-slate-300 text-sm font-light');
+        div.appendChild(pre);
+
+        this.handleDebugElement();
+        this.debugElement().appendChild(div);
+        this.handleIdeProtocol();
     },
     handleModel() {
         const preAttributes = document.createElement('pre');
