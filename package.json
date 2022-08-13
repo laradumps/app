@@ -21,7 +21,7 @@
     "electron-context-menu": "^3.3.0",
     "electron-json-storage": "^4.5.0",
     "electron-tray-window": "^1.2.5",
-    "electron-updater": "^5.0.5",
+    "electron-updater": "^5.2.1",
     "electron-window-state": "^5.0.3",
     "express": "^4.18.1",
     "highlight.js": "^11.6.0",
