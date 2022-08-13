@@ -18,16 +18,49 @@ export default () => ({
     ideHandle: null,
     originalContent: [],
     lastContent: [],
+    lastContentReturned: [],
+    events: [],
+    dispatch: [],
     timeTrackers: [],
     init() {
+        this.lastContent = [];
+
         window.addEventListener('dumper:screen', ({ detail }) => {
             const { screenName } = detail;
             if (document.getElementById(this.notificationId) != null) {
-                document.getElementById(this.notificationId).setAttribute('class', `filterScreen filterComponentScreen laraDumpsComponentScreen-${this.notificationId} laraDumpsScreen-${screenName} collapsable p-2 mb-2 shadow-md rounded dark:bg-slate-700 bg-white border-slate-300 dark:border-slate-600 cursor-pointer align-middle active:font-semibold items-start font-medium text-gray-500 hidden`);
+                let classList = `filterScreen laraDumpsScreen-${screenName} collapsable p-2 mb-2 shadow-md rounded
+                    dark:bg-slate-700 bg-white border-slate-300 dark:border-slate-600 cursor-pointer items-start
+                    focus:!bg-indigo-400 focus:!text-white group-focus:text-white
+                    w-full text-sm text-neutral-700 hover:text-neutral-800 font-normal dark:text-slate-300
+                    font-medium text-gray-500 hidden`;
+                if (this.type === 'livewire') {
+                    classList += ` hover:bg-slate-200 filterComponentScreen laraDumpsComponentScreen-${this.notificationId}`;
+                }
+
+                if (this.type === 'livewire-events') {
+                    classList += ' hover:bg-slate-200';
+                }
+
+                if (this.type === 'livewire-events') {
+                    if (document.getElementById('screen-Dispatch-counter') !== null) {
+                        document.getElementById('screen-Dispatch-counter').innerText = this.events.filter((event) => event.event.dispatch).length;
+                    }
+                    if (document.getElementById('screen-Events-counter') !== null) {
+                        document.getElementById('screen-Events-counter').innerText = this.events.filter((event) => !event.event.dispatch).length;
+                    }
+                }
+
+                document.getElementById(this.notificationId).setAttribute('class', classList);
             }
         });
         window.addEventListener('handleLivewireDumpCard', ({ detail }) => {
             this.handleLivewireDumpCard(detail);
+        });
+        window.addEventListener('handleLivewireEventsCard', ({ detail }) => {
+            this.handleLivewireEventsCard(detail);
+        });
+        window.addEventListener('removeLivewireHighLight', ({ detail }) => {
+            this.removeLivewireHighLight(detail);
         });
         window.addEventListener('dumper:empty-time-trackers', ({ detail }) => {
             this.timeTrackers = [];
@@ -83,6 +116,20 @@ export default () => ({
         window.addEventListener('dumper:livewire', ({ detail }) => {
             this.mount(detail, 'livewire');
             this.handleLivewireComponents();
+        });
+        window.addEventListener('dumper:livewire-events', ({ detail }) => {
+            this.mount(detail, 'livewire-events');
+            this.handleLivewireEvents();
+        });
+        window.addEventListener('dumper:livewire-events-returned', ({ detail }) => {
+            this.mount(detail, 'livewire-events-returned');
+            this.handleLivewireEventsReturned();
+        });
+        window.addEventListener('dumper:clear', () => {
+            this.lastContent = [];
+            this.lastContentReturned = [];
+            this.originalContent = [];
+            this.content = 0;
         });
     },
     mount(detail, type) {
@@ -213,9 +260,40 @@ export default () => ({
         if (document.getElementById(notificationId) == null) {
             this.handleLivewireDebugElement(notificationId);
         } else {
-            document.getElementById(`notify-${notificationId}`).classList.remove('hidden');
-            this.handleLivewireDumpCard(notificationId);
+            this.handleLivewireDumpCard(notificationId, false);
         }
+    },
+    handleLivewireEvents() {
+        const { event } = this.content.event;
+
+        this.events = this.events.filter((entry) => entry.event.event !== this.notificationId);
+
+        this.events.push(this.content);
+
+        this.lastContent[this.notificationId] = this.content;
+
+        if (document.getElementById(this.notificationId) == null) {
+            this.handleLivewireEventsDebugElement(this.notificationId);
+        } else {
+            this.handleLivewireEventsCard(this.notificationId, event);
+        }
+    },
+    handleLivewireEventsReturned() {
+        this.events.filter((entry) => `ds-event-${entry.event.event}` === this.notificationId)
+            .map((entry) => {
+                if (this.content.event.component !== 'null') {
+                    entry.event.returned.push({
+                        componentHandler: this.content.event.componentHandler,
+                        returned: this.content.event.returned,
+                        component: this.content.event.component,
+                    });
+
+                    document.getElementById(`events-icon-warning-${this.notificationId}`)
+                        .classList.add('hidden');
+                }
+
+                return entry;
+            });
     },
     handleDiff() {
         document.getElementById(this.notificationId).remove();
@@ -236,7 +314,7 @@ export default () => ({
 
             diff.innerHTML = `
                 <div class="divide-y divide-slate-300 text-slate-700 dark:text-slate-300 dark:divide-slate-200 text-sm">
-                     <div class="w-auto">                             
+                     <div class="w-auto">
                           <div class="font-semibold text-left mt-3 ml-3">Original</div>
                           <div class="px-2 py-3 overflow-auto whitespace-nowrap">${originalContent}</div>
                      </div>
@@ -455,7 +533,6 @@ export default () => ({
         const strContains = Helper.strContains(textContent, content, searchSettings);
 
         let format;
-        let highlighted;
 
         if (strContains.success) {
             format = {
@@ -479,15 +556,33 @@ export default () => ({
 
         document.getElementById(`validate-${this.notificationId}`).appendChild(div);
     },
-    handleLivewireDumpCard(notificationId) {
+    removeLivewireHighLight(notificationId) {
+        const content = this.lastContent[notificationId];
+
+        const { id } = content.component;
+
+        if (window.Pusher) {
+            window.Pusher.trigger('laradumps-livewire-channel', 'remove-highlight-component', { id });
+        }
+    },
+    handleLivewireDumpCard(notificationId, highlight = true) {
         const content = this.lastContent[notificationId];
 
         const { ideHandle } = content;
-        const { data, viewHandler, dateTime } = content.component;
+        const {
+            data, viewHandler, dateTime, id,
+        } = content.component;
+
+        if (highlight && window.Pusher) {
+            window.Pusher.trigger('laradumps-livewire-channel', 'highlight-component', {
+                id,
+                component: notificationId,
+            });
+        }
 
         this.$refs.livewire.innerHTML = `
             <div class="text-right dark:text-gray-300 flex justify-between text-sm text-gray-600">
-                <div class="p-2 text-lg font-semibold">${notificationId}</div>
+                <div class="p-2 text-base font-semibold text-left">${notificationId}</div>
                 <div class="p-2">${dateTime}</div>
             </div>
             <div id="debug-${notificationId}"></div>
@@ -518,15 +613,142 @@ export default () => ({
             });
         });
     },
+    handleLivewireEventsCard(notificationId) {
+        const { event } = this.lastContent[notificationId];
+        const {
+            params, method, componentHandler,
+        } = event;
+
+        if (document.getElementById(`livewire-detail-${notificationId}`) != null) {
+            document.getElementById(`livewire-detail-${notificationId}`).innerHTML = '';
+        }
+
+        const eventName = notificationId.replace('ds-event-', '');
+
+        this.$refs.livewire.innerHTML = `
+            <div id="livewire-detail-${notificationId}">
+                <div class="p-2">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-slate-200">${eventName}</h3>
+                </div>
+                <div class="event-only items-center !hidden p-2 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Emit By</div>
+                    <div class="mt-1 text-sm text-slate-600 dark:text-slate-300 sm:mt-0 sm:col-span-2 break-words" id="emitted-by-${notificationId}"></div>
+                </div>
+               
+                <div class="p-2 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Payload</div>
+                    <div class="mt-1 text-sm text-slate-600 dark:text-slate-300 sm:mt-0 sm:col-span-2 break-words" id="debug-${notificationId}"></div>
+                </div>
+                
+                <div class="event-only items-center !hidden">
+                    <h3 class="p-2 text-lg leading-6 font-medium text-slate-900 dark:text-slate-300">Listeners</h3>
+                    <div class="p-2" id="listeners-${notificationId}"></div>
+                </div>
+            </div>    
+        `;
+
+        const payload = document.createElement('pre');
+
+        payload.setAttribute('class', 'sf-dump-debug');
+        payload.setAttribute('style', 'margin-top: -0.75rem; margin-left: -0.75rem;');
+        payload.setAttribute('id', `sf-dump-${notificationId}`);
+        payload.setAttribute('data-indent-pad', '  ');
+
+        payload.innerHTML = params;
+
+        document.getElementById(`debug-${notificationId}`).appendChild(payload);
+
+        componentHandler.line = method;
+
+        this.handleIdeProtocol(componentHandler, `emitted-by-${notificationId}`, notificationId, false);
+
+        window.Sfdump(`sf-dump-${notificationId}`);
+
+        // *************************
+        // remove Emitted By and Listeners when dispatched
+        const isEvent = this.events
+            .filter((entry) => !entry.event.dispatch && `ds-event-${entry.event.event}` === notificationId).length > 0;
+
+        if (isEvent) {
+            [...document.getElementsByClassName('event-only')].map((el) => {
+                el.classList.remove('!hidden');
+            });
+        }
+        // ************************
+
+        this.events
+            .filter((entry) => `ds-event-${entry.event.event}` === notificationId)
+            .forEach((entry) => {
+                const { event } = entry;
+
+                const { returned } = event;
+
+                if (entry.event.dispatch) {
+                    return;
+                }
+
+                const listeners = document.getElementById(`listeners-${notificationId}`);
+
+                returned.forEach((returned) => {
+                    const { componentHandler } = returned;
+
+                    const listener = document.createElement('div');
+
+                    listener.innerHTML = `<div class="border-t border-slate-300 dark:border-slate-400">
+                        <dl>
+                          <div class="p-2 sm:grid sm:grid-cols-3 sm:gap-4">
+                            <div class="text-sm font-medium text-slate-600 dark:text-slate-300">To</div>
+                            <div class="mt-1 text-sm sm:mt-0 sm:col-span-2 text-slate-900 dark:text-slate-300"
+                                id="livewire-events-returned-component-${notificationId}-${returned.component}">${returned.component}</div>
+                          </div>
+                          <div class="p-2 sm:grid sm:grid-cols-3 sm:gap-4">
+                            <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Returned</div>
+                            <div class="mt-1 text-sm sm:mt-0 sm:col-span-2 text-slate-900 dark:text-slate-300"
+                                id="livewire-events-returned-${notificationId}-${returned.component}">
+                            </div>
+                          </div>
+                        </dl>
+                      </div>`;
+
+                    listeners.appendChild(listener);
+
+                    this.handleIdeProtocol(componentHandler, `livewire-events-returned-component-${notificationId}-${returned.component}`, notificationId, false);
+
+                    if (typeof returned.returned === 'undefined') {
+                        document.getElementById(`livewire-events-returned-component-${notificationId}-${returned.component}`)
+                            .innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800"> No listeners </span>';
+
+                        document.getElementById(`livewire-events-returned-${notificationId}-${returned.component}`)
+                            .innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800"> No listeners </span>';
+                    }
+
+                    if (typeof returned.returned !== 'undefined') {
+                        const returnedHtml = document.createElement('pre');
+
+                        returnedHtml.setAttribute('class', 'sf-dump-debug');
+                        returnedHtml.setAttribute('style', 'margin-top: -0.75rem; margin-left: -0.75rem;');
+                        returnedHtml.setAttribute('id', `sf-dump-returned-${notificationId}-${returned.component}`);
+                        returnedHtml.setAttribute('data-indent-pad', '  ');
+
+                        returnedHtml.innerHTML = returned.returned;
+
+                        document.getElementById(`livewire-events-returned-${notificationId}-${returned.component}`)
+                            .appendChild(returnedHtml);
+
+                        window.Sfdump(`sf-dump-returned-${notificationId}-${returned.component}`);
+                    }
+                });
+            });
+
+        this.$nextTick(() => {
+            document.getElementById('output').scrollIntoView({
+                behavior: 'smooth',
+            });
+        });
+    },
     handleLivewireDebugElement(notificationId) {
         if (document.getElementById('debug') != null) {
             document.getElementById('debug').removeAttribute('id');
-        }
-
-        let encodedFilePath;
-
-        if (typeof this.ideHandle.path === 'string') {
-            encodedFilePath = Buffer.from(this.ideHandle.path).toString('base64');
         }
 
         const debugItem = document.createElement('div');
@@ -534,25 +756,54 @@ export default () => ({
         debugItem.innerHTML = `
             <!-- dump ${notificationId}-->
             <div id="debug"></div>
-            <div x-init="initCollapsableElements"
+            <button x-init="initCollapsableElements"
                 id="${notificationId}"
-                class="filterScreen collapsable laraDumpsScreen-${notificationId} rounded-sm collapsable mb-2 w-full p-1.5 pl-2 shadow-lg text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700">
-                   <div class="group relative flex justify-between items-center">
-                       <button x-on:click="handleLivewireDumpCard('${notificationId}')" id="label-${notificationId}" type="button" 
-                           class="w-full text-sm text-neutral-700 hover:text-neutral-800 font-normal dark:text-slate-300">
-                                <div class="flex items-center space-x-3">
-                                     <div id="notify-${notificationId}" class="hidden items-center w-[0.5rem] h-[0.5rem] ml-2 rounded-full bg-orange-400 animate-pulse dark:bg-gray-500">
-                                     </div>
-                                     <span>${notificationId}</span>
-                                </div>                               
-                       </button>
+                type="button"
+                x-on:mouseleave="removeLivewireHighLight('${notificationId}')" 
+                x-on:click="handleLivewireDumpCard('${notificationId}'); $el.focus()" 
+                class="filterScreen collapsable laraDumpsScreen-${notificationId} rounded-sm collapsable mb-2 w-full p-1.5 pl-2 shadow-lg text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700 hover:bg-slate-300">
+                   <div class="group relative flex justify-between items-center">                  
+                       <span>${notificationId}</span>
+                        
                        <div class="w-8 flex justify-end h-auto" title="Remove Component">
                            <svg x-on:click="banComponent('${notificationId}')" class="opacity-0 group-hover:opacity-100 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                            </svg>
                        </div>
                    </div>
-            </div>`;
+            </button>`;
+
+        document.getElementById('debug').appendChild(debugItem);
+    },
+    handleLivewireEventsDebugElement(notificationId) {
+        if (document.getElementById('debug') != null) {
+            document.getElementById('debug').removeAttribute('id');
+        }
+
+        const debugItem = document.createElement('div');
+
+        const eventName = notificationId.replace('ds-event-', '');
+
+        debugItem.innerHTML = `
+            <!-- dump ${notificationId}-->
+            <div id="debug"></div>
+            <button x-init="initCollapsableElements"
+                id="${notificationId}"
+                type="button"
+                x-on:click="handleLivewireEventsCard('${notificationId}'); $el.focus()" 
+                class="filterScreen collapsable laraDumpsScreen-${notificationId} rounded-sm collapsable mb-2 w-full p-1.5 pl-2 shadow-lg text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700 hover:bg-slate-300">
+                   <div class="group relative flex justify-between items-center">                  
+                       <span>${eventName}</span>
+                       <div class="w-8 flex justify-end h-auto" title="Remove Component">
+                           <svg class="h-5 w-5 text-orange-600 dark:text-orang-300" 
+                                id="events-icon-warning-${notificationId}"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                           </svg>
+                       </div>
+                   </div>
+            </button>
+        `;
 
         document.getElementById('debug').appendChild(debugItem);
     },
@@ -660,32 +911,37 @@ export default () => ({
 
         document.getElementById('debug').appendChild(debugItem);
     },
-    handleIdeProtocol(ideHandler = {}, element = '', notificationId = this.notificationId) {
+    handleIdeProtocol(ideHandler = {}, element = '', notificationId = this.notificationId, handleDebugElement = true) {
         const handler = ideHandler.handler ?? this.ideHandle.handler;
         const path = ideHandler.path ?? this.ideHandle.path;
         const line = ideHandler.line ?? this.ideHandle.line;
 
         const div = element ? document.getElementById(element) : document.createElement('div');
 
-        let linePath = path;
+        let pathLine = path;
 
-        if (line) {
-            linePath = `${path}:${line}`;
+        if (line != 1) {
+            pathLine = `${path}:${line}`;
+        } else {
+            pathLine = path;
         }
 
+        const classes = !handleDebugElement ? '!ml-0' : '';
         div.innerHTML = ` 
-            <a href="${handler}" title="Open ${path}" class="privacyMode flex mx-3 items-center">
+            <a href="${handler}" title="Open ${path}" class="privacyMode flex mx-3 items-center ${classes}">
                 <div class="w-4 h-4 mr-2 focus:outline-none inline-flex focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-blue-500">
                     <svg class="w-full shrink-0 max-h-[16px]" id="629b69df8e81e" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M5.46402 5.05029C5.46402 4.49801 5.91173 4.05029 6.46402 4.05029L14.9493 4.05029C15.5016 4.05029 15.9493 4.49801 15.9493 5.05029L15.9493 13.5356C15.9493 14.0879 15.5016 14.5356 14.9493 14.5356C14.397 14.5356 13.9493 14.0879 13.9493 13.5356L13.9493 7.46451L5.75691 15.6569C5.36639 16.0474 4.73322 16.0474 4.3427 15.6569C3.95217 15.2664 3.95217 14.6332 4.3427 14.2427L12.5351 6.05029L6.46402 6.05029C5.91173 6.05029 5.46402 5.60258 5.46402 5.05029Z" fill="currentColor"></path>
                     </svg>
                 </div>
                 <div class="py-2 font-light dark:text-gray-300 text-sm underline text-gray-700 cursor-pointer">
-                    <span>${linePath}</span>
+                    <span>${pathLine}</span>
                 </div>
             </a>
             `;
 
-        this.debugElement(notificationId).appendChild(div);
+        if (handleDebugElement) {
+            this.debugElement(notificationId).appendChild(div);
+        }
     },
 });

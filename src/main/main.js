@@ -123,7 +123,7 @@ function createWindow() {
     });
 
     autoUpdater.on('download-progress', async () => {
-        dispatch({ status: 'downloading' });
+        dispatch({ updater: 'downloading' });
     });
 
     autoUpdater.on('update-downloaded', async () => {

@@ -28,6 +28,7 @@ module.exports = {
         'no-underscore-dangle': 'off',
         'no-useless-escape': 'off',
         'no-buffer-constructor': 'off',
+        eqeqeq: 'off',
         indent: [1, 4],
         'no-else-return': 1,
         semi: [1, 'always'],
