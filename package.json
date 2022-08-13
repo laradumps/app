@@ -19,7 +19,7 @@
     "basename": "^0.1.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
-    "electron-context-menu": "^3.3.0",
+    "electron-context-menu": "^3.4.0",
     "electron-json-storage": "^4.5.0",
     "electron-tray-window": "^1.2.5",
     "electron-updater": "^5.0.5",
@@ -34,7 +34,7 @@
     "pusher": "^5.1.1-beta",
     "pusher-js": "^7.3.0",
     "reveal.js": "^4.3.0",
-    "sql-formatter": "^8.2.0",
+    "sql-formatter": "^9.1.0",
     "strip-ansi": "^7.0.1",
     "tree-kill": "^1.2.2",
     "uuid": "^8.3.2"
@@ -48,10 +48,10 @@
     "cross-env": "^7.0.3",
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^4.0.0",
-    "electron": "^19.0.8",
+    "electron": "^20.0.2",
     "electron-builder": "^23.3.3",
     "electron-devtools-installer": "^3.2.0",
-    "esbuild": "^0.12.9",
+    "esbuild": "^0.12",
     "eslint": "^8.21.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.2",
@@ -66,7 +66,7 @@
     "tailwindcss": "^3.1.5",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.9.3"
+    "webpack-dev-server": "^4.10.0"
   },
   "repository": {
     "type": "git",
