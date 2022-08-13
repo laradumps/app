@@ -243,17 +243,19 @@
                                     <div>
                                         <!-- Lights ON -->
                                         <svg :class="{'hidden': !dark}" :stroke="dark ? '#a4b0c2' : '#64748b'"
-                                             class="w-5 h-5"
-                                             fill="none" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                        </svg>
-                                        <!-- Lights OFF -->
-                                        <svg :class="{'hidden': dark}" :stroke="dark ? '#a4b0c2' : '#64748b'"
+
                                              class="w-5 h-5" fill="none" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                   d="m9.663 17h4.673m-5.872-1.464c-3.1494-3.1502-0.91798-8.5348 3.536-8.5348 4.454 0 6.6854 5.3846 3.536 8.5348l-0.548 0.547c-0.63272 0.63284-0.98812 1.4911-0.988 2.386v0.531c0 2.6667-4 2.6667-4 0v-0.531c0-0.895-0.356-1.754-0.988-2.386z"/>
                                         </svg>
+                                        <!-- Lights OFF -->
+                                        <svg :class="{'hidden': dark}" :stroke="dark ? '#a4b0c2' : '#64748b'"
+                                        class="w-5 h-5"
+                                        fill="none" viewBox="0 0 24 24">
+                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                             d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                   </svg>
+
                                     </div>
                                 </button>
                             </div>
