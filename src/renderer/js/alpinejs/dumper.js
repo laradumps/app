@@ -450,15 +450,36 @@ export default () => ({
         const pre = document.createElement('pre');
         const div = document.createElement('div');
 
+        const { level, message, context } = this.content.value;
+
+        const levelsWithSearchBar = ['emergency', 'error', 'critical'];
+
+        const searchOptions = [
+            { name: 'Google', url: 'https://www.google.com/search?q=' },
+            { name: 'Stack Overflow', url: 'https://stackoverflow.com/search?q=' },
+            { name: 'Laracasts', url: 'https://laracasts.com/discuss?q=' },
+        ];
+
+        let searchBar = '';
+
+        if (levelsWithSearchBar.includes(level)) {
+            // Try to remove the PHP file path for better result searches
+            const searchString = encodeURIComponent(message.replace(/(;|\/)([^;]*.php)/, ''));
+
+            const svg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+
+            searchOptions.forEach((searchOption) => searchBar += `<button x-on:click="openLink('${searchOption.url}${searchString}')"  class="btn flex-shrink-0 btn-white rounded-t-sm text-xs justify-center items-center select-none 
+              p-1 m-1 ">${svg} ${searchOption.name}</button>`);
+
+            searchBar = `<div class="px-3  mt-1"><hr><div class="flex mt-1 text-xs justify-between dark:text-slate-700">${searchBar}</div></div>`;
+        }
+
         pre.setAttribute('class', 'sf-dump-debug');
         pre.setAttribute('id', `sf-dump-${this.notificationId}`);
         pre.setAttribute('data-indent-pad', '  ');
-
-        const { message, context } = this.content.value;
+        pre.innerHTML = `${context}${searchBar}`;
 
         div.innerHTML = `<div class="px-2 text-slate-600 dark:text-slate-300 text-sm pt-2">${message}</div>`;
-
-        pre.innerHTML = context;
 
         this.handleDebugElement();
 
