@@ -36,9 +36,9 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.6",
+    "@babel/core": "^7.18.10",
     "@babel/preset-env": "^7.18.6",
-    "autoprefixer": "^10.4.7",
+    "autoprefixer": "^10.4.8",
     "babel-loader": "^8.2.5",
     "clean-webpack-plugin": "^4.0.0",
     "cross-env": "^7.0.3",
