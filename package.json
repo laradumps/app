@@ -30,7 +30,7 @@
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.34",
     "reveal.js": "^4.3.0",
-    "sql-formatter": "^8.0.2",
+    "sql-formatter": "^8.2.0",
     "strip-ansi": "^7.0.1",
     "tree-kill": "^1.2.2",
     "uuid": "^8.3.2"
