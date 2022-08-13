@@ -2136,14 +2136,6 @@ builder-util-runtime@9.0.3:
     debug "^4.3.4"
     sax "^1.2.4"
 
-builder-util-runtime@9.0.3:
-  version "9.0.3"
-  resolved "https://registry.yarnpkg.com/builder-util-runtime/-/builder-util-runtime-9.0.3.tgz#6c62c493ba2b73c2af92432db4013b5a327f02b2"
-  integrity sha512-SfG2wnyjpUbbdtpnqDpWwklujofC6GarGpvdWrEkg9p5AD/xJmTF2buTNaqs3qtsNBEVQDDjZz9xc2GGpVyMfA==
-  dependencies:
-    debug "^4.3.4"
-    sax "^1.2.4"
-
 builder-util@23.3.3:
   version "23.3.3"
   resolved "https://registry.yarnpkg.com/builder-util/-/builder-util-23.3.3.tgz#449ee57ec1ffc7e59f7a3a8a1a33d25cf5e39e43"
@@ -3050,10 +3042,10 @@ electron-builder@^23.3.3:
     update-notifier "^5.1.0"
     yargs "^17.0.1"
 
-electron-context-menu@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/electron-context-menu/-/electron-context-menu-3.3.0.tgz#cbcc4544ede2bf5629d4ad9911eaa94ae23cd38f"
-  integrity sha512-7VuDaJQK3ybCm/Buzo9rVhOiZ3VJloHJ/xVtZ4xN6n4fEk1fqOeELSk3tMDVQKnu8pUhayvzsAL0f5tSHwvHAQ==
+electron-context-menu@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/electron-context-menu/-/electron-context-menu-3.4.0.tgz#dab6e671e8578f045a38f66611b2ac8167b0fd35"
+  integrity sha512-UcEsDNX7WCgg8mrot8vdGdmq/vwL7SSMHKRx/Q5YTo94NS1117OauJIfJQxoxm3/Fxsh0QItET//PQwKRYEVww==
   dependencies:
     cli-truncate "^2.1.0"
     electron-dl "^3.2.1"
@@ -3408,7 +3400,7 @@ eslint-visitor-keys@^3.3.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-3.3.0.tgz#f6480fa6b1f30efe2d1968aa8ac745b862469826"
   integrity sha512-mQ+suqKJVyeuwGYHAdjMFqjCyfl8+Ldnxuyp3ldiMBFKkvytrXUZWaiPCEav8qDHKty44bD+qV1IP4T+w+xXRA==
 
-eslint@^8.19.0:
+eslint@^8.21.0:
   version "8.21.0"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-8.21.0.tgz#1940a68d7e0573cef6f50037addee295ff9be9ef"
   integrity sha512-/XJ1+Qurf1T9G2M5IHrsjp+xrGT73RZf23xA1z5wB1ZzzEAWSZKvRwhWxTFp1rvkvCfwcvAUNAP31bhKTTGfDA==
