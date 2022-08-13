@@ -160,6 +160,8 @@ export default () => ({
 
         ipcRenderer.send('main:get-app-version');
 
+        ipcRenderer.send('main:is-always-on-top');
+
         this.defaultScreen();
 
         storage.setDataPath(os.tmpdir());
@@ -282,6 +284,10 @@ export default () => ({
         ipcRenderer.on('events', (event, arg) => this.dispatchDump('events', arg.content));
 
         ipcRenderer.on('time-track', (event, arg) => this.dispatchDump('time-track', arg.content));
+
+        ipcRenderer.on('main:is-always-on-top', (event, arg) => {
+            this.isAlwaysOnTop = arg.is_always_on_top;
+        });
 
         ipcRenderer.on('main:app-version', (event, arg) => {
             document.title = `LaraDumps - ${arg.version}`;

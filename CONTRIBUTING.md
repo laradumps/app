@@ -54,14 +54,14 @@ yarn run prod
 
 <br/>
 
-5**Commit**
+5. **Commit**
 
 Please send clean and descriptive commits.
 
 <br/>
 
 
-6**Pull Request**
+6. **Pull Request**
 
 Open a Pull Request (PR) detailing your changes and motivations. Please make only one change per Pull Request.
 
