@@ -130,6 +130,10 @@ export default () => ({
             this.lastContentReturned = [];
             this.originalContent = [];
             this.content = 0;
+            this.events = [];
+            this.timeTrackers = [];
+
+            document.querySelector('[x-ref=\'livewire\']').innerHTML = '';
         });
     },
     mount(detail, type) {
@@ -266,7 +270,7 @@ export default () => ({
     handleLivewireEvents() {
         const { event } = this.content.event;
 
-        this.events = this.events.filter((entry) => entry.event.event !== this.notificationId);
+        this.events = this.events.filter((entry) => `ds-event-${entry.event.event}` !== this.notificationId);
 
         this.events.push(this.content);
 
@@ -466,12 +470,9 @@ export default () => ({
             // Try to remove the PHP file path for better result searches
             const searchString = encodeURIComponent(message.replace(/(;|\/)([^;]*.php)/, ''));
 
-            const svg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            searchOptions.forEach((searchOption) => searchBar += `<button x-on:click="openLink('${searchOption.url}${searchString}')" class="btn flex-shrink-0 btn-white rounded-t-sm text-xs justify-center items-center select-none">🔎  ${searchOption.name}</button>`);
 
-            searchOptions.forEach((searchOption) => searchBar += `<button x-on:click="openLink('${searchOption.url}${searchString}')"  class="btn flex-shrink-0 btn-white rounded-t-sm text-xs justify-center items-center select-none 
-              p-1 m-1 ">${svg} ${searchOption.name}</button>`);
-
-            searchBar = `<div class="px-3  mt-1"><hr><div class="flex mt-1 text-xs justify-between dark:text-slate-700">${searchBar}</div></div>`;
+            searchBar = `<div class="px-2"><hr><div class="my-2 flex text-xs dark:text-slate-700 space-x-2">${searchBar}</div></div>`;
         }
 
         pre.setAttribute('class', 'sf-dump-debug');
@@ -479,7 +480,7 @@ export default () => ({
         pre.setAttribute('data-indent-pad', '  ');
         pre.innerHTML = `${context}${searchBar}`;
 
-        div.innerHTML = `<div class="px-2 text-slate-600 dark:text-slate-300 text-sm pt-2">${message}</div>`;
+        div.innerHTML = `<div class="px-3 mt-1 text-slate-600 dark:text-slate-300 text-sm pt-2">${message}</div>`;
 
         this.handleDebugElement();
 
@@ -648,22 +649,22 @@ export default () => ({
 
         this.$refs.livewire.innerHTML = `
             <div id="livewire-detail-${notificationId}">
-                <div class="p-2">
-                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-slate-200">${eventName}</h3>
+                <div class="py-2">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-slate-200">Event: ${eventName}</h3>
                 </div>
-                <div class="event-only items-center !hidden p-2 sm:grid sm:grid-cols-3 sm:gap-4">
-                    <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Emit By</div>
+                <div class="event-only items-center !hidden py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Emitted By</div>
                     <div class="mt-1 text-sm text-slate-600 dark:text-slate-300 sm:mt-0 sm:col-span-2 break-words" id="emitted-by-${notificationId}"></div>
                 </div>
                
-                <div class="p-2 sm:grid sm:grid-cols-3 sm:gap-4">
+                <div class="py-2 sm:grid sm:grid-cols-3 sm:gap-4">
                     <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Payload</div>
                     <div class="mt-1 text-sm text-slate-600 dark:text-slate-300 sm:mt-0 sm:col-span-2 break-words" id="debug-${notificationId}"></div>
                 </div>
                 
                 <div class="event-only items-center !hidden">
-                    <h3 class="p-2 text-lg leading-6 font-medium text-slate-900 dark:text-slate-300">Listeners</h3>
-                    <div class="p-2" id="listeners-${notificationId}"></div>
+                    <h3 class="py-2 text-lg leading-6 font-medium text-slate-900 dark:text-slate-300">Listeners</h3>
+                    <div class="py-2" id="listeners-${notificationId}"></div>
                 </div>
             </div>    
         `;
@@ -679,7 +680,7 @@ export default () => ({
 
         document.getElementById(`debug-${notificationId}`).appendChild(payload);
 
-        componentHandler.line = method;
+        componentHandler.line = method ?? '';
 
         this.handleIdeProtocol(componentHandler, `emitted-by-${notificationId}`, notificationId, false);
 
@@ -694,6 +695,9 @@ export default () => ({
             [...document.getElementsByClassName('event-only')].map((el) => {
                 el.classList.remove('!hidden');
             });
+        } else {
+            document.getElementById(`events-icon-warning-${this.notificationId}`)
+                .classList.add('hidden');
         }
         // ************************
 
@@ -717,12 +721,12 @@ export default () => ({
 
                     listener.innerHTML = `<div class="border-t border-slate-300 dark:border-slate-400">
                         <dl>
-                          <div class="p-2 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <div class="text-sm font-medium text-slate-600 dark:text-slate-300">To</div>
+                          <div class="py-2 sm:grid sm:grid-cols-3 sm:gap-4">
+                            <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Listened By</div>
                             <div class="mt-1 text-sm sm:mt-0 sm:col-span-2 text-slate-900 dark:text-slate-300"
                                 id="livewire-events-returned-component-${notificationId}-${returned.component}">${returned.component}</div>
                           </div>
-                          <div class="p-2 sm:grid sm:grid-cols-3 sm:gap-4">
+                          <div class="py-2 sm:grid sm:grid-cols-3 sm:gap-4">
                             <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Returned</div>
                             <div class="mt-1 text-sm sm:mt-0 sm:col-span-2 text-slate-900 dark:text-slate-300"
                                 id="livewire-events-returned-${notificationId}-${returned.component}">
@@ -816,7 +820,7 @@ export default () => ({
                    <div class="group relative flex justify-between items-center">                  
                        <span>${eventName}</span>
                        <div class="w-8 flex justify-end h-auto" title="Remove Component">
-                           <svg class="h-5 w-5 text-orange-600 dark:text-orang-300" 
+                           <svg class="h-5 w-5 text-orange-600 dark:text-orang-300 transition-all ease-linear" 
                                 id="events-icon-warning-${notificationId}"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />

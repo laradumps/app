@@ -139,6 +139,10 @@ pre.sf-dump .sf-dump-index {
   @apply text-blue-500 dark:text-blue-300 text-sm
 }
 
+.sf-dump-default{
+  display: none !important;
+}
+
 .sf-dump-expanded {
   @apply text-gray-400 font-light
 }

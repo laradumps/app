@@ -32,7 +32,7 @@ const welcomeHtml = `
                       </svg>
                     </div>
                     <div class="ml-3 flex-1 md:flex md:justify-between">
-                      <p class="text-sm text-blue-700 dark:text-blue-300">... Nothing here for now</p>
+                      <p class="text-sm text-blue-700 dark:text-blue-300">... There are no saved Dumps!</p>
                     </div>
                   </div>
                 </div>  
@@ -392,6 +392,8 @@ export default () => ({
         this.$dispatch('dumper:empty-time-trackers');
 
         this.removeLivewirePropertiesCard();
+
+        this.$dispatch('dumper:clear');
     },
     addLivewirePropertiesCard(search = true) {
         this.$refs.body.classList.add('flex', 'mr-3', 'h-full');
@@ -426,8 +428,6 @@ export default () => ({
 
         this.filterScreen('screen 1');
         this.activeScreen = this.defaultScreenName;
-
-        this.$dispatch('dumper:clear');
     },
     dispatchDump(type, content) {
         if (!this.bannedComponents.includes(content.id)) {
@@ -579,7 +579,7 @@ export default () => ({
         let counter = '';
 
         if (['Events', 'Dispatch'].includes(screenName)) {
-            counter = `<span id="screen-${screenName}-counter" class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">1</span>`;
+            counter = `<span id="screen-${screenName}-counter" class="inline-flex items-center justify-center text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full w-4 !h-[16px]">1</span>`;
         }
 
         if (['Livewire', 'Events', 'Dispatch'].includes(screenName)) {
