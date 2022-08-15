@@ -788,8 +788,7 @@ export default () => ({
                 x-on:click="handleLivewireDumpCard('${notificationId}'); $el.focus()" 
                 class="filterScreen collapsable laraDumpsScreen-${notificationId} rounded-sm collapsable mb-2 w-full p-1.5 pl-2 shadow-lg text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700 hover:bg-slate-300">
                    <div class="group relative flex justify-between items-center">                  
-                       <span>${notificationId}</span>
-                        
+                       <span class="text-left">${notificationId}</span>                     
                        <div class="w-8 flex justify-end h-auto" title="Remove Component">
                            <svg x-on:click="banComponent('${notificationId}')" class="opacity-0 group-hover:opacity-100 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
@@ -818,7 +817,7 @@ export default () => ({
                 x-on:click="handleLivewireEventsCard('${notificationId}'); $el.focus()" 
                 class="filterScreen collapsable laraDumpsScreen-${notificationId} rounded-sm collapsable mb-2 w-full p-1.5 pl-2 shadow-lg text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700 hover:bg-slate-300">
                    <div class="group relative flex justify-between items-center">                  
-                       <span>${eventName}</span>
+                       <span class="text-left">${eventName}</span>
                        <div class="w-8 flex justify-end h-auto" title="Remove Component">
                            <svg class="h-5 w-5 text-orange-600 dark:text-orang-300 transition-all ease-linear" 
                                 id="events-icon-warning-${notificationId}"

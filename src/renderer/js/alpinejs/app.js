@@ -32,7 +32,7 @@ const welcomeHtml = `
                       </svg>
                     </div>
                     <div class="ml-3 flex-1 md:flex md:justify-between">
-                      <p class="text-sm text-blue-700 dark:text-blue-300">... There are no saved Dumps!</p>
+                      <p class="text-sm text-blue-700 dark:text-blue-300">There are no saved Dumps!</p>
                     </div>
                   </div>
                 </div>  
@@ -102,7 +102,7 @@ const welcomeHtml = `
                   <div class="mt-5">4. Run your application and see what happens here! 😎</div>
                </div>
                <div class="mt-8 font-light" x-on:click="openLink('https://laradumps.dev')">📚
-                  Check our <span class="text-blue-500 underline cursor-pointer dark:text-blue-300">documentation</span> for more information.
+                  Check out our <span class="text-blue-500 underline cursor-pointer dark:text-blue-300">documentation</span> for more information.
                </div>
                <div class="mt-6 font-light" x-on:click="openLink('https://github.com/laradumps/laradumps')">⭐
                   Enjoying LaraDumps? Please consider <span class="text-blue-500 underline cursor-pointer dark:text-blue-300"> starring our repository</span>!
