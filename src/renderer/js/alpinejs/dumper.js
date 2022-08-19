@@ -254,17 +254,16 @@ export default () => ({
         window.Sfdump(`sf-dump-${this.notificationId}-model`);
     },
     handleLivewireComponents() {
-        const { view } = this.content.component;
+        const { id } = this.content.component;
 
         this.content.ideHandle = this.ideHandle;
-        this.lastContent[this.notificationId] = this.content;
 
-        const notificationId = view;
+        this.lastContent[id] = this.content;
 
-        if (document.getElementById(notificationId) == null) {
-            this.handleLivewireDebugElement(notificationId);
+        if (document.getElementById(id) == null) {
+            this.handleLivewireDebugElement(id);
         } else {
-            this.handleLivewireDumpCard(notificationId, false);
+            this.handleLivewireDumpCard(id, false);
         }
     },
     handleLivewireEvents() {
@@ -587,47 +586,46 @@ export default () => ({
             window.Pusher.trigger('laradumps-livewire-channel', 'remove-highlight-component', { id });
         }
     },
-    handleLivewireDumpCard(notificationId, highlight = true) {
-        const content = this.lastContent[notificationId];
+    handleLivewireDumpCard(id, highlight = true) {
+        const content = this.lastContent[id];
+        const component = content.component.view;
 
         const { ideHandle } = content;
-        const {
-            data, viewHandler, dateTime, id,
-        } = content.component;
+        const { data, viewHandler, dateTime } = content.component;
 
         if (highlight && window.Pusher) {
             window.Pusher.trigger('laradumps-livewire-channel', 'highlight-component', {
                 id,
-                component: notificationId,
+                component,
             });
         }
 
         this.$refs.livewire.innerHTML = `
             <div class="text-right dark:text-gray-300 flex justify-between text-sm text-gray-600">
-                <div class="p-2 text-base font-semibold text-left">${notificationId}</div>
+                <div class="p-2 text-base font-semibold text-left">${component}</div>
                 <div class="p-2">${dateTime}</div>
             </div>
-            <div id="debug-${notificationId}"></div>
-            <div class="my-1" id="info-${notificationId}">
-                <div id="livewire-view-handler-${notificationId}"></div>
+            <div id="debug-${id}"></div>
+            <div class="my-1" id="info-${id}">
+                <div id="livewire-view-handler-${id}"></div>
             </div>
         `;
 
         const pre = document.createElement('pre');
 
         pre.setAttribute('class', 'sf-dump-debug');
-        pre.setAttribute('id', `sf-dump-${notificationId}`);
+        pre.setAttribute('id', `sf-dump-${id}`);
         pre.setAttribute('data-indent-pad', '  ');
 
         pre.innerHTML = data;
 
-        document.getElementById(`debug-${notificationId}`).appendChild(pre);
+        document.getElementById(`debug-${id}`).appendChild(pre);
 
-        window.Sfdump(`sf-dump-${notificationId}`);
+        window.Sfdump(`sf-dump-${id}`);
 
-        this.handleIdeProtocol(viewHandler, `livewire-view-handler-${notificationId}`, notificationId);
+        this.handleIdeProtocol(viewHandler, `livewire-view-handler-${id}`, id);
 
-        this.handleIdeProtocol(ideHandle, '', notificationId);
+        this.handleIdeProtocol(ideHandle, '', id);
 
         this.$nextTick(() => {
             document.getElementById('output').scrollIntoView({
@@ -771,7 +769,9 @@ export default () => ({
             });
         });
     },
-    handleLivewireDebugElement(notificationId) {
+    handleLivewireDebugElement(id) {
+        const { view } = this.lastContent[id].component;
+
         if (document.getElementById('debug') != null) {
             document.getElementById('debug').removeAttribute('id');
         }
@@ -779,18 +779,18 @@ export default () => ({
         const debugItem = document.createElement('div');
 
         debugItem.innerHTML = `
-            <!-- dump ${notificationId}-->
+            <!-- dump ${id}-->
             <div id="debug"></div>
             <button x-init="initCollapsableElements"
-                id="${notificationId}"
+                id="${view}"
                 type="button"
-                x-on:mouseleave="removeLivewireHighLight('${notificationId}')" 
-                x-on:click="handleLivewireDumpCard('${notificationId}'); $el.focus()" 
-                class="filterScreen collapsable laraDumpsScreen-${notificationId} rounded-sm collapsable mb-2 w-full p-1.5 pl-2 shadow-lg text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700 hover:bg-slate-300">
+                x-on:mouseleave="removeLivewireHighLight('${id}')" 
+                x-on:click="handleLivewireDumpCard('${id}'); $el.focus()" 
+                class="filterScreen collapsable laraDumpsScreen-${view} rounded-sm collapsable mb-2 w-full p-1.5 pl-2 shadow-lg text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700 hover:bg-slate-300">
                    <div class="group relative flex justify-between items-center">                  
-                       <span class="text-left">${notificationId}</span>                     
+                       <span class="text-left">${view}</span>                     
                        <div class="w-8 flex justify-end h-auto" title="Remove Component">
-                           <svg x-on:click="banComponent('${notificationId}')" class="opacity-0 group-hover:opacity-100 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                           <svg x-on:click="banComponent('${view}')" class="opacity-0 group-hover:opacity-100 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                            </svg>
                        </div>
