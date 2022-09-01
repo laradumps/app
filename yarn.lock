@@ -1340,6 +1340,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.60.tgz#35f3d6213daed95da7f0f73e75bcc6980e90597b"
   integrity sha512-F0KIgDJfy2nA3zMLmWGKxcH2ZVEtCZXHHdOQs2gSaQ27+lNeEfGxzkIw90aXswATX7AZ33tahPbzy6KAfUreVw==
 
+"@types/node@^14.14.31":
+  version "14.18.26"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.26.tgz#239e19f8b4ea1a9eb710528061c1d733dc561996"
+  integrity sha512-0b+utRBSYj8L7XAp0d+DX7lI4cSmowNaaTkk6/1SKzbKkG+doLuPusB9EOvzLJ8ahJSk03bTLIL6cWaEd4dBKA==
+
 "@types/node@^16.11.26":
   version "16.11.47"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.47.tgz#efa9e3e0f72e7aa6a138055dace7437a83d9f91c"
@@ -6218,11 +6223,12 @@ pupa@^2.0.1, pupa@^2.1.1:
   dependencies:
     escape-goat "^2.0.0"
 
-pusher-js@^7.3.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/pusher-js/-/pusher-js-7.3.0.tgz#0d4334bc67fb16b599cff7a1464016dfbd6d5658"
-  integrity sha512-N7uFRZGK6PKFfKd8e1aKsQ81OrilATGNhIbj42xJKmK+3zhstGBCQ110ZiF2nIngPTEKxQQqf15SJsVnQfNuqQ==
+pusher-js@^7.4.0:
+  version "7.4.0"
+  resolved "https://registry.yarnpkg.com/pusher-js/-/pusher-js-7.4.0.tgz#45205ecc159708af3021f41b15b07b390899124b"
+  integrity sha512-4ewETSlJEdRZ2eHGEMH3pHxMVB+sB4oMmOWbgYbSRsYbTFPOpRBumSEm9NSNse3pfjiluTrB98PaXijJ6BL3lg==
   dependencies:
+    "@types/node" "^14.14.31"
     tweetnacl "^1.0.3"
 
 pusher@^5.1.1-beta:
