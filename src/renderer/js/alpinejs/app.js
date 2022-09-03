@@ -39,7 +39,7 @@ const welcomeHtml = `
             </div>
            
             <!-- welcome page -->
-            <div x-show="!savedDumpsWindow" x-ref="welcome" class="shadow-lg w-full p-4 mb-16 text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700 leading-6">
+            <div x-show="!savedDumpsWindow" x-ref="welcome" class="select-none shadow-lg w-full p-4 mb-16 text-sm bg-white rounded-sm dark:text-slate-300 dark:bg-slate-700 leading-6">
                <h3 class="mb-8 text-xl font-bold"><span class="text-lg text-blue-600 dark:text-slate-300">👋</span> Hello dev,</h3>
                <span class="font-semibold text-lg">Welcome to LaraDumps!</span>
                <div class="mt- text-slate-600 dark:text-slate-300">
@@ -47,7 +47,7 @@ const welcomeHtml = `
                   <div class="mt-6">
                      <span>1. Install LaraDumps, run </span>
                      <span class="p-1.5 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
-                        <button title="Click to copy" x-on:click="clipboard('composer require --dev laradumps/laradumps', 'copyComposerIcon')">
+                        <button x-on:mouseenter="$title('Click to copy')" x-on:click="clipboard('composer require --dev laradumps/laradumps', 'copyComposerIcon')">
                            <div class="flex justify-between dark:text-slate-700">
                               <span>composer require laradumps/laradumps --dev</span>
                               <div title="Click to copy">
@@ -65,10 +65,10 @@ const welcomeHtml = `
                   <div class="mt-5">
                      <span>2. Configure your Laravel project, execute</span> 
                      <span  class="p-1.5 text-slate-600 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
-                     <button title="Click to copy" x-on:click="clipboard('php artisan ds:init', 'copyArtisanIcon')">
+                     <button x-on:mouseenter="$title('Click to copy')" x-on:click="clipboard('php artisan ds:init', 'copyArtisanIcon')">
                            <div class="flex justify-between">
                               <span>php artisan ds:init</span>
-                              <div title="Click to copy">
+                              <div x-on:mouseenter="$title('Click to copy')">
                                  <svg class="w-5 h-5 hover:text-slate-800" fill="none"
                                     x-ref="copyArtisanIcon"
                                     viewBox="0 0 24 24" stroke="#485569">
@@ -83,10 +83,10 @@ const welcomeHtml = `
                   <div class="mt-5">
                      <span>3. Add</span>
                      <span  class="p-1.5 text-slate-600 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
-                     <button title="Click to copy" x-on:click="clipboard('ds(\\'Hello World\\');', 'copyDsIcon')">
+                     <button x-on:mouseenter="$title('Click to copy')" x-on:click="clipboard('ds(\\'Hello World\\');', 'copyDsIcon')">
                            <div class="flex justify-between">
                               <span>ds('Hello world!')</span>
-                              <div title="Click to copy">
+                              <div x-on:mouseenter="$title('Click to copy')">
                                  <svg class="w-5 h-5 hover:text-slate-800" fill="none"
                                     x-ref="copyDsIcon"
                                     viewBox="0 0 24 24" stroke="#485569">

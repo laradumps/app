@@ -78,7 +78,7 @@
                             <!-- clear -->
                             <a x-on:click="clear()"
                                id="clear"
-                               title="Clear all dumps"
+                               x-on:mouseenter="$title('Clear all')"
                                x-cloak
                                x-show="dumpBatch.length > 0 && !savedDumpsWindow"
                                class="items-center  justify-center cursor-pointer text-slate-500 group flex items-center p-2">
@@ -92,7 +92,7 @@
                             <div x-data="{ openFiles: false }"
                                  x-show="dumpBatch.length > 0">
                                 <a x-on:click="openFiles = ! openFiles"
-                                   title="Files"
+                                   x-on:mouseenter="$title('Files')"
                                    class="justify-center cursor-pointer text-slate-900 group flex items-center p-1.5">
                                     <svg class="text-slate-500 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
@@ -129,8 +129,8 @@
                             </div>
                             <!-- toggleCollapseAll -->
                             <a x-ref="toggleCollapseAll"
-                               :title="!isCollapsedAll ? 'Expand All': 'Collapse All'"
                                x-show="dumpBatch.length > 0"
+                               x-on:mouseenter="$title(!isCollapsedAll ? 'Expand All': 'Collapse All')"
                                x-on:click="toggleCollapseAll"
                                class="justify-center cursor-pointer text-slate-900 group flex items-center p-2">
                                 <template x-if="!isCollapsedAll">
@@ -152,7 +152,7 @@
                             <a x-ref="togglePrivacyMode"
                                x-show="dumpBatch.length > 0"
                                type="button"
-                               title="Privacy Mode"
+                               x-on:mouseenter="$title('Privacy Mode')"
                                x-on:click="togglePrivacyMode()"
                                class="justify-center cursor-pointer text-slate-900 group flex items-center p-1.5 ">
                                 <template x-if="!privacyMode">
@@ -175,7 +175,7 @@
                             <!-- savedDumps -->
                             <a x-ref="savedDumps"
                                type="button"
-                               :title="`Total saved: ` + totalPayloadSaved"
+                               x-on:mouseenter="$title(`Total saved: ` + totalPayloadSaved)"
                                x-show="!savedDumpsWindow"
                                x-on:click="savedDumps"
                                class="justify-center cursor-pointer text-slate-900 group flex items-center p-1.5 h-[40px]">
@@ -194,7 +194,7 @@
                             </a>
                             <!-- dragAndDrop -->
                             <a x-ref="enableDragAndDrop"
-                               title="Reorder"
+                               x-on:mouseenter="$title('Reorder')"
                                type="button"
                                x-show="dumpBatch.length > 0"
                                x-on:click="enableDragAndDrop"
@@ -214,7 +214,7 @@
                             <div class="absolute bottom-3.5 w-full text-center left-0 space-y-3">
                                 <button id="toggleAlwaysOnTopButton"
                                         x-show="!savedDumpsWindow"
-                                        title="Always on top"
+                                        x-on:mouseenter="$title('Always on top')"
                                         x-bind:class="{
                                             'bg-slate-200 shadow border border-slate-300 dark:border-slate-600 dark:bg-slate-800' : isAlwaysOnTop
                                         }"
@@ -240,7 +240,8 @@
                                              'bg-slate-200 shadow border border-slate-300 dark:border-slate-600 dark:bg-slate-800' : dark
                                         }"
                                         class="rounded-full p-1.5"
-                                        :title="!dark ? 'Dark Mode': 'Light Mode'">
+                                        x-on:mouseenter="$title(!dark ? 'Dark Mode': 'Light Mode')"
+                                >
                                     <div>
                                         <!-- Lights ON -->
                                         <svg :class="{'hidden': !dark}" :stroke="dark ? '#a4b0c2' : '#64748b'"
@@ -288,7 +289,7 @@
                                         class="btn flex-shrink-0 btn-white rounded-t-sm text-xs">
                                 </button>
                             </template>
-                            <div :title="`Clear \'${activeScreen}\' screen`"
+                            <div x-on:mouseenter="$title(`Clear \'${activeScreen}\' screen`)"
                                  x-on:click="clearScreen" class="bg-slate-100 dark:bg-slate-900 flex ml-auto cursor-pointer right-0 pl-2">
                                 <template x-if="dumpBatch.length > 0 && activeScreen != defaultScreenName">
                                     <svg class="h-5 w-5 text-slate-500 dark:text-slate-300 hover:text-slate-600 dark:hover:text-slate-400 " fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
