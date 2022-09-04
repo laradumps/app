@@ -1,8 +1,6 @@
 import { format } from 'sql-formatter';
 import * as JsonViewer from 'json-viewer-js';
 import moment from 'moment/moment';
-import storage from 'electron-json-storage';
-import os from 'os';
 import { makeHightlight } from '@/js/plugins/hightlight';
 import * as Helper from '../helpers';
 
