@@ -3,6 +3,7 @@
  *
  * @author https://github.com/symfony/var-dumper
  * @see https://github.com/symfony/var-dumper/blob/5.4/Dumper/HtmlDumper.php
+ *
  */
 /*eslint-disable*/
 module.exports = Sfdump = window.Sfdump || (function (doc) {
@@ -231,7 +232,15 @@ module.exports = Sfdump = window.Sfdump || (function (doc) {
                 } else {
                     a.innerHTML += ' ';
                 }
-                a.title = `${(a.title ? `${a.title}\n[` : '[') + keyHint}+click] Expand all children`;
+
+                if(a.title) {
+                    a.setAttribute("x-on:mouseenter", '$title("'+a.title+'")');
+                } else {
+                    a.setAttribute("x-on:mouseenter", '$title("[' + keyHint + ' click] Expand all children")');
+                }
+
+                a.removeAttribute('title');
+
                 a.innerHTML += elt.className == 'sf-dump-compact' ? '<span>▶</span>' : '<span>▼</span>';
                 a.className += ' sf-dump-toggle';
                 x = 1;
@@ -243,9 +252,16 @@ module.exports = Sfdump = window.Sfdump || (function (doc) {
                 elt.className += ` ${a}`;
                 if (/[\[{]$/.test(elt.previousSibling.nodeValue)) {
                     a = a != elt.nextSibling.id && doc.getElementById(a);
+
                     try {
                         s = a.nextSibling;
                         elt.appendChild(a);
+
+                        if(elt.title) {
+                            elt.setAttribute("x-on:mouseenter", '$title("'+elt.title+'")');
+                            elt.removeAttribute('title')
+                        }
+
                         s.parentNode.insertBefore(a, s);
                         if (/^[@#]/.test(elt.innerHTML)) {
                             elt.innerHTML += ' <span>▶</span>';
@@ -426,8 +442,8 @@ module.exports = Sfdump = window.Sfdump || (function (doc) {
                     h = elt.innerHTML;
                     elt[elt.innerText ? 'innerText' : 'textContent'] = s.substring(0, options.maxStringLength);
                     elt.className += ' sf-dump-str-collapse';
-                    elt.innerHTML = `<span class=sf-dump-str-collapse>${h}<a class="sf-dump-ref sf-dump-str-toggle" title="Collapse"> ◀</a></span>`
-                + `<span class=sf-dump-str-expand>${elt.innerHTML}<a class="sf-dump-ref sf-dump-str-toggle" title="${x} remaining characters"> ▶</a></span>`;
+                    elt.innerHTML = `<span class=sf-dump-str-collapse>${h}<a class="sf-dump-ref sf-dump-str-toggle" x-on:mouserenter="Collapse"> ◀</a></span>`
+                + `<span class=sf-dump-str-expand>${elt.innerHTML}<a class="sf-dump-ref sf-dump-str-toggle" x-on:mouserenter="$title(\''${x} remaining characters'\')"> ▶</a></span>`;
                 }
             }
         } catch (e) {
