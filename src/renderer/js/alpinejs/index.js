@@ -4,7 +4,7 @@ import app from './app';
 import dumper from '@/js/alpinejs/dumper';
 import './store';
 
-import './directives/tooltip';
+import './directives/title';
 
 window.app = app;
 window.dumper = dumper;

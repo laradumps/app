@@ -1,12 +1,12 @@
 import Alpine from 'alpinejs';
 import tippy from 'tippy.js';
 
-Alpine.magic('title', (el) => (content) => {
+Alpine.magic('title', (el) => (content, placement = 'right-end') => {
     const instance = tippy(el, {
         content,
         trigger: 'manual',
         animation: 'scale',
-        placement: 'right-end',
+        placement,
         theme: 'light',
         allowHTML: true,
     });

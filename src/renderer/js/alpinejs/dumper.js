@@ -354,6 +354,7 @@ export default () => ({
         const html = hljs.highlight(format(sql, { indent: '    ' }), { language: 'sql' }).value;
 
         pre.setAttribute('class', 'flex justify-center relative group');
+        pre.setAttribute('x-on:mouseenter', "$title('Click to copy', 'top')");
         pre.setAttribute('x-on:click', `clipboard('${sql.replace(/'/g, "\\'")}', 'copyQueryIcon-${this.notificationId}')`);
 
         code.innerHTML = html;
@@ -411,6 +412,7 @@ export default () => ({
         const html = hljs.highlight(format(sql, { indent: '    ' }), { language: 'sql' }).value;
 
         pre.setAttribute('class', 'flex justify-center relative group');
+        pre.setAttribute('x-on:mouseenter', "$title('Click to copy', 'top')");
         pre.setAttribute('x-on:click', `clipboard('${sql.replace(/'/g, "\\'")}', 'copyQueryIcon-${this.notificationId}')`);
 
         code.innerHTML = html;

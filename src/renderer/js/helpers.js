@@ -12,7 +12,7 @@ const escapeHtml = (content) => {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");  
+    .replace(/'/g, "&#39;");
 }
 
 const strContains = (content, searchString, searchSettings) => {
@@ -21,7 +21,7 @@ const strContains = (content, searchString, searchSettings) => {
 
     let regexExpression = searchString;
     let regexMode = 'gim';
-     
+
     if (searchSettings.is_case_sensitive === true) {
         regexMode = regexMode.replace('i', '');
     }
@@ -51,6 +51,7 @@ const createTable = (objectArray, fields, fieldTitles, notificationId) => {
                  </div>
                  <input id="search-${notificationId}" 
                         x-on:keyup="searchableTable('${notificationId}')" type="text" autocomplete="off"
+                        placeholder="Search"
                         class="p-2 placeholder-gray-400 dark:bg-slate-800 dark:text-slate-400 dark:placeholder-gray-500 border border-slate-300 focus:ring-slate-600 focus:border-slate-500 dark:border-slate-600 form-input block w-full sm:text-sm rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm pl-8">
             </div>`;
 
