@@ -135,6 +135,16 @@ export default () => ({
     totalPayloadSaved: [],
     dragdropEnabled: false,
     bannedComponents: [],
+    fixedScreen: '',
+    pinScreen() {
+        if (this.fixedScreen !== this.activeScreen) {
+            this.fixedScreen = this.activeScreen;
+
+            return;
+        }
+
+        this.fixedScreen = '';
+    },
     clipboard(text, el = null) {
         clipboard.writeText(text);
 
@@ -219,14 +229,21 @@ export default () => ({
 
             const payloadScreen = resolvePayloadScreen();
 
+            let screen;
+            if (this.fixedScreen !== '') {
+                screen = this.fixedScreen;
+            } else {
+                screen = payloadScreen.screenName;
+            }
+
             if (payloadScreen.raiseIn > 0) {
                 setTimeout(() => {
-                    this.filterScreen(payloadScreen.screenName);
-                    this.activeScreen = payloadScreen.screenName;
+                    this.filterScreen(screen);
+                    this.activeScreen = screen;
                 }, payloadScreen.raiseIn);
             } else {
-                this.filterScreen(payloadScreen.screenName);
-                this.activeScreen = payloadScreen.screenName;
+                this.filterScreen(screen);
+                this.activeScreen = screen;
             }
         });
 
@@ -466,8 +483,10 @@ export default () => ({
 
             this.maximizeApp(autoInvokeApp);
 
-            this.filterScreen(this.activeScreen);
-            this.activeScreen = this.defaultScreenName;
+            setTimeout(() => {
+                this.filterScreen(this.activeScreen);
+                this.activeScreen = this.defaultScreenName;
+            }, 100);
         }
     },
     saveDumps(payload) {
