@@ -100,15 +100,24 @@ function createWindow() {
 
     autoUpdater.on('update-available', async (info) => {
         setTimeout(async () => {
-            const result = await dialog.showMessageBox({
-                type: 'info',
-                title: 'Found Updates',
-                message: 'Found updates, do you want update now?',
-                buttons: ['Sure', 'No'],
-            });
+            if (process.platform === 'win32') {
+                const result = await dialog.showMessageBox({
+                    type: 'info',
+                    title: 'LaraDumps update available!',
+                    message: 'There are updates available for LaraDumps App. Would you like to update it now?',
+                    buttons: ['Yes', 'No'],
+                });
 
-            if (result.response === 0) {
-                await autoUpdater.downloadUpdate();
+                if (result.response === 0) {
+                    await autoUpdater.downloadUpdate();
+                }
+            } else {
+                await dialog.showMessageBox({
+                    type: 'info',
+                    title: 'LaraDumps update available!',
+                    message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
+                    buttons: ['Ok'],
+                });
             }
         }, 5000);
 
@@ -136,7 +145,7 @@ function createWindow() {
             alwaysOnTop: true,
         }), {
             title: 'Install Updates',
-            message: 'Updates downloaded, application will be quit for update...',
+            message: 'Update completed! Restarting the application...',
         });
         setImmediate(() => autoUpdater.quitAndInstall());
     });
@@ -274,7 +283,7 @@ app.whenReady().then(async () => {
         } catch (e) {
             mainWindow.webContents.send('main:update-failed', {
                 dialogTitle: 'Update',
-                dialogDescription: 'Failed to update, please try again later',
+                dialogDescription: 'Failed to update. Please try again later.',
             });
         }
     }
