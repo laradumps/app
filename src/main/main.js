@@ -100,7 +100,14 @@ function createWindow() {
 
     autoUpdater.on('update-available', async (info) => {
         setTimeout(async () => {
-            if (process.platform === 'win32') {
+            if (process.platform === 'darwin') {
+                await dialog.showMessageBox({
+                    type: 'info',
+                    title: 'LaraDumps update available!',
+                    message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
+                    buttons: ['Ok'],
+                });
+            } else {
                 const result = await dialog.showMessageBox({
                     type: 'info',
                     title: 'LaraDumps update available!',
@@ -111,13 +118,6 @@ function createWindow() {
                 if (result.response === 0) {
                     await autoUpdater.downloadUpdate();
                 }
-            } else {
-                await dialog.showMessageBox({
-                    type: 'info',
-                    title: 'LaraDumps update available!',
-                    message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
-                    buttons: ['Ok'],
-                });
             }
         }, 5000);
 
