@@ -140,8 +140,12 @@ export default () => ({
         if (this.fixedScreen !== this.activeScreen) {
             this.fixedScreen = this.activeScreen;
 
+            document.getElementById('svg-pin-screen').classList.add('text-[#f8b810]');
+
             return;
         }
+
+        document.getElementById('svg-pin-screen').classList.remove('text-[#f8b810]');
 
         this.fixedScreen = '';
     },
@@ -230,6 +234,7 @@ export default () => ({
             const payloadScreen = resolvePayloadScreen();
 
             let screen;
+
             if (this.fixedScreen !== '') {
                 screen = this.fixedScreen;
             } else {
@@ -411,6 +416,8 @@ export default () => ({
         this.removeLivewirePropertiesCard();
 
         this.$dispatch('dumper:clear');
+
+        this.fixedScreen = '';
     },
     addLivewirePropertiesCard(search = true) {
         this.$refs.body.classList.add('flex', 'mr-3', 'h-full');
@@ -483,8 +490,15 @@ export default () => ({
 
             this.maximizeApp(autoInvokeApp);
 
+            let screen;
+            if (this.fixedScreen !== '') {
+                screen = this.fixedScreen;
+            } else {
+                screen = this.activeScreen;
+            }
+
             setTimeout(() => {
-                this.filterScreen(this.activeScreen);
+                this.filterScreen(screen);
                 this.activeScreen = this.defaultScreenName;
             }, 100);
         }
@@ -584,6 +598,12 @@ export default () => ({
             element.active = element.screenName === screen;
         });
         this.activeScreen = screen;
+
+        if (screen === this.fixedScreen) {
+            document.getElementById('svg-pin-screen').classList.add('text-[#f8b810]');
+        } else {
+            document.getElementById('svg-pin-screen').classList.remove('text-[#f8b810]');
+        }
     },
     searchableTable(id) {
         searchableTable(id);
