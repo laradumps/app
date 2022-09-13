@@ -289,8 +289,8 @@
                                         class="btn flex-shrink-0 btn-white rounded-t-sm text-xs">
                                 </button>
                             </template>
-                            <div class="bg-slate-100 dark:bg-slate-900 flex ml-auto cursor-pointer right-0 pl-2">
-                                <div class="flex gap-4">
+                            <div class="bg-slate-100 dark:bg-slate-900 flex ml-auto cursor-pointer right-0 items-center justify-center pl-2">
+                                <div class="flex" x-bind:class="{'gap-4' : activeScreen != defaultScreenName}">
                                     <!-- pin screen -->
                                     <div x-on:click="pinScreen" x-on:mouseenter="$title(`Pin \'${activeScreen}\' screen`)">
                                         <template x-if="true">

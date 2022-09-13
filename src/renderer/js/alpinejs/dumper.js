@@ -856,7 +856,7 @@ export default () => ({
                 }"
                 x-init="initCollapsableElements"
                 id="${notificationId}"
-               class="filterScreen collapsable laraDumpsScreen-screen 1 ${encodedFilePath} collapsable p-2.5 mb-2 shadow-md rounded dark:bg-slate-700 bg-white border-slate-300 dark:border-slate-600 cursor-pointer align-middle items-start font-medium text-gray-500">
+               class="filterScreen collapsable laraDumpsScreen-screen 1 ${encodedFilePath} collapsable p-2 mb-2 shadow-md rounded dark:bg-slate-700 bg-white border-slate-300 dark:border-slate-600 cursor-pointer align-middle items-start font-medium text-gray-500">
                 <div x-on:click="toggleCollapse('${notificationId}')" class="flex justify-between w-full cursor-pointer ">
                    <div class="flex items-center justify-center">
                       <div id="color-${notificationId}" class="items-center w-[0.72rem] h-[0.72rem] mr-2 rounded-full bg-slate-300 dark:bg-gray-500"></div>
