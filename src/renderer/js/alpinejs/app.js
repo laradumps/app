@@ -404,21 +404,6 @@ export default () => ({
         this.collapsableElements = [...document.getElementsByClassName('collapsable')];
         this.collapsableElementsCount = this.collapsableElements.length;
     },
-    clear() {
-        this.dumpBatch = [];
-        this.filesBatch = [];
-        this.defaultScreen();
-        this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
-        this.$refs.main.innerHTML = welcomeHtml;
-
-        this.$dispatch('dumper:empty-time-trackers');
-
-        this.removeLivewirePropertiesCard();
-
-        this.$dispatch('dumper:clear');
-
-        this.fixedScreen = '';
-    },
     addLivewirePropertiesCard(search = true) {
         this.$refs.body.classList.add('flex', 'mr-3', 'h-full');
         this.$refs.livewire.classList.remove('hidden');
@@ -440,6 +425,43 @@ export default () => ({
         if (this.$refs.filterComponent != null) {
             this.$refs.filterComponent.classList.add('hidden');
         }
+    },
+    clearOld() {
+        this.dumpBatch = [];
+        this.filesBatch = [];
+        // this.defaultScreen();
+        // this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
+        // this.$refs.main.innerHTML = welcomeHtml;
+
+        // this.$dispatch('dumper:empty-time-trackers');
+
+        // this.removeLivewirePropertiesCard();
+
+        // this.$dispatch('dumper:clear');
+
+        this.fixedScreen = '';
+    },
+    clear() {
+        if (this.fixedScreen === '') {
+            this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
+            this.$refs.main.innerHTML = welcomeHtml;
+            this.$dispatch('dumper:empty-time-trackers');
+            this.removeLivewirePropertiesCard();
+            this.$dispatch('dumper:clear');
+
+            return;
+        }
+
+        this.screenList.filter((element) => element.screenName !== this.fixedScreen)
+            .map((element) => {
+                const elements = document.getElementsByClassName(`laraDumpsScreen-${element.screenName}`);
+                [...elements].map((el) => el.remove());
+            });
+
+        this.screenList = this.screenList.filter((element) => element.screenName === this.fixedScreen);
+
+        this.filterScreen(this.fixedScreen);
+        this.activeScreen = this.fixedScreen;
     },
     clearScreen() {
         const active = this.screenList.filter((element) => element.active)[0];
