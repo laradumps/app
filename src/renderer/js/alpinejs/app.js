@@ -201,6 +201,11 @@ export default () => ({
 
             const resolvePayloadScreen = () => {
                 const lastIndex = this.screenList[this.screenList.length - 1].index + 1;
+                
+                // we should not have empty screen names
+                if (typeof content.content.screenName === 'string' && content.content.screenName.trim().length === 0) {
+                    content.content.screenName = 'screen 404';
+                }
 
                 // eslint-disable-next-line prefer-const
                 const { screenHtml, screenName } = this.screenHtml(content.content.screenName ?? this.defaultScreenName);
