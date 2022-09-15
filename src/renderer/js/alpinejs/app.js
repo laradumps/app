@@ -23,7 +23,7 @@ const welcomeHtml = `
                       class="p-2 placeholder-gray-400 dark:bg-slate-800 dark:text-slate-400 dark:placeholder-gray-500 border border-slate-300 focus:ring-slate-600 focus:border-slate-500 dark:border-slate-600 form-input block w-full sm:text-sm rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm pl-8">
         </div>
         <div style="height: calc(100vh - 140px)" class="px-3 right-0 mb-[4rem] dark:bg-slate-900" id="debug">
-            <div x-show="savedDumpsWindow && dumpBatch.length === 0" class="w-full h-full font-semibold items-center justify-center p-4 text-slate-500 text-sm text-center space-y-5">   
+            <div x-show="savedDumpsWindow && dumpBag.length === 0" class="w-full h-full font-semibold items-center justify-center p-4 text-slate-500 text-sm text-center space-y-5">   
                 <div class="rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-4">
                   <div class="flex">
                     <div class="flex-shrink-0">
@@ -127,18 +127,18 @@ export default () => ({
     activeScreen: 'screen 1',
     defaultScreenName: null,
     screenList: [],
-    dumpBatch: [],
-    filesBatch: [],
+    dumpBag: [],
+    filesBag: [],
     main: null,
     rendered: false,
     savedDumpsWindow: false,
     totalPayloadSaved: [],
     dragdropEnabled: false,
     bannedComponents: [],
-    fixedScreen: '',
+    pinnedScreen: '',
     pinScreen() {
-        if (this.fixedScreen !== this.activeScreen) {
-            this.fixedScreen = this.activeScreen;
+        if (this.pinnedScreen !== this.activeScreen) {
+            this.pinnedScreen = this.activeScreen;
 
             document.getElementById('svg-pin-screen').classList.add('text-[#f8b810]');
 
@@ -147,7 +147,7 @@ export default () => ({
 
         document.getElementById('svg-pin-screen').classList.remove('text-[#f8b810]');
 
-        this.fixedScreen = '';
+        this.pinnedScreen = '';
     },
     clipboard(text, el = null) {
         clipboard.writeText(text);
@@ -235,8 +235,8 @@ export default () => ({
 
             let screen;
 
-            if (this.fixedScreen !== '') {
-                screen = this.fixedScreen;
+            if (this.pinnedScreen !== '') {
+                screen = this.pinnedScreen;
             } else {
                 screen = payloadScreen.screenName;
             }
@@ -250,6 +250,12 @@ export default () => ({
                 this.filterScreen(screen);
                 this.activeScreen = screen;
             }
+
+            this.dumpBag.forEach((element) => {
+                if (element.id === content.id) {
+                    element.screen = screen;
+                }
+            });
         });
 
         ipcRenderer.on('preload:server-failed', (event, arg) => {
@@ -426,42 +432,33 @@ export default () => ({
             this.$refs.filterComponent.classList.add('hidden');
         }
     },
-    clearOld() {
-        this.dumpBatch = [];
-        this.filesBatch = [];
-        // this.defaultScreen();
-        // this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
-        // this.$refs.main.innerHTML = welcomeHtml;
-
-        // this.$dispatch('dumper:empty-time-trackers');
-
-        // this.removeLivewirePropertiesCard();
-
-        // this.$dispatch('dumper:clear');
-
-        this.fixedScreen = '';
-    },
     clear() {
-        if (this.fixedScreen === '') {
+        this.filesBag = [];
+
+        if (this.pinnedScreen === '') {
+            this.defaultScreen();
             this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
             this.$refs.main.innerHTML = welcomeHtml;
             this.$dispatch('dumper:empty-time-trackers');
             this.removeLivewirePropertiesCard();
             this.$dispatch('dumper:clear');
 
+            this.dumpBag = [];
+
             return;
         }
 
-        this.screenList.filter((element) => element.screenName !== this.fixedScreen)
+        this.screenList.filter((element) => element.screenName !== this.pinnedScreen)
             .map((element) => {
                 const elements = document.getElementsByClassName(`laraDumpsScreen-${element.screenName}`);
                 [...elements].map((el) => el.remove());
             });
 
-        this.screenList = this.screenList.filter((element) => element.screenName === this.fixedScreen);
+        this.screenList = this.screenList.filter((element) => element.screenName === this.pinnedScreen || element.screenName === 'screen 1');
 
-        this.filterScreen(this.fixedScreen);
-        this.activeScreen = this.fixedScreen;
+        this.filterScreen(this.pinnedScreen);
+        this.activeScreen = this.pinnedScreen;
+
     },
     clearScreen() {
         const active = this.screenList.filter((element) => element.active)[0];
@@ -481,17 +478,17 @@ export default () => ({
 
             const { ideHandle } = content;
 
-            this.dumpBatch.push({
+            this.dumpBag.push({
                 id: content.id,
                 ideHandle,
                 type,
             });
 
-            const exists = this.filesBatch.filter((file) => file.ideHandle.path === ideHandle.path)
+            const exists = this.filesBag.filter((file) => file.ideHandle.path === ideHandle.path)
                 .length > 0;
 
             if (!exists) {
-                this.filesBatch.push({
+                this.filesBag.push({
                     active: false,
                     ideHandle,
                 });
@@ -513,16 +510,13 @@ export default () => ({
             this.maximizeApp(autoInvokeApp);
 
             let screen;
-            if (this.fixedScreen !== '') {
-                screen = this.fixedScreen;
+            if (this.pinnedScreen !== '') {
+                screen = this.pinnedScreen;
             } else {
                 screen = this.activeScreen;
             }
 
-            setTimeout(() => {
-                this.filterScreen(screen);
-                this.activeScreen = this.defaultScreenName;
-            }, 100);
+            this.filterScreen(screen);
         }
     },
     saveDumps(payload) {
@@ -546,7 +540,7 @@ export default () => ({
         this.loadAllSavedPayload(false);
     },
     activeFileFilter(file) {
-        this.filesBatch.map((file) => file.active = false);
+        this.filesBag.map((file) => file.active = false);
         file.active = true;
     },
     privacyButtonColor() {
@@ -621,10 +615,12 @@ export default () => ({
         });
         this.activeScreen = screen;
 
-        if (screen === this.fixedScreen) {
-            document.getElementById('svg-pin-screen').classList.add('text-[#f8b810]');
-        } else {
-            document.getElementById('svg-pin-screen').classList.remove('text-[#f8b810]');
+        if (document.getElementById('svg-pin-screen') !== null) {
+            if (screen === this.pinnedScreen) {
+                document.getElementById('svg-pin-screen').classList.add('text-[#f8b810]');
+            } else {
+                document.getElementById('svg-pin-screen').classList.remove('text-[#f8b810]');
+            }
         }
     },
     searchableTable(id) {
