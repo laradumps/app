@@ -49,7 +49,7 @@ const welcomeHtml = `
                      <span class="p-1.5 bg-slate-200 text-md rounded mr-1 cursor-pointer leading-normal">
                         <button x-on:mouseenter="$title('Click to copy')" x-on:click="clipboard('composer require --dev laradumps/laradumps', 'copyComposerIcon')">
                            <div class="flex justify-between dark:text-slate-700">
-                              <span>composer require laradumps/laradumps --dev</span>
+                              <span>composer require --dev laradumps/laradumps</span>
                               <div title="Click to copy">
                                  <svg class="w-5 h-5 hover:text-slate-800" fill="none"
                                     x-ref="copyComposerIcon"
