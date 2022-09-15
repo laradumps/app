@@ -435,7 +435,7 @@ export default () => ({
     clear() {
         this.filesBag = [];
 
-        if (this.pinnedScreen === '') {
+        if (typeof this.pinnedScreen === 'string' && this.pinnedScreen.trim().length === 0) {
             this.defaultScreen();
             this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
             this.$refs.main.innerHTML = welcomeHtml;
@@ -458,7 +458,6 @@ export default () => ({
 
         this.filterScreen(this.pinnedScreen);
         this.activeScreen = this.pinnedScreen;
-
     },
     clearScreen() {
         const active = this.screenList.filter((element) => element.active)[0];
@@ -510,7 +509,7 @@ export default () => ({
             this.maximizeApp(autoInvokeApp);
 
             let screen;
-            if (this.pinnedScreen !== '') {
+            if (typeof this.pinnedScreen === 'string' && this.pinnedScreen.trim().length > 0) {
                 screen = this.pinnedScreen;
             } else {
                 screen = this.activeScreen;
@@ -681,7 +680,7 @@ export default () => ({
 </div>`;
         }
 
-        if (screenHtml === '') {
+        if (typeof screenHtml === 'string' && screenHtml.trim().length === 0) {
             screenHtml = screenName;
         }
 
