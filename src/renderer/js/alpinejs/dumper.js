@@ -27,7 +27,7 @@ export default () => ({
             const { screenName } = detail;
             if (document.getElementById(this.notificationId) != null) {
                 let classList = `filterScreen laraDumpsScreen-${screenName} collapsable p-2 mb-2 shadow-md rounded
-                    dark:bg-slate-700 bg-white border-slate-300 dark:border-slate-600 cursor-pointer items-start
+                    dark:bg-slate-700 bg-white cursor-pointer items-start
                     focus:!bg-indigo-400 focus:!text-white group-focus:text-white
                     w-full text-sm text-neutral-700 hover:text-neutral-800 font-normal dark:text-slate-300
                     font-medium text-gray-500 hidden`;
@@ -37,6 +37,14 @@ export default () => ({
 
                 if (this.type === 'livewire-events') {
                     classList += ' hover:bg-slate-200';
+                }
+
+                if (this.type === 'log') {
+                    classList += ` border-l-4 ${this.content.value.level_color}`;
+                }
+
+                if (!this.type.includes(['log', 'color'])) {
+                    classList += ' border-slate-300 dark:border-slate-600';
                 }
 
                 if (this.type === 'livewire-events') {
@@ -488,12 +496,11 @@ export default () => ({
 
         window.Sfdump(`sf-dump-${this.notificationId}`);
 
-        document.getElementById(`color-${this.notificationId}`)
-            .setAttribute('class', `items-center w-[0.75rem] h-[0.75rem] mr-2 rounded-full ${this.content.value.level_color}`);
+        document.getElementById(`color-${this.notificationId}`).setAttribute('class', 'hidden');
     },
     handleColor() {
-        document.getElementById(`color-${this.notificationId}`)
-            .setAttribute('class', `items-center w-[0.75rem] h-[0.75rem] mr-2 rounded-full ${this.content.color}`);
+        document.getElementById(this.notificationId)
+            .classList.add('!border-l-4', `${this.content.color}`);
     },
     handleLabel() {
         document.getElementById(`label-${this.notificationId}`)
