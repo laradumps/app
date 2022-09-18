@@ -43,10 +43,6 @@ export default () => ({
                     classList += ` border-l-4 ${this.content.value.level_color}`;
                 }
 
-                if (!this.type.includes(['log', 'color'])) {
-                    classList += ' border-slate-300 dark:border-slate-600';
-                }
-
                 if (this.type === 'livewire-events') {
                     if (document.getElementById('screen-Dispatch-counter') !== null) {
                         document.getElementById('screen-Dispatch-counter').innerText = this.events.filter((event) => event.event.dispatch).length;
