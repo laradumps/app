@@ -12,6 +12,10 @@ module.exports = {
             pattern: /bg-(slate|gray|zinc|neutral|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(100|200|300|400|500|600|700|800|900|1000)/,
             variants: ['lg', 'hover', 'focus', 'lg:hover'],
         },
+        {
+            pattern: /border-(slate|gray|zinc|neutral|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(100|200|300|400|500|600|700|800|900|1000)/,
+            variants: ['lg', 'hover', 'focus', 'lg:hover'],
+        },
         'bg-black',
         'w-[1rem]',
         'w-20',
