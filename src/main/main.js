@@ -269,6 +269,12 @@ app.whenReady().then(async () => {
         mainWindow.reload();
     });
 
+    if (process.platform === 'darwin') {
+        globalShortcut.register('Command+Q', () => {
+            app.quit();
+        })
+    }
+
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
