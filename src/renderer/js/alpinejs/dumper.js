@@ -27,7 +27,7 @@ export default () => ({
             const { screenName } = detail;
             if (document.getElementById(this.notificationId) != null) {
                 let classList = `filterScreen laraDumpsScreen-${screenName} collapsable p-2 mb-2 shadow-md rounded
-                    dark:bg-slate-700 bg-white border-slate-300 dark:border-slate-600 cursor-pointer items-start
+                    dark:bg-slate-700 bg-white cursor-pointer items-start
                     focus:!bg-indigo-400 focus:!text-white group-focus:text-white
                     w-full text-sm text-neutral-700 hover:text-neutral-800 font-normal dark:text-slate-300
                     font-medium text-gray-500 hidden`;
@@ -40,16 +40,9 @@ export default () => ({
                 }
 
                 if (this.type === 'log') {
-                    classList += ` border-l-4 ${this.content.value.level_color}`;
-                }
+                    const { level } = this.content.value;
 
-                if (!this.type.includes(['log', 'color'])) {
-                    if (this.content.value.level === 'info') {
-                        classList += ' laraDumpsScreen-log-info';
-                    }
-                    if (this.content.value.level === 'error') {
-                        classList += ' laraDumpsScreen-log-error';
-                    }
+                    classList += ` border-l-4 ${this.content.value.level_color} laraDumpsScreen-log-${level}`;
                 }
 
                 if (this.type === 'livewire-events') {
@@ -474,12 +467,12 @@ export default () => ({
 
         filterDiv.innerHTML = filter;
 
-        if (this.$refs.filterLogs.classList.contains('hidden')) {
-            this.$refs.filterLogs.classList.remove('hidden');
+        if (document.getElementById('filterLogs').classList.contains('hidden')) {
+            document.getElementById('filterLogs').classList.remove('hidden');
         }
 
         if (document.getElementById(`filter-log-${level}`) === null) {
-            this.$refs.childrenFilter.appendChild(filterDiv);
+            document.getElementById('childrenFilter').appendChild(filterDiv);
         }
 
         const levelsWithSearchBar = ['emergency', 'error', 'critical'];
@@ -498,7 +491,7 @@ export default () => ({
 
             searchOptions.forEach((searchOption) => searchBar += `<button x-on:click="openLink('${searchOption.url}${searchString}')" class="btn flex-shrink-0 btn-white rounded-t-sm text-xs justify-center items-center select-none">🔎  ${searchOption.name}</button>`);
 
-            searchBar = `<div class="px-2"><hr><div class="my-2 flex text-xs dark:text-slate-700 space-x-2">${searchBar}</div></div>`;
+            searchBar = `<div class="px-2"><div class="my-2 flex text-xs dark:text-slate-700 space-x-2">${searchBar}</div></div>`;
         }
 
         pre.setAttribute('class', 'sf-dump-debug');
@@ -514,15 +507,17 @@ export default () => ({
 
         window.Sfdump(`sf-dump-${this.notificationId}`);
 
-        this.$refs.filterLogs.classList.remove('hidden');
+        document.getElementById('filterLogs').classList.remove('hidden');
 
         document.getElementById(`color-${this.notificationId}`).setAttribute('class', 'hidden');
 
         document.getElementById(`label-${this.notificationId}`).innerText = this.content.value.level;
     },
     handleColor() {
+        const { color } = this.content;
+
         document.getElementById(this.notificationId)
-            .classList.add('!border-l-4', `${this.content.color}`);
+            .classList.add('!border-l-4', `${color}`);
     },
     handleLabel() {
         document.getElementById(`label-${this.notificationId}`)
@@ -885,7 +880,7 @@ export default () => ({
                 }"
                 x-init="initCollapsableElements"
                 id="${notificationId}"
-               class="filterScreen collapsable laraDumpsScreen-screen 1 ${encodedFilePath} collapsable p-2.5 mb-2 shadow-md rounded dark:bg-slate-700 bg-white border-slate-300 dark:border-slate-600 cursor-pointer align-middle items-start font-medium text-gray-500">
+               class="filterScreen collapsable laraDumpsScreen-screen 1 ${encodedFilePath} collapsable p-2 mb-2 shadow-md rounded dark:bg-slate-700 bg-white cursor-pointer align-middle items-start font-medium text-gray-500">
                 <div x-on:click="toggleCollapse('${notificationId}')" class="flex justify-between w-full cursor-pointer ">
                    <div class="flex items-center justify-center">
                       <div id="color-${notificationId}" class="items-center w-[0.72rem] h-[0.72rem] mr-2 rounded-full bg-slate-300 dark:bg-gray-500"></div>
@@ -911,7 +906,7 @@ export default () => ({
                 </div>
                 <div class="w-full">
                    <div :class="{ 'hidden' : !open}"
-                      class="my-2 rounded-sm bg-slate-100 dark:bg-slate-800 col-span-2 flex justify-center">
+                      class="my-2 rounded-sm bg-slate-100 dark:bg-slate-800 col-span-2 flex justify-center group">
                       <div x-show="open"
                            x-transition:enter="transition ease-out duration-300"
                            x-transition:enter-start="opacity-0 scale-90"
@@ -925,10 +920,10 @@ export default () => ({
                             <button x-show="!savedDumpsWindow"
                                     :disabled="isSaved"
                                     :class="{'opacity-25' : isSaved}"
-                                    class="mr-2 mt-2"
+                                    class="mr-2 mt-2 opacity-0 group-hover:opacity-100"
                                     x-on:mouseenter="$title('Save')"
                                     x-on:click="isSaved = true; saveDumps({id: id, type: type, content: content, ideHandle: ideHandle})">
-                                    <svg viewBox="0 0 16 16" fill="none" class="text-slate-500 h-4 w-4 hover:text-slate-600 ">
+                                    <svg viewBox="0 0 16 16" fill="none" class="text-slate-500 h-4 w-4 hover:text-slate-600">
                                         <path d="M14 16H2C1.46957 16 0.960859 15.7893 0.585786 15.4142C0.210714 15.0391 0 14.5304 0 14V2C0 1.46957 0.210714
                                             0.960859 0.585786 0.585786C0.960859 0.210714 1.46957 0 2 0L14 0C14.5304 0 15.0391 0.210714 15.4142
                                             0.585786C15.7893 0.960859 16 1.46957 16 2V14C16 14.5304 15.7893 15.0391 15.4142 15.4142C15.0391 15.7893 14.5304

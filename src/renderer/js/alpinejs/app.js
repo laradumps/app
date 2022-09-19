@@ -23,7 +23,7 @@ const welcomeHtml = `
                       class="p-2 placeholder-gray-400 dark:bg-slate-800 dark:text-slate-400 dark:placeholder-gray-500 border border-slate-300 focus:ring-slate-600 focus:border-slate-500 dark:border-slate-600 form-input block w-full sm:text-sm rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm pl-8">
         </div>
         <div style="height: calc(100vh - 140px)" class="px-3 right-0 mb-[4rem] dark:bg-slate-900" id="debug">
-            <div x-show="savedDumpsWindow && dumpBatch.length === 0" class="w-full h-full font-semibold items-center justify-center p-4 text-slate-500 text-sm text-center space-y-5">   
+            <div x-show="savedDumpsWindow && dumpBag.length === 0" class="w-full h-full font-semibold items-center justify-center p-4 text-slate-500 text-sm text-center space-y-5">   
                 <div class="rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-4">
                   <div class="flex">
                     <div class="flex-shrink-0">
@@ -127,8 +127,8 @@ export default () => ({
     activeScreen: 'screen 1',
     defaultScreenName: null,
     screenList: [],
-    dumpBatch: [],
-    filesBatch: [],
+    dumpBag: [],
+    filesBag: [],
     main: null,
     rendered: false,
     savedDumpsWindow: false,
@@ -136,6 +136,20 @@ export default () => ({
     dragdropEnabled: false,
     bannedComponents: [],
     filteredChildren: '',
+    pinnedScreen: '',
+    pinScreen() {
+        if (this.pinnedScreen !== this.activeScreen) {
+            this.pinnedScreen = this.activeScreen;
+
+            document.getElementById('svg-pin-screen').classList.add('text-[#f8b810]');
+
+            return;
+        }
+
+        document.getElementById('svg-pin-screen').classList.remove('text-[#f8b810]');
+
+        this.pinnedScreen = '';
+    },
     clipboard(text, el = null) {
         clipboard.writeText(text);
 
@@ -189,6 +203,11 @@ export default () => ({
             const resolvePayloadScreen = () => {
                 const lastIndex = this.screenList[this.screenList.length - 1].index + 1;
 
+                // we should not have empty screen names
+                if (typeof content.content.screenName === 'string' && content.content.screenName.trim().length === 0) {
+                    content.content.screenName = 'screen 404';
+                }
+
                 // eslint-disable-next-line prefer-const
                 const { screenHtml, screenName } = this.screenHtml(content.content.screenName ?? this.defaultScreenName);
 
@@ -220,15 +239,29 @@ export default () => ({
 
             const payloadScreen = resolvePayloadScreen();
 
+            let screen;
+
+            if (this.pinnedScreen !== '') {
+                screen = this.pinnedScreen;
+            } else {
+                screen = payloadScreen.screenName;
+            }
+
             if (payloadScreen.raiseIn > 0) {
                 setTimeout(() => {
-                    this.filterScreen(payloadScreen.screenName);
-                    this.activeScreen = payloadScreen.screenName;
+                    this.filterScreen(screen);
+                    this.activeScreen = screen;
                 }, payloadScreen.raiseIn);
             } else {
-                this.filterScreen(payloadScreen.screenName);
-                this.activeScreen = payloadScreen.screenName;
+                this.filterScreen(screen);
+                this.activeScreen = screen;
             }
+
+            this.dumpBag.forEach((element) => {
+                if (element.id === content.id) {
+                    element.screen = screen;
+                }
+            });
         });
 
         ipcRenderer.on('preload:server-failed', (event, arg) => {
@@ -383,19 +416,6 @@ export default () => ({
         this.collapsableElements = [...document.getElementsByClassName('collapsable')];
         this.collapsableElementsCount = this.collapsableElements.length;
     },
-    clear() {
-        this.dumpBatch = [];
-        this.filesBatch = [];
-        this.defaultScreen();
-        this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
-        this.$refs.main.innerHTML = welcomeHtml;
-
-        this.$dispatch('dumper:empty-time-trackers');
-
-        this.removeLivewirePropertiesCard();
-
-        this.$dispatch('dumper:clear');
-    },
     addLivewirePropertiesCard(search = true) {
         this.$refs.body.classList.add('flex', 'mr-3', 'h-full');
         this.$refs.livewire.classList.remove('hidden');
@@ -418,6 +438,33 @@ export default () => ({
             this.$refs.filterComponent.classList.add('hidden');
         }
     },
+    clear() {
+        this.filesBag = [];
+
+        if (typeof this.pinnedScreen === 'string' && this.pinnedScreen.trim().length === 0) {
+            this.defaultScreen();
+            this.$refs.welcome.setAttribute('class', 'block w-auto mx-5 text-sm p-6 shadow bg-white rounded dark:text-slate-300 dark:bg-slate-700');
+            this.$refs.main.innerHTML = welcomeHtml;
+            this.$dispatch('dumper:empty-time-trackers');
+            this.removeLivewirePropertiesCard();
+            this.$dispatch('dumper:clear');
+
+            this.dumpBag = [];
+
+            return;
+        }
+
+        this.screenList.filter((element) => element.screenName !== this.pinnedScreen)
+            .map((element) => {
+                const elements = document.getElementsByClassName(`laraDumpsScreen-${element.screenName}`);
+                [...elements].map((el) => el.remove());
+            });
+
+        this.screenList = this.screenList.filter((element) => element.screenName === this.pinnedScreen || element.screenName === 'screen 1');
+
+        this.filterScreen(this.pinnedScreen);
+        this.activeScreen = this.pinnedScreen;
+    },
     clearScreen() {
         const active = this.screenList.filter((element) => element.active)[0];
 
@@ -427,7 +474,7 @@ export default () => ({
 
         this.screenList = this.screenList.filter((element) => element.screenName !== active.screenName);
 
-        this.$refs.filterLogs.classList.add('hidden');
+        document.getElementById('filterLogs').classList.add('hidden');
 
         this.filterScreen('screen 1');
         this.activeScreen = this.defaultScreenName;
@@ -438,17 +485,17 @@ export default () => ({
 
             const { ideHandle } = content;
 
-            this.dumpBatch.push({
+            this.dumpBag.push({
                 id: content.id,
                 ideHandle,
                 type,
             });
 
-            const exists = this.filesBatch.filter((file) => file.ideHandle.path === ideHandle.path)
+            const exists = this.filesBag.filter((file) => file.ideHandle.path === ideHandle.path)
                 .length > 0;
 
             if (!exists) {
-                this.filesBatch.push({
+                this.filesBag.push({
                     active: false,
                     ideHandle,
                 });
@@ -469,8 +516,14 @@ export default () => ({
 
             this.maximizeApp(autoInvokeApp);
 
-            this.filterScreen(this.activeScreen);
-            this.activeScreen = this.defaultScreenName;
+            let screen;
+            if (typeof this.pinnedScreen === 'string' && this.pinnedScreen.trim().length > 0) {
+                screen = this.pinnedScreen;
+            } else {
+                screen = this.activeScreen;
+            }
+
+            this.filterScreen(screen);
         }
     },
     saveDumps(payload) {
@@ -494,7 +547,7 @@ export default () => ({
         this.loadAllSavedPayload(false);
     },
     activeFileFilter(file) {
-        this.filesBatch.map((file) => file.active = false);
+        this.filesBag.map((file) => file.active = false);
         file.active = true;
     },
     privacyButtonColor() {
@@ -563,12 +616,24 @@ export default () => ({
             this.removeLivewirePropertiesCard();
         }
 
+        if (screen === 'Logs' || screen.indexOf('log-') !== -1) {
+            document.getElementById('filterLogs').classList.remove('hidden');
+        } else {
+            document.getElementById('filterLogs').classList.add('hidden');
+        }
+
         filterScreen(screen);
 
         if (isChildren) {
+            if (this.filteredChildren === screen) {
+                this.filteredChildren = 'all';
+                filterScreen('all');
+
+                return;
+            }
+
             this.filteredChildren = screen;
 
-            console.log(this.filteredChildren);
             return;
         }
 
@@ -644,7 +709,41 @@ export default () => ({
 </div>`;
         }
 
-        if (screenHtml === '') {
+        if (screenName === 'Logs') {
+            screenHtml = `
+<div class="w-full flex justify-between items-center space-x-2">
+    <div>
+            <svg class="w-5 h-5 text-green-700 dark:text-green-500" viewBox="0 0 512.000000 512.000000"
+         preserveAspectRatio="xMidYMid meet">
+        <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
+        fill="currentColor" stroke="none">
+        <path d="M397 5099 c-106 -25 -207 -113 -249 -217 l-23 -57 -3 -2095 c-2
+        -1381 1 -2121 7 -2172 18 -134 86 -229 206 -285 l60 -28 1088 -3 1088 -2 -38
+        52 c-137 188 -239 425 -280 648 -24 131 -24 418 1 550 36 198 129 425 242 595
+        222 332 588 580 976 659 245 50 534 40 743 -25 33 -10 66 -19 73 -19 9 0 12
+        216 12 1048 0 1163 3 1106 -66 1209 -20 28 -59 67 -87 87 -103 70 22 66 -1942
+        65 -987 -1 -1787 -5 -1808 -10z m3152 -938 c76 -39 131 -124 131 -205 0 -87
+        -77 -193 -156 -215 -27 -8 -442 -11 -1342 -11 -1438 0 -1340 -4 -1411 63 -118
+        112 -79 316 71 377 14 5 564 9 1346 9 1287 1 1324 0 1361 -18z m-1042 -1108
+        c107 -57 151 -185 102 -293 -25 -56 -53 -86 -104 -113 -40 -22 -40 -22 -840
+        -22 l-800 0 -42 22 c-147 79 -165 287 -32 385 64 48 53 48 889 45 l785 -2 42
+        -22z m-581 -1102 c73 -33 134 -126 134 -206 0 -80 -61 -173 -134 -206 -38 -17
+        -77 -19 -551 -19 l-511 0 -54 33 c-157 94 -143 321 25 398 37 17 76 19 545 19
+        469 0 508 -2 546 -19z"/>
+        <path d="M3653 2410 c-540 -68 -968 -482 -1048 -1017 -83 -547 221 -1082 732
+        -1290 315 -129 665 -119 972 27 558 267 823 911 615 1493 -143 395 -492 693
+        -904 771 -104 20 -275 27 -367 16z m168 -295 c16 -9 39 -30 49 -48 19 -30 20
+        -53 20 -424 l0 -393 265 0 c294 0 315 -4 355 -61 31 -43 33 -117 4 -157 -45
+        -61 -55 -62 -437 -62 -384 0 -395 2 -438 61 l-24 34 0 485 c0 451 1 488 18
+        513 40 61 124 84 188 52z"/>
+        </g>
+        </svg>
+    </div>
+    <div>${screenName}</div>
+</div>`;
+        }
+
+        if (screenHtml.trim().length === 0) {
             screenHtml = screenName;
         }
 
