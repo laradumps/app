@@ -39,6 +39,19 @@ export default () => ({
                     classList += ' hover:bg-slate-200';
                 }
 
+                if (this.type === 'log') {
+                    classList += ` border-l-4 ${this.content.value.level_color}`;
+                }
+
+                if (!this.type.includes(['log', 'color'])) {
+                    if (this.content.value.level === 'info') {
+                        classList += ' laraDumpsScreen-log-info';
+                    }
+                    if (this.content.value.level === 'error') {
+                        classList += ' laraDumpsScreen-log-error';
+                    }
+                }
+
                 if (this.type === 'livewire-events') {
                     if (document.getElementById('screen-Dispatch-counter') !== null) {
                         document.getElementById('screen-Dispatch-counter').innerText = this.events.filter((event) => event.event.dispatch).length;
@@ -453,8 +466,21 @@ export default () => ({
     handleLogs() {
         const pre = document.createElement('pre');
         const div = document.createElement('div');
+        const filterDiv = document.createElement('div');
 
-        const { level, message, context } = this.content.value;
+        const {
+            level, message, context, filter,
+        } = this.content.value;
+
+        filterDiv.innerHTML = filter;
+
+        if (this.$refs.filterLogs.classList.contains('hidden')) {
+            this.$refs.filterLogs.classList.remove('hidden');
+        }
+
+        if (document.getElementById(`filter-log-${level}`) === null) {
+            this.$refs.childrenFilter.appendChild(filterDiv);
+        }
 
         const levelsWithSearchBar = ['emergency', 'error', 'critical'];
 
@@ -488,12 +514,15 @@ export default () => ({
 
         window.Sfdump(`sf-dump-${this.notificationId}`);
 
-        document.getElementById(`color-${this.notificationId}`)
-            .setAttribute('class', `items-center w-[0.75rem] h-[0.75rem] mr-2 rounded-full ${this.content.value.level_color}`);
+        this.$refs.filterLogs.classList.remove('hidden');
+
+        document.getElementById(`color-${this.notificationId}`).setAttribute('class', 'hidden');
+
+        document.getElementById(`label-${this.notificationId}`).innerText = this.content.value.level;
     },
     handleColor() {
-        document.getElementById(`color-${this.notificationId}`)
-            .setAttribute('class', `items-center w-[0.75rem] h-[0.75rem] mr-2 rounded-full ${this.content.color}`);
+        document.getElementById(this.notificationId)
+            .classList.add('!border-l-4', `${this.content.color}`);
     },
     handleLabel() {
         document.getElementById(`label-${this.notificationId}`)

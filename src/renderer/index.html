@@ -210,6 +210,18 @@
                                 </svg>
                             </a>
 
+                            <div x-ref="filterLogs" class="hidden relative w-full">
+                                <div x-ref="childrenFilter" class="pointer-events-auto w-fit overflow-hidden rounded-md text-slate-500 text-sm dark:text-slate-200">
+                                    <div x-on:click="filterScreen('all', true)" class="py-2 cursor-pointer px-4">
+                                        <div class="flex gap-2 items-center justify-center">
+                                            <div class="rounded-sm bg-slate-500 w-[1rem] h-[1rem] justify-center items-center flex text-white">
+                                                <span x-show="filteredChildren === 'all'">&#10004;</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- toggleAlwaysOnTop -->
                             <div class="absolute bottom-3.5 w-full text-center left-0 space-y-3">
                                 <button id="toggleAlwaysOnTopButton"

@@ -135,6 +135,7 @@ export default () => ({
     totalPayloadSaved: [],
     dragdropEnabled: false,
     bannedComponents: [],
+    filteredChildren: '',
     clipboard(text, el = null) {
         clipboard.writeText(text);
 
@@ -426,6 +427,8 @@ export default () => ({
 
         this.screenList = this.screenList.filter((element) => element.screenName !== active.screenName);
 
+        this.$refs.filterLogs.classList.add('hidden');
+
         this.filterScreen('screen 1');
         this.activeScreen = this.defaultScreenName;
     },
@@ -547,7 +550,7 @@ export default () => ({
 
         ipcRenderer.send('main:toggle-always-on-top', this.isAlwaysOnTop);
     },
-    filterScreen(screen) {
+    filterScreen(screen, isChildren = false) {
         if (screen === 'Livewire') {
             this.addLivewirePropertiesCard();
         }
@@ -561,10 +564,27 @@ export default () => ({
         }
 
         filterScreen(screen);
+
+        if (isChildren) {
+            this.filteredChildren = screen;
+
+            console.log(this.filteredChildren);
+            return;
+        }
+
         this.screenList.forEach((element) => {
             element.active = element.screenName === screen;
         });
+
         this.activeScreen = screen;
+
+        if (document.getElementById('svg-pin-screen') !== null) {
+            if (screen === this.pinnedScreen) {
+                document.getElementById('svg-pin-screen').classList.add('text-[#f8b810]');
+            } else {
+                document.getElementById('svg-pin-screen').classList.remove('text-[#f8b810]');
+            }
+        }
     },
     searchableTable(id) {
         searchableTable(id);
