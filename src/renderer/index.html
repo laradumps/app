@@ -211,7 +211,7 @@
                             </a>
 
                             <!-- toggleAlwaysOnTop -->
-                            <div class="absolute bottom-3.5 w-full text-center left-0 space-y-3">
+                            <div class="absolute bottom-8 w-full text-center left-0 space-y-3">
                                 <button id="toggleAlwaysOnTopButton"
                                         x-show="!savedDumpsWindow"
                                         x-on:mouseenter="$title('Always on top')"
@@ -342,6 +342,7 @@
 
                     </div>
                 </div>
+
                 <div x-ref="body">
                     <div x-ref="main"
                          class="dark:bg-slate-900" x-html="main"></div>
@@ -349,6 +350,14 @@
                          x-ref="livewire"
                          class="hidden w-full p-3 mb-4 shadow-md rounded dark:!bg-slate-700 bg-white border-slate-300 dark:border-slate-600 align-middle items-start"></div>
                 </div>
+
+                <template x-if="rendered">
+                    <div class="fixed flex select-none justify-between text-xs text-slate-600 bottom-0 w-auto right-0 left-0 z-300 p-1
+                                                 bg-white dark:bg-slate-700 dark:text-slate-200 dark:font-normal px-2">
+                        <span>⭐ Support LaraDumps, <a x-on:click="openLink('https://github.com/laradumps/laradumps')" class="text-blue-500 underline cursor-pointer dark:text-blue-200"> star our repository</a></span>
+                        <span class="pr-2" x-ref="version"></span>
+                    </div>
+                </template>
             </main>
         </div>
     </div>
