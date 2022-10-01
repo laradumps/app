@@ -135,6 +135,7 @@ export default () => ({
     totalPayloadSaved: [],
     dragdropEnabled: false,
     bannedComponents: [],
+    filteredChildren: '',
     pinnedScreen: '',
     pinScreen() {
         if (this.pinnedScreen !== this.activeScreen) {
@@ -473,6 +474,8 @@ export default () => ({
 
         this.screenList = this.screenList.filter((element) => element.screenName !== active.screenName);
 
+        document.getElementById('filterLogs').classList.add('hidden');
+
         this.filterScreen('screen 1');
         this.activeScreen = this.defaultScreenName;
     },
@@ -600,7 +603,7 @@ export default () => ({
 
         ipcRenderer.send('main:toggle-always-on-top', this.isAlwaysOnTop);
     },
-    filterScreen(screen) {
+    filterScreen(screen, isChildren = false) {
         if (screen === 'Livewire') {
             this.addLivewirePropertiesCard();
         }
@@ -613,10 +616,31 @@ export default () => ({
             this.removeLivewirePropertiesCard();
         }
 
+        if (screen === 'Logs' || screen.indexOf('log-') !== -1) {
+            document.getElementById('filterLogs').classList.remove('hidden');
+        } else {
+            document.getElementById('filterLogs').classList.add('hidden');
+        }
+
         filterScreen(screen);
+
+        if (isChildren) {
+            if (this.filteredChildren === screen) {
+                this.filteredChildren = 'all';
+                filterScreen('all');
+
+                return;
+            }
+
+            this.filteredChildren = screen;
+
+            return;
+        }
+
         this.screenList.forEach((element) => {
             element.active = element.screenName === screen;
         });
+
         this.activeScreen = screen;
 
         if (document.getElementById('svg-pin-screen') !== null) {
