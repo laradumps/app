@@ -38,7 +38,7 @@
     "strip-ansi": "^7.0.1",
     "tippy.js": "^6.3.7",
     "tree-kill": "^1.2.2",
-    "uuid": "^8.3.2"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.18.6",
