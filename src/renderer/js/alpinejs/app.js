@@ -104,9 +104,6 @@ const welcomeHtml = `
                <div class="mt-8 font-light" x-on:click="openLink('https://laradumps.dev')">📚
                   Check out our <span class="text-blue-500 underline cursor-pointer dark:text-blue-300">documentation</span> for more information.
                </div>
-               <div class="mt-6 font-light" x-on:click="openLink('https://github.com/laradumps/laradumps')">⭐
-                  Enjoying LaraDumps? Please consider <span class="text-blue-500 underline cursor-pointer dark:text-blue-300"> starring our repository</span>!
-               </div>
             </div>        
         </div>
     </div>`;
@@ -328,7 +325,7 @@ export default () => ({
         });
 
         ipcRenderer.on('main:app-version', (event, arg) => {
-            document.title = `LaraDumps - ${arg.version}`;
+            this.$refs.version.innerText = `v${arg.version}`;
         });
 
         ipcRenderer.on('main:message', (event, arg) => {
