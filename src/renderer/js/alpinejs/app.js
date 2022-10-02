@@ -23,6 +23,8 @@ const welcomeHtml = `
                       class="p-2 placeholder-gray-400 dark:bg-slate-800 dark:text-slate-400 dark:placeholder-gray-500 border border-slate-300 focus:ring-slate-600 focus:border-slate-500 dark:border-slate-600 form-input block w-full sm:text-sm rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm pl-8">
         </div>
         <div style="height: calc(100vh - 140px)" class="px-3 right-0 mb-[4rem] dark:bg-slate-900" id="debug">
+            <div id="output"></div>
+
             <div x-show="savedDumpsWindow && dumpBag.length === 0" class="w-full h-full font-semibold items-center justify-center p-4 text-slate-500 text-sm text-center space-y-5">   
                 <div class="rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-4">
                   <div class="flex">
@@ -326,7 +328,7 @@ export default () => ({
         });
 
         ipcRenderer.on('main:app-version', (event, arg) => {
-            this.$refs.version.innerText = `v${arg.version}`;
+            setTimeout(() => this.$refs.version.innerText = `v${arg.version}`, 100);
         });
 
         ipcRenderer.on('main:message', (event, arg) => {
@@ -477,51 +479,51 @@ export default () => ({
         this.activeScreen = this.defaultScreenName;
     },
     dispatchDump(type, content) {
-        if (!this.bannedComponents.includes(content.id)) {
-            this.$dispatch(`dumper:${type}`, content);
+        if (this.bannedComponents.includes(content.id)) {
 
-            const { ideHandle } = content;
-
-            this.dumpBag.push({
-                id: content.id,
-                ideHandle,
-                type,
-            });
-
-            const exists = this.filesBag.filter((file) => file.ideHandle.path === ideHandle.path)
-                .length > 0;
-
-            if (!exists) {
-                this.filesBag.push({
-                    active: false,
-                    ideHandle,
-                });
-            }
-
-            if (['livewire', 'livewire-events', 'livewire-events-returned'].includes(type)) {
-                this.addLivewirePropertiesCard();
-            } else {
-                this.removeLivewirePropertiesCard();
-                this.$nextTick(() => {
-                    document.getElementById('output').scrollIntoView({
-                        behavior: 'smooth',
-                    });
-                });
-            }
-
-            const autoInvokeApp = typeof content.meta === 'object' ? content.meta.auto_invoke_app : true;
-
-            this.maximizeApp(autoInvokeApp);
-
-            let screen;
-            if (typeof this.pinnedScreen === 'string' && this.pinnedScreen.trim().length > 0) {
-                screen = this.pinnedScreen;
-            } else {
-                screen = this.activeScreen;
-            }
-
-            this.filterScreen(screen);
+            return;
         }
+
+        this.$nextTick(() => document.getElementById('output').scrollIntoView({ behavior: 'smooth' }));
+
+        this.$dispatch(`dumper:${type}`, content);
+
+        const { ideHandle } = content;
+
+        this.dumpBag.push({
+            id: content.id,
+            ideHandle,
+            type,
+        });
+
+        const exists = this.filesBag.filter((file) => file.ideHandle.path === ideHandle.path)
+            .length > 0;
+
+        if (!exists) {
+            this.filesBag.push({
+                active: false,
+                ideHandle,
+            });
+        }
+
+        if (['livewire', 'livewire-events', 'livewire-events-returned'].includes(type)) {
+            this.addLivewirePropertiesCard();
+        } else {
+            this.removeLivewirePropertiesCard();
+        }
+
+        const autoInvokeApp = typeof content.meta === 'object' ? content.meta.auto_invoke_app : true;
+
+        this.maximizeApp(autoInvokeApp);
+
+        let screen;
+        if (typeof this.pinnedScreen === 'string' && this.pinnedScreen.trim().length > 0) {
+            screen = this.pinnedScreen;
+        } else {
+            screen = this.activeScreen;
+        }
+
+        this.filterScreen(screen);
     },
     saveDumps(payload) {
         payload.content = JSON.parse(new Buffer(payload.content, 'base64').toString());
