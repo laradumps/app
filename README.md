@@ -4,6 +4,7 @@
 <h1 align="center">LaraDumps</h1>
 <div align="center">
   <br />
+    <!--LaraDumpsVersion-->
   <p align="center">
     <a href="https://github.com/laradumps/app/releases/download/v1.2.3/LaraDumps-Setup-1.2.3.exe">
       <img src="./art/os/windows.png" height="60" alt="LaraDumps Windows App" />
@@ -15,7 +16,8 @@
       <img src="./art/os/linux.png" height="60" alt="LaraDumps Linux App" />
     </a>
   </p>
-  <h3>Click on your OS logo to download the Desktop App.</h3>
+    <!--EndOfLaraDumpsVersion-->
+  <h3>Click to Download the App</h3>
   <sub>Available for Windows, Linux and macOS.</sub>
   <br />
   <br />
@@ -47,13 +49,38 @@ When using LaraDumps, you can see the result of your debug displayed in a standa
 <br>
 
 ### Get Started
+<!--LaraDumpsVersion-->
 
-1. Download the Desktop App: [Windows](https://github.com/laradumps/app/releases/download/v1.2.3/LaraDumps-Setup-1.2.3.exe) | [MacOS](https://github.com/laradumps/app/releases/download/v1.2.3/LaraDumps-1.2.3.dmg)
+1. Download the Desktop App here: [Windows](https://github.com/laradumps/app/releases/download/v1.2.3/LaraDumps-Setup-1.2.3.exe) | [MacOS](https://github.com/laradumps/app/releases/download/v1.2.3/LaraDumps-1.2.3.dmg)
  | [Linux](https://github.com/laradumps/app/releases/download/v1.2.3/LaraDumps-1.2.3.AppImage)
+<!--EndOfLaraDumpsVersion-->
 
 2. Install the [LaraDumps package](https://github.com/laradumps/laradumps) in your Laravel project.
 
+3. Debug your code using `ds()` in the same way you would use Laravel's native functions dump() or dd().
+
 <br>
+
+### Example
+
+Here's an example:
+
+```php
+// File: routes/web.php
+
+<?php 
+
+Route::get('/', function () {
+    ds('Home page accessed!');
+    return view('home');
+});
+```
+
+The Desktop App receives:
+
+<p align="center">
+  <img src="./art/example.png" height="500" alt="" />
+</p>
 
 ### Credits
 
