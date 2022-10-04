@@ -1,6 +1,5 @@
 import {
-    app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu, shell,
-} from 'electron';
+    app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu} from 'electron';
 import { format } from 'url';
 import { join, resolve } from 'path';
 import updater from 'electron-updater';
@@ -13,6 +12,8 @@ const { autoUpdater } = updater;
 const contextMenu = require('electron-context-menu');
 
 let mainWindow;
+let coffeeWindow;
+
 const isDev = process.env.NODE_ENV === 'development';
 
 if (isDev) {
@@ -42,6 +43,20 @@ function createWindow() {
         },
         show: false,
     };
+    
+    const coffeeWindowOptions = {
+        width: 600,
+        height: 500,
+        resizable: false,
+        frame: false,
+        transparent: false,
+        alwaysOnTop: true,
+        show: false,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+          }
+    };
 
     const savedDumpsWindowOptions = {
         width: 600,
@@ -63,8 +78,42 @@ function createWindow() {
 
     const savedDumpsWindow = new BrowserWindow(savedDumpsWindowOptions);
 
-    savedDumpsWindow.setMenu(null);
+    const coffeeWindow = new BrowserWindow(coffeeWindowOptions);
 
+    savedDumpsWindow.setMenu(null);
+    coffeeWindow.setMenu(null);
+
+    coffeeWindow.webContents.on('new-window', function(e, url) {
+        e.preventDefault();
+        require('electron').shell.openExternal(url);
+    });
+    
+    ipcMain.on('main:grab-a-coffee', (event, arg) => {
+        coffeeWindow.webContents.send('coffee:show-coffee-quote', arg);
+    
+        //Send Stats
+        storage.setDataPath(os.tmpdir());
+
+        storage.keys(function(error, keys) {
+            if (error) throw error;
+            keys.forEach(function (key) {
+                if (key.startsWith('count_')) {
+                    storage.get(key, function (error, data) {
+                        var stats = {};
+                        stats[key] = data.total;
+                        coffeeWindow.webContents.send('coffee:show-stats', stats);
+                    });
+                 }
+            });
+        });
+
+        coffeeWindow.show();
+
+        setTimeout(async () => {
+            coffeeWindow.hide();
+        }, 6000);
+    });
+    
     ipcMain.on('main:open-saved-dumps', (event, arg) => {
         savedDumpsWindow.show();
         savedDumpsWindow.webContents.send('app:load-all-saved-payload', arg);
@@ -79,6 +128,7 @@ function createWindow() {
     if (isDev) {
         mainWindow.loadURL('http://localhost:4999');
         savedDumpsWindow.loadURL('http://localhost:4999');
+        coffeeWindow.loadFile('src/renderer/coffee.html');
     } else {
         mainWindow.loadURL(
             format({
@@ -90,6 +140,13 @@ function createWindow() {
         savedDumpsWindow.loadURL(
             format({
                 pathname: join(__dirname, 'app', 'index.html'),
+                protocol: 'file:',
+                slashes: true,
+            }),
+        );
+        coffeeWindow.loadURL(
+            format({
+                pathname: path.join(__dirname, 'coffee.html'),
                 protocol: 'file:',
                 slashes: true,
             }),
@@ -333,4 +390,40 @@ ipcMain.on('main:save-dumps', (event, arg) => {
     storage.set(arg.id, arg, (error) => {
         if (error) throw error;
     });
+});
+
+ipcMain.on('main:increment-counter', (event, type) => {
+
+    const countTypes = {
+        //type, countAs
+        'diff': 'ds',
+        'dump': 'ds',
+        'model': 'ds',
+        'table': 'ds',
+        'time-track': 'ds',
+
+        'events': 'livewire',
+        'livewire': 'livewire',
+
+        'log': 'log',
+        'queries': 'sql'
+    };
+
+    let countAs = countTypes[type];
+
+    if (countAs) {
+        countAs = 'count_' + countAs;
+
+        storage.setDataPath(os.tmpdir());
+
+        let hasKey = storage.has(countAs, (error, hasKey) => hasKey);
+        
+        if (hasKey === false) {
+            storage.set(countAs, { total: 1 });
+            return;
+        } 
+
+        storage.get(countAs, (error, data) => storage.set(countAs, { total: data.total + 1 }));
+
+    }
 });
