@@ -18,7 +18,9 @@ module.exports = {
         },
         'bg-black',
         'w-[1rem]',
+        'h-[1rem]',
         'w-20',
+        'gap-2',
     ],
     theme: {
         height: {

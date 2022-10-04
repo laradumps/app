@@ -42,7 +42,11 @@ export default () => ({
                 if (this.type === 'log') {
                     const { level } = this.content.value;
 
-                    classList += ` border-l-4 ${this.content.value.level_color} laraDumpsScreen-log-${level}`;
+                    let color = this.content.value.level_color;
+
+                    color = color.replace('bg', 'border');
+
+                    classList += ` border-l-4 ${color} laraDumpsScreen-log-${level}`;
                 }
 
                 if (this.type === 'livewire-events') {
@@ -514,7 +518,9 @@ export default () => ({
         document.getElementById(`label-${this.notificationId}`).innerText = this.content.value.level;
     },
     handleColor() {
-        const { color } = this.content;
+        let { color } = this.content;
+
+        color = color.replace('bg', 'border');
 
         document.getElementById(this.notificationId)
             .classList.add('!border-l-4', `${color}`);
