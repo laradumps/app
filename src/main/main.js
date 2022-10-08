@@ -144,13 +144,7 @@ function createWindow() {
                 slashes: true,
             }),
         );
-        coffeeWindow.loadURL(
-            format({
-                pathname: path.join(__dirname, 'coffee.html'),
-                protocol: 'file:',
-                slashes: true,
-            }),
-        );
+        coffeeWindow.loadURL(`file://${__dirname}/../src/renderer/coffee.html`);
     }
 
     autoUpdater.autoDownload = false;
