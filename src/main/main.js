@@ -1,5 +1,6 @@
 import {
-    app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu} from 'electron';
+    app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu,
+} from 'electron';
 import { format } from 'url';
 import { join, resolve } from 'path';
 import updater from 'electron-updater';
@@ -43,10 +44,10 @@ function createWindow() {
         },
         show: false,
     };
-    
+
     const coffeeWindowOptions = {
-        width: 600,
-        height: 500,
+        width: 800,
+        height: 550,
         resizable: false,
         frame: false,
         transparent: false,
@@ -54,8 +55,8 @@ function createWindow() {
         show: false,
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false
-          }
+            contextIsolation: false,
+        },
     };
 
     const savedDumpsWindowOptions = {
@@ -83,37 +84,29 @@ function createWindow() {
     savedDumpsWindow.setMenu(null);
     coffeeWindow.setMenu(null);
 
-    coffeeWindow.webContents.on('new-window', function(e, url) {
-        e.preventDefault();
-        require('electron').shell.openExternal(url);
-    });
-    
     ipcMain.on('main:grab-a-coffee', (event, arg) => {
         coffeeWindow.webContents.send('coffee:show-coffee-quote', arg);
-    
-        //Send Stats
+
         storage.setDataPath(os.tmpdir());
 
-        storage.keys(function(error, keys) {
+        storage.keys((error, keys) => {
             if (error) throw error;
-            keys.forEach(function (key) {
+            keys.forEach((key) => {
                 if (key.startsWith('count_')) {
-                    storage.get(key, function (error, data) {
-                        var stats = {};
+                    storage.get(key, (error, data) => {
+                        const stats = {};
                         stats[key] = data.total;
                         coffeeWindow.webContents.send('coffee:show-stats', stats);
                     });
-                 }
+                }
             });
         });
 
         coffeeWindow.show();
 
-        setTimeout(async () => {
-            coffeeWindow.hide();
-        }, 6000);
+        setTimeout(async () => coffeeWindow.hide(), 10000);
     });
-    
+
     ipcMain.on('main:open-saved-dumps', (event, arg) => {
         savedDumpsWindow.show();
         savedDumpsWindow.webContents.send('app:load-all-saved-payload', arg);
@@ -144,13 +137,7 @@ function createWindow() {
                 slashes: true,
             }),
         );
-        coffeeWindow.loadURL(
-            format({
-                pathname: path.join(__dirname, 'coffee.html'),
-                protocol: 'file:',
-                slashes: true,
-            }),
-        );
+        coffeeWindow.loadURL(`file://${__dirname}/../src/renderer/coffee.html`);
     }
 
     autoUpdater.autoDownload = false;
@@ -161,7 +148,7 @@ function createWindow() {
                 await dialog.showMessageBox({
                     type: 'info',
                     title: 'LaraDumps update available!',
-                    message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
+                    message: 'There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app',
                     buttons: ['Ok'],
                 });
             } else {
@@ -329,7 +316,7 @@ app.whenReady().then(async () => {
     if (process.platform === 'darwin') {
         globalShortcut.register('Command+Q', () => {
             app.quit();
-        })
+        });
     }
 
     app.on('activate', () => {
@@ -393,37 +380,35 @@ ipcMain.on('main:save-dumps', (event, arg) => {
 });
 
 ipcMain.on('main:increment-counter', (event, type) => {
-
     const countTypes = {
-        //type, countAs
-        'diff': 'ds',
-        'dump': 'ds',
-        'model': 'ds',
-        'table': 'ds',
+        // type, countAs
+        diff: 'ds',
+        dump: 'ds',
+        model: 'ds',
+        table: 'ds',
         'time-track': 'ds',
 
-        'events': 'livewire',
-        'livewire': 'livewire',
+        events: 'livewire',
+        livewire: 'livewire',
 
-        'log': 'log',
-        'queries': 'sql'
+        log: 'log',
+        queries: 'sql',
     };
 
     let countAs = countTypes[type];
 
     if (countAs) {
-        countAs = 'count_' + countAs;
+        countAs = `count_${countAs}`;
 
         storage.setDataPath(os.tmpdir());
 
-        let hasKey = storage.has(countAs, (error, hasKey) => hasKey);
-        
+        const hasKey = storage.has(countAs, (error, hasKey) => hasKey);
+
         if (hasKey === false) {
             storage.set(countAs, { total: 1 });
             return;
-        } 
+        }
 
         storage.get(countAs, (error, data) => storage.set(countAs, { total: data.total + 1 }));
-
     }
 });

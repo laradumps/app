@@ -484,7 +484,6 @@ export default () => ({
     },
     dispatchDump(type, content) {
         if (this.bannedComponents.includes(content.id)) {
-
             return;
         }
 
@@ -499,9 +498,8 @@ export default () => ({
             ideHandle,
             type,
         });
-        
-        ipcRenderer.send('main:increment-counter', type);
 
+        ipcRenderer.send('main:increment-counter', type);
 
         const exists = this.filesBag.filter((file) => file.ideHandle.path === ideHandle.path)
             .length > 0;
