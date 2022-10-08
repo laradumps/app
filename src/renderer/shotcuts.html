@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/hotkeys-js/dist/hotkeys.min.js"></script>
+  </head>
+  <body class=" bg-slate-100 dark:bg-slate-900"">
+    <div class="m-2">
+      <h1>Shortcuts</h1>
+      <div class="m-5">
+        <div class="mt-2">
+          <label for="foobar">Foobar</label>
+          <input id="foobar" name="foobar" class="js-shortcut bg-slate-200" readonly size=25/>
+          <button id="save" class="js-save bg-slate-400 rounded p-1">save</button>
+        </div>
+
+        <div class="mt-2">
+          <label for="clearall">Clear All</label>
+          <input id="clearall" name="clearall" class="js-shortcut bg-slate-200" readonly size=25/>
+          <button id="save" class="js-save bg-slate-400 rounded p-1">save</button>
+        </div>
+
+        <div class="mt-2">
+          <label for="clearall">Some other</label>
+          <input id="someother" name="someother" class="js-shortcut bg-slate-200" readonly size=20/>
+          <button id="save" class="js-save bg-slate-400 rounded p-1">save</button>
+        </div>
+
+      </div>
+      <button id="close" class="js-close bg-green-600 rounded px-2">OK</button>
+  </div>
+
+    <script>
+      const { ipcRenderer } = require('electron');
+      let InputElement = null;
+
+      // ** Structure for inptus **/
+      [...document.getElementsByClassName("js-shortcut")].forEach(input => input.addEventListener('click', function() {
+          InputElement = event.target;
+      }, false));
+      
+      [...document.getElementsByClassName("js-shortcut")].forEach(input => input.addEventListener('blur', function() {
+          InputElement = null;
+      }, false));
+
+      // ** Close button **/
+      document.getElementById('close').onclick = function(){
+        ipcRenderer.send('main:close-shortcut-window');
+      };
+
+     // ** Save button **/
+      [...document.getElementsByClassName("js-save")].forEach(button => button.addEventListener('click',
+          function() {
+      
+              const input = event.target.previousSibling.previousSibling;
+      
+              ipcRenderer.send('main:set-shortcut', {
+                  shortcut: 'ds_shortcut_' + input.name,
+                  keys: input.value.toElectronFormat()
+              });
+      
+              InputElement = null;
+          }, false));
+      
+        //** Detected key pressed **/
+        hotkeys('*', function() {
+        
+            let codes = hotkeys.getPressedKeyCodes();
+            let keys = hotkeys.getPressedKeyString().join('+');
+
+            if (typeof InputElement !== 'undefined' || InputElement !== null) {
+                InputElement.value = keys.beautifyShortcut();
+            }
+        });
+
+      //** Convert shortcuts to Electron format **/
+        Object.defineProperty(String.prototype, 'beautifyShortcut', {
+            value() {
+                if (process.platform === 'darwin') {
+                    return this.replace("CommandOrControl", "⌘")
+                        .replace("Shift", "⇧")
+                        .replace("Option", "⌥");
+                }
+                return this.replace("CommandOrControl", "⊞")
+                    .replace("Shift", "⇧")
+                    .replace("Option", "⌥");
+            }
+        });
+        
+        Object.defineProperty(String.prototype, 'toElectronFormat', {
+            value() {
+                return this.replace("", "CommandOrControl")
+                    .replace("⌘", "CommandOrControl")
+                    .replace("⇧", "Shift")
+                    .replace("⌥", "Option");
+            }
+        });
+
+        // ** Loading existing shortcuts  **/
+        ipcRenderer.on('shortcuts:list', (event, arg) => {
+          var shortcut = arg.shortcut.replace('ds_shortcut_', '');
+
+          try { 
+            document.getElementById(shortcut).value = arg.keys.beautifyShortcut();
+          } catch(err){
+            console.log("Error: ",err);
+          }
+      });
+    </script>
+  </body>
+</html>

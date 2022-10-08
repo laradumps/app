@@ -27,6 +27,38 @@ const dispatch = (data) => {
     mainWindow.webContents.send('main:message', data);
 };
 
+function shortcuts() {
+    storage.setDataPath(os.tmpdir());
+    
+    globalShortcut.unregisterAll();
+
+    /* ====================================
+       =          Configurable           =
+       ===================================*/
+
+   let foobar = storage.getSync('ds_shortcut_foobar');
+
+    if (Object.keys(foobar).length === 0) {
+        foobar = { shortcut: 'foobar', keys: 'CommandOrControl+Shift+O' };
+    }
+   
+    console.log('Setting shortcut foobar to: ' + foobar.keys);
+
+    globalShortcut.register(foobar.keys, () => {
+        console.log('executing foobar!');
+    });
+
+    /* ====================================
+       =     Should be always declared    =
+       ===================================*/
+    
+    if (process.platform === 'darwin') {
+        globalShortcut.register('Command+Q', () => {
+            app.quit();
+        })
+    }
+}
+
 function createWindow() {
     const mainWindowOptions = {
         width: 700,
@@ -53,6 +85,8 @@ function createWindow() {
             contextIsolation: false,
         },
     };
+    
+    var ShortcutsWindow = null;
 
     if ((process.platform === 'linux' && !isDev) || isDev) {
         mainWindowOptions.icon = resolve(__dirname, 'icon.png');
@@ -153,6 +187,48 @@ function createWindow() {
     return mainWindow;
 }
 
+function showShortcutsWindow()
+{
+    storage.setDataPath(os.tmpdir());
+
+    ShortcutsWindow = new BrowserWindow({
+        width: 700,
+        height: 500,
+        resizable: false,
+        frame: false,
+        transparent: false,
+        alwaysOnTop: true,
+        show: false,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+        }
+    });
+
+    if (isDev) {
+        ShortcutsWindow.loadFile('src/renderer/shotcuts.html');
+        ShortcutsWindow.webContents.openDevTools();
+    } else {
+        ShortcutsWindow.loadURL(`file://${__dirname}/../src/renderer/shotcuts.html`);
+    }
+    
+    //Sending configured shortcuts
+    storage.keys(function(error, keys) {
+        if (error) throw error;
+        keys.forEach(function (key) {
+            if (key.startsWith('ds_shortcut_')) {
+                storage.get(key, function (error, data) {
+                    ShortcutsWindow.webContents.on('did-finish-load', ()=>{
+                        ShortcutsWindow.webContents.send('shortcuts:list', data);
+                    });
+                });
+            }
+        });
+    });
+
+    ShortcutsWindow.show();
+}
+
 function createMenu() {
     const menuTemplate = [{
         label: 'Menu',
@@ -167,6 +243,12 @@ function createMenu() {
         },
         {
             type: 'separator',
+        },
+        {
+            label: 'Edit Shortcuts',
+            click() {
+                showShortcutsWindow();
+            },
         },
         {
             label: 'Quit LaraDumps',
@@ -219,6 +301,10 @@ function createMenu() {
     Menu.setApplicationMenu(menu);
 }
 
+app.on('browser-window-focus', () => {
+    shortcuts()
+});
+
 app.whenReady().then(async () => {
     createMenu();
 
@@ -264,16 +350,6 @@ app.whenReady().then(async () => {
     });
 
     mainWindow.webContents.send('message', { version: app.getVersion() });
-
-    globalShortcut.register('CommandOrControl+Shift+X', () => {
-        mainWindow.reload();
-    });
-
-    if (process.platform === 'darwin') {
-        globalShortcut.register('Command+Q', () => {
-            app.quit();
-        })
-    }
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
@@ -332,5 +408,20 @@ ipcMain.on('main:save-dumps', (event, arg) => {
     storage.setDataPath(os.tmpdir());
     storage.set(arg.id, arg, (error) => {
         if (error) throw error;
+    });
+});
+
+ipcMain.on('main:close-shortcut-window', (event, data) => {
+    ShortcutsWindow.hide();
+});
+
+ipcMain.on('main:set-shortcut', (event, data) => {
+    storage.setDataPath(os.tmpdir());
+    
+    console.log('Received shortcut request for: '+data.shortcut+' with: ' + data.keys);
+
+    storage.set(data.shortcut, { shortcut: data.shortcut, keys: data.keys }, (error) => {
+        if (error) throw error;
+        shortcuts();
     });
 });
