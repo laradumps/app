@@ -13,7 +13,6 @@ const { autoUpdater } = updater;
 const contextMenu = require('electron-context-menu');
 
 let mainWindow;
-let coffeeWindow;
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -46,7 +45,7 @@ function createWindow() {
     };
 
     const coffeeWindowOptions = {
-        width: 800,
+        width: 700,
         height: 550,
         resizable: false,
         frame: false,
