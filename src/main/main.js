@@ -8,11 +8,14 @@ import storage from 'electron-json-storage';
 import * as os from 'os';
 import initIpcMain from './ipc.js';
 import fixPath from './fix-path.js';
+import { registerShortcuts, showShortcutsWindow } from './shortcuts';
 
 const { autoUpdater } = updater;
 const contextMenu = require('electron-context-menu');
 
 let mainWindow;
+let shortcutsWindow;
+
 const isDev = process.env.NODE_ENV === 'development';
 
 if (isDev) {
@@ -27,38 +30,6 @@ const dispatch = (data) => {
     mainWindow.webContents.send('main:message', data);
 };
 
-function shortcuts() {
-    storage.setDataPath(os.tmpdir());
-    
-    globalShortcut.unregisterAll();
-
-    /* ====================================
-       =          Configurable           =
-       ===================================*/
-
-   let foobar = storage.getSync('ds_shortcut_foobar');
-
-    if (Object.keys(foobar).length === 0) {
-        foobar = { shortcut: 'foobar', keys: 'CommandOrControl+Shift+O' };
-    }
-   
-    console.log('Setting shortcut foobar to: ' + foobar.keys);
-
-    globalShortcut.register(foobar.keys, () => {
-        console.log('executing foobar!');
-    });
-
-    /* ====================================
-       =     Should be always declared    =
-       ===================================*/
-    
-    if (process.platform === 'darwin') {
-        globalShortcut.register('Command+Q', () => {
-            app.quit();
-        })
-    }
-}
-
 function createWindow() {
     const mainWindowOptions = {
         width: 700,
@@ -68,7 +39,7 @@ function createWindow() {
         center: true,
         webPreferences: {
             spellcheck: true,
-            preload: resolve(join(__dirname, 'preload.js')),
+            preload: resolve(join(__dirname, 'index.js')),
             nodeIntegration: true,
             contextIsolation: false,
         },
@@ -85,8 +56,6 @@ function createWindow() {
             contextIsolation: false,
         },
     };
-    
-    var ShortcutsWindow = null;
 
     if ((process.platform === 'linux' && !isDev) || isDev) {
         mainWindowOptions.icon = resolve(__dirname, 'icon.png');
@@ -138,7 +107,7 @@ function createWindow() {
                 await dialog.showMessageBox({
                     type: 'info',
                     title: 'LaraDumps update available!',
-                    message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
+                    message: 'There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app',
                     buttons: ['Ok'],
                 });
             } else {
@@ -187,48 +156,6 @@ function createWindow() {
     return mainWindow;
 }
 
-function showShortcutsWindow()
-{
-    storage.setDataPath(os.tmpdir());
-
-    ShortcutsWindow = new BrowserWindow({
-        width: 700,
-        height: 500,
-        resizable: false,
-        frame: false,
-        transparent: false,
-        alwaysOnTop: true,
-        show: false,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-        }
-    });
-
-    if (isDev) {
-        ShortcutsWindow.loadFile('src/renderer/shotcuts.html');
-        ShortcutsWindow.webContents.openDevTools();
-    } else {
-        ShortcutsWindow.loadURL(`file://${__dirname}/../src/renderer/shotcuts.html`);
-    }
-    
-    //Sending configured shortcuts
-    storage.keys(function(error, keys) {
-        if (error) throw error;
-        keys.forEach(function (key) {
-            if (key.startsWith('ds_shortcut_')) {
-                storage.get(key, function (error, data) {
-                    ShortcutsWindow.webContents.on('did-finish-load', ()=>{
-                        ShortcutsWindow.webContents.send('shortcuts:list', data);
-                    });
-                });
-            }
-        });
-    });
-
-    ShortcutsWindow.show();
-}
-
 function createMenu() {
     const menuTemplate = [{
         label: 'Menu',
@@ -247,7 +174,7 @@ function createMenu() {
         {
             label: 'Edit Shortcuts',
             click() {
-                showShortcutsWindow();
+                shortcutsWindow.show();
             },
         },
         {
@@ -302,13 +229,15 @@ function createMenu() {
 }
 
 app.on('browser-window-focus', () => {
-    shortcuts()
+    registerShortcuts();
 });
 
 app.whenReady().then(async () => {
     createMenu();
 
     mainWindow = createWindow();
+
+    shortcutsWindow = showShortcutsWindow();
 
     mainWindow.on('minimize', (event) => {
         event.preventDefault();
@@ -412,16 +341,16 @@ ipcMain.on('main:save-dumps', (event, arg) => {
 });
 
 ipcMain.on('main:close-shortcut-window', (event, data) => {
-    ShortcutsWindow.hide();
+    shortcutsWindow.hide();
 });
 
 ipcMain.on('main:set-shortcut', (event, data) => {
     storage.setDataPath(os.tmpdir());
-    
-    console.log('Received shortcut request for: '+data.shortcut+' with: ' + data.keys);
+
+    console.log(`Received shortcut request for: ${data.shortcut} with: ${data.keys}`);
 
     storage.set(data.shortcut, { shortcut: data.shortcut, keys: data.keys }, (error) => {
         if (error) throw error;
-        shortcuts();
+        registerShortcuts();
     });
 });

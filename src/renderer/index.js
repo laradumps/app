@@ -6,6 +6,8 @@ import './assets/tippy/tippy.css';
 import './js/alpinejs';
 import './js/plugins/sf-dump';
 
+import './shortcuts';
+
 window.Alpine = Alpine;
 
 Alpine.start();

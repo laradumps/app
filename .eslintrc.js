@@ -33,5 +33,7 @@ module.exports = {
         'no-else-return': 1,
         semi: [1, 'always'],
         'space-unary-ops': 2,
+        'next-line': 'off',
+        'no-extend-native': 'off',
     },
 };

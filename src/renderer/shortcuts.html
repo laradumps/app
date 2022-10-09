@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Shortcuts</title>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900">
+<div x-data="shortcuts" id="shortcuts" class="m-2">
+    <h1>Shortcuts</h1>
+    <div class="m-5">
+        <div class="mt-2">
+            <label for="foobar">Foobar</label>
+            <input class="js-shortcut bg-slate-200" id="foobar" name="foobar" readonly size=25/>
+            <button class="js-save bg-slate-400 rounded p-1">save</button>
+        </div>
+
+        <div class="mt-2">
+            <label for="clearAll">Clear All</label>
+            <input class="js-shortcut bg-slate-200" id="clearAll" name="clearAll" readonly size=25/>
+            <button class="js-save bg-slate-400 rounded p-1">save</button>
+        </div>
+
+    </div>
+    <button class="js-close bg-green-600 rounded px-2" x-on:click="close">OK</button>
+</div>
+
+</body>
+</html>

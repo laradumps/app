@@ -48,6 +48,15 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: './src/renderer/index.html',
+            inject: true,
+            chunks: ['index'],
+            filename: 'index.html',
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/renderer/shortcuts.html',
+            inject: true,
+            chunks: ['index'],
+            filename: 'shortcuts.html',
         }),
         new MiniCssExtractPlugin({
             filename: 'styles.css',

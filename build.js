@@ -10,6 +10,7 @@ const options = {
         'process.platform': `"${process.platform}"`,
     },
 };
+
 buildSync({
     entryPoints: ['src/main/main.js'],
     outfile: 'dist/main.js',
@@ -17,9 +18,10 @@ buildSync({
 });
 
 buildSync({
-    entryPoints: ['src/preload/preload.js'],
-    outfile: 'dist/preload.js',
+    entryPoints: ['src/preload/index.js'],
+    outfile: 'dist/index.js',
     ...options,
 });
+
 copyFileSync('build/icon.png', 'dist/icon.png');
 copyFileSync('build/icon.icns', 'dist/icon.icns');
