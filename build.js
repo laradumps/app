@@ -17,8 +17,8 @@ buildSync({
 });
 
 buildSync({
-    entryPoints: ['src/preload/preload.js'],
-    outfile: 'dist/preload.js',
+    entryPoints: ['src/preload/index.js'],
+    outfile: 'dist/index.js',
     ...options,
 });
 copyFileSync('build/icon.png', 'dist/icon.png');

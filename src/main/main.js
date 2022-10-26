@@ -8,11 +8,13 @@ import storage from 'electron-json-storage';
 import * as os from 'os';
 import initIpcMain from './ipc.js';
 import fixPath from './fix-path.js';
+import { createCoffeeWindow } from './coffee';
 
 const { autoUpdater } = updater;
 const contextMenu = require('electron-context-menu');
 
 let mainWindow;
+let coffeeWindow;
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -37,25 +39,11 @@ function createWindow() {
         center: true,
         webPreferences: {
             spellcheck: true,
-            preload: resolve(join(__dirname, 'preload.js')),
+            preload: resolve(join(__dirname, 'index.js')),
             nodeIntegration: true,
             contextIsolation: false,
         },
         show: false,
-    };
-
-    const coffeeWindowOptions = {
-        width: 700,
-        height: 550,
-        resizable: false,
-        frame: false,
-        transparent: false,
-        alwaysOnTop: true,
-        show: false,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-        },
     };
 
     const savedDumpsWindowOptions = {
@@ -78,10 +66,7 @@ function createWindow() {
 
     const savedDumpsWindow = new BrowserWindow(savedDumpsWindowOptions);
 
-    const coffeeWindow = new BrowserWindow(coffeeWindowOptions);
-
     savedDumpsWindow.setMenu(null);
-    coffeeWindow.setMenu(null);
 
     ipcMain.on('main:grab-a-coffee', (event, arg) => {
         coffeeWindow.webContents.send('coffee:show-coffee-quote', arg);
@@ -90,6 +75,7 @@ function createWindow() {
 
         storage.keys((error, keys) => {
             if (error) throw error;
+
             keys.forEach((key) => {
                 if (key.startsWith('count_')) {
                     storage.get(key, (error, data) => {
@@ -103,7 +89,7 @@ function createWindow() {
 
         coffeeWindow.show();
 
-        setTimeout(async () => coffeeWindow.hide(), 10000);
+        setTimeout(async () => coffeeWindow.hide(), 8000);
     });
 
     ipcMain.on('main:open-saved-dumps', (event, arg) => {
@@ -120,7 +106,6 @@ function createWindow() {
     if (isDev) {
         mainWindow.loadURL('http://localhost:4999');
         savedDumpsWindow.loadURL('http://localhost:4999');
-        coffeeWindow.loadFile('src/renderer/coffee.html');
     } else {
         mainWindow.loadURL(
             format({
@@ -136,7 +121,6 @@ function createWindow() {
                 slashes: true,
             }),
         );
-        coffeeWindow.loadURL(`file://${__dirname}/../src/renderer/coffee.html`);
     }
 
     autoUpdater.autoDownload = false;
@@ -266,6 +250,7 @@ app.whenReady().then(async () => {
     createMenu();
 
     mainWindow = createWindow();
+    coffeeWindow = createCoffeeWindow();
 
     mainWindow.on('minimize', (event) => {
         event.preventDefault();
