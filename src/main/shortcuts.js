@@ -29,16 +29,6 @@ function registerShortcuts() {
             console.log('executing foobar!');
         });
     }
-
-    /* ====================================
-       =     Should be always declared    =
-       =================================== */
-
-    if (process.platform === 'darwin') {
-        globalShortcut.register('Command+Q', () => {
-            app.quit();
-        });
-    }
 }
 
 function showShortcutsWindow() {

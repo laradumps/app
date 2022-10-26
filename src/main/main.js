@@ -212,8 +212,11 @@ function createMenu() {
     },
     ];
 
-    // Enables copy to clipboard in MacOS
     if (process.platform === 'darwin') {
+        // Add shortcut to Quit in macOs
+        menuTemplate[0].submenu[3].accelerator = 'CmdOrCtrl+Q';
+    
+        // Enables copy to clipboard in macOS
         menuTemplate.splice(1, 0, {
             label: 'Edit',
             submenu: [{
