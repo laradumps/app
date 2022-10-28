@@ -8,7 +8,7 @@ import storage from 'electron-json-storage';
 import * as os from 'os';
 import initIpcMain from './ipc.js';
 import fixPath from './fix-path.js';
-import { createCoffeeWindow } from './coffee';
+import createCoffeeWindow from './coffee';
 
 const { autoUpdater } = updater;
 const contextMenu = require('electron-context-menu');
@@ -371,10 +371,8 @@ ipcMain.on('main:increment-counter', (event, type) => {
         model: 'ds',
         table: 'ds',
         'time-track': 'ds',
-
         events: 'livewire',
         livewire: 'livewire',
-
         log: 'log',
         queries: 'sql',
     };

@@ -54,12 +54,11 @@
             font-size: 0.85rem !important;
         }
 
-        .container {
+        .coffee-container {
             width: 270px !important;
             height: 280px;
             position: absolute;
             top: 115px;
-            left: calc(50% - 100px);
         }
 
         .coffee-header {
@@ -385,7 +384,7 @@
     <blockquote id="quote"></blockquote>
     <div id="author"></div>
 </div>
-<div class="container">
+<div class="coffee-container">
     <div class="coffee-header">
         <div class="coffee-header__buttons coffee-header__button-one"></div>
         <div class="coffee-header__buttons coffee-header__button-two"></div>
@@ -404,9 +403,24 @@
     </div>
     <div class="coffee-footer"></div>
     <div class="credits">
-        <div class="js-main_count_ds" style="display: none"><p>Total ds(): <span class="js-count_ds"></span></p></div>
+        <div class="js-main_count_ds" ><p>Total ds(): <span class="js-count_ds"></span></p></div>
         <p>Animation by: <a style="cursor:pointer;" href="https://codepen.io/hjdesigner">Henrique Rodrigues</a></p>
     </div>
 </div>
+<script>
+    const { ipcRenderer } = require('electron');
+
+    ipcRenderer.on('coffee:show-stats', (event, arg) => {
+        Object.entries(arg).forEach(([key,value]) => {
+            [...document.querySelectorAll('.js-'+key)].forEach(el => el.innerHTML = value);
+            [...document.querySelectorAll('.js-main_'+key)].forEach(el => el.style.display = 'block');
+        });
+    });
+
+    ipcRenderer.on('coffee:show-coffee-quote', (event, arg) => {
+        document.getElementById("quote").innerHTML = arg.content.content.quote;
+        document.getElementById("author").innerHTML = arg.content.content.author;
+    });
+</script>
 </body>
 </html>

@@ -5,7 +5,6 @@ import { format } from 'url';
 const isDev = process.env.NODE_ENV === 'development';
 
 function createCoffeeWindow() {
-
     const coffeeWindowOptions = {
         width: 700,
         height: 500,
@@ -45,4 +44,4 @@ function createCoffeeWindow() {
     return coffeeWindow;
 }
 
-export { createCoffeeWindow };
+export default createCoffeeWindow;
