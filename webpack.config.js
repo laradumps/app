@@ -18,7 +18,7 @@ module.exports = {
         rules: [
             {
                 test: /\.css$/i,
-                include: path.resolve(__dirname, 'src/render'),
+                include: path.resolve(__dirname, 'src/renderer'),
                 use: ['style-loader', 'css-loader', 'postcss-loader'],
             },
             {
@@ -48,6 +48,13 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: './src/renderer/index.html',
+            inject: true,
+            chunks: ['index'],
+            filename: 'index.html',
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/renderer/coffee.html',
+            filename: 'coffee.html',
         }),
         new MiniCssExtractPlugin({
             filename: 'styles.css',

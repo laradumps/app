@@ -323,6 +323,10 @@ export default () => ({
 
         ipcRenderer.on('time-track', (event, arg) => this.dispatchDump('time-track', arg.content));
 
+        ipcRenderer.on('coffee', (event, arg) => {
+            ipcRenderer.send('main:grab-a-coffee', arg);
+        });
+
         ipcRenderer.on('main:is-always-on-top', (event, arg) => {
             this.isAlwaysOnTop = arg.is_always_on_top;
         });
@@ -480,7 +484,6 @@ export default () => ({
     },
     dispatchDump(type, content) {
         if (this.bannedComponents.includes(content.id)) {
-
             return;
         }
 
@@ -495,6 +498,8 @@ export default () => ({
             ideHandle,
             type,
         });
+
+        ipcRenderer.send('main:increment-counter', type);
 
         const exists = this.filesBag.filter((file) => file.ideHandle.path === ideHandle.path)
             .length > 0;

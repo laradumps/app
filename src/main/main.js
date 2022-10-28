@@ -1,5 +1,5 @@
 import {
-    app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu, shell,
+    app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu,
 } from 'electron';
 import { format } from 'url';
 import { join, resolve } from 'path';
@@ -8,11 +8,14 @@ import storage from 'electron-json-storage';
 import * as os from 'os';
 import initIpcMain from './ipc.js';
 import fixPath from './fix-path.js';
+import createCoffeeWindow from './coffee';
 
 const { autoUpdater } = updater;
 const contextMenu = require('electron-context-menu');
 
 let mainWindow;
+let coffeeWindow;
+
 const isDev = process.env.NODE_ENV === 'development';
 
 if (isDev) {
@@ -36,7 +39,7 @@ function createWindow() {
         center: true,
         webPreferences: {
             spellcheck: true,
-            preload: resolve(join(__dirname, 'preload.js')),
+            preload: resolve(join(__dirname, 'index.js')),
             nodeIntegration: true,
             contextIsolation: false,
         },
@@ -64,6 +67,30 @@ function createWindow() {
     const savedDumpsWindow = new BrowserWindow(savedDumpsWindowOptions);
 
     savedDumpsWindow.setMenu(null);
+
+    ipcMain.on('main:grab-a-coffee', (event, arg) => {
+        coffeeWindow.webContents.send('coffee:show-coffee-quote', arg);
+
+        storage.setDataPath(os.tmpdir());
+
+        storage.keys((error, keys) => {
+            if (error) throw error;
+
+            keys.forEach((key) => {
+                if (key.startsWith('count_')) {
+                    storage.get(key, (error, data) => {
+                        const stats = {};
+                        stats[key] = data.total;
+                        coffeeWindow.webContents.send('coffee:show-stats', stats);
+                    });
+                }
+            });
+        });
+
+        coffeeWindow.show();
+
+        setTimeout(async () => coffeeWindow.hide(), 8000);
+    });
 
     ipcMain.on('main:open-saved-dumps', (event, arg) => {
         savedDumpsWindow.show();
@@ -104,7 +131,7 @@ function createWindow() {
                 await dialog.showMessageBox({
                     type: 'info',
                     title: 'LaraDumps update available!',
-                    message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
+                    message: 'There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app',
                     buttons: ['Ok'],
                 });
             } else {
@@ -223,6 +250,7 @@ app.whenReady().then(async () => {
     createMenu();
 
     mainWindow = createWindow();
+    coffeeWindow = createCoffeeWindow();
 
     mainWindow.on('minimize', (event) => {
         event.preventDefault();
@@ -272,7 +300,7 @@ app.whenReady().then(async () => {
     if (process.platform === 'darwin') {
         globalShortcut.register('Command+Q', () => {
             app.quit();
-        })
+        });
     }
 
     app.on('activate', () => {
@@ -333,4 +361,36 @@ ipcMain.on('main:save-dumps', (event, arg) => {
     storage.set(arg.id, arg, (error) => {
         if (error) throw error;
     });
+});
+
+ipcMain.on('main:increment-counter', (event, type) => {
+    const countTypes = {
+        // type, countAs
+        diff: 'ds',
+        dump: 'ds',
+        model: 'ds',
+        table: 'ds',
+        'time-track': 'ds',
+        events: 'livewire',
+        livewire: 'livewire',
+        log: 'log',
+        queries: 'sql',
+    };
+
+    let countAs = countTypes[type];
+
+    if (countAs) {
+        countAs = `count_${countAs}`;
+
+        storage.setDataPath(os.tmpdir());
+
+        const hasKey = storage.has(countAs, (error, hasKey) => hasKey);
+
+        if (hasKey === false) {
+            storage.set(countAs, { total: 1 });
+            return;
+        }
+
+        storage.get(countAs, (error, data) => storage.set(countAs, { total: data.total + 1 }));
+    }
 });

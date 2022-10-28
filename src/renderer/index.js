@@ -5,6 +5,7 @@ import './assets/tippy/tippy.css';
 
 import './js/alpinejs';
 import './js/plugins/sf-dump';
+import './coffee';
 
 window.Alpine = Alpine;
 
