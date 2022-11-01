@@ -20,7 +20,7 @@
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "electron-context-menu": "^3.4.0",
-    "electron-json-storage": "^4.5.0",
+    "electron-json-storage": "^4.6.0",
     "electron-tray-window": "^1.2.5",
     "electron-updater": "^5.0.5",
     "electron-window-state": "^5.0.3",
