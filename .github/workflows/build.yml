@@ -42,6 +42,7 @@ jobs:
         run: npm run release-linux
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
       - name: Build Win
         if: matrix.os == 'windows-latest'
