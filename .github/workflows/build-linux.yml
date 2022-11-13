@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [ubuntu-latest]
 
     steps:
       - name: Check out Git repository
@@ -32,14 +32,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Build Win
-        if: matrix.os == 'windows-latest'
-        run: npm run release-win
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Install Snap
+        run: |
+          sudo snap install snapcraft --classic
 
-      - name: Build Mac
-        if: matrix.os == 'macos-latest'
-        run: npm run release-mac
+      - name: Build Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run release --linux
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
