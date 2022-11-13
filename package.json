@@ -121,8 +121,18 @@
       "description": "LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://github.com/laradumps/app",
       "icon": "./build/icon.icns",
       "target": [
-        "AppImage"
+        "AppImage",
+        "snap"
       ],
+      "mimeTypes": [
+        "x-scheme-handler/laradumps"
+      ],
+      "desktop": {
+        "Name": "LaraDumps",
+        "icon": "./build/icon.icns",
+        "Comment": "LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://github.com/laradumps/app",
+        "Categories": "Development"
+      },
       "maintainer": "Luan Freitas",
       "category": "Development"
     },

@@ -6,6 +6,7 @@ import { join, resolve } from 'path';
 import updater from 'electron-updater';
 import storage from 'electron-json-storage';
 import * as os from 'os';
+import * as path from 'path';
 import initIpcMain from './ipc.js';
 import fixPath from './fix-path.js';
 import createCoffeeWindow from './coffee';
@@ -339,6 +340,27 @@ app.on('activate', () => {
         createWindow();
     }
 });
+
+if (process.defaultApp) {
+    if (process.argv.length >= 2) {
+        app.setAsDefaultProtocolClient('laradumps', process.execPath, [path.resolve(process.argv[1])]);
+    }
+} else {
+    app.setAsDefaultProtocolClient('laradumps');
+}
+
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+    app.quit();
+} else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.focus();
+        }
+    });
+}
 
 ipcMain.on('main:toggle-always-on-top', (event, arg) => {
     setTimeout(() => mainWindow.setAlwaysOnTop(arg), 200);
