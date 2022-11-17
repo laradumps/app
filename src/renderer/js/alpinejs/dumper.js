@@ -357,9 +357,14 @@ export default () => ({
 
         this.handleDebugElement();
 
-        const { sql } = this.content;
+        const { sql, formatted } = this.content;
 
-        const html = hljs.highlight(format(sql, { indent: '    ' }), { language: 'sql' }).value;
+        let html;
+        if (formatted) {
+            html = hljs.highlight(format(sql, { indent: '    ' }), { language: 'sql' }).value;
+        } else {
+            html = hljs.highlight(sql, { language: 'sql' }).value;
+        }
 
         pre.setAttribute('class', 'flex justify-center relative group');
         pre.setAttribute('x-on:mouseenter', "$title('Click to copy', 'top')");
