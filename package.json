@@ -1,6 +1,6 @@
 {
   "name": "laradumps",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://github.com/laradumps/app",
   "author": "Luan Freitas <luanfreitas10@protonmail.com>",
   "main": "dist/main.js",
@@ -9,7 +9,9 @@
     "dev": "node build.js --dev && electron .",
     "prod": "cross-env NODE_ENV=production webpack --mode production && node build.js --prod",
     "start": "electron .",
-    "release": "electron-builder --publish always",
+    "release-mac": "electron-builder --publish always --mac",
+    "release-win": "electron-builder --publish always --win",
+    "release-linux": "electron-builder --publish always --linux",
     "fix": "eslint --fix --ext .js src/renderer/js/alpinejs/",
     "lint": "npx eslint src/renderer/js/alpinejs/**"
   },
@@ -121,8 +123,18 @@
       "description": "LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://github.com/laradumps/app",
       "icon": "./build/icon.icns",
       "target": [
-        "AppImage"
+        "AppImage",
+        "snap"
       ],
+      "mimeTypes": [
+        "x-scheme-handler/laradumps"
+      ],
+      "desktop": {
+        "Name": "LaraDumps",
+        "icon": "./build/icon.icns",
+        "Comment": "LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://github.com/laradumps/app",
+        "Categories": "Development"
+      },
       "maintainer": "Luan Freitas",
       "category": "Development"
     },

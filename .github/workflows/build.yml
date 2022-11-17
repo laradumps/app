@@ -2,7 +2,7 @@ name: Build/release
 
 on:
   workflow_dispatch:
-  
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}
@@ -32,7 +32,26 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Build
-        run: npm run release
+      - name: Install Snapcraft
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo snap install snapcraft --classic
+
+      - name: Build Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run release-linux
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+
+      - name: Build Win
+        if: matrix.os == 'windows-latest'
+        run: npm run release-win
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Build Mac
+        if: matrix.os == 'macos-latest'
+        run: npm run release-mac
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
