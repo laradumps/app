@@ -401,23 +401,25 @@ export default () => ({
 
         this.handleDebugElement();
 
+        const { sql, formatted, showConnectionInformation } = this.content.queries;
+
         connectionInfo.innerHTML = `
-            <div class="flex justify-between">
-                <div class="text-sm text-slate-500 dark:text-slate-400">
+            <div class="flex justify-between" :class="{'!justify-end' : ${showConnectionInformation === false}}">
+                <div class="text-sm text-slate-500 dark:text-slate-400 hidden" :class="{'!block' : ${showConnectionInformation}}">
                      <span class="privacyMode">connection/database</span>
                      <div class="privacyMode text-sm text-slate-500 dark:text-slate-400 font-bold">
                          ${queries.connectionName}/${queries.database}
                      </div>
-                 </div>
-                 <div class="text-sm text-slate-500 dark:text-slate-400">
-                     time: <span class="text-base font-bold text-slate-600 dark:text-slate-200">${queries.time}</span><span class="text-xs text-slate-500 dark:text-slate-400"> ms</span>
-
-                 </div>
+                </div>
             </div>`;
 
-        const { sql } = this.content.queries;
+        let html;
 
-        const html = hljs.highlight(format(sql, { indent: '    ' }), { language: 'sql' }).value;
+        if (formatted) {
+            html = hljs.highlight(format(sql, { indent: '    ' }), { language: 'sql' }).value;
+        } else {
+            html = hljs.highlight(sql, { language: 'sql' }).value;
+        }
 
         pre.setAttribute('class', 'flex justify-center relative group');
         pre.setAttribute('x-on:mouseenter', "$title('Click to copy', 'top')");
@@ -428,7 +430,7 @@ export default () => ({
         pre.appendChild(code);
         div.appendChild(connectionInfo);
 
-        copy.setAttribute('class', 'absolute inset-y-0 right-0 pr-2.5 flex opacity-0 cursor-pointer group-hover:opacity-100 transition');
+        copy.setAttribute('class', 'absolute inset-y-0 right-0 flex opacity-0 cursor-pointer group-hover:opacity-100 transition');
 
         copy.innerHTML = `
            <svg class="w-5 h-5 hover:text-slate-800" fill="none"
@@ -443,6 +445,10 @@ export default () => ({
         div.appendChild(pre);
 
         this.debugElement().appendChild(div);
+
+        document.getElementById(`right-information-${this.notificationId}`).innerHTML = `<div class="text-sm text-slate-500 dark:text-slate-400" :class="{'!block' : ${showConnectionInformation}}">
+                   time: <span class="text-base font-bold text-slate-600 dark:text-slate-200">${queries.time}</span><span class="text-xs text-slate-500 dark:text-slate-400"> ms</span>
+            </div>`;
 
         this.handleIdeProtocol();
     },
@@ -900,6 +906,7 @@ export default () => ({
                       </div>
                    </div>
                    <div class="flex items-center justify-center">
+                      <div class="mr-4" id="right-information-${notificationId}"></div>
                       <div x-show="count === 0">
                          <div class="animate-new-dump"></div>
                       </div>
