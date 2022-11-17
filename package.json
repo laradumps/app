@@ -31,6 +31,7 @@
     "highlightjs-line-numbers.js": "^2.8.0",
     "humanize-duration": "^3.27.3",
     "json-viewer-js": "^1.0.8",
+    "loader-utils": "^3.2.1",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.39",
     "pusher": "^5.1.1-beta",
