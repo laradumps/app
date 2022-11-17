@@ -470,11 +470,6 @@ del {
 pre code.hljs {
   display: block;
   overflow-x: auto;
-  padding: 1em
-}
-
-code.hljs {
-  padding: 3px 5px
 }
 
 /*!
@@ -488,7 +483,7 @@ code.hljs {
   Current colors taken from GitHub's CSS
 */
 .hljs {
-  @apply cursor-pointer flex justify-between w-full cursor-pointer text-sm rounded-md bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200 p-2 mt-2
+  @apply cursor-pointer flex justify-between w-full cursor-pointer text-sm rounded-md py-2 select-none mr-[30px]
 }
 
 .hljs-doctag, .hljs-keyword, .hljs-meta .hljs-keyword, .hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-variable.language_ {

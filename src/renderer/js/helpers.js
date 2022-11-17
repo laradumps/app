@@ -7,16 +7,14 @@ const isJson = (str) => {
     return true;
 };
 
-const escapeHtml = (content) => {
-    return content.toString().replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+const escapeHtml = (content) => content.toString().replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 const strContains = (content, searchString, searchSettings) => {
-    //@see https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+    // @see https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
     searchString = searchString.replace(/[.*+?^$"{}()|[\]\\]/g, '\\$&');
 
     let regexExpression = searchString;
@@ -27,13 +25,13 @@ const strContains = (content, searchString, searchSettings) => {
     }
 
     if (searchSettings.is_whole_word === true) {
-        regexExpression = '(\\b'+ searchString +'\\b)';
+        regexExpression = `(\\b${searchString}\\b)`;
     }
 
-    var success = new RegExp(regexExpression, regexMode).test(content);
+    const success = new RegExp(regexExpression, regexMode).test(content);
 
-    return { success: success, regex: regexExpression, regex_mode: regexMode };
-}
+    return { success, regex: regexExpression, regex_mode: regexMode };
+};
 
 const createTable = (objectArray, fields, fieldTitles, notificationId) => {
     const div = document.createElement('div');
@@ -89,4 +87,6 @@ const createTable = (objectArray, fields, fieldTitles, notificationId) => {
     return div;
 };
 
-export { isJson, strContains, escapeHtml, createTable };
+export {
+    isJson, strContains, escapeHtml, createTable,
+};
