@@ -9,7 +9,7 @@
     "dev": "node build.js --dev && electron .",
     "prod": "cross-env NODE_ENV=production webpack --mode production && node build.js --prod",
     "start": "electron .",
-    "release-mac": "electron-builder --publish always --mac",
+    "release-mac": "electron-builder --publish always --mac --universal",
     "release-win": "electron-builder --publish always --win",
     "release-linux": "electron-builder --publish always --linux",
     "fix": "eslint --fix --ext .js src/renderer/js/alpinejs/",
