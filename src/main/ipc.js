@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 
-const minPackageVersion = '1.4.0';
+const minPackageVersion = '1.5.0';
 let packageVersion;
 
 export default async function () {
