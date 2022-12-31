@@ -286,6 +286,8 @@ export default () => ({
 
         ipcRenderer.on('dump', (event, arg) => this.dispatchDump('dump', arg.content));
 
+        ipcRenderer.on('mailable', (event, arg) => this.dispatchDump('mailable', arg.content));
+
         ipcRenderer.on('color', (event, arg) => this.dispatchDump('color', arg.content));
 
         ipcRenderer.on('label', (event, arg) => this.dispatchDump('label', arg.content));
