@@ -32,7 +32,7 @@
     "json-viewer-js": "^1.0.8",
     "loader-utils": "^3.2.1",
     "moment": "^2.29.4",
-    "moment-timezone": "^0.5.39",
+    "moment-timezone": "^0.5.40",
     "pusher": "^5.1.1-beta",
     "pusher-js": "^7.5.0",
     "reveal.js": "^4.4.0",
