@@ -77,6 +77,10 @@ export default () => ({
             this.mount(detail, 'dump');
             this.handleDump();
         });
+        window.addEventListener('dumper:mailable', ({ detail }) => {
+            this.mount(detail, 'mailable');
+            this.handleMailable();
+        });
         window.addEventListener('dumper:time-track', ({ detail }) => {
             this.mount(detail, 'time-track');
             this.handleTimeTrack();
@@ -193,6 +197,38 @@ export default () => ({
         this.handleIdeProtocol();
 
         window.Sfdump(`sf-dump-${this.notificationId}`);
+    },
+    handleMailable() {
+        const {
+            html, from, to, cc, bcc, mailableClass, subject,
+        } = this.content;
+
+        const div = document.createElement('div');
+        div.setAttribute('class', 'border-t border-gray-200');
+
+        let content = '';
+        const _html = `<div class="p-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4">
+                        <dt class="text-sm font-medium text-gray-500">__KEY__</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">__VAL__</dd>
+                      </div>`;
+
+        content += _html.replace('__KEY__', 'Mailable Class').replace('__VAL__', mailableClass ?? '');
+        from.forEach((from) => {
+            content += _html.replace('__KEY__', 'From').replace('__VAL__', `${from.name} &lt;${from.email}&gt;<br/>`);
+        });
+        to.forEach((to) => {
+            content += _html.replace('__KEY__', 'To').replace('__VAL__', `${to.name} &lt;${to.email}&gt;<br/>`);
+        });
+        content += _html.replace('__KEY__', 'CC').replace('__VAL__', cc);
+        content += _html.replace('__KEY__', 'BCC').replace('__VAL__', bcc);
+        content += _html.replace('__KEY__', 'Subject').replace('__VAL__', subject);
+        content += _html.replace('__KEY__', 'Body').replace('__VAL__', `<div class="rounded-md overflow-auto border p-3">${html}</div>`);
+
+        div.innerHTML = `<dl>${content}</dl>`;
+
+        this.handleDebugElement();
+        this.debugElement().appendChild(div);
+        this.handleIdeProtocol();
     },
     handleTimeTrack() {
         const div = document.createElement('div');
