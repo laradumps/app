@@ -311,6 +311,10 @@ export default () => ({
 
         ipcRenderer.on('table', (event, arg) => this.dispatchDump('table', arg.content, arg.pusher));
 
+        ipcRenderer.on('table-v2', (event, arg) => this.dispatchDump('table-v2', arg.content));
+
+        ipcRenderer.on('http-client', (event, arg) => this.dispatchDump('http-client', arg.content));
+
         ipcRenderer.on('model', (event, arg) => this.dispatchDump('model', arg.content));
 
         ipcRenderer.on('livewire', (event, arg) => this.dispatchDump('livewire', arg.content));
