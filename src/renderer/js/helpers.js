@@ -33,7 +33,7 @@ const strContains = (content, searchString, searchSettings) => {
     return { success, regex: regexExpression, regex_mode: regexMode };
 };
 
-const searchElement = ($notificationId) => {
+const searchElement = (notificationId) => {
     return `
             <div class="relative rounded-md shadow-smw w-full">
                  <div class="absolute inset-y-0 left-0 p-2 flex items-center pointer-events-none text-slate-400">
