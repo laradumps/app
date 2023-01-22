@@ -197,8 +197,9 @@ function createMenu() {
         },
         {
             label: 'Quit LaraDumps',
+            accelerator: process.platform === 'darwin' ? 'Command+Q' : 'Ctrl+Q',
             click() {
-                app.quit();
+                app.quit(); 
             },
         },
         ],
@@ -296,12 +297,6 @@ app.whenReady().then(async () => {
     globalShortcut.register('CommandOrControl+Shift+X', () => {
         mainWindow.reload();
     });
-
-    if (process.platform === 'darwin') {
-        globalShortcut.register('Command+Q', () => {
-            app.quit();
-        });
-    }
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
