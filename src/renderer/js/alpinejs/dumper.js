@@ -97,6 +97,14 @@ export default () => ({
             this.mount(detail, 'table');
             this.handleTable();
         });
+        window.addEventListener('dumper:table-v2', ({ detail }) => {
+            this.mount(detail, 'table-v2');
+            this.handleTableV2();
+        });
+        window.addEventListener('dumper:http-client', ({ detail }) => {
+            this.mount(detail, 'http-client');
+            this.handleTableV2();
+        });
         window.addEventListener('dumper:log', ({ detail }) => {
             this.mount(detail, 'log');
             this.handleLogs();
@@ -500,6 +508,17 @@ export default () => ({
         const { values, fields, header } = this.content;
 
         const table = Helper.createTable(values, fields, header, this.notificationId);
+
+        this.handleDebugElement();
+
+        this.debugElement().appendChild(table);
+
+        this.handleIdeProtocol();
+    },
+    handleTableV2() {
+        const { values } = this.content;
+
+        const table = Helper.createTableV2(values, this.notificationId);
 
         this.handleDebugElement();
 
