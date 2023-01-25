@@ -518,11 +518,13 @@ export default () => ({
     handleTableV2() {
         const { values } = this.content;
 
-        const table = Helper.createTableV2(values, this.notificationId);
+        const { div, elements } = Helper.createTableV2(values, this.notificationId);
 
         this.handleDebugElement();
 
-        this.debugElement().appendChild(table);
+        this.debugElement().appendChild(div);
+
+        elements.forEach((el) => window.Sfdump(el));
 
         this.handleIdeProtocol();
     },

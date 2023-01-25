@@ -91,11 +91,9 @@ const createTable = (objectArray, fields, fieldTitles, notificationId) => {
 };
 
 const createTableV2 = (values, notificationId) => {
+    const elements = []
     const div = document.createElement('div');
-    const search = document.createElement('div');
     const table = document.createElement('table');
-
-    search.innerHTML = searchElement(notificationId);
 
     div.setAttribute('class', 'overflow-x-auto m-3 rounded-lg');
     table.setAttribute('id', `table-${notificationId}`);
@@ -105,26 +103,40 @@ const createTableV2 = (values, notificationId) => {
 
     tbody.setAttribute('class', 'tbody');
 
-    Object.entries(values).forEach(([key, val]) => {
+    Object.entries(values).forEach(([key, val], index) => {
         tr = document.createElement('tr');
 
         const keyTd = document.createElement('td');
-        keyTd.setAttribute('class', 'bg-gray-300');
+        keyTd.setAttribute('class', 'font-bold bg-slate-300 dark:bg-slate-700 dark:text-slate-200');
         keyTd.appendChild(document.createTextNode(key));
         tr.appendChild(keyTd);
 
         const td = document.createElement('td');
-        td.innerHTML = val;
-        tr.appendChild(td);
 
+        if (['Headers', 'Body', 'Data'].includes(key)) {
+            elements.push(`sf-dump-${key}-${index}`)
+            const preAttributes = document.createElement('pre');
+            preAttributes.setAttribute('class', 'sf-dump-debug');
+            preAttributes.setAttribute('id', `sf-dump-${key}-${index}`);
+            preAttributes.setAttribute('data-indent-pad', '  ');
+            preAttributes.innerHTML = val;
+
+            td.innerHTML = preAttributes.outerHTML;
+        } else {
+            td.innerHTML = val;
+        }
+
+        tr.appendChild(td);
         tbody.appendChild(tr);
     });
     table.appendChild(tbody);
 
-    div.appendChild(search);
     div.appendChild(table);
 
-    return div;
+    return {
+        div,
+        elements
+    };
 };
 
 export {
