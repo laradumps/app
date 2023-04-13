@@ -8,7 +8,7 @@ export default async function () {
         packageVersion = arg.content.meta.laradumps_version.replaceAll('.', '');
 
         // eslint-disable-next-line no-restricted-globals
-        if (!isNaN(packageVersion) && (packageVersion < minPackageVersion.replaceAll('.', ''))) {
+        if (!isNaN(packageVersion) && parseInt(packageVersion) < parseInt(minPackageVersion.replaceAll('.', ''))) {
             // eslint-disable-next-line no-shadow
             const payload = {
                 packageVersion,
