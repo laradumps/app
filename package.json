@@ -34,7 +34,7 @@
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.40",
     "pusher": "^5.1.2",
-    "pusher-js": "^8.0.1",
+    "pusher-js": "^8.0.2",
     "reveal.js": "^4.4.0",
     "sql-formatter": "^12.0.6",
     "strip-ansi": "^7.0.1",
