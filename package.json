@@ -59,7 +59,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
     "file-loader": "^6.2.0",
-    "html-webpack-plugin": "^5.5.0",
+    "html-webpack-plugin": "^5.5.1",
     "mini-css-extract-plugin": "^2.7.0",
     "postcss": "^8.4.19",
     "postcss-loader": "^7.0.1",
