@@ -5620,9 +5620,10 @@ reusify@^1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/reusify/-/reusify-1.0.4.tgz"
 
-reveal.js@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.npmjs.org/reveal.js/-/reveal.js-4.4.0.tgz"
+reveal.js@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/reveal.js/-/reveal.js-4.5.0.tgz#fc04329aee58dd88862bf1f8e8f85f7993287763"
+  integrity sha512-Lx1hUWhJR7Y7ScQNyGt7TFzxeviDAswK2B0cn9RwbPZogTMRgS8+FTr+/12KNHOegjvWKH0H0EGwBARNDPTgWQ==
 
 rimraf@^2.5.1, rimraf@^2.6.3:
   version "2.7.1"
