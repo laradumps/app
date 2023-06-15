@@ -97,15 +97,24 @@ function createWindow(): BrowserWindow {
 
         autoUpdater.on("update-available", async (): Promise<void> => {
             setTimeout(async (): Promise<void> => {
-                const result: Electron.MessageBoxReturnValue = await dialog.showMessageBox({
-                    type: "info",
-                    title: "LaraDumps update available!",
-                    message: "There are updates available for LaraDumps App. Would you like to update it now?",
-                    buttons: ["Yes", "No"]
-                });
+                if (process.platform === "darwin") {
+                    await dialog.showMessageBox({
+                        type: "info",
+                        title: "LaraDumps update available!",
+                        message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
+                        buttons: ["Ok"]
+                    });
+                } else {
+                    const result = await dialog.showMessageBox({
+                        type: "info",
+                        title: "LaraDumps update available!",
+                        message: "There are updates available for LaraDumps App. Would you like to update it now?",
+                        buttons: ["Yes", "No"]
+                    });
 
-                if (result.response === 0) {
-                    await autoUpdater.downloadUpdate();
+                    if (result.response === 0) {
+                        await autoUpdater.downloadUpdate();
+                    }
                 }
             }, 3000);
         });
@@ -135,12 +144,75 @@ function createWindow(): BrowserWindow {
         }
     });
 
-    win.setMenu(null);
-
     return win;
 }
 
+function createMenu(): void {
+    const menuTemplate: Electron.MenuItemConstructorOptions[] = [
+        {
+            label: 'Menu',
+            submenu: [
+                {
+                    label: 'About LaraDumps',
+                    click: async (): Promise<void> => {
+                        await shell.openExternal('https://github.com/laradumps/app');
+                    }
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: 'Quit LaraDumps',
+                    accelerator: process.platform === 'darwin' ? 'Command+Q' : 'Ctrl+Q',
+                    click: () => {
+                        app.quit();
+                    }
+                }
+            ]
+        },
+        {
+            label: 'Help',
+            submenu: [
+                {
+                    label: 'Documentation',
+                    click: async (): Promise<void> => {
+                        await shell.openExternal('https://laradumps.dev');
+                    }
+                },
+                {
+                    type: 'separator'
+                },
+                {
+                    label: 'Releases',
+                    click: async (): Promise<void> => {
+                        await shell.openExternal('https://github.com/laradumps/app/releases');
+                    }
+                }
+            ]
+        }
+    ];
+
+    // Enables copy to clipboard in macOS
+    if (process.platform === 'darwin') {
+        menuTemplate.splice(1, 0, {
+            label: 'Edit',
+            submenu: [
+                {
+                    label: 'Copy',
+                    accelerator: 'CmdOrCtrl+C',
+                    selector: 'copy:'
+                }
+            ]
+        });
+    }
+
+    const menu: Menu = Menu.buildFromTemplate(menuTemplate);
+    Menu.setApplicationMenu(menu);
+}
+
 app.whenReady().then(async (): Promise<void> => {
+    createMenu();
+
     mainWindow = createWindow();
     coffeeWindow = initCoffeeWindow();
     savedDumpWindow = initSavedDumps();

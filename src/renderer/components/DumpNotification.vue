@@ -62,7 +62,7 @@ onMounted(() => {
 
     filePath.value = CryptoJS.MD5(props.payload.notification.html).toString();
 
-    console.log(filePath.value)
+    console.log(filePath.value);
 
     window.ipcRenderer.send("main:create-static-tmp-file", {
         name: filePath.value,
