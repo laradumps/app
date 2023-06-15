@@ -37,7 +37,7 @@
     "pusher-js": "^8.0.1",
     "reveal.js": "^4.4.0",
     "sql-formatter": "^12.0.6",
-    "strip-ansi": "^7.0.1",
+    "strip-ansi": "^7.1.0",
     "tippy.js": "^6.3.7",
     "tree-kill": "^1.2.2",
     "uuid": "^9.0.0"
