@@ -1,8 +1,12 @@
 .DS_Store
 node_modules
 dist
+laravel-app
+test.php
+stats.json
 release
 desktop.ini
+devtools
 
 # local env files
 .env.local
@@ -22,11 +26,6 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
-
-/release-builds
-/.idea
-app-update.yml
-dev-app-update.yml
-electron-builder.yml
 .env
-phpstorm/
+
+
