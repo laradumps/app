@@ -17,6 +17,7 @@ const registerGlobalShortCutForClearAll = (mainWindow: BrowserWindow): void => {
     // @ts-ignore
     storage.get("ds_shortcut_clearAll", (error, data: ShortcutData): void => {
         if (error) {
+            // eslint-disable-next-line no-console
             console.error(error);
             return;
         }
@@ -24,10 +25,12 @@ const registerGlobalShortCutForClearAll = (mainWindow: BrowserWindow): void => {
         if (data?.keys) {
             try {
                 globalShortcut.register(data.keys, (): void => {
+                    // eslint-disable-next-line no-console
                     console.log("executing clearAll!");
                     mainWindow.webContents.send("app:global-shortcut-execute::clearAll");
                 });
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error(`Error registering shortcut: ${error}`);
             }
         }
@@ -43,11 +46,13 @@ const registerGlobalShortCutForDarkMode = (mainWindow: BrowserWindow): void => {
 
     // @ts-ignore
     storage.get("ds_shortcut_darkMode", (error, data: ShortcutData): void => {
+        // eslint-disable-next-line no-console
         if (error) console.error(error);
 
         if (data.keys.toString() !== "") {
             // @ts-ignore
             globalShortcut.register(data.keys, (): void => {
+                // eslint-disable-next-line no-console
                 console.log("executing darkMode!");
 
                 mainWindow.webContents.send("app:global-shortcut-execute::darkMode");
@@ -65,11 +70,13 @@ const registerGlobalShortCutForAlwaysOnTop = (mainWindow: BrowserWindow): void =
 
     // @ts-ignore
     storage.get("ds_shortcut_alwaysOnTop", (error, data: ShortcutData): void => {
+        // eslint-disable-next-line no-console
         if (error) console.error(error);
 
         if (data.keys.toString() !== "") {
             // @ts-ignore
             globalShortcut.register(data.keys, (): void => {
+                // eslint-disable-next-line no-console
                 console.log("executing alwaysOnTop!");
 
                 mainWindow.webContents.send("app:global-shortcut-execute::alwaysOnTop");
@@ -87,11 +94,13 @@ const registerGlobalShortCutForSearch = (mainWindow: BrowserWindow): void => {
 
     // @ts-ignore
     storage.get("ds_shortcut_globalSearch", (error, data: ShortcutData): void => {
+        // eslint-disable-next-line no-console
         if (error) console.error(error);
 
         if (data.keys.toString() !== "") {
             // @ts-ignore
             globalShortcut.register(data.keys, (): void => {
+                // eslint-disable-next-line no-console
                 console.log("executing globalSearch!");
 
                 mainWindow.webContents.send("app:global-shortcut-execute::globalSearch");
@@ -109,11 +118,13 @@ const registerGlobalShortCutForToggleMenu = (mainWindow: BrowserWindow): void =>
 
     // @ts-ignore
     storage.get("ds_shortcut_toggleMenu", (error, data: ShortcutData): void => {
+        // eslint-disable-next-line no-console
         if (error) console.error(error);
 
         if (data.keys.toString() !== "") {
             // @ts-ignore
             globalShortcut.register(data.keys, () => {
+                // eslint-disable-next-line no-console
                 console.log("executing toggleMenu!");
 
                 mainWindow.webContents.send("app:global-shortcut-execute::toggleMenu");
@@ -126,12 +137,14 @@ function registerShortcuts(mainWindow: BrowserWindow, alias = null): void {
     if (!alias) {
         // Sending configured shortcuts
         storage.keys((error, keys: string[]): void => {
+            // eslint-disable-next-line no-console
             if (error) console.error(error);
 
             keys.forEach((key: string): void => {
                 if (key.startsWith("ds_shortcut_")) {
                     // @ts-ignore
                     storage.get(key, (error, data: ShortcutData): void => {
+                        // eslint-disable-next-line no-console
                         if (error) console.error(error);
 
                         switch (data.alias) {
@@ -211,6 +224,7 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
      */
     ipcMain.on("global-shortcut:set", (event: Electron.IpcMainEvent, data): void => {
         storage.set(data.shortcut, data, (error): void => {
+            // eslint-disable-next-line no-console
             if (error) console.log(error);
 
             registerShortcuts(mainWindow, data.alias);
@@ -224,23 +238,45 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
     ipcMain.on("global-shortcut:get", (): void => {
         storage.keys((error: Error | null, keys: string[]): void => {
             if (error) {
+                // eslint-disable-next-line no-console
                 console.error(error);
                 return;
             }
 
-            keys.forEach((key: string) => {
-                if (key.startsWith("ds_shortcut_")) {
-                    // @ts-ignore
-                    storage.get(key, (error: Error | null, data: ShortcutData): void => {
-                        if (error) {
-                            console.error(error);
-                            return;
-                        }
+            mainWindow.webContents.send("app:global-shortcut::count", keys.length);
 
-                        mainWindow.webContents.send("app:global-shortcut::list", data);
-                    });
+            let shortcuts: Awaited<ShortcutData | null>[] = [];
+
+            const getShortcutData = (key: string): Promise<ShortcutData | null> => {
+                return new Promise((resolve, reject) => {
+                    if (key.startsWith("ds_shortcut_")) {
+                        // @ts-ignore
+                        storage.get(key, (error: Error | null, data: ShortcutData): void => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(data);
+                            }
+                        });
+                    } else {
+                        // @ts-ignore
+                        resolve({});
+                    }
+                });
+            };
+
+            const retrieveShortcuts = async (): Promise<void> => {
+                const promises: Promise<ShortcutData | null>[] = keys.map((key: string) => getShortcutData(key));
+                try {
+                    shortcuts = await Promise.all(promises);
+                    mainWindow.webContents.send("app:global-shortcut::list", shortcuts);
+                } catch (error) {
+                    // eslint-disable-next-line no-console
+                    console.error(error);
                 }
-            });
+            };
+
+            retrieveShortcuts().then();
         });
     });
 }

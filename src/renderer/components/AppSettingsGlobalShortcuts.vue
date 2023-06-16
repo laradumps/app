@@ -81,17 +81,19 @@ const getSavedGlobalShortcuts = () => {
     window.ipcRenderer.send("global-shortcut:get");
 
     window.ipcRenderer.on("app:global-shortcut::list", (arg, shortcuts) => {
-        if (shortcuts.hasOwnProperty("shortcut")) {
-            const shortcut = shortcuts.shortcut.replace("ds_shortcut_", "");
+        shortcuts.forEach((shortcuts) => {
+            if (shortcuts.hasOwnProperty("shortcut")) {
+                const shortcut = shortcuts.shortcut.replace("ds_shortcut_", "");
 
-            try {
-                if (document.getElementById(shortcut) !== null) {
-                    document.getElementById(shortcut).value = shortcuts.keys.beautifyShortcut();
+                try {
+                    if (document.getElementById(shortcut) !== null) {
+                        document.getElementById(shortcut).value = shortcuts.keys.beautifyShortcut();
+                    }
+                } catch (err) {
+                    console.log("Error: ", err);
                 }
-            } catch (err) {
-                console.log("Error: ", err);
             }
-        }
+        });
     });
 };
 

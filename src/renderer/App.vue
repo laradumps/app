@@ -28,7 +28,11 @@
                         }"
                         class="flex-1 flex flex-col shrink-0 bg-white dark:bg-slate-900 left-16 right-0 min-h-full"
                     >
-                        <div v-if="settingStore.setting">
+                        <!-- AppSettings -->
+                        <div
+                            class="overflow-auto min-h-screen pb-8"
+                            v-if="settingStore.setting"
+                        >
                             <AppSetting :global-shortcut-list="globalShortcutList" />
                         </div>
                         <!-- header global filter -->
@@ -360,6 +364,28 @@ const clearAll = (): void => {
     colorStore.clear();
 };
 
+function registerDefaultGlobalShortcuts() {
+    let shortcutClearAllObject = {
+        alias: "clearAll",
+        label: "settings.shortcut.clear",
+        shortcut: "ds_shortcut_clearAll",
+        originalValue: process.platform === "darwin" ? "⌘+K" : "Ctrl+K",
+        keys: process.platform === "darwin" ? "CommandOrControl+K" : "Ctrl+K"
+    };
+
+    window.ipcRenderer.send("global-shortcut:set", shortcutClearAllObject);
+
+    let shortcutDarkModeObject = {
+        alias: "darkMode",
+        label: "settings.shortcut.darkMode",
+        shortcut: "ds_shortcut_darkMode",
+        originalValue: process.platform === "darwin" ? "⌘+D" : "Ctrl+D",
+        keys: process.platform === "darwin" ? "CommandOrControl+D" : "Ctrl+D"
+    };
+
+    window.ipcRenderer.send("global-shortcut:set", shortcutDarkModeObject);
+}
+
 onMounted(() => {
     setTimeout(() => {
         document.title = "LaraDumps - " + appVersion.value;
@@ -404,7 +430,17 @@ onMounted(() => {
 
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
 
-    //window.ipcRenderer.on("app:global-shortcut::list", (event, arg) => globalShortcutList.value.push(arg));
+    window.ipcRenderer.send("global-shortcut:get");
+
+    window.ipcRenderer.on("app:global-shortcut::count", (event, arg) => {
+        if (arg === 0) {
+            registerDefaultGlobalShortcuts();
+        }
+    });
+
+    window.ipcRenderer.on("app:global-shortcut::list", (event, arg) => {
+        globalShortcutList.value = arg;
+    });
 
     window.ipcRenderer.on("install", (event, { content }) => {
         showInstallationInfo.value = {

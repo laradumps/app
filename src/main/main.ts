@@ -150,20 +150,20 @@ function createWindow(): BrowserWindow {
 function createMenu(): void {
     const menuTemplate: Electron.MenuItemConstructorOptions[] = [
         {
-            label: 'Menu',
+            label: "Menu",
             submenu: [
                 {
-                    label: 'About LaraDumps',
+                    label: "About LaraDumps",
                     click: async (): Promise<void> => {
-                        await shell.openExternal('https://github.com/laradumps/app');
+                        await shell.openExternal("https://github.com/laradumps/app");
                     }
                 },
                 {
-                    type: 'separator'
+                    type: "separator"
                 },
                 {
-                    label: 'Quit LaraDumps',
-                    accelerator: process.platform === 'darwin' ? 'Command+Q' : 'Ctrl+Q',
+                    label: "Quit LaraDumps",
+                    accelerator: process.platform === "darwin" ? "Command+Q" : "Ctrl+Q",
                     click: () => {
                         app.quit();
                     }
@@ -171,21 +171,21 @@ function createMenu(): void {
             ]
         },
         {
-            label: 'Help',
+            label: "Help",
             submenu: [
                 {
-                    label: 'Documentation',
+                    label: "Documentation",
                     click: async (): Promise<void> => {
-                        await shell.openExternal('https://laradumps.dev');
+                        await shell.openExternal("https://laradumps.dev");
                     }
                 },
                 {
-                    type: 'separator'
+                    type: "separator"
                 },
                 {
-                    label: 'Releases',
+                    label: "Releases",
                     click: async (): Promise<void> => {
-                        await shell.openExternal('https://github.com/laradumps/app/releases');
+                        await shell.openExternal("https://github.com/laradumps/app/releases");
                     }
                 }
             ]
@@ -193,14 +193,14 @@ function createMenu(): void {
     ];
 
     // Enables copy to clipboard in macOS
-    if (process.platform === 'darwin') {
+    if (process.platform === "darwin") {
         menuTemplate.splice(1, 0, {
-            label: 'Edit',
+            label: "Edit",
             submenu: [
                 {
-                    label: 'Copy',
-                    accelerator: 'CmdOrCtrl+C',
-                    selector: 'copy:'
+                    label: "Copy",
+                    accelerator: "CmdOrCtrl+C",
+                    selector: "copy:"
                 }
             ]
         });
