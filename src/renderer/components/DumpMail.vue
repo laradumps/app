@@ -11,15 +11,17 @@
 
         <div class="space-y-1">
             <div class="dark:text-slate-300 font-normal">Attachments:</div>
-            <button
-                class="btn-rounded-white"
-                v-for="attachment in props.payload.mail.attachments"
-                :key="attachment"
-                @click.prevent="openInBrowser(attachment.path)"
-            >
-                <CloudArrowDownIcon class="w-4 h-4" />
-                {{ attachment.filename }}
-            </button>
+            <div class="flex gap-2">
+                <button
+                    class="btn-rounded-white"
+                    v-for="attachment in props.payload.mail.attachments"
+                    :key="attachment"
+                    @click.prevent="openInBrowser(attachment.path)"
+                >
+                    <CloudArrowDownIcon class="w-4 h-4" />
+                    {{ attachment.filename }}
+                </button>
+            </div>
         </div>
 
         <div>
