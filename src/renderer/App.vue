@@ -465,7 +465,20 @@ onMounted(() => {
 
     window.ipcRenderer.on("table_v2", (event, { content }) => dispatch("table_v2", event, content));
 
-    window.ipcRenderer.on("notification", (event, { content }) => dispatch("notification", event, content));
+    window.ipcRenderer.on("mail", (event, { content }) => {
+        const filterPayload: boolean =
+            payload.value.filter((payload: Payload) => {
+                if (payload.hasOwnProperty("mail")) {
+                    return payload.mail.messageId == content.mail.messageId;
+                }
+
+                return false;
+            }).length > 0;
+
+        if (!filterPayload) {
+            dispatch("mail", event, content);
+        }
+    });
 
     window.ipcRenderer.on("label", (event, { content }) => {
         payload.value

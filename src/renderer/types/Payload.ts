@@ -93,12 +93,13 @@ export interface StrContainsPayload {
     search_string: string;
 }
 
-export interface NotificationPayload {
+export interface MailPayload {
     html: string;
     channel: string;
     details: any;
     headers: any;
     attachments: any;
+    messageId: string;
 }
 
 export interface Payload {
@@ -114,7 +115,7 @@ export interface Payload {
     query?: QueryPayload;
     time_track?: TimeTrackPayload;
     html?: string;
-    notification: NotificationPayload;
+    mail: MailPayload;
     label?: LabelPayload;
     table_v2?: TableV2Payload;
     color?: ColorPayload;

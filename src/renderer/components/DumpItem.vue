@@ -105,8 +105,8 @@
                     />
 
                     <!-- dump notification -->
-                    <DumpNotification
-                        v-if="isOpen && props.payload.type === `notification`"
+                    <DumpMail
+                        v-if="isOpen && props.payload.type === `mail`"
                         :payload="payload"
                     />
 
@@ -240,7 +240,7 @@ import DumpIsJson from "@/components/DumpIsJson.vue";
 import DumpTableV2 from "@/components/DumpTableV2.vue";
 import DumpQuery from "@/components/DumpQuery.vue";
 import { Payload } from "@/types/Payload";
-import DumpNotification from "@/components/DumpNotification.vue";
+import DumpMail from "@/components/DumpMail.vue";
 
 const timeStore = useTimeStore();
 const collapseStore = useCollapse();

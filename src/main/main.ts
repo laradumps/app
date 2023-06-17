@@ -1,4 +1,4 @@
-import { app, Tray, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell } from "electron";
+import { app, Tray, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, session } from "electron";
 import windowStateKeeper from "electron-window-state";
 import path, { join, resolve } from "path";
 import contextMenu from "electron-context-menu";
@@ -339,7 +339,8 @@ ipcMain.on("main:get-ide-handler", (event): void => {
 
     fs.readFile(jsonFilePath, "utf8", (err, data) => {
         if (err) {
-            console.error("Ocorreu um erro ao ler o arquivo JSON:", err);
+            // eslint-disable-next-line no-console
+            console.error("An error occurred while reading the JSON file:", err);
             return;
         }
 
@@ -347,6 +348,21 @@ ipcMain.on("main:get-ide-handler", (event): void => {
 
         mainWindow.webContents.send("app:ide-handler", parsedData);
     });
+});
+
+ipcMain.on("main:open-custom-window", (event, link) => {
+    const window: BrowserWindow = new BrowserWindow({
+        show: true,
+        width: 830,
+        height: 690,
+        webPreferences: {
+            nodeIntegration: true
+        },
+        alwaysOnTop: true,
+        title: link.title
+    });
+
+    window.loadURL(link.url);
 });
 
 ipcMain.on("main:create-static-tmp-file", (event, value) => {

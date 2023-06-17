@@ -3,7 +3,7 @@
         <div class="space-y-1">
             <div class="dark:text-slate-300 font-normal">Headers:</div>
             <div
-                v-for="header in props.payload.notification.headers"
+                v-for="header in props.payload.mail.headers"
                 :key="header"
                 v-text="header"
             ></div>
@@ -13,7 +13,7 @@
             <div class="dark:text-slate-300 font-normal">Attachments:</div>
             <button
                 class="btn-rounded-white"
-                v-for="attachment in props.payload.notification.attachments"
+                v-for="attachment in props.payload.mail.attachments"
                 :key="attachment"
                 @click.prevent="openInBrowser(attachment.path)"
             >
@@ -23,7 +23,16 @@
         </div>
 
         <div>
-            <div class="dark:text-slate-300 font-normal">Content:</div>
+            <div class="dark:text-slate-300 font-normal flex justify-between">
+                Content:
+                <button
+                    class="flex gap-2"
+                    @click.prevent="createNewWindow()"
+                >
+                    <ArrowTopRightOnSquareIcon class="w-4" />
+                    New Window
+                </button>
+            </div>
 
             <div class="mt-2 h-[415px] w-full">
                 <iframe
@@ -36,7 +45,7 @@
 
         <div
             class="bg-slate-100 space-y-2 dark:bg-slate-800 rounded-sm p-2"
-            v-html="props.payload.notification.details[0]"
+            v-html="props.payload.mail.details[0]"
         ></div>
     </div>
 </template>
@@ -44,7 +53,7 @@
 <script setup lang="ts">
 import { defineProps, onMounted, ref } from "vue";
 import { Payload } from "@/types/Payload";
-import { CloudArrowDownIcon } from "@heroicons/vue/20/solid";
+import { CloudArrowDownIcon, ArrowTopRightOnSquareIcon } from "@heroicons/vue/24/outline";
 import CryptoJS from "crypto-js";
 
 const filePath = ref("");
@@ -57,16 +66,23 @@ const openInBrowser = (path: string) => {
     window.ipcRenderer.send("main:openLink", "file:///" + path);
 };
 
+const createNewWindow = () => {
+    window.ipcRenderer.send("main:open-custom-window", {
+        title: props.payload.mail.headers.toString(),
+        url: `http://localhost:9191/${filePath.value}.html`
+    });
+};
+
 onMounted(() => {
-    window.Sfdump(`sf-dump-${props.payload.notification.details[1]}`);
-
-    filePath.value = CryptoJS.MD5(props.payload.notification.html).toString();
-
-    console.log(filePath.value);
+    filePath.value = CryptoJS.MD5(props.payload.mail.html).toString();
 
     window.ipcRenderer.send("main:create-static-tmp-file", {
         name: filePath.value,
-        content: props.payload.notification.html
+        content: props.payload.mail.html
     });
+
+    if (props.payload.mail.details[1]) {
+        window.Sfdump(`sf-dump-${props.payload.mail.details[1]}`);
+    }
 });
 </script>
