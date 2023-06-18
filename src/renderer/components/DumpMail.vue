@@ -1,5 +1,5 @@
 <template>
-    <div class="dark:text-slate-400 rounded-sm px-2 p-1 space-y-2">
+    <div class="dark:text-slate-400 rounded-sm px-2 p-1 space-y-3">
         <div class="space-y-1">
             <div class="dark:text-slate-300 font-normal">Headers:</div>
             <div
@@ -45,10 +45,13 @@
             </div>
         </div>
 
-        <div
-            class="bg-slate-100 space-y-2 dark:bg-slate-800 rounded-sm p-2"
-            v-html="props.payload.mail.details[0]"
-        ></div>
+        <div class="space-y-1">
+            <div class="dark:text-slate-300 font-normal">Details:</div>
+            <div
+                class="bg-slate-100 space-y-2 dark:bg-slate-800 rounded-sm p-2"
+                v-html="props.payload.mail.details[0]"
+            ></div>
+        </div>
     </div>
 </template>
 
