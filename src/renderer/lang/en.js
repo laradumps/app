@@ -1,17 +1,23 @@
 export default {
     doc: {
-        hello_dev: "Hello dev",
-        welcome_to_laradumps: "Welcome to LaraDumps!",
-        quick_start: "Quick start",
-        install_laradumps: "Install LaraDumps Package in your Project",
-        configure_your_laravel_project_execute: "Configure your Laravel project, execute",
-        run_your_application_and_see_what_happens_here: "Run your application and see what happens here!",
+        guide: "Guide",
+        install_laradumps: "Install LaraDumps",
+        add: "Add",
         somewhere_in_your_code: "somewhere in your code",
-
-        add: "add",
-        check_out_our: "Check out our",
-        documentation: "documentation",
-        for_more_information: "for more information."
+        run_your_application_and_see_what_happens_here: "Run your application and see what happens here",
+        global_shortcuts: "Global shortcuts",
+        customize_shortcuts: "Customize your shortcuts in Settings > Shortcuts",
+        available: "Available",
+        shortcuts_list: "Clear All, Dark Mode, Always on top",
+        add_project_here: "Add your Project here",
+        run_in_php_project: "In your PHP Project, run",
+        finish_setting_env_vars: "Go back to the app and finish setting environment variables",
+        install_laradumps_globally: "Install LaraDumps globally",
+        run: "run",
+        run_global_laradumps_install: "Run global-laradumps install",
+        update_laradumps_environments: "Update LaraDumps environments in Settings",
+        choose_project: "Choose your Project",
+        update_keys: "Update the keys"
     },
     footer: {
         support_laradumps: "Support LaraDumps",

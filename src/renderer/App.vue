@@ -24,7 +24,7 @@
                     <main
                         :class="{
                             'overflow-auto': payload.length > 0,
-                            'bg-gradient-to-t from-slate-100 to-slate-50 dark:from-gray-900 dark:to-slate-800': payload.length === 0
+                            'bg-gradient-to-t group from-slate-100 to-slate-50 dark:from-gray-900 dark:to-slate-800': payload.length === 0
                         }"
                         class="flex-1 flex flex-col shrink-0 bg-white dark:bg-slate-900 left-16 right-0 min-h-full"
                     >
