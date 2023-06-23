@@ -22,3 +22,10 @@ const props = defineProps<{
     payload: Payload;
 }>();
 </script>
+
+<style scoped>
+.vjs-tree-node.is-highlight,
+.vjs-tree-node:hover {
+    background: transparent !important;
+}
+</style>

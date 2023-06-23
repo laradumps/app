@@ -285,6 +285,7 @@ type EventType = "label" | "color" | "screen" | "dump";
 
 const dispatch = (type: string, event: EventType, content: any): void => {
     content.rendered = false;
+    settingStore.setting = false;
 
     let screenName = "screen 1";
 

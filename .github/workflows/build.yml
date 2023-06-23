@@ -35,7 +35,7 @@ jobs:
             - name: Install Snapcraft
               if: matrix.os == 'ubuntu-latest'
               run: |
-                sudo snap install snapcraft --classic
+                  sudo snap install snapcraft --classic
 
             - name: Build Linux
               if: matrix.os == 'ubuntu-latest'

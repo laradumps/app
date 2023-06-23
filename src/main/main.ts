@@ -1,4 +1,4 @@
-import { app, Tray, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, session } from "electron";
+import { app, Tray, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
 import windowStateKeeper from "electron-window-state";
 import path, { join, resolve } from "path";
 import contextMenu from "electron-context-menu";
@@ -14,7 +14,6 @@ import fs from "fs";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
-const isWin = process.platform === "win32";
 
 let mainWindow: BrowserWindow;
 let coffeeWindow: BrowserWindow;
@@ -248,8 +247,6 @@ app.whenReady().then(async (): Promise<void> => {
                     event.preventDefault();
                     return;
                 }
-
-                app.exit(0);
             }
         }
 
@@ -258,6 +255,10 @@ app.whenReady().then(async (): Promise<void> => {
 
     mainWindow.on("closed", (): void => {
         app.exit(0);
+    });
+
+    globalShortcut.register("CommandOrControl+Shift+X", () => {
+        mainWindow.reload();
     });
 
     // @ts-ignore
@@ -328,6 +329,11 @@ app.on("activate", (): void => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
+});
+
+app.on("will-quit", () => {
+    globalShortcut.unregister("CommandOrControl+Shift+X");
+    globalShortcut.unregisterAll();
 });
 
 app.on("browser-window-focus", (): void => {

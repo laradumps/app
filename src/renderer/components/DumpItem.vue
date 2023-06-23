@@ -16,7 +16,7 @@
                 class="py-1 px-4 w-full"
                 :class="{
                     [`!border-l-4 ` + color]: typeof color !== 'undefined',
-                    'pb-2': isOpen,
+                    'mb-3': isOpen,
                     'cursor-pointer !bg-transparent': !isOpen
                 }"
             >
@@ -140,7 +140,7 @@
 
                     <!-- dump log -->
                     <DumpLog
-                        class="w-full p-4 shadow-md shadow-gray-300 dark:shadow-gray-800 bg-slate-100 dark:bg-slate-800"
+                        class="w-full p-4 shadow-md dark:shadow-slate-800 bg-slate-50 dark:bg-slate-800"
                         v-if="isOpen && props.payload.type === `log_application`"
                         :payload="payload"
                     />
@@ -200,7 +200,7 @@
 
                     <div
                         :class="{ 'blur-sm': !privacy.isOpen }"
-                        class="dark:text-slate-400 cursor-pointer font-light line-clamp-2 select-none text-xs italic"
+                        class="dark:text-slate-500 cursor-pointer font-light line-clamp-2 select-none text-xs italic"
                     >
                         <div class="gap-2 flex items-center">
                             <div
