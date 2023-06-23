@@ -179,7 +179,7 @@
 
 <script setup lang="ts">
 import SelectMenu from "@/components/SelectMenu.vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeMount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useSettingStore } from "@/store/setting";
 
@@ -199,12 +199,28 @@ const projectPath = ref("");
 
 const projects = ref([]);
 
-const chooseIde = (value) => {
+const chooseIde = (value: string) => {
     selectedIdeHandler.value = value;
 };
 
 onMounted(async () => {
-    window.ipcRenderer.send("main:get-environment");
+    const loadEnvironment = async () => {
+        window.ipcRenderer.send("main:get-environment");
+
+        await window.ipcRenderer.on("app-setting:set-environment", (event, value) => {
+            if (value != null) {
+                value.forEach((environment) => {
+                    projects.value.push({
+                        id: environment.projectName,
+                        label: environment.projectName + " - " + environment.envFile,
+                        value: environment.envFile
+                    });
+                });
+            }
+        });
+    }
+
+    await loadEnvironment()
 
     window.ipcRenderer.on("app-setting:env-file", (event, value) => {
         envFile.value = value;
@@ -221,18 +237,6 @@ onMounted(async () => {
 
         selectedProject.value = "";
         environments.value = [];
-    });
-
-    window.ipcRenderer.on("app-setting:set-environment", (event, value) => {
-        if (value != null) {
-            value.forEach((environment) => {
-                projects.value.push({
-                    id: environment.projectName,
-                    label: environment.projectName + " - " + environment.envFile,
-                    value: environment.envFile
-                });
-            });
-        }
     });
 
     window.ipcRenderer.on("settings:env-file-contents", (event, value) => {

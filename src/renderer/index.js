@@ -2,7 +2,6 @@ import { createApp } from "vue";
 import App from "@/App.vue";
 import "@/styles.css";
 
-import { VTooltip } from "floating-vue";
 import "highlight.js/styles/xcode.css";
 import hljs from "highlight.js/lib/core";
 import php from "highlight.js/lib/languages/php";
@@ -14,7 +13,6 @@ import ptBR from "@/lang/pt-BR";
 
 import clipboard from "@/plugins/clipboard";
 
-import "floating-vue/dist/style.css";
 import "vue-json-pretty/lib/styles.css";
 import "@/sf-dump";
 
@@ -37,7 +35,6 @@ const i18n = createI18n({
 
 const app = createApp(App);
 
-app.directive("tooltip", VTooltip);
 app.use(hljsVuePlugin);
 app.use(pinia);
 app.use(i18n);
