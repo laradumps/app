@@ -28,6 +28,25 @@
             >
                 <li
                     class="relative py-2"
+                    v-if="projects.length === 0"
+                >
+                    <div>
+                        <div
+                            class="mx-auto border border-slate-200 dark:border-slate-700 flex max-w-4xl group justify-between gap-x-6 rounded-md p-2"
+                        >
+                            <div class="flex gap-x-4">
+                                <div class="min-w-0 flex-auto">
+                                    <p class="text-sm font-semibold leading-6 text-slate-900 dark:text-slate-300">
+                                        No Project here
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li
+                    class="relative py-2"
                     v-for="project in projects"
                     :ref="project.id"
                 >
@@ -182,6 +201,7 @@ import SelectMenu from "@/components/SelectMenu.vue";
 import { computed, onBeforeMount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useSettingStore } from "@/store/setting";
+import * as electron from "electron";
 
 const i18n = useI18n();
 const settingStore = useSettingStore();
@@ -232,13 +252,6 @@ onMounted(async () => {
         ideList.value = value;
     });
 
-    window.ipcRenderer.on("app-setting:removed", () => {
-        alert("Removed");
-
-        selectedProject.value = "";
-        environments.value = [];
-    });
-
     window.ipcRenderer.on("settings:env-file-contents", (event, value) => {
         if (value != null) {
             environments.value = [];
@@ -258,7 +271,23 @@ onMounted(async () => {
 
 const removeEnvironment = () => {
     if (selectedProject.value !== "") {
-        window.ipcRenderer.send("main:setting-remove-environments", selectedProject.value);
+
+        window.ipcRenderer.on("main:dialog-choice", (event, arg) => {
+            if (arg === 0) {
+                window.ipcRenderer.send("main:setting-remove-environments", selectedProject.value);
+
+                selectedProject.value = "";
+                environments.value = [];
+
+                alert('The project was removed successfully!')
+            }
+        })
+
+        window.ipcRenderer.send("main:dialog", {
+            buttons: ["Yes", "No"],
+            title: 'Remove Project',
+            message: 'Are you sure you want to remove the configuration from this Project?'
+        });
     }
 };
 

@@ -96,8 +96,6 @@ function configureEnvironment(mainWindow: Electron.BrowserWindow): void {
 
             // @ts-ignore
             storage.set(`environment`, updatedEnvironment);
-
-            mainWindow.webContents.send("app-setting:removed");
         });
     });
 

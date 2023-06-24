@@ -20,3 +20,9 @@ const props = defineProps<{
 
 const value = computed(() => JSON.parse(props.payload.json?.string ?? ""));
 </script>
+
+<style>
+.vjs-tree-node:hover {
+    background-color: transparent !important;
+}
+</style>

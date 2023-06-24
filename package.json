@@ -166,10 +166,7 @@
             ]
         },
         "mac": {
-            "target": "dmg",
-            "extendInfo": {
-                "NSDocumentsFolderUsageDescription": "Allow load environment"
-            }
+            "darkModeSupport": true
         },
         "dmg": {
             "title": "${productName} ${version}",

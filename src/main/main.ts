@@ -229,25 +229,24 @@ app.whenReady().then(async (): Promise<void> => {
 
     // @ts-ignore
     mainWindow.on("close", function (event: Event): void {
-        if (!isQuiting) {
+        if (isMac && !isQuiting) {
             event.preventDefault();
+            mainWindow.minimize();
 
-            if (isMac) {
-                mainWindow.minimize();
-            } else {
-                // @ts-ignore
-                const choice = dialog.showMessageBoxSync(this, {
-                    type: "question",
-                    buttons: ["Yes", "No"],
-                    title: "Confirm",
-                    message: "Are you sure you want to quit?"
-                });
+            return;
+        }
 
-                if (choice === 1) {
-                    event.preventDefault();
-                    return;
-                }
-            }
+        // @ts-ignore
+        const choice = dialog.showMessageBoxSync(this, {
+            type: "question",
+            buttons: ["Yes", "No"],
+            title: "Confirm",
+            message: "Are you sure you want to quit?"
+        });
+
+        if (choice === 1) {
+            event.preventDefault();
+            return;
         }
 
         mainWindow.webContents.send("server:close", {});
@@ -432,3 +431,14 @@ ipcMain.on("main:get-app-version", (): void => {
 ipcMain.on("main:show", (): void => {
     mainWindow.show();
 });
+
+ipcMain.on("main:dialog", async (event, arg): void => {
+    const choice = dialog.showMessageBoxSync(mainWindow, {
+        type: "question",
+        buttons: arg.buttons,
+        title: arg.title,
+        message: arg.message
+    });
+
+    await mainWindow.webContents.send("main:dialog-choice", choice);
+})
