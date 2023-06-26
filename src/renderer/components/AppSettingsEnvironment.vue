@@ -178,9 +178,10 @@
                 </li>
             </ul>
 
-            <div class="hidden">
-                <div class="mt-40 border-t border-gray-200 space-y-3 dark:text-slate-400">
+            <div>
+                <div class="mt-40 border-t text-sm border-gray-200 space-y-3 dark:text-slate-400">
                     <div class="text-lg text-left mt-4 font-normal dark:text-slate-300">Reset data</div>
+                    <p>This action will clear all data saved in LaraDumps as "Projects and Saved Dumps"</p>
                 </div>
                 <div class="flex justify-center mt-6">
                     <button
@@ -313,6 +314,9 @@ const cancel = (): void => {
 
 const clearAllEnvironments = (): void => {
     window.ipcRenderer.send("main:settings-clear-all-environment");
+
+    alert('Data deleted successfully!');
+    location.reload()
 };
 
 const saveEnvironment = async (): Promise<void> => {

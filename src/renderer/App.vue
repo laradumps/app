@@ -419,8 +419,12 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("app:render-all-saved-dumps", (event, content) => {
-        const payload = JSON.parse(content);
-        dispatch(payload.type, event, payload);
+        try {
+            const payload = JSON.parse(content);
+            dispatch(payload.type, event, payload);
+        } catch (e) {
+            console.log(e)
+        }
     });
 
     window.ipcRenderer.on("clear", () => clearAll());

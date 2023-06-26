@@ -140,7 +140,7 @@ function nextRandom() {
     @apply h-[200px] flex items-center justify-center relative;
 }
 
-.content {
+.carousel .content {
     @apply left-[15px] absolute w-full top-[28px];
 }
 

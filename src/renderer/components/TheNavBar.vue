@@ -33,7 +33,7 @@
                             <NavBarDarkButton />
 
                             <!-- setting -->
-                            <NavBarSetting />
+                            <NavBarSetting v-if="!inSavedDumpsWindow" />
                         </div>
                     </nav>
                 </div>
