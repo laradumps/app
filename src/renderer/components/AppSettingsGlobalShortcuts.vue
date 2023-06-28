@@ -151,7 +151,7 @@ const save = () => {
         }
     });
 
-    alert(i18n.t("settings.shortcut.save"));
+    alert(i18n.t("settings.shortcut.save_message"));
 
     editMode.value = "disabled";
 };

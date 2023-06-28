@@ -44,20 +44,21 @@ export default {
             alwaysOnTop: "Always On Top",
             globalSearch: "Global Search",
             toggleMenu: "Toggle Menu",
-            save: "Shortcut was updated successfully"
+            save_message: "Shortcut was updated successfully"
         },
-        add_environment: "Add Environment",
-        server_name: "Server Name",
-        environment_file: "Environment file",
-        choose_from_your_computer: "Choose from yout computer",
-        choose_project: "Choose Project",
         choose_a_project: "Choose a Project",
-        new: "Add new Project",
         save: "Save",
         edit: "Edit",
         cancel: "Cancel",
         remove: "Remove",
-        clear_all_environments: "Clear all environments"
+        clear_all_settings: "Clear all settings",
+        run_to_add_your_project_here: "Run vendor/bin/laradumps configure to add your project here",
+        projects: "Projects",
+        no_project_here: "No Project here",
+        reset_data: "Reset Data",
+        reset_data_description: "This action will clear all data saved in LaraDumps as 'Projects and Saved Dumps'",
+        clear_all_settings_dialog_message: "Are you sure you want to clear all settings?",
+        deleted_message: "Settings deleted successfully!"
     },
     click_to_copy: "Click to copy",
     please_select_a_component: "Please select a component",
@@ -93,5 +94,7 @@ export default {
         configure_lara_dumps: "Configure LaraDumps",
         save: "Save",
         cancel: "Cancel"
-    }
+    },
+    yes: "Yes",
+    no: "No"
 };
