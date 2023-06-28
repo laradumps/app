@@ -44,20 +44,21 @@ export default {
             alwaysOnTop: "Siempre encima",
             globalSearch: "Búsqueda global",
             toggleMenu: "Alternar menú",
-            save: "El acceso directo se actualizó correctamente"
+            save_message: "El acceso directo se actualizó correctamente"
         },
-        add_environment: "Añadir entorno",
-        server_name: "Nombre del servidor",
-        environment_file: "Archivo de entorno",
-        choose_from_your_computer: "Elige de tu ordenador",
-        choose_project: "Elegir proyecto",
         choose_a_project: "Elige un proyecto",
-        new: "Añadir proyecto",
         save: "Guardar",
         edit: "Editar",
         cancel: "Cancelar",
         remove: "Eliminar",
-        clear_all_environments: "Quitar todos los entornos"
+        clear_all_settings: "Eliminar todas las configuraciones",
+        run_to_add_your_project_here: "Ejecuta vendor/bin/laradumps configure para añadir tu proyecto aquí",
+        projects: "Proyectos",
+        no_project_here: "No hay ningún proyecto",
+        reset_data: "Restablecer datos",
+        reset_data_description: "Esto eliminará todos los datos de la aplicación, incluidos los proyectos y los volcados guardados.",
+        clear_all_settings_dialog_message: "¿Estás seguro de que quieres eliminar todas las configuraciones?",
+        deleted_message: "Configuración eliminada correctamente"
     },
     click_to_copy: "Haz clic para copiar",
     please_select_a_component: "Por favor, seleccione un componente",
@@ -95,5 +96,7 @@ export default {
         configure_lara_dumps: "Configura LaraDumps",
         save: "Guardar",
         cancel: "Cancelar"
-    }
+    },
+    yes: "Sí",
+    no: "No"
 };
