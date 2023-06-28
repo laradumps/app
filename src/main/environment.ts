@@ -14,7 +14,7 @@ function configureEnvironment(mainWindow: Electron.BrowserWindow): void {
     /**
      * Clears the environment storage.
      */
-    ipcMain.on("main:settings-clear-all-environment", (): void => {
+    ipcMain.on("main:settings-clear-all-settings", (): void => {
         storage.clear((error) => {
             if (error) {
                 console.log(error);

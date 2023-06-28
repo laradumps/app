@@ -70,7 +70,7 @@
         "@vue/compiler-sfc": "3.3.4",
         "electron": "25.2.0",
         "electron-builder": "24.4.0",
-        "esbuild": "0.18.9",
+        "esbuild": "0.18.10",
         "eslint": "^8.43.0",
         "eslint-plugin-import": "^2.27.5",
         "eslint-plugin-n": "^16.0.1",
