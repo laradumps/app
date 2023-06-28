@@ -10,6 +10,7 @@ import { createPinia } from "pinia";
 import { createI18n } from "vue-i18n";
 import en from "@/lang/en";
 import ptBR from "@/lang/pt-BR";
+import esES from "@/lang/es-ES";
 
 import clipboard from "@/plugins/clipboard";
 
@@ -29,7 +30,8 @@ const i18n = createI18n({
     silentFallbackWarn: true,
     messages: {
         en,
-        pt_BR: ptBR
+        pt_BR: ptBR,
+        es_ES: esES
     }
 });
 
