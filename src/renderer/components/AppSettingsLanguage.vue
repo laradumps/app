@@ -5,7 +5,12 @@
                 <label class="block text-sm font-normal text-gray-700 dark:text-slate-400 sm:mt-px sm:pt-2"> {{ $t("settings.language") }} </label>
 
                 <div class="mt-1 sm:col-span-2 sm:mt-0">
-                    <SelectMenu @selected="changeLocale($event.value)" :default-value="selectedLanguage" class="w-[190px] !text-xs" v-model:data="languages" />
+                    <SelectMenu
+                        @selected="changeLocale($event.value)"
+                        :default-value="selectedLanguage"
+                        class="w-[190px] !text-xs"
+                        v-model:data="languages"
+                    />
                 </div>
             </div>
         </div>
