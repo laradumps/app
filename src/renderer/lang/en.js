@@ -58,7 +58,9 @@ export default {
         reset_data: "Reset Data",
         reset_data_description: "This action will clear all data saved in LaraDumps as 'Projects and Saved Dumps'",
         clear_all_settings_dialog_message: "Are you sure you want to clear all settings?",
-        deleted_message: "Settings deleted successfully!"
+        deleted_message: "Settings deleted successfully!",
+        system: "System",
+        appearance: "Appearance"
     },
     click_to_copy: "Click to copy",
     please_select_a_component: "Please select a component",

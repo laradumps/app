@@ -1,4 +1,4 @@
-import { app, Tray, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
+import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
 import windowStateKeeper from "electron-window-state";
 import path, { join, resolve } from "path";
 import contextMenu from "electron-context-menu";
@@ -8,9 +8,11 @@ import { initSavedDumps } from "./saved-dumps";
 import { initCoffeeWindow } from "./coffee";
 import { configureGlobalShortcut, registerShortcuts } from "./global-shortcut";
 import { configureEnvironment } from "./environment";
-import { autoUpdater } from "electron-updater";
+import { autoUpdater, UpdateInfo } from "electron-updater";
 import * as url from "url";
 import fs from "fs";
+import { download } from "electron-dl";
+import IpcMainEvent = Electron.IpcMainEvent;
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
@@ -94,7 +96,7 @@ function createWindow(): BrowserWindow {
 
         autoUpdater.autoDownload = false;
 
-        autoUpdater.on("update-available", async (): Promise<void> => {
+        autoUpdater.on("update-available", async (updateInfo: UpdateInfo): Promise<void> => {
             setTimeout(async (): Promise<void> => {
                 if (process.platform === "darwin") {
                     await dialog.showMessageBox({
@@ -103,6 +105,8 @@ function createWindow(): BrowserWindow {
                         message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
                         buttons: ["Ok"]
                     });
+
+                    mainWindow.webContents.send("update-info", updateInfo);
                 } else {
                     const result = await dialog.showMessageBox({
                         type: "info",
@@ -141,6 +145,7 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             win.webContents.openDevTools();
         }
+        win.webContents.openDevTools();
     });
 
     return win;
@@ -441,4 +446,50 @@ ipcMain.on("main:dialog", async (event, arg): void => {
     });
 
     await mainWindow.webContents.send("main:dialog-choice", choice);
-})
+});
+
+ipcMain.on("download-latest-version", async (event, args) => {
+    const properties = {
+        onProgress: (progress) => {
+            mainWindow.webContents.send("download-progress", progress);
+        },
+        onCompleted: (item) => {
+            mainWindow.webContents.send("download-complete", item);
+        }
+    };
+
+    await download(mainWindow, args, properties);
+});
+
+ipcMain.on("download-open-file", async (event, args) => {
+    const result = await dialog.showMessageBox({
+        type: "info",
+        title: "Update completed!",
+        message: "The download was completed successfully!, do you want to install now?",
+        buttons: ["Yes", "No"]
+    });
+
+    if (result.response === 0) {
+        shell.openPath(args);
+
+        setTimeout(() => {
+            app.exit(0);
+        }, 1000);
+    }
+});
+
+ipcMain.on("native-theme", () => {
+    if (nativeTheme.shouldUseDarkColors) {
+        mainWindow.webContents.send("app:theme-dark");
+    } else {
+        mainWindow.webContents.send("app:theme-light");
+    }
+});
+
+nativeTheme.on("updated", () => {
+    if (nativeTheme.shouldUseDarkColors) {
+        mainWindow.webContents.send("app:theme-dark");
+    } else {
+        mainWindow.webContents.send("app:theme-light");
+    }
+});

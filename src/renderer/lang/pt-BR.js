@@ -57,7 +57,9 @@ export default {
         reset_data: "Limpar",
         reset_data_description: "Esta ação limpará todos os dados salvos no LaraDumps como 'Projetos and Dumps salvos'",
         clear_all_settings_dialog_message: "Tem certeza de que deseja limpar todas as configurações?",
-        deleted_message: "Configurações excluídas com sucesso!"
+        deleted_message: "Configurações excluídas com sucesso!",
+        system: "Sistema",
+        appearance: "Aparência"
     },
     click_to_copy: "Clique para copiar",
     elapsed_time: "Tempo decorrido",

@@ -2,7 +2,7 @@
     <div
         v-cloak
         id="app"
-        :class="{ dark: darkMode.dark }"
+        :class="{ dark: appearanceStore.dark }"
     >
         <div class="absolute w-full h-full min-h-full">
             <TheModal v-model:modal-attributes="modalAttributes" />
@@ -35,6 +35,7 @@
                         >
                             <AppSetting :global-shortcut-list="globalShortcutList" />
                         </div>
+
                         <!-- header global filter -->
                         <div
                             class="py-2 px-1 min-[350px] bg-white dark:bg-slate-900 group flex justify-end items-center"
@@ -48,6 +49,8 @@
                                 />
                             </div>
                         </div>
+
+                        <AutoUpdater />
 
                         <!-- screen buttons -->
                         <div
@@ -127,7 +130,7 @@ import ThePackageUpdateInfo from "@/components/ThePackageUpdateInfo.vue";
 import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
 import TheInstaller from "@/components/TheInstaller.vue";
 import { useScreenStore } from "@/store/screen";
-import { useDarkModeStore } from "@/store/dark";
+import { useAppearanceStore } from "@/store/appearance";
 import { useI18nStore } from "@/store/i18n";
 import { useReorder } from "@/store/reorder";
 import { useSettingStore } from "@/store/setting";
@@ -149,6 +152,7 @@ import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
 import LivewireHandler from "@/components/LivewireHandler.vue";
 import TheFooter from "@/components/TheFooter.vue";
+import AutoUpdater from "@/components/AutoUpdater.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -180,8 +184,11 @@ const inSavedDumpsWindow = ref(false);
 const renderedDumps = ref([]);
 const activeScreen = ref("screen 1");
 
+const currentProgress = ref(0);
+const isLoading = ref(false);
+
 const screenStore = useScreenStore();
-const darkMode = useDarkModeStore();
+const appearanceStore = useAppearanceStore();
 const localeStore = useI18nStore();
 const reorderStore = useReorder();
 const settingStore = useSettingStore();
@@ -284,6 +291,7 @@ const toggleScreen = (value: string): void => {
 type EventType = "label" | "color" | "screen" | "dump";
 
 const dispatch = (type: string, event: EventType, content: any): void => {
+    console.log(content);
     content.rendered = false;
     settingStore.setting = false;
 
@@ -423,7 +431,7 @@ onMounted(() => {
             const payload = JSON.parse(content);
             dispatch(payload.type, event, payload);
         } catch (e) {
-            console.log(e)
+            console.log(e);
         }
     });
 
@@ -431,7 +439,23 @@ onMounted(() => {
 
     window.ipcRenderer.on("app:global-shortcut-execute::clearAll", () => clearAll());
 
-    window.ipcRenderer.on("app:global-shortcut-execute::darkMode", () => darkMode.toggle());
+    window.ipcRenderer.on("app:global-shortcut-execute::darkMode", () => appearanceStore.toggle());
+
+    if (appearanceStore.theme === "auto") {
+        window.ipcRenderer.send("native-theme", localStorage.theme);
+    }
+
+    window.ipcRenderer.on("app:theme-dark", () => {
+        if (appearanceStore.theme === "auto") {
+            appearanceStore.setDark(false);
+        }
+    });
+
+    window.ipcRenderer.on("app:theme-light", () => {
+        if (appearanceStore.theme === "auto") {
+            appearanceStore.setLight(false);
+        }
+    });
 
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
 

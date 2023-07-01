@@ -3,9 +3,9 @@ on:
     workflow_dispatch:
         inputs:
             version:
-                description: 'LaraDumps Version'
+                description: "LaraDumps Version"
                 required: true
-                default: 'warning'
+                default: "warning"
                 type: string
 jobs:
     UpdateReadme:
@@ -13,7 +13,7 @@ jobs:
             fail-fast: true
             matrix:
                 operating-system: [ubuntu-latest]
-                php-versions: ['8.1']
+                php-versions: ["8.1"]
         runs-on: ${{ matrix.operating-system }}
         steps:
             - name: Checkout
