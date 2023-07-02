@@ -10,7 +10,7 @@
         "electron": "node build.js --dev && electron .",
         "build": "vite build && node build.js --prod",
         "start": "npm run build && electron .",
-        "release-mac": "electron-builder --publish always --mac",
+        "release-mac": "electron-builder --publish always --mac --universal",
         "release-win": "electron-builder --publish always --win",
         "release-linux": "electron-builder --publish always --linux",
         "fix": "eslint --fix --ext .js src/renderer && npm run format",
