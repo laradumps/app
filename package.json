@@ -46,7 +46,6 @@
         "highlight.js": "^11.8.0",
         "hotkeys-js": "^3.10.3",
         "humanize-duration": "^3.28.0",
-        "install": "^0.13.0",
         "moment": "^2.29.4",
         "moment-timezone": "^0.5.43",
         "pinia": "^2.1.4",
