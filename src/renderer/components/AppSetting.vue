@@ -70,8 +70,8 @@ const hasUpdates = computed(() => {
 });
 
 const checkUpdates = computed(() => {
-    window.ipcRenderer.send("main:check-upload")
-})
+    window.ipcRenderer.send("main:check-upload");
+});
 
 defineProps({
     globalShortcutList: {
