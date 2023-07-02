@@ -18,7 +18,7 @@
             }
         },
         "allowSyntheticDefaultImports": true,
-        "typeRoots": ["src/types/**/*", "src/renderer/*.d.ts", "./node_modules/@types"],
-        "suppressImplicitAnyIndexErrors": true,
+        "typeRoots": ["src/types/**/*", "src/renderer/types/*.d.ts", "./node_modules/@types"],
+        "suppressImplicitAnyIndexErrors": true
     }
 }

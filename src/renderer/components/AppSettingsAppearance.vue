@@ -19,7 +19,7 @@ import { computed, ref } from "vue";
 import { useAppearanceStore } from "@/store/appearance";
 
 const selected = ref("");
-const darkMode = useAppearanceStore();
+const appearanceStore = useAppearanceStore();
 
 const themes = ref([
     {
@@ -32,22 +32,22 @@ const themes = ref([
     },
     {
         value: "auto",
-        label: "OS Preference"
+        label: "Follow OS Preference"
     }
 ]);
 
 const changeTheme = (value) => {
     if (value !== undefined) {
         if (value === "dark") {
-            darkMode.setDark(true);
+            appearanceStore.setDark(true);
         }
 
         if (value === "light") {
-            darkMode.setLight(true);
+            appearanceStore.setLight(true);
         }
 
         if (value === "auto") {
-            darkMode.setAuto();
+            appearanceStore.setAuto();
             window.ipcRenderer.send("native-theme");
         }
     }
@@ -55,7 +55,7 @@ const changeTheme = (value) => {
 
 const selectedTheme = computed(() => {
     return themes.value.findIndex((theme) => {
-        return theme.value === darkMode.theme;
+        return theme.value === appearanceStore.theme;
     });
 });
 </script>

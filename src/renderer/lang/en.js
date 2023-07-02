@@ -60,7 +60,9 @@ export default {
         clear_all_settings_dialog_message: "Are you sure you want to clear all settings?",
         deleted_message: "Settings deleted successfully!",
         system: "System",
-        appearance: "Appearance"
+        appearance: "Appearance",
+        check_for_updates: "Check for updates",
+        update_available: "Update Available"
     },
     click_to_copy: "Click to copy",
     please_select_a_component: "Please select a component",

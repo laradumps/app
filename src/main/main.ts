@@ -8,11 +8,12 @@ import { initSavedDumps } from "./saved-dumps";
 import { initCoffeeWindow } from "./coffee";
 import { configureGlobalShortcut, registerShortcuts } from "./global-shortcut";
 import { configureEnvironment } from "./environment";
-import { autoUpdater, UpdateInfo } from "electron-updater";
+import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import * as url from "url";
 import fs from "fs";
 import { download } from "electron-dl";
-import IpcMainEvent = Electron.IpcMainEvent;
+import { CompletedInfo } from "@/types/Updater";
+import { exec } from "child_process";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
@@ -99,14 +100,38 @@ function createWindow(): BrowserWindow {
         autoUpdater.on("update-available", async (updateInfo: UpdateInfo): Promise<void> => {
             setTimeout(async (): Promise<void> => {
                 if (process.platform === "darwin") {
-                    await dialog.showMessageBox({
-                        type: "info",
-                        title: "LaraDumps update available!",
-                        message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
-                        buttons: ["Ok"]
-                    });
+                    const downloadPath: string = app.getPath("downloads");
 
-                    mainWindow.webContents.send("update-info", updateInfo);
+                    const files: UpdateFileInfo[] = updateInfo.files;
+                    const filteredFiles: UpdateFileInfo = files.filter((file: UpdateFileInfo) => file.url.includes("dmg"))[0];
+                    const fileName: string = filteredFiles.url;
+
+                    const downloadedFile = `${downloadPath}/${fileName}`;
+
+                    if (fs.existsSync(downloadedFile)) {
+                        const result = await dialog.showMessageBox({
+                            type: "info",
+                            title: "LaraDumps update downloaded!",
+                            message: "Download has already been done, do you want to open it?",
+                            buttons: ["Yes", "No"]
+                        });
+
+                        if (result.response === 0) {
+                            await shell.openPath(downloadedFile);
+
+                            isQuiting = true;
+                            app.quit();
+                        }
+                    } else {
+                        await dialog.showMessageBox({
+                            type: "info",
+                            title: "LaraDumps update available!",
+                            message: "There are updates available for LaraDumps App.",
+                            buttons: ["Ok"]
+                        });
+
+                        mainWindow.webContents.send("autoUpdater:update-info", updateInfo);
+                    }
                 } else {
                     const result = await dialog.showMessageBox({
                         type: "info",
@@ -116,6 +141,7 @@ function createWindow(): BrowserWindow {
                     });
 
                     if (result.response === 0) {
+                        mainWindow.webContents.send("update-info", updateInfo);
                         await autoUpdater.downloadUpdate();
                     }
                 }
@@ -344,7 +370,7 @@ app.on("browser-window-focus", (): void => {
     registerShortcuts(mainWindow);
 });
 
-ipcMain.on("main:get-ide-handler", (event): void => {
+ipcMain.on("main:get-ide-handler", (): void => {
     const jsonFilePath = path.join(app.getAppPath(), "./src/renderer/ide-handle-support.json");
 
     fs.readFile(jsonFilePath, "utf8", (err, data) => {
@@ -448,20 +474,28 @@ ipcMain.on("main:dialog", async (event, arg): void => {
     await mainWindow.webContents.send("main:dialog-choice", choice);
 });
 
-ipcMain.on("download-latest-version", async (event, args) => {
-    const properties = {
-        onProgress: (progress) => {
-            mainWindow.webContents.send("download-progress", progress);
+ipcMain.on("main:download-progress-info", async (event, args) => {
+    const properties: any = {
+        onProgress: (progress: number) => {
+            mainWindow.webContents.send("autoUpdater:download-progress", progress);
         },
-        onCompleted: (item) => {
-            mainWindow.webContents.send("download-complete", item);
+        onCompleted: (item: CompletedInfo) => {
+            mainWindow.webContents.send("autoUpdater:download-complete", item);
         }
     };
 
     await download(mainWindow, args, properties);
 });
 
-ipcMain.on("download-open-file", async (event, args) => {
+ipcMain.on("main:check-upload", async (): Promise<void> => {
+    if (!isMac) {
+        await autoUpdater.downloadUpdate();
+    } else {
+        await shell.openExternal("https://github.com/laradumps/app/releases/tag/v2.0.2");
+    }
+});
+
+ipcMain.on("main:download-complete", async (event, args) => {
     const result = await dialog.showMessageBox({
         type: "info",
         title: "Update completed!",
@@ -470,10 +504,11 @@ ipcMain.on("download-open-file", async (event, args) => {
     });
 
     if (result.response === 0) {
-        shell.openPath(args);
+        await shell.openPath(args);
 
         setTimeout(() => {
-            app.exit(0);
+            isQuiting = true;
+            app.quit();
         }, 1000);
     }
 });

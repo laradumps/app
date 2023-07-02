@@ -198,6 +198,10 @@ const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const i18n = useI18n();
 
+window.ipcRenderer.on("debug", (event, args) => {
+    console.log(event, args);
+});
+
 onBeforeMount(() => {
     /**
      * Sets the current locale for internationalization (i18n) before the component is mounted.

@@ -2,6 +2,7 @@
     <div class="space-y-5">
         <AppSettingsAppearance />
         <AppSettingsLanguage />
+        <AppSettingsAutoUpdate />
 
         <div>
             <div class="mt-40 border-t text-sm border-gray-200 space-y-3 dark:text-slate-400 dark:border-slate-700">
@@ -27,6 +28,7 @@
 import AppSettingsLanguage from "@/components/AppSettingsLanguage.vue";
 import AppSettingsAppearance from "@/components/AppSettingsAppearance.vue";
 import { useI18n } from "vue-i18n";
+import AppSettingsAutoUpdate from "@/components/AppSettingsAutoUpdate.vue";
 
 const i18n = useI18n();
 
