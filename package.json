@@ -1,6 +1,6 @@
 {
     "name": "laradumps",
-    "version": "2.1.0",
+    "version": "2.0.1.1",
     "private": false,
     "description": "LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://github.com/laradumps/app",
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
