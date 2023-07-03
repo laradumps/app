@@ -3,7 +3,7 @@ name: Calling BOTs
 on:
     push:
         tags:
-            - '*'
+            - "*"
 jobs:
     Bots:
         runs-on: ubuntu-latest

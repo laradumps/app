@@ -58,7 +58,11 @@ export default {
         reset_data: "Restablecer datos",
         reset_data_description: "Esto eliminará todos los datos de la aplicación, incluidos los proyectos y los volcados guardados.",
         clear_all_settings_dialog_message: "¿Estás seguro de que quieres eliminar todas las configuraciones?",
-        deleted_message: "Configuración eliminada correctamente"
+        deleted_message: "Configuración eliminada correctamente",
+        system: "System",
+        appearance: "Appearance",
+        check_for_updates: "Check for updates",
+        update_available: "Update Available"
     },
     click_to_copy: "Haz clic para copiar",
     please_select_a_component: "Por favor, seleccione un componente",

@@ -25,17 +25,17 @@
 
 <script setup>
 import { computed, defineEmits } from "vue";
-import { useDarkModeStore } from "@/store/dark";
+import { useAppearanceStore } from "@/store/appearance";
 import IconLightOn from "@/components/Icons/IconLightOn.vue";
 import IconLightOff from "@/components/Icons/IconLightOff.vue";
 
-const darkMode = useDarkModeStore();
+const appearanceStore = useAppearanceStore();
 
 defineEmits(["dark-switch"]);
 
-const dark = computed(() => darkMode.dark);
+const dark = computed(() => appearanceStore.dark);
 
 const toggleDarkMode = () => {
-    darkMode.toggle();
+    appearanceStore.toggle();
 };
 </script>

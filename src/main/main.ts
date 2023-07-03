@@ -1,4 +1,4 @@
-import { app, Tray, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
+import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
 import windowStateKeeper from "electron-window-state";
 import path, { join, resolve } from "path";
 import contextMenu from "electron-context-menu";
@@ -8,9 +8,12 @@ import { initSavedDumps } from "./saved-dumps";
 import { initCoffeeWindow } from "./coffee";
 import { configureGlobalShortcut, registerShortcuts } from "./global-shortcut";
 import { configureEnvironment } from "./environment";
-import { autoUpdater } from "electron-updater";
+import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import * as url from "url";
 import fs from "fs";
+import { download } from "electron-dl";
+import { CompletedInfo } from "@/types/Updater";
+import { exec } from "child_process";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
@@ -94,15 +97,41 @@ function createWindow(): BrowserWindow {
 
         autoUpdater.autoDownload = false;
 
-        autoUpdater.on("update-available", async (): Promise<void> => {
+        autoUpdater.on("update-available", async (updateInfo: UpdateInfo): Promise<void> => {
             setTimeout(async (): Promise<void> => {
                 if (process.platform === "darwin") {
-                    await dialog.showMessageBox({
-                        type: "info",
-                        title: "LaraDumps update available!",
-                        message: "There are updates available for LaraDumps App.\n\n Download the latest version at:\n\nhttps://github.com/laradumps/app",
-                        buttons: ["Ok"]
-                    });
+                    const downloadPath: string = app.getPath("downloads");
+
+                    const files: UpdateFileInfo[] = updateInfo.files;
+                    const filteredFiles: UpdateFileInfo = files.filter((file: UpdateFileInfo) => file.url.includes("dmg"))[0];
+                    const fileName: string = filteredFiles.url;
+
+                    const downloadedFile = `${downloadPath}/${fileName}`;
+
+                    if (fs.existsSync(downloadedFile)) {
+                        const result = await dialog.showMessageBox({
+                            type: "info",
+                            title: "LaraDumps update downloaded!",
+                            message: "Download has already been done, do you want to open it?",
+                            buttons: ["Yes", "No"]
+                        });
+
+                        if (result.response === 0) {
+                            await shell.openPath(downloadedFile);
+
+                            isQuiting = true;
+                            app.quit();
+                        }
+                    } else {
+                        await dialog.showMessageBox({
+                            type: "info",
+                            title: "LaraDumps update available!",
+                            message: "There are updates available for LaraDumps App.",
+                            buttons: ["Ok"]
+                        });
+
+                        mainWindow.webContents.send("autoUpdater:update-info", updateInfo);
+                    }
                 } else {
                     const result = await dialog.showMessageBox({
                         type: "info",
@@ -112,6 +141,7 @@ function createWindow(): BrowserWindow {
                     });
 
                     if (result.response === 0) {
+                        mainWindow.webContents.send("update-info", updateInfo);
                         await autoUpdater.downloadUpdate();
                     }
                 }
@@ -141,6 +171,7 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             win.webContents.openDevTools();
         }
+        win.webContents.openDevTools();
     });
 
     return win;
@@ -339,7 +370,7 @@ app.on("browser-window-focus", (): void => {
     registerShortcuts(mainWindow);
 });
 
-ipcMain.on("main:get-ide-handler", (event): void => {
+ipcMain.on("main:get-ide-handler", (): void => {
     const jsonFilePath = path.join(app.getAppPath(), "./src/renderer/ide-handle-support.json");
 
     fs.readFile(jsonFilePath, "utf8", (err, data) => {
@@ -441,4 +472,59 @@ ipcMain.on("main:dialog", async (event, arg): void => {
     });
 
     await mainWindow.webContents.send("main:dialog-choice", choice);
-})
+});
+
+ipcMain.on("main:download-progress-info", async (event, args) => {
+    const properties: any = {
+        onProgress: (progress: number) => {
+            mainWindow.webContents.send("autoUpdater:download-progress", progress);
+        },
+        onCompleted: (item: CompletedInfo) => {
+            mainWindow.webContents.send("autoUpdater:download-complete", item);
+        }
+    };
+
+    await download(mainWindow, args, properties);
+});
+
+ipcMain.on("main:check-upload", async (): Promise<void> => {
+    if (!isMac) {
+        await autoUpdater.downloadUpdate();
+    } else {
+        await shell.openExternal("https://github.com/laradumps/app/releases/latest");
+    }
+});
+
+ipcMain.on("main:download-complete", async (event, args) => {
+    const result = await dialog.showMessageBox({
+        type: "info",
+        title: "Update completed!",
+        message: "The download was completed successfully!, do you want to install now?",
+        buttons: ["Yes", "No"]
+    });
+
+    if (result.response === 0) {
+        await shell.openPath(args);
+
+        setTimeout(() => {
+            isQuiting = true;
+            app.quit();
+        }, 1000);
+    }
+});
+
+ipcMain.on("native-theme", () => {
+    if (nativeTheme.shouldUseDarkColors) {
+        mainWindow.webContents.send("app:theme-dark");
+    } else {
+        mainWindow.webContents.send("app:theme-light");
+    }
+});
+
+nativeTheme.on("updated", () => {
+    if (nativeTheme.shouldUseDarkColors) {
+        mainWindow.webContents.send("app:theme-dark");
+    } else {
+        mainWindow.webContents.send("app:theme-light");
+    }
+});

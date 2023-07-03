@@ -83,8 +83,16 @@
                         class="w-full p-3 bg-slate-100 dark:bg-slate-800 dark:text-slate-300"
                         v-if="props.payload.type === 'dump'"
                         v-show="props.payload.dump?.dump !== ''"
-                        v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"
-                    ></div>
+                    >
+                        <div>
+                            <div
+                                v-if="props.payload.dump?.variable_type !== undefined"
+                                class="text-[0.80rem] text-orange-500 select-none"
+                                v-text="`(${props.payload.dump.variable_type})`"
+                            ></div>
+                            <div v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"></div>
+                        </div>
+                    </div>
 
                     <!-- dump time-track -->
                     <DumpTimeTrack

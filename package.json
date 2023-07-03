@@ -1,6 +1,6 @@
 {
     "name": "laradumps",
-    "version": "2.0.2",
+    "version": "2.1.0",
     "private": false,
     "description": "LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://github.com/laradumps/app",
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
@@ -37,6 +37,7 @@
         "dotenv": "^16.3.1",
         "edit-dotenv": "^1.0.4",
         "electron-context-menu": "^3.6.1",
+        "electron-dl": "^3.5.0",
         "electron-json-storage": "^4.6.0",
         "electron-updater": "6.1.1",
         "electron-window-state": "^5.0.3",
@@ -62,6 +63,7 @@
     },
     "devDependencies": {
         "@types/crypto-js": "^4.1.1",
+        "@types/electron": "^1.6.10",
         "@types/electron-json-storage": "^4.5.0",
         "@types/which": "^3.0.0",
         "@vitejs/plugin-vue": "4.2.3",

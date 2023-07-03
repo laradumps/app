@@ -3,6 +3,6 @@ export {};
 declare global {
     interface Window {
         Sfdump: any;
-        ipcRenderer: any;
+        ipcRenderer: Electron.IpcRenderer;
     }
 }

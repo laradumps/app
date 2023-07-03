@@ -1,13 +1,7 @@
 <template>
     <form>
         <div>
-            <div class="space-y-3 dark:text-slate-400 dark:border-slate-700">
-                <div class="text-lg text-left font-normal dark:text-slate-300">
-                    {{ $t("settings.projects") }}
-                </div>
-            </div>
-
-            <div class="flex items-center rounded-lg gap-x-3 mt-3">
+            <div class="flex items-center rounded-lg gap-x-3">
                 <svg
                     class="w-5 h-5 text-yellow-400 shrink-0"
                     xmlns="http://www.w3.org/2000/svg"
@@ -23,9 +17,10 @@
                     ></path>
                 </svg>
 
-                <p class="text-xs text-yellow-700 dark:text-yellow-400" v-html="i18n.t('settings.run_to_add_your_project_here')
-                    .replace('vendor/bin/laradumps configure', '<b>vendor/bin/laradumps configure</b>')">
-                </p>
+                <p
+                    class="text-xs text-yellow-700 dark:text-yellow-400"
+                    v-html="i18n.t('settings.run_to_add_your_project_here').replace('vendor/bin/laradumps configure', '<b>vendor/bin/laradumps configure</b>')"
+                ></p>
             </div>
 
             <ul
@@ -37,9 +32,7 @@
                     v-if="projects.length === 0"
                 >
                     <div>
-                        <div
-                            class="mx-auto bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 flex max-w-4xl group justify-between gap-x-6 rounded-md p-2"
-                        >
+                        <div class="mx-auto bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 flex max-w-4xl group justify-between gap-x-6 rounded-md p-2">
                             <div class="flex gap-x-4">
                                 <div class="min-w-0 flex-auto">
                                     <p class="text-sm font-semibold leading-6 text-slate-900 dark:text-slate-300">
@@ -183,34 +176,15 @@
                     </div>
                 </li>
             </ul>
-
-            <div>
-                <div class="mt-40 border-t text-sm border-gray-200 space-y-3 dark:text-slate-400 dark:border-slate-700">
-                    <div class="text-lg text-left mt-4 font-normal dark:text-slate-300">
-                        {{ $t("settings.reset_data") }}
-                    </div>
-                    <p>{{ $t("settings.reset_data_description") }}</p>
-                </div>
-                <div class="flex justify-center mt-6">
-                    <button
-                        @click="clearAllSettings"
-                        type="button"
-                        class="btn-rounded-negative"
-                    >
-                        {{ $t("settings.clear_all_settings") }}
-                    </button>
-                </div>
-            </div>
         </div>
     </form>
 </template>
 
 <script setup lang="ts">
 import SelectMenu from "@/components/SelectMenu.vue";
-import { computed, onBeforeMount, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useSettingStore } from "@/store/setting";
-import * as electron from "electron";
 
 const i18n = useI18n();
 const settingStore = useSettingStore();
@@ -247,9 +221,9 @@ onMounted(async () => {
                 });
             }
         });
-    }
+    };
 
-    await loadEnvironment()
+    await loadEnvironment();
 
     window.ipcRenderer.on("app-setting:env-file", (event, value) => {
         envFile.value = value;
@@ -280,7 +254,6 @@ onMounted(async () => {
 
 const removeEnvironment = () => {
     if (selectedProject.value !== "") {
-
         window.ipcRenderer.on("main:dialog-choice", (event, arg) => {
             if (arg === 0) {
                 window.ipcRenderer.send("main:setting-remove-environments", selectedProject.value);
@@ -288,14 +261,14 @@ const removeEnvironment = () => {
                 selectedProject.value = "";
                 environments.value = [];
 
-                alert('The project was removed successfully!')
+                alert("The project was removed successfully!");
             }
-        })
+        });
 
         window.ipcRenderer.send("main:dialog", {
             buttons: ["Yes", "No"],
-            title: 'Remove Project',
-            message: 'Are you sure you want to remove the configuration from this Project?'
+            title: "Remove Project",
+            message: "Are you sure you want to remove the configuration from this Project?"
         });
     }
 };
@@ -318,23 +291,6 @@ const cancel = (): void => {
     projectName.value = "";
     envFile.value = "";
     hasErrors.value = false;
-};
-
-const clearAllSettings = (): void => {
-    window.ipcRenderer.on("main:dialog-choice", (event, arg) => {
-        if (arg === 0) {
-            window.ipcRenderer.send("main:settings-clear-all-settings");
-
-            alert(i18n.t('settings.deleted_message'));
-            location.reload()
-        }
-    })
-
-    window.ipcRenderer.send("main:dialog", {
-        buttons: [i18n.t('yes'), i18n.t('no')],
-        title: i18n.t('settings.clear_all_settings'),
-        message: i18n.t('settings.clear_all_settings_dialog_message')
-    });
 };
 
 const saveEnvironment = async (): Promise<void> => {
