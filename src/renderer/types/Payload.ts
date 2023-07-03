@@ -20,6 +20,7 @@ export interface ModelPayload {
 export interface DumpPayload {
     dump?: string | null;
     original_content: string;
+    variable_type: string;
 }
 
 export interface TimeTrackPayload {

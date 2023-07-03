@@ -491,7 +491,7 @@ ipcMain.on("main:check-upload", async (): Promise<void> => {
     if (!isMac) {
         await autoUpdater.downloadUpdate();
     } else {
-        await shell.openExternal("https://github.com/laradumps/app/releases/tag/v2.0.2");
+        await shell.openExternal("https://github.com/laradumps/app/releases/latest");
     }
 });
 

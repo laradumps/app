@@ -295,7 +295,6 @@ const toggleScreen = (value: string): void => {
 type EventType = "label" | "color" | "screen" | "dump";
 
 const dispatch = (type: string, event: EventType, content: any): void => {
-    console.log(content);
     content.rendered = false;
     settingStore.setting = false;
 
