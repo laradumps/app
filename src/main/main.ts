@@ -13,7 +13,6 @@ import * as url from "url";
 import fs from "fs";
 import { download } from "electron-dl";
 import { CompletedInfo } from "@/types/Updater";
-import { exec } from "child_process";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
@@ -171,7 +170,6 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             win.webContents.openDevTools();
         }
-        win.webContents.openDevTools();
     });
 
     return win;

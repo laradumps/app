@@ -207,6 +207,7 @@ onBeforeMount(() => {
      * Sets the current locale for internationalization (i18n) before the component is mounted.
      */
     i18n.locale.value = localeStore.value;
+    localStorage.updateAvailable = "false";
 });
 
 /**
