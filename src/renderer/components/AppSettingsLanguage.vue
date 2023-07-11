@@ -46,6 +46,10 @@ const languages = ref([
     {
         value: "zh_CN",
         label: "Chinese (CN)"
+    },
+    {
+        value: "al_AL",
+        label: "Shqip (AL)"
     }
 ]);
 
