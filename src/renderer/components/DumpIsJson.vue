@@ -23,9 +23,22 @@ const props = defineProps<{
 }>();
 </script>
 
-<style scoped>
+<style>
+.vjs-tree {
+    @apply !pl-4;
+}
+.vjs-tree-brackets {
+    @apply dark:text-slate-400;
+}
+.vjs-carets {
+    @apply dark:text-slate-400;
+}
 .vjs-tree-node.is-highlight,
 .vjs-tree-node:hover {
-    background: transparent !important;
+    @apply bg-transparent;
+}
+
+.vjs-tree-node .vjs-indent-unit.has-line {
+   @apply dark:border-l-slate-700;
 }
 </style>
