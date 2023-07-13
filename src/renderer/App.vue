@@ -382,8 +382,8 @@ function registerDefaultGlobalShortcuts() {
         alias: "clearAll",
         label: "settings.shortcut.clear",
         shortcut: "ds_shortcut_clearAll",
-        originalValue: process.platform === "darwin" ? "⌘+K" : "Ctrl+K",
-        keys: process.platform === "darwin" ? "CommandOrControl+K" : "Ctrl+K"
+        originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
+        keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K"
     };
 
     window.ipcRenderer.send("global-shortcut:set", shortcutClearAllObject);
@@ -392,8 +392,8 @@ function registerDefaultGlobalShortcuts() {
         alias: "darkMode",
         label: "settings.shortcut.darkMode",
         shortcut: "ds_shortcut_darkMode",
-        originalValue: process.platform === "darwin" ? "⌘+D" : "Ctrl+D",
-        keys: process.platform === "darwin" ? "CommandOrControl+D" : "Ctrl+D"
+        originalValue: process.platform === "darwin" ? "⌥+⇧+D" : "Ctrl+Shift+D",
+        keys: process.platform === "darwin" ? "Alt+Shift+D" : "Ctrl+Shift+D"
     };
 
     window.ipcRenderer.send("global-shortcut:set", shortcutDarkModeObject);
