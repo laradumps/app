@@ -50,6 +50,11 @@ const languages = ref([
     {
         value: "id_ID",
         label: "Indonesian (ID)"
+    },
+    {
+        value: "al_AL",
+        label: "Shqip (AL)"
+
     }
 ]);
 
