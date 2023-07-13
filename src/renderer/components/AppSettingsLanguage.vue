@@ -48,8 +48,13 @@ const languages = ref([
         label: "Chinese (CN)"
     },
     {
+        value: "id_ID",
+        label: "Indonesian (ID)"
+    },
+    {
         value: "al_AL",
         label: "Shqip (AL)"
+
     }
 ]);
 
