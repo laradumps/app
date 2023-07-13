@@ -14,6 +14,7 @@ import esES from "@/lang/es-ES";
 import faIR from "@/lang/fa-IR";
 import itIT from "@/lang/it-IT";
 import zhCN from "@/lang/zh-CN";
+import idID from "@/lang/id-ID";
 
 import clipboard from "@/plugins/clipboard";
 
@@ -37,7 +38,8 @@ const i18n = createI18n({
         es_ES: esES,
         fa_IR: faIR,
         it_IT: itIT,
-        zh_CN: zhCN
+        zh_CN: zhCN,
+        id_ID: idID
     }
 });
 
