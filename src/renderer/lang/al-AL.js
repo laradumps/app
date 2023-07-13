@@ -19,11 +19,11 @@ export default {
         choose_project: "Zgjidh projektin tënd",
         update_keys: "Përditëso çelësat"
     },
-    "footer": {
+    footer: {
         support_laradumps: "Mbështet LaraDumps",
         star_out_repository: "Jep një yll repozitorit tonë"
     },
-    "menu": {
+    menu: {
         clear: "Pastro",
         language: "Gjuha",
         settings: "Cilësimet",
@@ -32,13 +32,13 @@ export default {
         saved_dumps: "Dhëmbëzat e ruajtura",
         toggle_menu: "Shfaq menu"
     },
-    "settings": {
+    settings: {
         settings: "Cilësimet",
         language: "Gjuha",
         environment: "Mjedisi",
         shortcuts: "Shkurtesat",
         servers: "Serverat",
-        "shortcut": {
+        shortcut: {
             clear: "Pastro",
             darkMode: "Modaliteti i errët",
             alwaysOnTop: "Lart në çdo kohë",
