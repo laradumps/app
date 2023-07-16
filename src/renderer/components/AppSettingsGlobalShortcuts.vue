@@ -22,6 +22,20 @@
         </div>
 
         <div class="flex gap-2 justify-end">
+            <div class="flex items-center gap-2 mr-2">
+                <input
+                    name="ckb-enable"
+                    type="checkbox"
+                    class="h-4 checkbox"
+                    v-model="enableGlobalShortcuts"
+                />
+                <label
+                    for="ckb-enable"
+                    class="text-sm dark:text-slate-300"
+                    >Enable</label
+                >
+            </div>
+
             <button
                 @click="editShortcut"
                 type="button"
@@ -42,12 +56,27 @@
 
 <script setup lang="ts">
 import hotkeys from "hotkeys-js";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useEnableGlobalShortcuts } from "@/store/enable-global-shortcuts";
 
 const i18n = useI18n();
 
 const editMode = ref("disabled");
+
+const enableGlobalShortcutsStore = useEnableGlobalShortcuts();
+
+const enableGlobalShortcuts = ref(enableGlobalShortcutsStore.isEnable());
+
+watch(enableGlobalShortcuts, (value) => {
+    if (!value) {
+        enableGlobalShortcutsStore.disable();
+        window.ipcRenderer.send("global-shortcut:unregisterAll");
+    } else {
+        enableGlobalShortcutsStore.enable();
+        window.ipcRenderer.send("global-shortcut:registerAll");
+    }
+});
 
 const shortcuts = ref([
     {
@@ -61,10 +90,6 @@ const shortcuts = ref([
     {
         label: "settings.shortcut.alwaysOnTop",
         alias: "alwaysOnTop"
-    },
-    {
-        label: "settings.shortcut.globalSearch",
-        alias: "globalSearch"
     },
     {
         label: "settings.shortcut.toggleMenu",

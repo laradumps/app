@@ -80,7 +80,8 @@ export default {
         lara_dumps_package_update_available: "به‌روزرسانی بسته لارادامپس در دسترس است!",
         hey_dev: "سلام توسعه‌دهنده!",
         there_is_a_new_release_of_lara_dumps_laravel_package: "یک نسخه جدید از بسته لارادامپس موجود است.",
-        consider_upgrading_to_enjoy_the_benefits_of_new_features_bug_fixes_and_improvements: "لطفاً برای بهره‌برداری از ویژگی‌ها، رفع اشکالات و بهبودهای جدید، در نظر داشته باشید به نسخه جدید ارتقا دهید.",
+        consider_upgrading_to_enjoy_the_benefits_of_new_features_bug_fixes_and_improvements:
+            "لطفاً برای بهره‌برداری از ویژگی‌ها، رفع اشکالات و بهبودهای جدید، در نظر داشته باشید به نسخه جدید ارتقا دهید.",
         to_upgrade_lara_dumps_in_your_project_run: "برای ارتقا دادن لارادامپس در پروژه خود، دستور زیر را اجرا کنید:",
         installed_version: "نسخه نصب شده:",
         minimum_required_version: "حداقل نسخه مورد نیاز:",
@@ -88,16 +89,16 @@ export default {
     },
     installer: {
         laradumps_settings: "تنظیمات لارادامپس",
-            php_project_name: "نام پروژه PHP",
-            php_project_path: "مسیر پروژه PHP",
-            php_project_path_info: "اگر پروژه شما در داخل یک کانتینر Docker اجرا می‌شود، باید مسیر پروژه را در رایانه خود مشخص کنید: به عنوان مثال: /Users/user_name/Sites/my-project.",
-            choose_your_preferred_ide: "ویرایشگر مورد نظر خود را انتخاب کنید",
-            preferred_ide_info: "در این بخش می‌توانید تنظیم کنید که لارادامپس پرونده‌های پروژه شما را در کدام ویرایشگر باز کند.",
-            select_an_editor_from_the_template: "یک ویرایشگر از الگو انتخاب کنید",
-            or_customize_your_ide_handler: "یا ویرایشگر مورد نظرتان را سفارشی کنید",
-            configure_lara_dumps: "پیکربندی لارادامپس",
-            save: "ذخیره",
-            cancel: "لغو"
+        php_project_name: "نام پروژه PHP",
+        php_project_path: "مسیر پروژه PHP",
+        php_project_path_info: "اگر پروژه شما در داخل یک کانتینر Docker اجرا می‌شود، باید مسیر پروژه را در رایانه خود مشخص کنید: به عنوان مثال: /Users/user_name/Sites/my-project.",
+        choose_your_preferred_ide: "ویرایشگر مورد نظر خود را انتخاب کنید",
+        preferred_ide_info: "در این بخش می‌توانید تنظیم کنید که لارادامپس پرونده‌های پروژه شما را در کدام ویرایشگر باز کند.",
+        select_an_editor_from_the_template: "یک ویرایشگر از الگو انتخاب کنید",
+        or_customize_your_ide_handler: "یا ویرایشگر مورد نظرتان را سفارشی کنید",
+        configure_lara_dumps: "پیکربندی لارادامپس",
+        save: "ذخیره",
+        cancel: "لغو"
     },
     yes: "بله",
     no: "خیر"

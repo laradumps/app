@@ -54,7 +54,6 @@ const languages = ref([
     {
         value: "al_AL",
         label: "Shqip (AL)"
-
     }
 ]);
 

@@ -285,10 +285,6 @@ app.whenReady().then(async (): Promise<void> => {
         app.exit(0);
     });
 
-    globalShortcut.register("CommandOrControl+Shift+X", () => {
-        mainWindow.reload();
-    });
-
     // @ts-ignore
     savedDumpWindow.on("close", (event: Event): void => {
         event.preventDefault();

@@ -153,6 +153,7 @@ import WelcomePage from "@/components/WelcomePage.vue";
 import LivewireHandler from "@/components/LivewireHandler.vue";
 import TheFooter from "@/components/TheFooter.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
+import { useEnableGlobalShortcuts } from "@/store/enable-global-shortcuts";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -196,6 +197,8 @@ const menuOpenStore = useMenuOpenStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
+const enableGlobalShortcutsStore = useEnableGlobalShortcuts();
+
 const i18n = useI18n();
 
 window.ipcRenderer.on("debug", (event, args) => {
@@ -462,6 +465,10 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
+
+    if (!enableGlobalShortcutsStore.isEnable()) {
+        window.ipcRenderer.send("global-shortcut:unregisterAll");
+    }
 
     window.ipcRenderer.send("global-shortcut:get");
 

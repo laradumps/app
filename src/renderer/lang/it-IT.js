@@ -90,7 +90,8 @@ export default {
         laradumps_settings: "Impostazioni di LaraDumps",
         php_project_name: "Nome del progetto PHP",
         php_project_path: "Percorso del progetto PHP",
-        php_project_path_info: "Se il tuo progetto è in esecuzione all'interno di un contenitore Docker, devi specificare il percorso del progetto sul tuo computer: Es: /Users/user_name/Sites/my-project.",
+        php_project_path_info:
+            "Se il tuo progetto è in esecuzione all'interno di un contenitore Docker, devi specificare il percorso del progetto sul tuo computer: Es: /Users/user_name/Sites/my-project.",
         choose_your_preferred_ide: "Scegli il tuo IDE preferito",
         preferred_ide_info: "In questa sezione puoi configurare in quale editor LaraDumps aprirà i file dei tuoi progetti.",
         select_an_editor_from_the_template: "Seleziona un editor dal template",
