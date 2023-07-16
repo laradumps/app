@@ -62,7 +62,8 @@ export default {
         system: "系统",
         appearance: "外观",
         check_for_updates: "检查更新",
-        update_available: "有可用更新"
+        update_available: "有可用更新",
+        enable: "Enable"
     },
     click_to_copy: "点击复制",
     please_select_a_component: "请选择一个组件",

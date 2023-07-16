@@ -62,7 +62,8 @@ export default {
         system: "سیستم",
         appearance: "ظاهر",
         check_for_updates: "بررسی برای به‌روزرسانی‌ها",
-        update_available: "به‌روزرسانی در دسترس است"
+        update_available: "به‌روزرسانی در دسترس است",
+        enable: "Enable"
     },
     click_to_copy: "برای کپی کردن کلیک کنید",
     please_select_a_component: "لطفاً یک مولفه را انتخاب کنید",

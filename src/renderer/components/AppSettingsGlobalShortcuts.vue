@@ -32,7 +32,7 @@
                 <label
                     for="ckb-enable"
                     class="text-sm dark:text-slate-300"
-                    >Enable</label
+                    >{{ $t("settings.enable") }}</label
                 >
             </div>
 

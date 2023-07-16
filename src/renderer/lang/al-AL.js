@@ -62,7 +62,8 @@ export default {
         system: "Sistemi",
         appearance: "Paraqitja",
         check_for_updates: "Kontrollo për përditësime",
-        update_available: "Ka përditësim të disponueshëm"
+        update_available: "Ka përditësim të disponueshëm",
+        enable: "Enable"
     },
     click_to_copy: "Kliko për kopjim",
     please_select_a_component: "Ju lutemi zgjidhni një komponent",
