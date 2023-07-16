@@ -61,7 +61,8 @@ export default {
         system: "Sistema",
         appearance: "Aparência",
         check_for_updates: "Buscar por atualizaçoēs",
-        update_available: "Atualização disponível"
+        update_available: "Atualização disponível",
+        enable: "Habilitar"
     },
     click_to_copy: "Clique para copiar",
     elapsed_time: "Tempo decorrido",

@@ -19,11 +19,11 @@ export default {
         choose_project: "选择你的项目",
         update_keys: "更新密钥"
     },
-    "footer": {
+    footer: {
         support_laradumps: "支持LaraDumps",
         star_out_repository: "给我们的存储库点赞"
     },
-    "menu": {
+    menu: {
         clear: "清除",
         language: "语言",
         settings: "设置",
@@ -32,13 +32,13 @@ export default {
         saved_dumps: "已保存的转储",
         toggle_menu: "显示菜单"
     },
-    "settings": {
+    settings: {
         settings: "设置",
         language: "语言",
         environment: "环境",
         shortcuts: "快捷键",
         servers: "服务器",
-        "shortcut": {
+        shortcut: {
             clear: "清除",
             darkMode: "深色模式",
             alwaysOnTop: "始终置顶",
@@ -62,7 +62,8 @@ export default {
         system: "系统",
         appearance: "外观",
         check_for_updates: "检查更新",
-        update_available: "有可用更新"
+        update_available: "有可用更新",
+        enable: "Enable"
     },
     click_to_copy: "点击复制",
     please_select_a_component: "请选择一个组件",

@@ -212,16 +212,42 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
      * Event listener for the "global-shortcut:reset" event of ipcMain.
      * Unregisters all global shortcuts.
      */
-    ipcMain.on("global-shortcut:reset", (): void => {
+    ipcMain.on("global-shortcut:unregisterAll", (): void => {
         globalShortcut.unregisterAll();
     });
 
-    /**
-     * Event listener for the "global-shortcut:set" event of ipcMain.
-     * Sets the specified shortcut data in storage and registers the shortcuts.
-     * @param event - The Electron.IpcMainEvent instance.
-     * @param data - The shortcut data.
-     */
+    const getShortcutData = (key: string): Promise<ShortcutData | null> => {
+        return new Promise((resolve, reject) => {
+            if (key.startsWith("ds_shortcut_")) {
+                // @ts-ignore
+                storage.get(key, (error: Error | null, data: ShortcutData): void => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(data);
+                    }
+                });
+            } else {
+                // @ts-ignore
+                resolve({});
+            }
+        });
+    };
+
+    async function retrieveShortcuts(): Promise<void> {
+        const keys: string[] = await storage.keys();
+
+        if (keys !== undefined && keys.length) {
+            const promises: Promise<ShortcutData | null>[] = keys.map((key: string) => getShortcutData(key));
+            const shortcuts = await Promise.all(promises);
+            mainWindow.webContents.send("app:global-shortcut::list", shortcuts);
+        }
+    }
+
+    ipcMain.on("global-shortcut:registerAll", () => {
+        retrieveShortcuts().then();
+    });
+
     ipcMain.on("global-shortcut:set", (event: Electron.IpcMainEvent, data): void => {
         storage.set(data.shortcut, data, (error): void => {
             // eslint-disable-next-line no-console
@@ -231,53 +257,8 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
         });
     });
 
-    /**
-     * Event listener for the "global-shortcut:get" event of ipcMain.
-     * Retrieves all stored shortcuts from storage and sends them to the mainWindow.
-     */
     ipcMain.on("global-shortcut:get", (): void => {
-        storage.keys((error: Error | null, keys: string[]): void => {
-            if (error) {
-                // eslint-disable-next-line no-console
-                console.error(error);
-                return;
-            }
-
-            mainWindow.webContents.send("app:global-shortcut::count", keys.length);
-
-            let shortcuts: Awaited<ShortcutData | null>[] = [];
-
-            const getShortcutData = (key: string): Promise<ShortcutData | null> => {
-                return new Promise((resolve, reject) => {
-                    if (key.startsWith("ds_shortcut_")) {
-                        // @ts-ignore
-                        storage.get(key, (error: Error | null, data: ShortcutData): void => {
-                            if (error) {
-                                reject(error);
-                            } else {
-                                resolve(data);
-                            }
-                        });
-                    } else {
-                        // @ts-ignore
-                        resolve({});
-                    }
-                });
-            };
-
-            const retrieveShortcuts = async (): Promise<void> => {
-                const promises: Promise<ShortcutData | null>[] = keys.map((key: string) => getShortcutData(key));
-                try {
-                    shortcuts = await Promise.all(promises);
-                    mainWindow.webContents.send("app:global-shortcut::list", shortcuts);
-                } catch (error) {
-                    // eslint-disable-next-line no-console
-                    console.error(error);
-                }
-            };
-
-            retrieveShortcuts().then();
-        });
+        retrieveShortcuts().then();
     });
 }
 

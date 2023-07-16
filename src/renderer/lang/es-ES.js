@@ -62,7 +62,8 @@ export default {
         system: "System",
         appearance: "Appearance",
         check_for_updates: "Check for updates",
-        update_available: "Update Available"
+        update_available: "Update Available",
+        enable: "Enable"
     },
     click_to_copy: "Haz clic para copiar",
     please_select_a_component: "Por favor, seleccione un componente",

@@ -39,6 +39,6 @@ const props = defineProps<{
 }
 
 .vjs-tree-node .vjs-indent-unit.has-line {
-   @apply dark:border-l-slate-700;
+    @apply dark:border-l-slate-700;
 }
 </style>

@@ -153,6 +153,7 @@ import WelcomePage from "@/components/WelcomePage.vue";
 import LivewireHandler from "@/components/LivewireHandler.vue";
 import TheFooter from "@/components/TheFooter.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
+import { useEnableGlobalShortcuts } from "@/store/enable-global-shortcuts";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -196,6 +197,8 @@ const menuOpenStore = useMenuOpenStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
+const enableGlobalShortcutsStore = useEnableGlobalShortcuts();
+
 const i18n = useI18n();
 
 window.ipcRenderer.on("debug", (event, args) => {
@@ -382,8 +385,8 @@ function registerDefaultGlobalShortcuts() {
         alias: "clearAll",
         label: "settings.shortcut.clear",
         shortcut: "ds_shortcut_clearAll",
-        originalValue: process.platform === "darwin" ? "⌘+K" : "Ctrl+K",
-        keys: process.platform === "darwin" ? "CommandOrControl+K" : "Ctrl+K"
+        originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
+        keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K"
     };
 
     window.ipcRenderer.send("global-shortcut:set", shortcutClearAllObject);
@@ -392,8 +395,8 @@ function registerDefaultGlobalShortcuts() {
         alias: "darkMode",
         label: "settings.shortcut.darkMode",
         shortcut: "ds_shortcut_darkMode",
-        originalValue: process.platform === "darwin" ? "⌘+D" : "Ctrl+D",
-        keys: process.platform === "darwin" ? "CommandOrControl+D" : "Ctrl+D"
+        originalValue: process.platform === "darwin" ? "⌥+⇧+D" : "Ctrl+Shift+D",
+        keys: process.platform === "darwin" ? "Alt+Shift+D" : "Ctrl+Shift+D"
     };
 
     window.ipcRenderer.send("global-shortcut:set", shortcutDarkModeObject);
@@ -462,6 +465,10 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
+
+    if (!enableGlobalShortcutsStore.isEnable()) {
+        window.ipcRenderer.send("global-shortcut:unregisterAll");
+    }
 
     window.ipcRenderer.send("global-shortcut:get");
 

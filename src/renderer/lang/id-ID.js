@@ -62,7 +62,8 @@ export default {
         system: "Sistem",
         appearance: "Tampilan",
         check_for_updates: "Periksa Pembaruan",
-        update_available: "Pembaruan Tersedia"
+        update_available: "Pembaruan Tersedia",
+        enable: "Enable"
     },
     click_to_copy: "Klik untuk menyalin",
     please_select_a_component: "Silahkan pilih komponen",
