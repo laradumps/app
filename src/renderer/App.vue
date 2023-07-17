@@ -467,6 +467,7 @@ onMounted(() => {
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
 
     if (!enableGlobalShortcutsStore.isEnable()) {
+        console.log(`is disble`);
         window.ipcRenderer.send("global-shortcut:unregisterAll");
     }
 

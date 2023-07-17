@@ -1,6 +1,6 @@
 import storage from "electron-json-storage";
 import os from "os";
-import { app, BrowserWindow, globalShortcut, ipcMain } from "electron";
+import { BrowserWindow, globalShortcut, ipcMain } from "electron";
 
 interface ShortcutData {
     alias: string;
@@ -195,17 +195,6 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
      * Unregisters all global shortcuts when the app is about to quit.
      */
 
-    app.on("will-quit", (): void => {
-        globalShortcut.unregisterAll();
-    });
-
-    /**
-     * Registers a global shortcut "CommandOrControl+Shift+X" that reloads the mainWindow.
-     */
-    globalShortcut.register("CommandOrControl+Shift+X", (): void => {
-        mainWindow.reload();
-    });
-
     storage.setDataPath(os.tmpdir());
 
     /**
@@ -216,38 +205,59 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
         globalShortcut.unregisterAll();
     });
 
-    const getShortcutData = (key: string): Promise<ShortcutData | null> => {
-        return new Promise((resolve, reject) => {
-            if (key.startsWith("ds_shortcut_")) {
-                // @ts-ignore
-                storage.get(key, (error: Error | null, data: ShortcutData): void => {
-                    if (error) {
-                        reject(error);
+    ipcMain.on("global-shortcut:registerAll", () => {
+        console.log("global-shortcut:registerAll");
+
+        storage.keys((error: Error | null, keys: string[]): void => {
+            let shortcuts: Awaited<ShortcutData | null>[] = [];
+
+            const getShortcutData = (key: string): Promise<ShortcutData | null> => {
+                return new Promise((resolve, reject) => {
+                    if (key.startsWith("ds_shortcut_")) {
+                        // @ts-ignore
+                        storage.get(key, (error: Error | null, data: ShortcutData): void => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(data);
+                            }
+                        });
                     } else {
-                        resolve(data);
+                        // @ts-ignore
+                        resolve({});
                     }
                 });
-            } else {
-                // @ts-ignore
-                resolve({});
-            }
+            };
+
+            const retrieveShortcuts = async (): Promise<void> => {
+                const promises: Promise<ShortcutData | null>[] = keys.map((key: string) => getShortcutData(key));
+                try {
+                    shortcuts = await Promise.all(promises);
+
+                    shortcuts.forEach((shortcuts) => {
+                        storage.set(shortcuts.shortcut, shortcuts, (error): void => {
+                            // eslint-disable-next-line no-console
+                            if (error) console.log(error);
+
+                            registerShortcuts(mainWindow, shortcuts.alias);
+                        });
+                    });
+                } catch (error) {
+                    // eslint-disable-next-line no-console
+                    console.error(error);
+                }
+            };
+
+            retrieveShortcuts().then();
         });
-    };
-
-    async function retrieveShortcuts(): Promise<void> {
-        const keys: string[] = await storage.keys();
-
-        if (keys !== undefined && keys.length) {
-            const promises: Promise<ShortcutData | null>[] = keys.map((key: string) => getShortcutData(key));
-            const shortcuts = await Promise.all(promises);
-            mainWindow.webContents.send("app:global-shortcut::list", shortcuts);
-        }
-    }
-
-    ipcMain.on("global-shortcut:registerAll", () => {
-        retrieveShortcuts().then();
     });
 
+    /**
+     * Event listener for the "global-shortcut:set" event of ipcMain.
+     * Sets the specified shortcut data in storage and registers the shortcuts.
+     * @param event - The Electron.IpcMainEvent instance.
+     * @param data - The shortcut data.
+     */
     ipcMain.on("global-shortcut:set", (event: Electron.IpcMainEvent, data): void => {
         storage.set(data.shortcut, data, (error): void => {
             // eslint-disable-next-line no-console
@@ -257,8 +267,53 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
         });
     });
 
+    /**
+     * Event listener for the "global-shortcut:get" event of ipcMain.
+     * Retrieves all stored shortcuts from storage and sends them to the mainWindow.
+     */
     ipcMain.on("global-shortcut:get", (): void => {
-        retrieveShortcuts().then();
+        storage.keys((error: Error | null, keys: string[]): void => {
+            if (error) {
+                // eslint-disable-next-line no-console
+                console.error(error);
+                return;
+            }
+
+            mainWindow.webContents.send("app:global-shortcut::count", keys.length);
+
+            let shortcuts: Awaited<ShortcutData | null>[] = [];
+
+            const getShortcutData = (key: string): Promise<ShortcutData | null> => {
+                return new Promise((resolve, reject) => {
+                    if (key.startsWith("ds_shortcut_")) {
+                        // @ts-ignore
+                        storage.get(key, (error: Error | null, data: ShortcutData): void => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(data);
+                            }
+                        });
+                    } else {
+                        // @ts-ignore
+                        resolve({});
+                    }
+                });
+            };
+
+            const retrieveShortcuts = async (): Promise<void> => {
+                const promises: Promise<ShortcutData | null>[] = keys.map((key: string) => getShortcutData(key));
+                try {
+                    shortcuts = await Promise.all(promises);
+                    mainWindow.webContents.send("app:global-shortcut::list", shortcuts);
+                } catch (error) {
+                    // eslint-disable-next-line no-console
+                    console.error(error);
+                }
+            };
+
+            retrieveShortcuts().then();
+        });
     });
 }
 
