@@ -164,6 +164,14 @@ function createWindow(): BrowserWindow {
         });
     }
 
+    app.on("will-quit", (): void => {
+        globalShortcut.unregisterAll();
+    });
+
+    globalShortcut.register("CommandOrControl+Shift+X", (): void => {
+        mainWindow.reload();
+    });
+
     win.once("ready-to-show", (): void => {
         win.show();
         win.focus();
