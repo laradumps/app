@@ -467,11 +467,10 @@ onMounted(() => {
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
 
     if (!enableGlobalShortcutsStore.isEnable()) {
-        console.log(`is disble`);
         window.ipcRenderer.send("global-shortcut:unregisterAll");
+    } else {
+        window.ipcRenderer.send("global-shortcut:get");
     }
-
-    window.ipcRenderer.send("global-shortcut:get");
 
     window.ipcRenderer.on("app:global-shortcut::count", (event, arg) => {
         if (arg === 0) {
