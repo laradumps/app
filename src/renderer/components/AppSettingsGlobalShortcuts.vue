@@ -164,6 +164,8 @@ const editShortcut = () => {
 };
 
 const save = () => {
+    window.ipcRenderer.send("global-shortcut:unregisterAll");
+
     document.querySelectorAll(".js-shortcut").forEach((element) => {
         if (element.value.toString() !== "") {
             window.ipcRenderer.send("global-shortcut:set", {

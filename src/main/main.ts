@@ -273,19 +273,6 @@ app.whenReady().then(async (): Promise<void> => {
             return;
         }
 
-        // @ts-ignore
-        const choice = dialog.showMessageBoxSync(this, {
-            type: "question",
-            buttons: ["Yes", "No"],
-            title: "Confirm",
-            message: "Are you sure you want to quit?"
-        });
-
-        if (choice === 1) {
-            event.preventDefault();
-            return;
-        }
-
         mainWindow.webContents.send("server:close", {});
     });
 

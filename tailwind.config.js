@@ -36,7 +36,6 @@ module.exports = {
         require("postcss-import"),
         require("@tailwindcss/forms")({
             strategy: "class"
-        }),
-        require("@tailwindcss/line-clamp")
+        })
     ]
 };
