@@ -279,8 +279,6 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
                 return;
             }
 
-            mainWindow.webContents.send("app:global-shortcut::count", keys.length);
-
             let shortcuts: Awaited<ShortcutData | null>[] = [];
 
             const getShortcutData = (key: string): Promise<ShortcutData | null> => {
