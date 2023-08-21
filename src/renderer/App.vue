@@ -380,28 +380,6 @@ const clearAll = (): void => {
     colorStore.clear();
 };
 
-function registerDefaultGlobalShortcuts() {
-    let shortcutClearAllObject = {
-        alias: "clearAll",
-        label: "settings.shortcut.clear",
-        shortcut: "ds_shortcut_clearAll",
-        originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
-        keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K"
-    };
-
-    window.ipcRenderer.send("global-shortcut:set", shortcutClearAllObject);
-
-    let shortcutDarkModeObject = {
-        alias: "darkMode",
-        label: "settings.shortcut.darkMode",
-        shortcut: "ds_shortcut_darkMode",
-        originalValue: process.platform === "darwin" ? "⌥+⇧+D" : "Ctrl+Shift+D",
-        keys: process.platform === "darwin" ? "Alt+Shift+D" : "Ctrl+Shift+D"
-    };
-
-    window.ipcRenderer.send("global-shortcut:set", shortcutDarkModeObject);
-}
-
 onMounted(() => {
     setTimeout(() => {
         document.title = "LaraDumps - " + appVersion.value;
@@ -471,12 +449,6 @@ onMounted(() => {
     } else {
         window.ipcRenderer.send("global-shortcut:get");
     }
-
-    window.ipcRenderer.on("app:global-shortcut::count", (event, arg) => {
-        if (arg === 0) {
-            registerDefaultGlobalShortcuts();
-        }
-    });
 
     window.ipcRenderer.on("app:global-shortcut::list", (event, arg) => {
         globalShortcutList.value = arg;
