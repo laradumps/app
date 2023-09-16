@@ -1,22 +1,18 @@
 <template>
     <div
-        v-if="groups.length > 0"
+        v-if="timeStore.groups.length > 0"
         class="flex justify-between items-center gap-2 dark:text-slate-400"
     >
-        <div class="-mr-2">
-            <span>{{ totalPayload }}</span
-            >/
-        </div>
         <span class="font-semibold text-sm select-none">{{ total }}</span>
 
         <div class="flex gap-2 text-sm items-center">
             <SelectMenu
-                @selected="setOrder($event.id)"
+                @selected="timeStore.setOrder($event.id)"
                 class="w-[100px] dark:!bg-slate-600 !text-xs"
                 v-model:data="queryOrder"
             />
             <SelectMenu
-                @selected="setSelectedRequest($event.id)"
+                @selected="timeStore.setSelectedRequest($event.id)"
                 class="w-[190px] !text-xs"
                 v-model:data="allRequests"
             />
@@ -24,69 +20,55 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { useTimeStore } from "@/store/time";
-import { mapActions, mapState } from "pinia";
 import SelectMenu from "@/components/SelectMenu.vue";
+import { computed, ref } from "vue";
 
-export default {
-    name: "HeaderQueryRequests",
-    components: {
-        SelectMenu
+const totalPayload = ref(0);
+
+const timeStore = useTimeStore();
+
+const requests = timeStore.requests;
+const groups = timeStore.groups;
+const selected = timeStore.selected;
+
+const props = defineProps({
+    total: {
+        type: Number,
+        default: 0
     },
-    mounted() {
-        this.setSelectedRequest(this.allRequests[0]);
-    },
-    data() {
-        return {
-            totalPayload: 0
-        };
-    },
-    props: {
-        total: {
-            type: Number,
-            default: 0
-        },
-        payload: {
-            type: Object
-        }
-    },
-    watch: {
-        selected(value) {
-            this.totalPayload = this.payload.filter((payload) => payload.request_id === value).length;
-        }
-    },
-    computed: {
-        queryOrder() {
-            return [
-                {
-                    id: false,
-                    label: "default"
-                },
-                {
-                    id: true,
-                    label: "desc"
-                },
-                {
-                    id: false,
-                    label: "asc"
-                }
-            ];
-        },
-        allRequests() {
-            const allRequests = [];
-            this.groups.forEach((group, index) => {
-                allRequests.push({
-                    id: group,
-                    label: "#" + (index + 1) + " - " + this.getTotal(group).toFixed(2) + "ms (" + this.getTime(group) + ")"
-                });
-            });
-            return allRequests;
-        },
-        ...mapState(useTimeStore, ["requests", "groups", "selected"])
-    },
-    methods: {
-        ...mapActions(useTimeStore, ["getTotal", "getCount", "getTime", "setSelectedRequest", "setOrder"])
+    payload: {
+        type: Object
     }
-};
+});
+
+const queryOrder = computed(() => {
+    return [
+        {
+            id: false,
+            label: "default"
+        },
+        {
+            id: true,
+            label: "desc"
+        },
+        {
+            id: false,
+            label: "asc"
+        }
+    ];
+});
+
+const allRequests = computed(() => {
+    let requests = timeStore.groups.map((group, index) => ({
+        index: index + 1,
+        id: group,
+        label: "#" + (index + 1) + " - " + timeStore.getTotal(group).toFixed(2) + "ms (" + timeStore.getTime(group) + ")"
+    }));
+
+    requests.sort((a, b) => b.index - a.index);
+
+    return requests;
+});
 </script>

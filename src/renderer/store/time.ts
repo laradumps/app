@@ -11,7 +11,7 @@ type State = {
     requests: Requests[];
     groups: string[];
     dumpIds: string[];
-    selected: boolean | null;
+    selected: string;
     order: boolean;
 };
 
@@ -21,7 +21,7 @@ export const useTimeStore = defineStore("timeStore", {
             requests: [],
             groups: [],
             dumpIds: [],
-            selected: null,
+            selected: "",
             order: false
         };
     },
@@ -43,7 +43,7 @@ export const useTimeStore = defineStore("timeStore", {
         setOrder(value: never) {
             this.order = value;
         },
-        setSelectedRequest(value: boolean) {
+        setSelectedRequest(value: string) {
             this.selected = value;
         },
         increment(requestId: string, dumpId: string, time: number | string) {
