@@ -6,7 +6,7 @@ import storage from "electron-json-storage";
 import os from "os";
 import { initSavedDumps } from "./saved-dumps";
 import { initCoffeeWindow } from "./coffee";
-import { configureGlobalShortcut, registerShortcuts } from "./global-shortcut";
+import { configureLocalShortcut, registerShortcuts } from "./shortcut";
 import { configureEnvironment } from "./environment";
 import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import * as url from "url";
@@ -64,7 +64,7 @@ function createWindow(): BrowserWindow {
         width: isDev ? 1080 : 670,
         height: 660,
         resizable: true,
-        alwaysOnTop: true,
+        alwaysOnTop: false,
         center: true,
         webPreferences: {
             contextIsolation: false,
@@ -288,7 +288,7 @@ app.whenReady().then(async (): Promise<void> => {
 
     await autoUpdater.checkForUpdates();
 
-    configureGlobalShortcut(mainWindow);
+    configureLocalShortcut(mainWindow);
     configureEnvironment(mainWindow);
 
     if (isMac) {
