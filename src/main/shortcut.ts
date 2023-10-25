@@ -1,6 +1,9 @@
 import storage from "electron-json-storage";
 import os from "os";
-import { BrowserWindow, globalShortcut, ipcMain } from "electron";
+import { BrowserWindow, ipcMain } from "electron";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const electronLocalShortcut = require("electron-localshortcut");
 
 interface ShortcutData {
     alias: string;
@@ -8,10 +11,10 @@ interface ShortcutData {
 }
 
 /**
- * Registers a global shortcut for clearing all data.
+ * Registers a local shortcut for clearing all data.
  * @param mainWindow - The BrowserWindow instance.
  */
-const registerGlobalShortCutForClearAll = (mainWindow: BrowserWindow): void => {
+const registerLocalShortCutForClearAll = (mainWindow: BrowserWindow): void => {
     storage.setDataPath(os.tmpdir());
 
     // @ts-ignore
@@ -24,10 +27,10 @@ const registerGlobalShortCutForClearAll = (mainWindow: BrowserWindow): void => {
 
         if (data?.keys) {
             try {
-                globalShortcut.register(data.keys, (): void => {
+                electronLocalShortcut.register(data.keys, (): void => {
                     // eslint-disable-next-line no-console
                     console.log("executing clearAll!");
-                    mainWindow.webContents.send("app:global-shortcut-execute::clearAll");
+                    mainWindow.webContents.send("app:local-shortcut-execute::clearAll");
                 });
             } catch (error) {
                 // eslint-disable-next-line no-console
@@ -38,10 +41,10 @@ const registerGlobalShortCutForClearAll = (mainWindow: BrowserWindow): void => {
 };
 
 /**
- * Registers a global shortcut for dark mode.
+ * Registers a local shortcut for dark mode.
  * @param mainWindow - The BrowserWindow instance.
  */
-const registerGlobalShortCutForDarkMode = (mainWindow: BrowserWindow): void => {
+const registerLocalShortCutForDarkMode = (mainWindow: BrowserWindow): void => {
     storage.setDataPath(os.tmpdir());
 
     // @ts-ignore
@@ -51,21 +54,21 @@ const registerGlobalShortCutForDarkMode = (mainWindow: BrowserWindow): void => {
 
         if (data.keys.toString() !== "") {
             // @ts-ignore
-            globalShortcut.register(data.keys, (): void => {
+            electronLocalShortcut.register(data.keys, (): void => {
                 // eslint-disable-next-line no-console
                 console.log("executing darkMode!");
 
-                mainWindow.webContents.send("app:global-shortcut-execute::darkMode");
+                mainWindow.webContents.send("app:local-shortcut-execute::darkMode");
             });
         }
     });
 };
 
 /**
- * Registers a global shortcut for  always on top.
+ * Registers a local shortcut for  always on top.
  * @param mainWindow - The BrowserWindow instance.
  */
-const registerGlobalShortCutForAlwaysOnTop = (mainWindow: BrowserWindow): void => {
+const registerLocalShortCutForAlwaysOnTop = (mainWindow: BrowserWindow): void => {
     storage.setDataPath(os.tmpdir());
 
     // @ts-ignore
@@ -75,21 +78,21 @@ const registerGlobalShortCutForAlwaysOnTop = (mainWindow: BrowserWindow): void =
 
         if (data.keys.toString() !== "") {
             // @ts-ignore
-            globalShortcut.register(data.keys, (): void => {
+            electronLocalShortcut.register(data.keys, (): void => {
                 // eslint-disable-next-line no-console
                 console.log("executing alwaysOnTop!");
 
-                mainWindow.webContents.send("app:global-shortcut-execute::alwaysOnTop");
+                mainWindow.webContents.send("app:local-shortcut-execute::alwaysOnTop");
             });
         }
     });
 };
 
 /**
- * Registers a global shortcut for global search.
+ * Registers a local shortcut for global search.
  * @param mainWindow - The BrowserWindow instance.
  */
-const registerGlobalShortCutForSearch = (mainWindow: BrowserWindow): void => {
+const registerLocalShortCutForSearch = (mainWindow: BrowserWindow): void => {
     storage.setDataPath(os.tmpdir());
 
     // @ts-ignore
@@ -99,21 +102,21 @@ const registerGlobalShortCutForSearch = (mainWindow: BrowserWindow): void => {
 
         if (data.keys.toString() !== "") {
             // @ts-ignore
-            globalShortcut.register(data.keys, (): void => {
+            electronLocalShortcut.register(data.keys, (): void => {
                 // eslint-disable-next-line no-console
                 console.log("executing globalSearch!");
 
-                mainWindow.webContents.send("app:global-shortcut-execute::globalSearch");
+                mainWindow.webContents.send("app:local-shortcut-execute::globalSearch");
             });
         }
     });
 };
 
 /**
- * Registers a global shortcut for toggle menu.
+ * Registers a local shortcut for toggle menu.
  * @param mainWindow - The BrowserWindow instance.
  */
-const registerGlobalShortCutForToggleMenu = (mainWindow: BrowserWindow): void => {
+const registerLocalShortCutForToggleMenu = (mainWindow: BrowserWindow): void => {
     storage.setDataPath(os.tmpdir());
 
     // @ts-ignore
@@ -123,11 +126,11 @@ const registerGlobalShortCutForToggleMenu = (mainWindow: BrowserWindow): void =>
 
         if (data.keys.toString() !== "") {
             // @ts-ignore
-            globalShortcut.register(data.keys, () => {
+            electronLocalShortcut.register(data.keys, () => {
                 // eslint-disable-next-line no-console
                 console.log("executing toggleMenu!");
 
-                mainWindow.webContents.send("app:global-shortcut-execute::toggleMenu");
+                mainWindow.webContents.send("app:local-shortcut-execute::toggleMenu");
             });
         }
     });
@@ -149,19 +152,19 @@ function registerShortcuts(mainWindow: BrowserWindow, alias = null): void {
 
                         switch (data.alias) {
                             case "clearAll":
-                                registerGlobalShortCutForClearAll(mainWindow);
+                                registerLocalShortCutForClearAll(mainWindow);
                                 break;
                             case "darkMode":
-                                registerGlobalShortCutForDarkMode(mainWindow);
+                                registerLocalShortCutForDarkMode(mainWindow);
                                 break;
                             case "alwaysOnTop":
-                                registerGlobalShortCutForAlwaysOnTop(mainWindow);
+                                registerLocalShortCutForAlwaysOnTop(mainWindow);
                                 break;
                             case "globalSearch":
-                                registerGlobalShortCutForSearch(mainWindow);
+                                registerLocalShortCutForSearch(mainWindow);
                                 break;
                             case "toggleMenu":
-                                registerGlobalShortCutForToggleMenu(mainWindow);
+                                registerLocalShortCutForToggleMenu(mainWindow);
                                 break;
                         }
                     });
@@ -174,22 +177,22 @@ function registerShortcuts(mainWindow: BrowserWindow, alias = null): void {
 
     switch (alias) {
         case "clearAll":
-            registerGlobalShortCutForClearAll(mainWindow);
+            registerLocalShortCutForClearAll(mainWindow);
             break;
         case "darkMode":
-            registerGlobalShortCutForDarkMode(mainWindow);
+            registerLocalShortCutForDarkMode(mainWindow);
             break;
         case "alwaysOnTop":
-            registerGlobalShortCutForAlwaysOnTop(mainWindow);
+            registerLocalShortCutForAlwaysOnTop(mainWindow);
             break;
     }
 }
 
 /**
- * Configures global shortcuts.
+ * Configures local shortcuts.
  * @param mainWindow - The BrowserWindow instance.
  */
-function configureGlobalShortcut(mainWindow: BrowserWindow): void {
+function configureLocalShortcut(mainWindow: BrowserWindow): void {
     /**
      * Event listener for the "will-quit" event of the app.
      * Unregisters all global shortcuts when the app is about to quit.
@@ -197,16 +200,8 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
 
     storage.setDataPath(os.tmpdir());
 
-    /**
-     * Event listener for the "global-shortcut:reset" event of ipcMain.
-     * Unregisters all global shortcuts.
-     */
-    ipcMain.on("global-shortcut:unregisterAll", (): void => {
-        globalShortcut.unregisterAll();
-    });
-
-    ipcMain.on("global-shortcut:registerAll", () => {
-        console.log("global-shortcut:registerAll");
+    ipcMain.on("local-shortcut:registerAll", () => {
+        console.log("local-shortcut:registerAll");
 
         storage.keys((error: Error | null, keys: string[]): void => {
             let shortcuts: Awaited<ShortcutData | null>[] = [];
@@ -253,12 +248,12 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
     });
 
     /**
-     * Event listener for the "global-shortcut:set" event of ipcMain.
+     * Event listener for the "local-shortcut:set" event of ipcMain.
      * Sets the specified shortcut data in storage and registers the shortcuts.
      * @param event - The Electron.IpcMainEvent instance.
      * @param data - The shortcut data.
      */
-    ipcMain.on("global-shortcut:set", (event: Electron.IpcMainEvent, data): void => {
+    ipcMain.on("local-shortcut:set", (event: Electron.IpcMainEvent, data): void => {
         storage.set(data.shortcut, data, (error): void => {
             // eslint-disable-next-line no-console
             if (error) console.log(error);
@@ -268,16 +263,19 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
     });
 
     /**
-     * Event listener for the "global-shortcut:get" event of ipcMain.
+     * Event listener for the "local-shortcut:get" event of ipcMain.
      * Retrieves all stored shortcuts from storage and sends them to the mainWindow.
      */
-    ipcMain.on("global-shortcut:get", (): void => {
+    ipcMain.on("local-shortcut:get", (): void => {
+
         storage.keys((error: Error | null, keys: string[]): void => {
             if (error) {
                 // eslint-disable-next-line no-console
                 console.error(error);
                 return;
             }
+
+            mainWindow.webContents.send("app:local-shortcut::count", keys.length);
 
             let shortcuts: Awaited<ShortcutData | null>[] = [];
 
@@ -303,7 +301,8 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
                 const promises: Promise<ShortcutData | null>[] = keys.map((key: string) => getShortcutData(key));
                 try {
                     shortcuts = await Promise.all(promises);
-                    mainWindow.webContents.send("app:global-shortcut::list", shortcuts);
+
+                    mainWindow.webContents.send("app:local-shortcut::list", shortcuts);
                 } catch (error) {
                     // eslint-disable-next-line no-console
                     console.error(error);
@@ -315,4 +314,4 @@ function configureGlobalShortcut(mainWindow: BrowserWindow): void {
     });
 }
 
-export { registerShortcuts, configureGlobalShortcut };
+export { registerShortcuts, configureLocalShortcut };

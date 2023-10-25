@@ -59,7 +59,6 @@
 import { defineProps, onMounted, ref } from "vue";
 import { Payload } from "@/types/Payload";
 import { CloudArrowDownIcon, ArrowTopRightOnSquareIcon } from "@heroicons/vue/24/outline";
-import CryptoJS from "crypto-js";
 
 const filePath = ref("");
 
@@ -79,7 +78,7 @@ const createNewWindow = () => {
 };
 
 onMounted(() => {
-    filePath.value = CryptoJS.MD5(props.payload.mail.html).toString();
+    filePath.value = Math.random().toString(36).slice(2, 7);
 
     window.ipcRenderer.send("main:create-static-tmp-file", {
         name: filePath.value,

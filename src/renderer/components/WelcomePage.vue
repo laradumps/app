@@ -11,7 +11,7 @@
         </div>
         <div class="fixed left-[80px] bottom-10 w-auto">
             <div class="flex gap-2 justify-end text-right">
-                <div v-for="shortcut in globalShortcutList">
+                <div v-for="shortcut in localShortcutList">
                     <span
                         v-if="shortcut.hasOwnProperty('shortcut')"
                         :key="shortcut.alias"
@@ -29,7 +29,7 @@
 import AppGuide from "@/components/AppGuide.vue";
 
 defineProps({
-    globalShortcutList: {
+    localShortcutList: {
         required: true,
         type: Array
     }
