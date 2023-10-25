@@ -881,7 +881,7 @@
     "@vue/compiler-dom" "3.3.7"
     "@vue/shared" "3.3.7"
 
-"@vue/devtools-api@^6.0.0-beta.11", "@vue/devtools-api@^6.5.0":
+"@vue/devtools-api@^6.5.0":
   version "6.5.0"
   resolved "https://registry.npmjs.org/@vue/devtools-api/-/devtools-api-6.5.0.tgz"
   integrity sha512-o9KfBeaBmCKl10usN4crU53fYtC1r7jJwdGKjPT24t348rHxgfpZ0xL3Xm/gLUYnc0oTp8LAmrxOeLyu6tbk2Q==
@@ -5593,13 +5593,6 @@ vue@3.3.7:
     "@vue/runtime-dom" "3.3.7"
     "@vue/server-renderer" "3.3.7"
     "@vue/shared" "3.3.7"
-
-vuex@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.npmjs.org/vuex/-/vuex-4.1.0.tgz"
-  integrity sha512-hmV6UerDrPcgbSy9ORAtNXDr9M4wlNP4pEFKye4ujJF8oqgFFuxDCdOLS3eNoRTtq5O3hoBDh9Doj1bQMYHRbQ==
-  dependencies:
-    "@vue/devtools-api" "^6.0.0-beta.11"
 
 which-boxed-primitive@^1.0.2:
   version "1.0.2"
