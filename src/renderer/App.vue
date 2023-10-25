@@ -33,7 +33,7 @@
                             class="overflow-auto min-h-screen pb-8"
                             v-if="settingStore.setting"
                         >
-                            <AppSetting :local-shortcut-list="globalShortcutList" />
+                            <AppSetting :local-shortcut-list="localShortcutList" />
                         </div>
 
                         <!-- header global filter -->
@@ -103,7 +103,7 @@
                                 class="w-full h-full -mt-6"
                                 v-if="payload.length === 0 && !settingStore.setting"
                             >
-                                <WelcomePage :local-shortcut-list="globalShortcutList" />
+                                <WelcomePage :local-shortcut-list="localShortcutList" />
                             </div>
                         </div>
 
@@ -174,7 +174,7 @@ const defaultScreen = ref({
 });
 
 const appVersion = ref("");
-const globalShortcutList = ref([]);
+const localShortcutList = ref([]);
 const modalAttributes = ref({ open: false, component: {}, props: {} });
 
 const payload = ref([]);
@@ -378,7 +378,7 @@ const clearAll = (): void => {
     colorStore.clear();
 };
 
-function registerDefaultGlobalShortcuts() {
+function registerDefaultLocalShortcuts() {
   let shortcutClearAllObject = {
     alias: "clearAll",
     label: "settings.shortcut.clear",
@@ -404,7 +404,7 @@ onMounted(() => {
 
   window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
     if (arg === 0) {
-      registerDefaultGlobalShortcuts();
+      registerDefaultLocalShortcuts();
     }
   });
 
@@ -468,7 +468,7 @@ onMounted(() => {
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
 
     window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
-        globalShortcutList.value = arg;
+        localShortcutList.value = arg;
     });
 
     window.ipcRenderer.on("install", (event, { content }) => {
