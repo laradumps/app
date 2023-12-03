@@ -175,9 +175,9 @@ function createWindow(): BrowserWindow {
     win.once("ready-to-show", (): void => {
         win.show();
         win.focus();
-        if (isDev) {
-            win.webContents.openDevTools();
-        }
+        // if (isDev) {
+        win.webContents.openDevTools();
+        // }
     });
 
     return win;
