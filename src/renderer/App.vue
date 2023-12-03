@@ -33,7 +33,7 @@
                             class="overflow-auto min-h-screen pb-8"
                             v-if="settingStore.setting"
                         >
-                            <AppSetting :local-shortcut-list="localShortcutList" />
+                            <AppSetting :global-shortcut-list="globalShortcutList" />
                         </div>
 
                         <!-- header global filter -->
@@ -103,7 +103,7 @@
                                 class="w-full h-full -mt-6"
                                 v-if="payload.length === 0 && !settingStore.setting"
                             >
-                                <WelcomePage :local-shortcut-list="localShortcutList" />
+                                <WelcomePage :global-shortcut-list="globalShortcutList" />
                             </div>
                         </div>
 
@@ -153,6 +153,7 @@ import WelcomePage from "@/components/WelcomePage.vue";
 import LivewireHandler from "@/components/LivewireHandler.vue";
 import TheFooter from "@/components/TheFooter.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
+import { useEnableGlobalShortcuts } from "@/store/enable-global-shortcuts";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -174,7 +175,7 @@ const defaultScreen = ref({
 });
 
 const appVersion = ref("");
-const localShortcutList = ref([]);
+const globalShortcutList = ref([]);
 const modalAttributes = ref({ open: false, component: {}, props: {} });
 
 const payload = ref([]);
@@ -196,6 +197,7 @@ const menuOpenStore = useMenuOpenStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
+const enableGlobalShortcutsStore = useEnableGlobalShortcuts();
 
 const i18n = useI18n();
 
@@ -378,35 +380,10 @@ const clearAll = (): void => {
     colorStore.clear();
 };
 
-function registerDefaultLocalShortcuts() {
-  let shortcutClearAllObject = {
-    alias: "clearAll",
-    label: "settings.shortcut.clear",
-    shortcut: "ds_shortcut_clearAll",
-    originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
-    keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K"
-  };
-  window.ipcRenderer.send("local-shortcut:set", shortcutClearAllObject);
-  let shortcutDarkModeObject = {
-    alias: "darkMode",
-    label: "settings.shortcut.darkMode",
-    shortcut: "ds_shortcut_darkMode",
-    originalValue: process.platform === "darwin" ? "⌥+⇧+D" : "Ctrl+Shift+D",
-    keys: process.platform === "darwin" ? "Alt+Shift+D" : "Ctrl+Shift+D"
-  };
-  window.ipcRenderer.send("local-shortcut:set", shortcutDarkModeObject);
-}
-
 onMounted(() => {
     setTimeout(() => {
         document.title = "LaraDumps - " + appVersion.value;
     }, 300);
-
-  window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
-    if (arg === 0) {
-      registerDefaultLocalShortcuts();
-    }
-  });
 
     window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
 
@@ -445,9 +422,9 @@ onMounted(() => {
 
     window.ipcRenderer.on("clear", () => clearAll());
 
-    window.ipcRenderer.on("app:local-shortcut-execute::clearAll", () => clearAll());
+    window.ipcRenderer.on("app:global-shortcut-execute::clearAll", () => clearAll());
 
-    window.ipcRenderer.on("app:local-shortcut-execute::darkMode", () => appearanceStore.toggle());
+    window.ipcRenderer.on("app:global-shortcut-execute::darkMode", () => appearanceStore.toggle());
 
     if (appearanceStore.theme === "auto") {
         window.ipcRenderer.send("native-theme", localStorage.theme);
@@ -467,8 +444,14 @@ onMounted(() => {
 
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
 
-    window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
-        localShortcutList.value = arg;
+    if (!enableGlobalShortcutsStore.isEnable()) {
+        window.ipcRenderer.send("global-shortcut:unregisterAll");
+    } else {
+        window.ipcRenderer.send("global-shortcut:get");
+    }
+
+    window.ipcRenderer.on("app:global-shortcut::list", (event, arg) => {
+        globalShortcutList.value = arg;
     });
 
     window.ipcRenderer.on("install", (event, { content }) => {

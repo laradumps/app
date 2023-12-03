@@ -24,7 +24,7 @@ onMounted(() => {
         isAlwaysOnTop.value = arg.is_always_on_top;
     });
 
-    window.ipcRenderer.on("app:local-shortcut-execute::alwaysOnTop", () => {
+    window.ipcRenderer.on("app:global-shortcut-execute::alwaysOnTop", () => {
         toggleAlwaysOnTop();
     });
 });

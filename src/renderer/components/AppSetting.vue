@@ -47,8 +47,8 @@
         <div class="py-4">
             <AppSettingsEnvironment v-if="selectedPage === 'Environment'" />
 
-            <AppSettingsLocalShortcuts
-                :local-shortcut-list="localShortcutList"
+            <AppSettingsGlobalShortcuts
+                :global-shortcut-list="globalShortcutList"
                 v-if="selectedPage === 'Shortcuts'"
             />
 
@@ -60,7 +60,7 @@
 <script setup>
 import { computed, ref } from "vue";
 
-import AppSettingsLocalShortcuts from "@/components/AppSettingsLocalShortcuts.vue";
+import AppSettingsGlobalShortcuts from "@/components/AppSettingsGlobalShortcuts.vue";
 import AppSettingsEnvironment from "@/components/AppSettingsEnvironment.vue";
 import AppSettingsSystem from "@/components/AppSettingsSystem.vue";
 
@@ -74,7 +74,7 @@ const checkUpdates = computed(() => {
 });
 
 defineProps({
-    localShortcutList: {
+    globalShortcutList: {
         required: true,
         type: Array
     }

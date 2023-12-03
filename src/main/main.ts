@@ -6,7 +6,7 @@ import storage from "electron-json-storage";
 import os from "os";
 import { initSavedDumps } from "./saved-dumps";
 import { initCoffeeWindow } from "./coffee";
-import { configureLocalShortcut, registerShortcuts } from "./shortcut";
+import { configureGlobalShortcut, registerShortcuts } from "./shortcut";
 import { configureEnvironment } from "./environment";
 import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import * as url from "url";
@@ -288,7 +288,7 @@ app.whenReady().then(async (): Promise<void> => {
 
     await autoUpdater.checkForUpdates();
 
-    configureLocalShortcut(mainWindow);
+    configureGlobalShortcut(mainWindow);
     configureEnvironment(mainWindow);
 
     if (isMac) {

@@ -22,6 +22,20 @@
         </div>
 
         <div class="flex gap-2 justify-end">
+            <div class="flex items-center gap-2 mr-2">
+                <input
+                    name="ckb-enable"
+                    type="checkbox"
+                    class="h-4 checkbox"
+                    v-model="enableGlobalShortcuts"
+                />
+                <label
+                    for="ckb-enable"
+                    class="text-sm dark:text-slate-300"
+                    >{{ $t("settings.enable") }}</label
+                >
+            </div>
+
             <button
                 @click="editShortcut"
                 type="button"
@@ -42,12 +56,27 @@
 
 <script setup lang="ts">
 import hotkeys from "hotkeys-js";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useEnableGlobalShortcuts } from "@/store/enable-global-shortcuts";
 
 const i18n = useI18n();
 
 const editMode = ref("disabled");
+
+const enableGlobalShortcutsStore = useEnableGlobalShortcuts();
+
+const enableGlobalShortcuts = ref(enableGlobalShortcutsStore.isEnable());
+
+watch(enableGlobalShortcuts, (value) => {
+    if (!value) {
+        enableGlobalShortcutsStore.disable();
+        window.ipcRenderer.send("global-shortcut:unregisterAll");
+    } else {
+        enableGlobalShortcutsStore.enable();
+        window.ipcRenderer.send("global-shortcut:registerAll");
+    }
+});
 
 const shortcuts = ref([
     {
@@ -69,14 +98,14 @@ const shortcuts = ref([
 ]);
 
 onMounted(() => {
-    getSavedLocalShortcuts();
+    getSavedGlobalShortcuts();
     detectHotKeysPress();
 });
 
-const getSavedLocalShortcuts = () => {
-    window.ipcRenderer.send("local-shortcut:get");
+const getSavedGlobalShortcuts = () => {
+    window.ipcRenderer.send("global-shortcut:get");
 
-    window.ipcRenderer.on("app:local-shortcut::list", (arg, shortcuts) => {
+    window.ipcRenderer.on("app:global-shortcut::list", (arg, shortcuts) => {
         shortcuts.forEach((shortcuts) => {
             if (shortcuts.hasOwnProperty("shortcut")) {
                 const shortcut = shortcuts.shortcut.replace("ds_shortcut_", "");
@@ -131,13 +160,15 @@ const detectHotKeysPress = () => {
 const editShortcut = () => {
     editMode.value = "";
 
-    window.ipcRenderer.send("local-shortcut:reset", {});
+    window.ipcRenderer.send("global-shortcut:reset", {});
 };
 
 const save = () => {
+    window.ipcRenderer.send("global-shortcut:unregisterAll");
+
     document.querySelectorAll(".js-shortcut").forEach((element) => {
         if (element.value.toString() !== "") {
-            window.ipcRenderer.send("local-shortcut:set", {
+            window.ipcRenderer.send("global-shortcut:set", {
                 alias: element.name,
                 label: element.dataset.label,
                 shortcut: `ds_shortcut_${element.name}`,
