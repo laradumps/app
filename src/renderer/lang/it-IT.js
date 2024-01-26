@@ -5,8 +5,8 @@ export default {
         add: "Aggiungi",
         somewhere_in_your_code: "da qualche parte nel tuo codice",
         run_your_application_and_see_what_happens_here: "Esegui la tua applicazione e guarda cosa succede qui",
-        global_shortcuts: "Shortcuts globali",
-        customize_shortcuts: "Personalizza i tuoi shortcuts in Impostazioni > Shortcuts",
+        global_shortcuts: "Scorciatoie globali",
+        customize_shortcuts: "Personalizza le tue scorciatoie in Impostazioni > Scorciatoie",
         available: "Disponibile",
         shortcuts_list: "Cancella tutto, Dark mode, Sempre in evidenza",
         add_project_here: "Aggiungi qui il tuo progetto",
@@ -21,7 +21,7 @@ export default {
     },
     footer: {
         support_laradumps: "Supporta LaraDumps",
-        star_out_repository: "metti una star alla nostra repository"
+        star_out_repository: "metti una star al nostro repository"
     },
     menu: {
         clear: "Cancella",
@@ -36,15 +36,15 @@ export default {
         settings: "Impostazioni",
         language: "Lingua",
         environment: "Ambiente",
-        shortcuts: "Shortcuts",
-        servers: "Servers",
+        shortcuts: "Scorciatoie",
+        servers: "Server",
         shortcut: {
             clear: "Cancella",
             darkMode: "Dark Mode",
             alwaysOnTop: "Sempre in evidenza",
             globalSearch: "Ricerca globale",
             toggleMenu: "Attiva/disattiva Menù",
-            save_message: "Lo shortcut è stato aggiornato con successo"
+            save_message: "La scorciatoia è stata aggiornata con successo"
         },
         choose_a_project: "Scegli un progetto",
         save: "Salva",
@@ -63,7 +63,7 @@ export default {
         appearance: "Aspetto",
         check_for_updates: "Controlla gli aggiornamenti",
         update_available: "Aggiornamento disponibile",
-        enable: "Enable"
+        enable: "Abilita"
     },
     click_to_copy: "Clicca per copiare",
     please_select_a_component: "Per favore, seleziona un componente",
@@ -81,11 +81,11 @@ export default {
         lara_dumps_package_update_available: "Aggiornamento pacchetto LaraDumps disponibile!",
         hey_dev: "Ciao sviluppatore!",
         there_is_a_new_release_of_lara_dumps_laravel_package: "C'è una nuova versione di LaraDumps Laravel Package.",
-        consider_upgrading_to_enjoy_the_benefits_of_new_features_bug_fixes_and_improvements: "Considera l'upgrade per usufruire di nuove feature, bug fix e miglioramenti.",
-        to_upgrade_lara_dumps_in_your_project_run: "Per eseguire l'upgrade di LaraDumps nel tuo progetto, esegui:",
+        consider_upgrading_to_enjoy_the_benefits_of_new_features_bug_fixes_and_improvements: "Considera l'aggiornamento per usufruire di nuove funzionalità, bug fix e miglioramenti.",
+        to_upgrade_lara_dumps_in_your_project_run: "Per eseguire l'aggiornamento di LaraDumps nel tuo progetto, esegui:",
         installed_version: "Versione installata:",
         minimum_required_version: "Versione minima richiesta:",
-        for_more_information_visit: "Per maggiorni informazioni, visita:"
+        for_more_information_visit: "Per maggiori informazioni, visita:"
     },
     installer: {
         laradumps_settings: "Impostazioni di LaraDumps",
@@ -101,6 +101,6 @@ export default {
         save: "Salva",
         cancel: "Annulla"
     },
-    yes: "Si",
+    yes: "Sì",
     no: "No"
 };
