@@ -34,6 +34,10 @@ if (isDev) {
 storage.setDataPath(os.tmpdir());
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
+    if (!Object.prototype.hasOwnProperty.call(arg.content, "meta")) {
+        return;
+    }
+
     const packageVersion: string = arg.content.meta.laradumps_version.replaceAll(".", "");
 
     if (packageVersion === "000") {
