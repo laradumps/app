@@ -1,6 +1,6 @@
 <template>
     <div class="dstable">
-        <div v-html="table"></div>
+        <div class="overflow-x-auto" v-html="table"></div>
     </div>
 </template>
 
