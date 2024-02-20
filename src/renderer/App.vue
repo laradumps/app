@@ -2,10 +2,47 @@
     <div
         v-cloak
         id="app"
-        :class="{ dark: appearanceStore.dark }"
+        :class="{ dark: true }"
     >
         <div class="absolute w-full h-full min-h-full">
             <TheModal v-model:modal-attributes="modalAttributes" />
+
+<!--            <div class="px-2 py-1 bg-neutral-100">-->
+<!--                <div class="flex justify-between items-center">-->
+<!--                    <div>-->
+<!--                        <div class="flex gap-2 ml-2">-->
+<!--                            <div>-->
+<!--                                <a-->
+<!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
+<!--                                    :title="$t('menu.clear')"-->
+<!--                                    class="justify-center cursor-pointer text-neutral-500 group flex items-center p-2"-->
+<!--                                >-->
+<!--                                    <TrashIcon class="h-5 w-5 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-300" />-->
+<!--                                </a>-->
+<!--                            </div>-->
+<!--                            <div>-->
+<!--                                <a-->
+<!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
+<!--                                    :title="$t('menu.clear')"-->
+<!--                                    class="justify-center cursor-pointer text-neutral-500 group flex items-center p-2"-->
+<!--                                >-->
+<!--                                    <TrashIcon class="h-5 w-5 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-300" />-->
+<!--                                </a>-->
+<!--                            </div>-->
+<!--                            <div>-->
+<!--                                <a-->
+<!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
+<!--                                    :title="$t('menu.clear')"-->
+<!--                                    class="justify-center cursor-pointer text-neutral-500 group flex items-center p-2"-->
+<!--                                >-->
+<!--                                    <TrashIcon class="h-5 w-5 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-300" />-->
+<!--                                </a>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                </div>-->
+<!--            </div>-->
 
             <div>
                 <TheNavBar
@@ -17,16 +54,15 @@
 
                 <!-- content -->
                 <div
-                    :class="{ 'pl-16': menuOpenStore.show }"
                     class="flex overflow-hidden flex-col flex-1 right-0 absolute left-0 h-fill-available"
                 >
                     <!-- main -->
                     <main
                         :class="{
                             'overflow-auto': payload.length > 0,
-                            'bg-gradient-to-t group from-slate-100 to-slate-50 dark:from-gray-900 dark:to-slate-800': payload.length === 0
+                            'bg-gradient-to-t group from-neutral-200/25 to-neutral-100 dark:from-neutral-900 dark:to-neutral-900': payload.length === 0
                         }"
-                        class="flex-1 flex flex-col shrink-0 bg-white dark:bg-slate-900 left-16 right-0 min-h-full"
+                        class="flex-1 flex flex-col shrink-0 dark:bg-neutral-900 left-16 right-0 min-h-full"
                     >
                         <!-- AppSettings -->
                         <div
@@ -37,18 +73,18 @@
                         </div>
 
                         <!-- header global filter -->
-                        <div
-                            class="py-2 px-1 min-[350px] bg-white dark:bg-slate-900 group flex justify-end items-center"
-                            v-if="payload.length > 0 && !settingStore.setting"
-                        >
-                            <div class="flex gap-3 mr-2">
-                                <HeaderGlobalFilter
-                                    v-model:payload="payload"
-                                    v-model:total="dumpsBagFiltered.length"
-                                    v-model:has-color="hasColor"
-                                />
-                            </div>
-                        </div>
+<!--                        <div-->
+<!--                            class="py-2 px-1 min-[350px] bg-white dark:bg-neutral-900 group flex justify-end items-center"-->
+<!--                            v-if="payload.length > 0 && !settingStore.setting"-->
+<!--                        >-->
+<!--                            <div class="flex gap-3 mr-2">-->
+<!--                                <HeaderGlobalFilter-->
+<!--                                    v-model:payload="payload"-->
+<!--                                    v-model:total="dumpsBagFiltered.length"-->
+<!--                                    v-model:has-color="hasColor"-->
+<!--                                />-->
+<!--                            </div>-->
+<!--                        </div>-->
 
                         <AutoUpdater />
 
@@ -74,8 +110,7 @@
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
                             }"
-                            v-if="screenStore.screen !== 'Livewire'"
-                            class="rounded-sm text-slate-600 overflow-auto"
+                            class="rounded-sm text-neutral-600 overflow-auto"
                         >
                             <div id="top"></div>
                             <div
@@ -86,7 +121,7 @@
                                 v-if="payload.length > 0 && !settingStore.setting"
                             >
                                 <div
-                                    class="w-full"
+                                    class="w-full border border-neutral-200/70 dark:border-neutral-900/70 pt-3"
                                     :id="payload.id"
                                     v-for="payload in dumpsBagFiltered"
                                     :key="payload.sf_dump_id"
@@ -105,18 +140,6 @@
                             >
                                 <WelcomePage :local-shortcut-list="localShortcutList" />
                             </div>
-                        </div>
-
-                        <LivewireHandler
-                            v-if="screenStore.screen === 'Livewire' && !settingStore.setting"
-                            v-model:dumpsBag="dumpsBagFiltered"
-                        />
-
-                        <div
-                            :class="{ '!bg-transparent': payload.length === 0 }"
-                            class="bg-slate-200 dark:bg-slate-900"
-                        >
-                            <TheFooter />
                         </div>
                     </main>
                 </div>
@@ -153,6 +176,7 @@ import WelcomePage from "@/components/WelcomePage.vue";
 import LivewireHandler from "@/components/LivewireHandler.vue";
 import TheFooter from "@/components/TheFooter.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
+import { TrashIcon } from "@heroicons/vue/24/outline";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);

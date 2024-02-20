@@ -1,3 +1,4 @@
+const colors = require("tailwindcss/colors");
 module.exports = {
     content: ["./src/renderer/*.vue", "./src/renderer/components/*.vue", "./src/renderer/views/*.vue"],
     darkMode: "class",
@@ -14,6 +15,7 @@ module.exports = {
         "w-20",
         "gap-2"
     ],
+
     theme: {
         listStyleType: {
             none: "none",
@@ -30,7 +32,12 @@ module.exports = {
         },
         screens: {
             tiny: "340px"
-        }
+        },
+        extend: {
+            colors: {
+                primary: colors.neutral,
+            },
+        },
     },
     plugins: [
         require("postcss-import"),
