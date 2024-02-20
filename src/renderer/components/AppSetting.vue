@@ -1,31 +1,31 @@
 <template>
     <div class="px-6 py-3">
         <div>
-            <div class="flex justify-between items-end border-b border-base-200 dark:border-base-700">
+            <div class="flex justify-between items-end border-b border-base-200">
                 <nav
                     class="-mb-px flex space-x-8"
                     aria-label="Tabs"
                 >
                     <a
                         @click="selectedPage = 'Environment'"
-                        :class="{ '!border-base-900 text-base-600 dark:text-base-400 dark:!border-base-400': selectedPage === 'Environment' }"
-                        class="cursor-pointer border-transparent text-base-500 hover:border-base-300 dark:hover:text-base-300 hover:text-base-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+                        :class="{ '!border-base-900 text-base-600': selectedPage === 'Environment' }"
+                        class="cursor-pointer border-transparent text-base-500 hover:border-base-300 hover:text-base-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
                     >
                         {{ $t("settings.environment") }}
                     </a>
 
                     <a
                         @click="selectedPage = 'Shortcuts'"
-                        :class="{ '!border-base-900 text-base-600 dark:text-base-400 dark:!border-base-400': selectedPage === 'Shortcuts' }"
-                        class="cursor-pointer border-transparent text-base-500 hover:border-base-300 dark:hover:text-base-300 hover:text-base-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+                        :class="{ '!border-base-900 text-base-600': selectedPage === 'Shortcuts' }"
+                        class="cursor-pointer border-transparent text-base-500 hover:border-base-300 hover:text-base-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
                     >
                         {{ $t("settings.shortcuts") }}
                     </a>
 
                     <a
                         @click="selectedPage = 'System'"
-                        :class="{ '!border-base-900 text-base-600 dark:text-base-400 dark:!border-base-400': selectedPage === 'System' }"
-                        class="cursor-pointer border-transparent text-base-500 hover:border-base-300 dark:hover:text-base-300 hover:text-base-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+                        :class="{ '!border-base-900 text-base-600': selectedPage === 'System' }"
+                        class="cursor-pointer border-transparent text-base-500 hover:border-base-300 hover:text-base-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
                         aria-current="page"
                     >
                         {{ $t("settings.system") }}

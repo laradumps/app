@@ -5,8 +5,8 @@
         <AppSettingsAutoUpdate />
 
         <div>
-            <div class="mt-40 border-t text-sm border-gray-200 space-y-3 dark:text-base-400 dark:border-base-700">
-                <div class="text-lg text-left mt-4 font-normal text-base-700 dark:text-base-400">
+            <div class="mt-40 border-t text-sm border-gray-200 space-y-3">
+                <div class="text-lg text-left mt-4 font-normal text-base-700">
                     {{ $t("settings.reset_data") }}
                 </div>
                 <p>{{ $t("settings.reset_data_description") }}</p>

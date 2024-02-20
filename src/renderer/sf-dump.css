@@ -1,17 +1,14 @@
 #livewire pre.sf-dump,
 #livewire.sf-dump-default {
-    @apply p-3 text-indigo-800 bg-base-50 dark:bg-base-700 dark:text-base-200;
+    @apply p-3 text-indigo-800 bg-base1-50;
 }
 
-pre {
-    @apply dark:text-base-400;
-}
 pre.sf-dump-expanded {
-    @apply text-base-600 dark:text-gray-400;
+    @apply text-base1-600;
 }
 
 pre.sf-dump .sf-dump-ref {
-    @apply text-gray-500 dark:text-base-200 text-sm font-normal;
+    @apply text-gray-500 text-sm font-normal;
 }
 
 pre.sf-dump .sf-dump-ref span {
@@ -21,24 +18,21 @@ pre.sf-dump .sf-dump-ref span {
 pre.sf-dump .sf-dump-public,
 pre.sf-dump .sf-dump-protected,
 pre.sf-dump .sf-dump-private {
-    @apply !text-gray-800 dark:text-base-200 font-normal text-sm leading-normal;
+    @apply !text-base-content font-normal text-sm leading-normal;
 }
 
 pre.sf-dump .sf-dump-ref,
-.sf-dump-toggle {
-    @apply dark:text-base-400;
-}
 
 pre.sf-dump .sf-dump-note {
-    @apply dark:text-cyan-400 text-cyan-600 font-normal !text-sm leading-4;
+    @apply text-primary font-normal !text-sm leading-4;
 }
 
 pre.sf-dump .sf-dump-str {
-    @apply text-emerald-600 dark:text-green-400 !font-normal dark:font-semibold text-sm leading-tight;
+    @apply text-secondary !font-normal text-sm leading-tight;
 }
 
 pre.sf-dump .sf-dump-index {
-    @apply text-blue-500 dark:text-blue-300 text-sm;
+    @apply text-blue-500 text-sm;
 }
 
 .sf-dump-default {
@@ -50,32 +44,21 @@ pre.sf-dump .sf-dump-index {
 }
 
 pre.sf-dump .sf-dump-const {
-    @apply text-base-600 text-sm dark:text-base-300;
+    @apply text-accent text-sm;
 }
 
 span.dump-clock {
-    @apply dark:text-base-200 dark:bg-base-600 dark:text-base-300 uppercase select-none border focus:outline-none border-gray-400 cursor-pointer flex justify-center px-2 py-1 text-sm text-gray-500 bg-white rounded-sm transition duration-150 ease-in-out;
+    @apply uppercase select-none border focus:outline-none border-gray-400 cursor-pointer flex justify-center px-2 py-1 text-sm text-gray-500 bg-white rounded-sm transition duration-150 ease-in-out;
 }
 
 .dump-type {
-    @apply dark:text-base-200 dark:bg-base-600 dark:text-base-300 uppercase select-none border focus:outline-none border-gray-400 cursor-pointer flex justify-center px-2 py-1 text-sm text-gray-500 bg-white rounded-sm transition duration-150 ease-in-out;
-}
-
-pre.sf-dump .sf-dump-public,
-pre.sf-dump .sf-dump-protected,
-pre.sf-dump .sf-dump-private {
-    font-family: "Fira Sans", sans-serif;
-}
-
-pre.sf-dump .sf-dump-meta {
-    font-family: "Fira Sans", sans-serif;
+    @apply uppercase select-none border focus:outline-none border-gray-400 cursor-pointer flex justify-center px-2 py-1 text-sm text-gray-500 bg-white rounded-sm transition duration-150 ease-in-out;
 }
 
 code,
 kbd,
 samp,
 pre {
-    font-family: "Fira Sans", sans-serif !important;
     font-size: 1em;
     letter-spacing: 0.025em !important;
 }
@@ -83,13 +66,12 @@ pre {
 pre.sf-dump .sf-dump-note {
     @apply text-sm;
     line-height: unset;
-    font-family: "Fira Sans", sans-serif !important;
 }
 
 pre.sf-dump .sf-dump-public,
 pre.sf-dump .sf-dump-protected,
 pre.sf-dump .sf-dump-private {
-    @apply text-base-700 dark:!text-base-300;
+    @apply text-neutral-content;
 }
 
 pre.sf-dump:after {
@@ -199,7 +181,6 @@ pre.sf-dump .sf-dump-search-wrapper > .sf-dump-search-input-previous > svg {
     pointer-events: none;
     width: 12px;
     height: 12px;
-    @apply dark:!text-white;
 }
 
 pre.sf-dump .sf-dump-search-wrapper > .sf-dump-search-count {
@@ -217,13 +198,12 @@ pre.sf-dump .sf-dump-default {
     word-wrap: break-word;
     white-space: pre-wrap;
     word-break: break-all;
-    font-family: "Fira Sans", sans-serif !important;
     border-radius: 4px;
 }
 
 pre.sf-dump .sf-dump-num {
     font-weight: bold;
-    @apply text-cyan-700 text-sm dark:text-cyan-300;
+    @apply text-cyan-700 text-sm;
 }
 
 pre.sf-dump .sf-dump-meta {
@@ -234,23 +214,19 @@ pre.sf-dump .sf-dump-ns {
     user-select: none;
 }
 
-pre {
-    font-family: "Fira Sans", sans-serif !important;
-}
-
 .sf-dump-search-wrapper,
 .sf-dump-search-hidden {
     display: none;
 }
 
 pre.sf-dump .sf-dump-key {
-    @apply dark:!text-base-200 !text-emerald-600 text-sm font-normal dark:text-emerald-300;
+    @apply text-base-content text-sm font-normal;
 }
 
 .sf-dump-search-input-previous {
-    @apply p-1 !border-none mr-0.5 flex !items-center dark:!bg-transparent;
+    @apply p-1 !border-none mr-0.5 flex !items-center;
 }
 
 .sf-dump-search-input-next {
-    @apply p-1 !border-none mr-0.5 flex !items-center dark:!bg-transparent;
+    @apply p-1 !border-none mr-0.5 flex !items-center;
 }

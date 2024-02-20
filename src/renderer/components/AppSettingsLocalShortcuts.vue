@@ -4,10 +4,10 @@
             v-for="shortcut in shortcuts"
             :key="shortcut.alias"
         >
-            <label class="block text-sm font-normal leading-6 text-base-900 dark:text-base-400">
+            <label class="block text-sm font-normal leading-6 text-base1-900">
                 {{ $t(shortcut.label) }}
             </label>
-            <div class="flex rounded-md shadow-sm border border-base-300 dark:border-base-800">
+            <div class="flex rounded-md shadow-sm border border-base1-300">
                 <input
                     type="text"
                     :placeholder="editMode !== 'disabled' ? 'type here ...' : ''"

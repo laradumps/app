@@ -5,7 +5,7 @@
                 class="items-center w-[0.50rem] h-[0.50rem] mr-2 rounded-full"
                 :class="{ [style]: true }"
             ></div>
-            <span class="flex gap-2 dark:text-base-300 text-sm">{{ $t(text) }}</span>
+            <span class="flex gap-2 text-sm">{{ $t(text) }}</span>
         </div>
     </div>
 </template>
@@ -23,22 +23,3 @@ const props = defineProps<{
 }>();
 </script>
 
-<style>
-.vjs-tree {
-    @apply !pl-4;
-}
-.vjs-tree-brackets {
-    @apply dark:text-base-400;
-}
-.vjs-carets {
-    @apply dark:text-base-400;
-}
-.vjs-tree-node.is-highlight,
-.vjs-tree-node:hover {
-    @apply bg-transparent;
-}
-
-.vjs-tree-node .vjs-indent-unit.has-line {
-    @apply dark:border-l-base-700;
-}
-</style>

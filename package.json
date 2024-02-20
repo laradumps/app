@@ -65,6 +65,7 @@
         "@types/which": "^3.0.3",
         "@vitejs/plugin-vue": "4.5.1",
         "@vue/compiler-sfc": "3.4.11",
+        "daisyui": "^4.7.2",
         "electron": "28.1.3",
         "electron-builder": "24.9.1",
         "esbuild": "0.19.11",

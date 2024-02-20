@@ -1,6 +1,6 @@
 <template>
     <a
-        class="justify-center cursor-pointer text-base-500 group flex items-center p-2"
+        class="justify-center cursor-pointer text-base1-500 group flex items-center p-2"
         @click="collapseStore.toggle()"
     >
         <div v-if="!collapseStore.isOpen">

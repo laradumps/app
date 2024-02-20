@@ -2,12 +2,11 @@
     <div
         v-cloak
         id="app"
-        :class="{ dark: true }"
     >
-        <div class="absolute w-full h-full min-h-full">
+        <div data-theme="dark" class="absolute w-full h-full min-h-full">
             <TheModal v-model:modal-attributes="modalAttributes" />
 
-            <!--            <div class="px-2 py-1 bg-base-100">-->
+            <!--            <div class="px-2 py-1 bg-base1-100">-->
             <!--                <div class="flex justify-between items-center">-->
             <!--                    <div>-->
             <!--                        <div class="flex gap-2 ml-2">-->
@@ -15,27 +14,27 @@
             <!--                                <a-->
             <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
             <!--                                    :title="$t('menu.clear')"-->
-            <!--                                    class="justify-center cursor-pointer text-base-500 group flex items-center p-2"-->
+            <!--                                    class="justify-center cursor-pointer text-base1-500 group flex items-center p-2"-->
             <!--                                >-->
-            <!--                                    <TrashIcon class="h-5 w-5 text-base-500 hover:text-base-900 dark:text-base-400 dark:hover:text-base-300" />-->
+            <!--                                    <TrashIcon class="h-5 w-5 text-base1-500 hover:text-base1-900 dark:text-base1-400 dark:hover:text-base1-300" />-->
             <!--                                </a>-->
             <!--                            </div>-->
             <!--                            <div>-->
             <!--                                <a-->
             <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
             <!--                                    :title="$t('menu.clear')"-->
-            <!--                                    class="justify-center cursor-pointer text-base-500 group flex items-center p-2"-->
+            <!--                                    class="justify-center cursor-pointer text-base1-500 group flex items-center p-2"-->
             <!--                                >-->
-            <!--                                    <TrashIcon class="h-5 w-5 text-base-500 hover:text-base-900 dark:text-base-400 dark:hover:text-base-300" />-->
+            <!--                                    <TrashIcon class="h-5 w-5 text-base1-500 hover:text-base1-900 dark:text-base1-400 dark:hover:text-base1-300" />-->
             <!--                                </a>-->
             <!--                            </div>-->
             <!--                            <div>-->
             <!--                                <a-->
             <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
             <!--                                    :title="$t('menu.clear')"-->
-            <!--                                    class="justify-center cursor-pointer text-base-500 group flex items-center p-2"-->
+            <!--                                    class="justify-center cursor-pointer text-base1-500 group flex items-center p-2"-->
             <!--                                >-->
-            <!--                                    <TrashIcon class="h-5 w-5 text-base-500 hover:text-base-900 dark:text-base-400 dark:hover:text-base-300" />-->
+            <!--                                    <TrashIcon class="h-5 w-5 text-base1-500 hover:text-base1-900 dark:text-base1-400 dark:hover:text-base1-300" />-->
             <!--                                </a>-->
             <!--                            </div>-->
             <!--                        </div>-->
@@ -58,9 +57,8 @@
                     <main
                         :class="{
                             'overflow-auto': payload.length > 0,
-                            'bg-gradient-to-t group from-base-200/25 to-base-100 dark:from-base-900 dark:to-base-900': payload.length === 0
                         }"
-                        class="flex-1 flex flex-col shrink-0 dark:bg-base-900 left-16 right-0 min-h-full"
+                        class="flex-1 flex flex-col shrink-0 left-16 right-0 min-h-full"
                     >
                         <!-- AppSettings -->
                         <div
@@ -72,7 +70,7 @@
 
                         <!-- header global filter -->
                         <!--                        <div-->
-                        <!--                            class="py-2 px-1 min-[350px] bg-white dark:bg-base-900 group flex justify-end items-center"-->
+                        <!--                            class="py-2 px-1 min-[350px] bg-white dark:bg-base1-900 group flex justify-end items-center"-->
                         <!--                            v-if="payload.length > 0 && !settingStore.setting"-->
                         <!--                        >-->
                         <!--                            <div class="flex gap-3 mr-2">-->
@@ -108,7 +106,7 @@
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
                             }"
-                            class="rounded-sm text-base-600 overflow-auto"
+                            class="rounded-sm text-base1-600 overflow-auto"
                         >
                             <div id="top"></div>
                             <div

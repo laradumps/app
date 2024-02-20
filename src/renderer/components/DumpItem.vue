@@ -1,7 +1,7 @@
 <template>
     <div
         @mouseenter="markDumpItemViewed"
-        class="group dark:bg-base-900 text-sm flex transition-all"
+        class="group text-sm flex transition-all"
     >
         <Transition
             enter-active-class="transition ease-out duration-300"
@@ -78,14 +78,14 @@
                         <!-- border-gray-200 shadow-sm shadow-base-300 dark:shadow-base-600 dark:text-base-200 -->
                         <div v-show="isOpen">
                             <div
-                                class="w-full p-3 rounded-sm bg-base-200/35 transition-all hover:bg-base-200 dark:bg-base-800 dark:text-base-300"
+                                class="w-full p-3 rounded-sm bg-base-200 transition-all"
                                 v-if="props.payload.type === 'dump'"
                                 v-show="props.payload.dump?.dump !== ''"
                             >
                                 <div class="gap-2 flex flex-col">
                                     <div
                                         @dblclick="isOpen = false"
-                                        class="gap-2 justify-between items-center font-light flex text-[12px] dark:text-base-300/75"
+                                        class="gap-2 text-base-content justify-between items-center font-light flex text-[12px]"
                                     >
                                         <ul class="flex gap-6 !list-disc">
                                             <li class="list-none">
@@ -111,10 +111,10 @@
                                         <div class="flex gap-2 items-center">
                                             <div
                                                 v-if="props.payload.dump?.variable_type !== undefined"
-                                                class="text-[0.70rem] text-orange-500 select-none"
+                                                class="text-[0.70rem] text-secondary select-none"
                                                 v-text="`(${props.payload.dump.variable_type})`"
                                             ></div>
-                                            <div class="font-semibold capitalize leading-4 dark:text-base-900 shadow rounded-lg px-2 p-0.75 bg-amber-400">{{ props.payload.label ?? props.payload.type }}</div>
+                                            <div class="font-semibold capitalize leading-4 shadow rounded-lg px-2 p-0.75 text-neutral-content bg-primary">{{ props.payload.label ?? props.payload.type }}</div>
                                         </div>
                                     </div>
                                     <div class="mt-2" v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"></div>
@@ -195,15 +195,15 @@
                             <!--                            />-->
                         </div>
 
-                        <DumpContains
-                            v-show="isOpen"
-                            :payload="payload"
-                        />
+<!--                        <DumpContains-->
+<!--                            v-show="isOpen"-->
+<!--                            :payload="payload"-->
+<!--                        />-->
 
-                        <DumpIsJson
-                            v-show="isOpen"
-                            :payload="payload"
-                        />
+<!--                        <DumpIsJson-->
+<!--                            v-show="isOpen"-->
+<!--                            :payload="payload"-->
+<!--                        />-->
 
                         <!-- handle link close -->
                         <div

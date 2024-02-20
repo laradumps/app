@@ -2,7 +2,7 @@
     <div class="flex relative left-[3px] mr-[15px]">
         <div
             style="height: calc(100vh - 120px)"
-            class="px-3 w-[40%] overflow-y-none overflow-y-auto rounded-sm dark:bg-base-900 text-base-600 dark:text-base-300 font-normal text-xs"
+            class="px-3 w-[40%] overflow-y-none overflow-y-auto rounded-sm dark:bg-base1-900 text-base-600 dark:text-base-300 font-normal text-xs"
         >
             {{ $t("total") }}: {{ dumpsBag.length }}
             <div

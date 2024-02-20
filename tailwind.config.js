@@ -35,15 +35,52 @@ module.exports = {
         },
         extend: {
             colors: {
-                base: colors.neutral,
-                primary: colors.amber
+                base1: colors.neutral,
+                // primary: colors.amber
             }
         }
+    },
+    daisyui: {
+        themes: [
+            "light",
+            "dark",
+            "cupcake",
+            "bumblebee",
+            "emerald",
+            "corporate",
+            "synthwave",
+            "retro",
+            "cyberpunk",
+            "valentine",
+            "halloween",
+            "garden",
+            "forest",
+            "aqua",
+            "lofi",
+            "pastel",
+            "fantasy",
+            "wireframe",
+            "black",
+            "luxury",
+            "dracula",
+            "cmyk",
+            "autumn",
+            "business",
+            "acid",
+            "lemonade",
+            "night",
+            "coffee",
+            "winter",
+            "dim",
+            "nord",
+            "sunset",
+        ],
     },
     plugins: [
         require("postcss-import"),
         require("@tailwindcss/forms")({
             strategy: "class"
-        })
+        }),
+        require("daisyui")
     ]
 };

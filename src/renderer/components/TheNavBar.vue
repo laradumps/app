@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-between items-center px-3 py-1 bg-base-100 shadow text-center z-100 dark:bg-base-900 dark:border dark:border-base-950">
+    <div class="flex justify-between items-center px-3 py-1 bg-base-100 shadow text-center z-100 ">
         <nav class="flex">
             <!-- clear -->
             <a
@@ -8,7 +8,7 @@
                 class="justify-center cursor-pointer text-base-500 group flex items-center p-2"
                 @click="clear()"
             >
-                <TrashIcon class="w-4 text-base-600 hover:text-base-800 dark:text-base-400 dark:hover:text-base-300" />
+                <TrashIcon class="w-4 text-base hover:text-base" />
             </a>
 
             <!-- saved dumps -->
@@ -41,7 +41,7 @@
                 </div>
                 <input
                     type="text"
-                    class="block w-full p-1.5 text-base-500 focus:outline-none focus:ring-1 focus:text-base-700 dark:bg-base-800 dark:text-base-300 dark:placeholder-base-400 rounded-md border-[1px] border-base-200 pl-10 dark:!border-base-600 focus:border-base-400 focus:ring-base-500 text-xs"
+                    class="block w-full p-1.5 bg-base-200 text-base-500 focus:outline-none focus:ring-1 focus:text-base-700 rounded-md border-[1px] border-base-200 pl-10 focus:border-base-400 focus:ring-base-500 text-xs"
                     placeholder="Search"
                 />
             </div>
