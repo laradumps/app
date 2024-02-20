@@ -1,8 +1,8 @@
 <template>
     <div
-        :class="{ 'items-center hover:bg-gradient-to-t from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-800': !isOpen }"
+        :class="{ 'items-center hover:bg-gradient-to-t from-primary-100 to-primary-50 dark:from-primary-900 dark:to-primary-800': !isOpen }"
         @mouseenter="markDumpItemViewed"
-        class="group dark:bg-neutral-900 text-sm flex transition-all"
+        class="group dark:bg-primary-900 text-sm flex transition-all"
     >
         <Transition
             enter-active-class="transition ease-out duration-300"
@@ -20,21 +20,21 @@
                             [`!border-l-4 ` + color]: typeof color !== 'undefined',
                             'cursor-pointer !bg-transparent': !isOpen
                         }">
-<!--                        <div class="items-center text-xs flex justify-between dark:text-slate-400">-->
+<!--                        <div class="items-center text-xs flex justify-between dark:text-primary-400">-->
 <!--                            &lt;!&ndash; label &ndash;&gt;-->
 <!--                            <div-->
 <!--                                v-if="isOpen && (props.payload.label || props.payload.type)"-->
 <!--                                @click="isOpen = false"-->
-<!--                                class="dark:text-slate-400 cursor-pointer py-2 items-center uppercase text-[11px] select-none flex gap-3 w-full mr-3"-->
+<!--                                class="dark:text-primary-400 cursor-pointer py-2 items-center uppercase text-[11px] select-none flex gap-3 w-full mr-3"-->
 <!--                            >-->
-<!--                                <div class="cursor-pointer items-center flex justify-between gap-2 hover:text-slate-800">-->
+<!--                                <div class="cursor-pointer items-center flex justify-between gap-2 hover:text-primary-800">-->
 <!--                                    <IconChevronDown class="!w-4 !h-4 group-hover:text-blue-500" />-->
 
 <!--                                    &lt;!&ndash; dateTime &ndash;&gt;-->
 <!--                                    <span-->
 <!--                                        :class="{-->
-<!--                                    'font-normal text-slate-800 dark:text-slate-400': isOpen,-->
-<!--                                    'dark:text-slate-400': !isOpen-->
+<!--                                    'font-normal text-primary-800 dark:text-primary-400': isOpen,-->
+<!--                                    'dark:text-primary-400': !isOpen-->
 <!--                                }"-->
 <!--                                        class="line-clamp-2 !hidden select-none max-w-[100px] text-xs italic"-->
 <!--                                    >-->
@@ -54,13 +54,13 @@
 <!--                                        @click="saveDump"-->
 <!--                                        v-if="isOpen && !inSavedDumpsWindow"-->
 <!--                                    >-->
-<!--                                        <IconSave class="w-3 h-3 text-slate-500 dark:text-slate-400 hover:text-slate-600" />-->
+<!--                                        <IconSave class="w-3 h-3 text-primary-500 dark:text-primary-400 hover:text-primary-600" />-->
 <!--                                    </div>-->
 <!--                                    <div-->
 <!--                                        @click="removeSaveDump"-->
 <!--                                        v-if="isOpen && inSavedDumpsWindow"-->
 <!--                                    >-->
-<!--                                        <TrashIcon class="w-4 h-4 text-red-500 hover:text-slate-600" />-->
+<!--                                        <TrashIcon class="w-4 h-4 text-red-500 hover:text-primary-600" />-->
 <!--                                    </div>-->
 <!--                                </div>-->
 
@@ -74,17 +74,17 @@
 <!--                        </div>-->
 
                         <!-- default -->
-                        <!-- border-gray-200 shadow-sm shadow-slate-300 dark:shadow-slate-600 dark:text-slate-200 -->
+                        <!-- border-gray-200 shadow-sm shadow-primary-300 dark:shadow-primary-600 dark:text-primary-200 -->
                         <div
                             v-show="isOpen"
                         >
                             <div
-                                class="w-full p-3 rounded-sm bg-primary-200/35 transition-all hover:bg-primary-200 dark:bg-neutral-800 dark:text-slate-300"
+                                class="w-full p-3 rounded-sm bg-primary-200/35 transition-all hover:bg-primary-200 dark:bg-primary-800 dark:text-primary-300"
                                 v-if="props.payload.type === 'dump'"
                                 v-show="props.payload.dump?.dump !== ''"
                             >
                                 <div class="gap-2 flex flex-col">
-                                    <div class="gap-2 justify-between font-light flex text-[12px] dark:text-neutral-400">
+                                    <div class="gap-2 justify-between font-light flex text-[12px] dark:text-primary-400">
                                         <div class="flex gap-2">
                                             <span>{{ props.payload.date_time }}</span> -
                                             <span>
@@ -154,28 +154,28 @@
 
 <!--                            &lt;!&ndash; dump model &ndash;&gt;-->
 <!--                            <DumpModel-->
-<!--                                class="w-full p-4 shadow bg-slate-100 dark:bg-slate-800"-->
+<!--                                class="w-full p-4 shadow bg-primary-100 dark:bg-primary-800"-->
 <!--                                v-if="isOpen && props.payload.type === `model`"-->
 <!--                                :payload="payload"-->
 <!--                            />-->
 
 <!--                            &lt;!&ndash; dump log &ndash;&gt;-->
 <!--                            <DumpLog-->
-<!--                                class="w-full p-4 shadow-md dark:shadow-slate-800 bg-slate-50 dark:bg-slate-800"-->
+<!--                                class="w-full p-4 shadow-md dark:shadow-primary-800 bg-primary-50 dark:bg-primary-800"-->
 <!--                                v-if="isOpen && props.payload.type === `log_application`"-->
 <!--                                :payload="payload"-->
 <!--                            />-->
 
 <!--                            &lt;!&ndash; dump queries &ndash;&gt;-->
 <!--                            <DumpQueries-->
-<!--                                class="w-full p-4 bg-slate-50 dark:bg-slate-800"-->
+<!--                                class="w-full p-4 bg-primary-50 dark:bg-primary-800"-->
 <!--                                v-if="isOpen && props.payload.type === `queries`"-->
 <!--                                :payload="payload"-->
 <!--                            />-->
 
 <!--                            &lt;!&ndash; dump query &ndash;&gt;-->
 <!--                            <DumpQuery-->
-<!--                                class="w-full p-4 bg-slate-50 dark:bg-slate-700"-->
+<!--                                class="w-full p-4 bg-primary-50 dark:bg-primary-700"-->
 <!--                                v-if="isOpen && props.payload.type === `query`"-->
 <!--                                :payload="payload"-->
 <!--                            />-->
@@ -196,17 +196,17 @@
                             v-show="!isOpen"
                             @click="isOpen = true"
                             :class="{ 'mt-3': isOpen }"
-                            class="py-2 items-center text-xs flex justify-between dark:text-slate-400"
+                            class="py-2 items-center text-xs flex justify-between dark:text-primary-400"
                         >
-                            <div class="dark:text-slate-400 uppercase text-[11px] cursor-pointer select-none flex gap-3">
-                                <IconChevronRight class="!w-4 !h-4 dark:text-slate-600 group-hover:text-blue-500" />
+                            <div class="dark:text-primary-400 uppercase text-[11px] cursor-pointer select-none flex gap-3">
+                                <IconChevronRight class="!w-4 !h-4 dark:text-primary-600 group-hover:text-blue-500" />
 
                                 <div class="font-normal">{{ props.payload.label ?? props.payload.type }}</div>
                             </div>
 
                             <div
                                 :class="{ 'blur-sm': !privacy.isOpen }"
-                                class="dark:text-slate-500 cursor-pointer font-light line-clamp-2 select-none text-xs italic"
+                                class="dark:text-primary-500 cursor-pointer font-light line-clamp-2 select-none text-xs italic"
                             >
                                 <div class="gap-2 flex items-center">
                                     <div

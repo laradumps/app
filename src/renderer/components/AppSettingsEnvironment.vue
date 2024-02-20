@@ -32,10 +32,10 @@
                     v-if="projects.length === 0"
                 >
                     <div>
-                        <div class="mx-auto bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 flex max-w-4xl group justify-between gap-x-6 rounded-md p-2">
+                        <div class="mx-auto bg-white dark:bg-primary-700 border border-primary-200 dark:border-primary-700 flex max-w-4xl group justify-between gap-x-6 rounded-md p-2">
                             <div class="flex gap-x-4">
                                 <div class="min-w-0 flex-auto">
-                                    <p class="text-sm font-semibold leading-6 text-slate-900 dark:text-slate-300">
+                                    <p class="text-sm font-semibold leading-6 text-primary-900 dark:text-primary-300">
                                         {{ $t("settings.no_project_here") }}
                                     </p>
                                 </div>
@@ -51,17 +51,17 @@
                 >
                     <div @click="changeDefaultProject(project.value)">
                         <div
-                            :class="{ 'bg-slate-200 dark:bg-slate-700': selectedProject == project.value }"
-                            class="mx-auto border border-slate-200 dark:border-slate-700 flex max-w-4xl group justify-between gap-x-6 cursor-pointer hover:border-slate-300 dark:hover:bg-slate-700 rounded-md p-2"
+                            :class="{ 'bg-primary-200 dark:bg-primary-700': selectedProject == project.value }"
+                            class="mx-auto border border-primary-200 dark:border-primary-700 flex max-w-4xl group justify-between gap-x-6 cursor-pointer hover:border-primary-300 dark:hover:bg-primary-700 rounded-md p-2"
                         >
                             <div class="flex gap-x-4">
                                 <div class="min-w-0 flex-auto">
-                                    <p class="text-sm font-semibold leading-6 text-slate-900 dark:text-slate-300">
+                                    <p class="text-sm font-semibold leading-6 text-primary-900 dark:text-primary-300">
                                         {{ project.id }}
                                     </p>
                                     <p
-                                        :class="{ 'text-slate-800': selectedProject == project.value }"
-                                        class="mt-1 flex text-xs leading-5 text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-400"
+                                        :class="{ 'text-primary-800': selectedProject == project.value }"
+                                        class="mt-1 flex text-xs leading-5 text-primary-500 dark:text-primary-400 group-hover:text-primary-800 dark:group-hover:text-primary-400"
                                     >
                                         {{ project.value }}
                                     </p>
@@ -92,7 +92,7 @@
                                                     <div class="ml-3 text-sm">
                                                         <label
                                                             :for="`env-` + env.id"
-                                                            class="font-light text-gray-700 dark:text-slate-400"
+                                                            class="font-light text-gray-700 dark:text-primary-400"
                                                         >
                                                             {{ env.name }}
                                                         </label>
@@ -104,9 +104,9 @@
 
                                     <div
                                         v-show="environments.length > 0"
-                                        class="mt-2 border-t border-slate-200 space-y-3 dark:text-slate-400 dark:border-slate-700"
+                                        class="mt-2 border-t border-primary-200 space-y-3 dark:text-primary-400 dark:border-primary-700"
                                     >
-                                        <div class="text-lg text-left mt-4 font-normal dark:text-slate-300">
+                                        <div class="text-lg text-left mt-4 font-normal dark:text-primary-300">
                                             {{ $t("installer.choose_your_preferred_ide") }}
                                         </div>
 
@@ -152,7 +152,7 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+                        <div class="mt-4 pb-4 border-b border-primary-200 dark:border-primary-800">
                             <div class="flex justify-end gap-3">
                                 <button
                                     v-if="environments.length > 0"

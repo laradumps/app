@@ -1,7 +1,7 @@
 <template>
-    <div class="dark:text-slate-400 rounded-sm px-2 p-1 space-y-3">
+    <div class="dark:text-primary-400 rounded-sm px-2 p-1 space-y-3">
         <div class="space-y-1">
-            <div class="dark:text-slate-300 font-normal">Headers:</div>
+            <div class="dark:text-primary-300 font-normal">Headers:</div>
             <div
                 v-for="header in props.payload.mail.headers"
                 :key="header"
@@ -10,7 +10,7 @@
         </div>
 
         <div class="space-y-1">
-            <div class="dark:text-slate-300 font-normal">Attachments:</div>
+            <div class="dark:text-primary-300 font-normal">Attachments:</div>
             <div class="flex gap-2">
                 <button
                     class="btn-rounded-white"
@@ -25,7 +25,7 @@
         </div>
 
         <div>
-            <div class="dark:text-slate-300 font-normal flex justify-between">
+            <div class="dark:text-primary-300 font-normal flex justify-between">
                 Content:
                 <button
                     class="flex gap-2"
@@ -46,9 +46,9 @@
         </div>
 
         <div class="space-y-1">
-            <div class="dark:text-slate-300 font-normal">Details:</div>
+            <div class="dark:text-primary-300 font-normal">Details:</div>
             <div
-                class="bg-slate-100 space-y-2 dark:bg-slate-800 rounded-sm p-2"
+                class="bg-primary-100 space-y-2 dark:bg-primary-800 rounded-sm p-2"
                 v-html="props.payload.mail.details[0]"
             ></div>
         </div>

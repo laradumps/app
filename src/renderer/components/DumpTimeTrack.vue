@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full dark:!text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-sm text-sm p-3">
+    <div class="w-full dark:!text-primary-300 bg-primary-100 dark:bg-primary-800 rounded-sm text-sm p-3">
         &#8987; {{ $t("elapsed_time") }}:
 
         <div class="mt-3 px-5 font-semibold">

@@ -1,31 +1,31 @@
 <template>
     <div class="px-6 py-3">
         <div>
-            <div class="flex justify-between items-end border-b border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-end border-b border-primary-200 dark:border-primary-700">
                 <nav
                     class="-mb-px flex space-x-8"
                     aria-label="Tabs"
                 >
                     <a
                         @click="selectedPage = 'Environment'"
-                        :class="{ '!border-slate-900 text-slate-600 dark:text-slate-400 dark:!border-slate-400': selectedPage === 'Environment' }"
-                        class="cursor-pointer border-transparent text-slate-500 hover:border-slate-300 dark:hover:text-slate-300 hover:text-slate-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+                        :class="{ '!border-primary-900 text-primary-600 dark:text-primary-400 dark:!border-primary-400': selectedPage === 'Environment' }"
+                        class="cursor-pointer border-transparent text-primary-500 hover:border-primary-300 dark:hover:text-primary-300 hover:text-primary-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
                     >
                         {{ $t("settings.environment") }}
                     </a>
 
                     <a
                         @click="selectedPage = 'Shortcuts'"
-                        :class="{ '!border-slate-900 text-slate-600 dark:text-slate-400 dark:!border-slate-400': selectedPage === 'Shortcuts' }"
-                        class="cursor-pointer border-transparent text-slate-500 hover:border-slate-300 dark:hover:text-slate-300 hover:text-slate-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+                        :class="{ '!border-primary-900 text-primary-600 dark:text-primary-400 dark:!border-primary-400': selectedPage === 'Shortcuts' }"
+                        class="cursor-pointer border-transparent text-primary-500 hover:border-primary-300 dark:hover:text-primary-300 hover:text-primary-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
                     >
                         {{ $t("settings.shortcuts") }}
                     </a>
 
                     <a
                         @click="selectedPage = 'System'"
-                        :class="{ '!border-slate-900 text-slate-600 dark:text-slate-400 dark:!border-slate-400': selectedPage === 'System' }"
-                        class="cursor-pointer border-transparent text-slate-500 hover:border-slate-300 dark:hover:text-slate-300 hover:text-slate-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+                        :class="{ '!border-primary-900 text-primary-600 dark:text-primary-400 dark:!border-primary-400': selectedPage === 'System' }"
+                        class="cursor-pointer border-transparent text-primary-500 hover:border-primary-300 dark:hover:text-primary-300 hover:text-primary-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
                         aria-current="page"
                     >
                         {{ $t("settings.system") }}

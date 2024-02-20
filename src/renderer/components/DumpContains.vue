@@ -1,6 +1,6 @@
 <template>
     <div
-        class="border-gray-200 px-2 dark:text-slate-200"
+        class="border-gray-200 px-2 dark:text-primary-200"
         v-if="props.payload.str_contains"
     >
         <div class="flex w-full left-0 items-center p-2">
@@ -8,7 +8,7 @@
                 class="items-center w-[0.50rem] h-[0.50rem] mr-2 rounded-full"
                 :class="{ [containsStyle]: true }"
             ></div>
-            <span class="flex gap-2 dark:text-slate-300"
+            <span class="flex gap-2 dark:text-primary-300"
                 >{{ containsText }}
                 <div class="underline">{{ containsHTML }}</div>
             </span>

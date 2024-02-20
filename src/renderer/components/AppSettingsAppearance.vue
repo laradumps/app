@@ -1,6 +1,6 @@
 <template>
     <div>
-        <label class="text-sm font-normal text-slate-700 dark:text-slate-400"> {{ $t("settings.appearance") }} </label>
+        <label class="text-sm font-normal text-primary-700 dark:text-primary-400"> {{ $t("settings.appearance") }} </label>
 
         <div class="mt-0">
             <SelectMenu

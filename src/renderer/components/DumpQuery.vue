@@ -8,11 +8,11 @@
                     :title="$t('toggle_format')"
                 >
                     <BarsArrowDownIcon
-                        class="w-[1.1rem] h-[1.1rem] text-slate-500 dark:text-slate-300 hover:text-slate-800 dark:hover:text-yellow-400"
+                        class="w-[1.1rem] h-[1.1rem] text-primary-500 dark:text-primary-300 hover:text-primary-800 dark:hover:text-yellow-400"
                         v-show="!formatted"
                     />
                     <BarsArrowUpIcon
-                        class="w-[1.1rem] h-[1.1rem] text-slate-500 dark:text-slate-300 hover:text-slate-800 dark:hover:text-yellow-400"
+                        class="w-[1.1rem] h-[1.1rem] text-primary-500 dark:text-primary-300 hover:text-primary-800 dark:hover:text-yellow-400"
                         v-show="formatted"
                     />
                 </div>
@@ -25,7 +25,7 @@
                         showCopiedBadge();
                     "
                 >
-                    <ClipboardIcon class="w-[1.1rem] h-[1.1rem] text-slate-700 dark:text-slate-400 hover:text-slate-800 dark:hover:text-yellow-400" />
+                    <ClipboardIcon class="w-[1.1rem] h-[1.1rem] text-primary-700 dark:text-primary-400 hover:text-primary-800 dark:hover:text-yellow-400" />
                 </div>
 
                 <div
@@ -41,7 +41,7 @@
             v-if="formatted"
             class="flex relative group pt-3 select-none"
         >
-            <code class='language-sql widgets-sql !text-sm dark:text-slate-400' v-html="formatSql"></code>
+            <code class='language-sql widgets-sql !text-sm dark:text-primary-400' v-html="formatSql"></code>
         </pre>
 
         <div
@@ -49,7 +49,7 @@
             class="pt-3"
         >
             <code
-                class="widgets-sql !text-sm dark:text-slate-300 select-none"
+                class="widgets-sql !text-sm dark:text-primary-300 select-none"
                 v-html="formatSql"
             ></code>
         </div>

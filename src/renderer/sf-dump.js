@@ -330,7 +330,7 @@ const Sfdump =
                 var search = doc.createElement("div");
                 search.className = "sf-dump-search-wrapper sf-dump-search-hidden";
                 search.innerHTML = `
-                <input type="text" class="sf-dump-search-input block px-2 py-1.5 w-full tracking-wider font-normal w-40 focus:outline-none focus:ring-1 focus:text-slate-700 dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-400 rounded-md border border-gray-200 dark:!border-slate-500 focus:border-slate-300 focus:ring-slate-400 text-xs">
+                <input type="text" class="sf-dump-search-input block px-2 py-1.5 w-full tracking-wider font-normal w-40 focus:outline-none focus:ring-1 focus:text-primary-700 dark:bg-primary-700 dark:text-primary-100 dark:placeholder-primary-400 rounded-md border border-gray-200 dark:!border-primary-500 focus:border-primary-300 focus:ring-primary-400 text-xs">
                 <span class="sf-dump-search-count">0 of 0<\/span>
               <button type="button" class="sf-dump-search-input-previous" tabindex="-1">
                   <svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1683 1331l-166 165q-19 19-45 19t-45-19L896 965l-531 531q-19 19-45 19t-45-19l-166-165q-19-19-19-45.5t19-45.5l742-741q19-19 45-19t45 19l742 741q19 19 19 45.5t-19 45.5z"\/><\/svg>

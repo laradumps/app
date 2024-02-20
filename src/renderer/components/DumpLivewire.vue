@@ -8,7 +8,7 @@
                 $el.focus();
             "
             :class="{ '!bg-indigo-500 !text-white': selected === payload.content.component.id }"
-            class="p-2 mb-2 shadow-md rounded dark:bg-slate-800 bg-slate-50 cursor-pointer items-start group-focus:text-white w-full text-xs text-neutral-700 hover:text-neutral-800 font-normal dark:text-slate-300 font-medium text-gray-500 hover:bg-slate-200"
+            class="p-2 mb-2 shadow-md rounded dark:bg-primary-800 bg-primary-50 cursor-pointer items-start group-focus:text-white w-full text-xs text-primary-700 hover:text-primary-800 font-normal dark:text-primary-300 font-medium text-gray-500 hover:bg-primary-200"
         >
             <div class="group relative flex justify-between items-center">
                 <span

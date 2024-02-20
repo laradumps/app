@@ -7,7 +7,7 @@
         <div class="absolute w-full h-full min-h-full">
             <TheModal v-model:modal-attributes="modalAttributes" />
 
-<!--            <div class="px-2 py-1 bg-neutral-100">-->
+<!--            <div class="px-2 py-1 bg-primary-100">-->
 <!--                <div class="flex justify-between items-center">-->
 <!--                    <div>-->
 <!--                        <div class="flex gap-2 ml-2">-->
@@ -15,27 +15,27 @@
 <!--                                <a-->
 <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
 <!--                                    :title="$t('menu.clear')"-->
-<!--                                    class="justify-center cursor-pointer text-neutral-500 group flex items-center p-2"-->
+<!--                                    class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"-->
 <!--                                >-->
-<!--                                    <TrashIcon class="h-5 w-5 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-300" />-->
+<!--                                    <TrashIcon class="h-5 w-5 text-primary-500 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" />-->
 <!--                                </a>-->
 <!--                            </div>-->
 <!--                            <div>-->
 <!--                                <a-->
 <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
 <!--                                    :title="$t('menu.clear')"-->
-<!--                                    class="justify-center cursor-pointer text-neutral-500 group flex items-center p-2"-->
+<!--                                    class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"-->
 <!--                                >-->
-<!--                                    <TrashIcon class="h-5 w-5 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-300" />-->
+<!--                                    <TrashIcon class="h-5 w-5 text-primary-500 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" />-->
 <!--                                </a>-->
 <!--                            </div>-->
 <!--                            <div>-->
 <!--                                <a-->
 <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
 <!--                                    :title="$t('menu.clear')"-->
-<!--                                    class="justify-center cursor-pointer text-neutral-500 group flex items-center p-2"-->
+<!--                                    class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"-->
 <!--                                >-->
-<!--                                    <TrashIcon class="h-5 w-5 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-300" />-->
+<!--                                    <TrashIcon class="h-5 w-5 text-primary-500 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" />-->
 <!--                                </a>-->
 <!--                            </div>-->
 <!--                        </div>-->
@@ -60,9 +60,9 @@
                     <main
                         :class="{
                             'overflow-auto': payload.length > 0,
-                            'bg-gradient-to-t group from-neutral-200/25 to-neutral-100 dark:from-neutral-900 dark:to-neutral-900': payload.length === 0
+                            'bg-gradient-to-t group from-primary-200/25 to-primary-100 dark:from-primary-900 dark:to-primary-900': payload.length === 0
                         }"
-                        class="flex-1 flex flex-col shrink-0 dark:bg-neutral-900 left-16 right-0 min-h-full"
+                        class="flex-1 flex flex-col shrink-0 dark:bg-primary-900 left-16 right-0 min-h-full"
                     >
                         <!-- AppSettings -->
                         <div
@@ -74,7 +74,7 @@
 
                         <!-- header global filter -->
 <!--                        <div-->
-<!--                            class="py-2 px-1 min-[350px] bg-white dark:bg-neutral-900 group flex justify-end items-center"-->
+<!--                            class="py-2 px-1 min-[350px] bg-white dark:bg-primary-900 group flex justify-end items-center"-->
 <!--                            v-if="payload.length > 0 && !settingStore.setting"-->
 <!--                        >-->
 <!--                            <div class="flex gap-3 mr-2">-->
@@ -110,7 +110,7 @@
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
                             }"
-                            class="rounded-sm text-neutral-600 overflow-auto"
+                            class="rounded-sm text-primary-600 overflow-auto"
                         >
                             <div id="top"></div>
                             <div

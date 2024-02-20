@@ -1,14 +1,14 @@
 <template>
     <div
         v-if="timeStore.groups.length > 0"
-        class="flex justify-between items-center gap-2 dark:text-slate-400"
+        class="flex justify-between items-center gap-2 dark:text-primary-400"
     >
         <span class="font-semibold text-sm select-none">{{ total }}</span>
 
         <div class="flex gap-2 text-sm items-center">
             <SelectMenu
                 @selected="timeStore.setOrder($event.id)"
-                class="w-[100px] dark:!bg-slate-600 !text-xs"
+                class="w-[100px] dark:!bg-primary-600 !text-xs"
                 v-model:data="queryOrder"
             />
             <SelectMenu

@@ -5,7 +5,7 @@
     >
         <div class="relative">
             <ListboxButton
-                class="relative w-full h-[34px] cursor-default rounded-md border border-slate-300 bg-white py-1.5 pl-3 pr-10 text-left shadow-sm focus:border-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-500 sm:text-sm dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600"
+                class="relative w-full h-[34px] cursor-default rounded-md border border-primary-300 bg-white py-1.5 pl-3 pr-10 text-left shadow-sm focus:border-primary-700 focus:outline-none focus:ring-1 focus:ring-primary-500 sm:text-sm dark:bg-primary-800 dark:text-primary-300 dark:border-primary-600"
             >
                 <span class="block truncate">{{ selected?.label }}</span>
                 <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -22,7 +22,7 @@
                 leave-to-class="opacity-0"
             >
                 <ListboxOptions
-                    class="absolute z-300 dark:bg-slate-800 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                    class="absolute z-300 dark:bg-primary-800 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
                 >
                     <ListboxOption
                         as="template"
@@ -31,12 +31,12 @@
                         :value="item"
                         v-slot="{ active, selected }"
                     >
-                        <li :class="[active ? 'text-white bg-slate-600' : 'text-slate-900 dark:text-slate-300 ', 'relative cursor-default select-none py-2 pl-8 pr-4 text-xs']">
+                        <li :class="[active ? 'text-white bg-primary-600' : 'text-primary-900 dark:text-primary-300 ', 'relative cursor-default select-none py-2 pl-8 pr-4 text-xs']">
                             <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{ item.label }}</span>
 
                             <span
                                 v-if="selected"
-                                :class="[active ? 'text-white' : 'text-slate-600', 'absolute inset-y-0 left-0 flex items-center pl-1.5']"
+                                :class="[active ? 'text-white' : 'text-primary-600', 'absolute inset-y-0 left-0 flex items-center pl-1.5']"
                             >
                                 <CheckIcon
                                     class="h-5 w-5"

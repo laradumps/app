@@ -2,10 +2,10 @@
     <a
         @click="reorderStore.toggle()"
         :title="$t('menu.reorder')"
-        class="justify-center cursor-pointer text-slate-500 group flex items-center p-2"
+        class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"
     >
         <IconReOrder
-            class="rounded-full dark:text-slate-400 dark:hover:text-slate-200"
+            class="rounded-full dark:text-primary-400 dark:hover:text-primary-200"
             :class="{
                 '!text-rose-600 !dark:text-rose-400': reorderStore.reverse
             }"

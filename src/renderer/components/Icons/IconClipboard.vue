@@ -1,6 +1,6 @@
 <template>
     <svg
-        class="w-5 h-5 text-slate-700 hover:text-slate-800 dark:text-slate-400"
+        class="w-5 h-5 text-primary-700 hover:text-primary-800 dark:text-primary-400"
         fill="none"
         x-ref="copyComposerIcon"
         viewBox="0 0 24 24"

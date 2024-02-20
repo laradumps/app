@@ -3,7 +3,7 @@
         <button
             title="Dark Mode"
             :class="{
-                'bg-slate-200 shadow border border-slate-300 dark:border-slate-500 dark:bg-slate-800 dark:hover:border-slate-400': dark
+                'bg-primary-200 shadow border border-primary-300 dark:border-primary-500 dark:bg-primary-800 dark:hover:border-primary-400': dark
             }"
             class="rounded-full p-1.5"
             @click="toggleDarkMode"

@@ -4,7 +4,7 @@
             <div id="output"></div>
 
             <!-- welcome page -->
-            <div class="w-full px-4 text-sm dark:text-slate-300 leading-6">
+            <div class="w-full px-4 text-sm dark:text-primary-300 leading-6">
                 <!-- app guide -->
                 <AppGuide />
             </div>
@@ -15,7 +15,7 @@
                     <span
                         v-if="shortcut.hasOwnProperty('shortcut')"
                         :key="shortcut.alias"
-                        class="font-light bg-slate-100 dark:bg-slate-800 dark:text-slate-400 rounded-md p-1 px-2 text-xs"
+                        class="font-light bg-primary-100 dark:bg-primary-800 dark:text-primary-400 rounded-md p-1 px-2 text-xs"
                         ><strong>{{ $t(shortcut.label) }}</strong
                         >: {{ shortcut.originalValue }}</span
                     >
