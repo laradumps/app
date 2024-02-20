@@ -20,6 +20,7 @@
                             'cursor-pointer !bg-transparent': !isOpen
                         }"
                     >
+
                         <!--                        <div class="items-center text-xs flex justify-between dark:text-primary-400">-->
                         <!--                            &lt;!&ndash; label &ndash;&gt;-->
                         <!--                            <div-->
@@ -84,11 +85,19 @@
                                 <div class="gap-2 flex flex-col">
                                     <div
                                         @dblclick="isOpen = false"
-                                        class="gap-2 justify-between font-light flex text-[12px] dark:text-primary-400"
+                                        class="gap-2 justify-between items-center font-light flex text-[12px] dark:text-primary-300/75"
                                     >
-                                        <div class="flex gap-2">
-                                            <span>{{ props.payload.date_time }}</span> -
-                                            <span>
+                                        <ul class="flex gap-6 !list-disc">
+                                            <li class="list-none">
+                                                <div class="flex gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                    </svg>
+
+                                                    {{ props.payload.date_time }}
+                                                </div>
+                                            </li>
+                                            <li>
                                                 <DumpLink
                                                     v-if="fullIdeHandle"
                                                     :class="{ 'blur-sm': !privacy.isOpen }"
@@ -96,15 +105,19 @@
                                                     :title="`Open ` + fullIdeHandle"
                                                     :value="fullIdeHandle"
                                                 />
-                                            </span>
+                                            </li>
+                                        </ul>
+
+                                        <div class="flex gap-2 items-center">
+                                            <div
+                                                v-if="props.payload.dump?.variable_type !== undefined"
+                                                class="text-[0.70rem] text-orange-500 select-none"
+                                                v-text="`(${props.payload.dump.variable_type})`"
+                                            ></div>
+                                            <div class="font-semibold capitalize leading-4 dark:text-primary-900 shadow rounded-lg px-2 p-0.75 bg-amber-400">{{ props.payload.label ?? props.payload.type }}</div>
                                         </div>
-                                        <div
-                                            v-if="props.payload.dump?.variable_type !== undefined"
-                                            class="text-[0.70rem] text-orange-500 select-none"
-                                            v-text="`(${props.payload.dump.variable_type})`"
-                                        ></div>
                                     </div>
-                                    <div v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"></div>
+                                    <div class="mt-2" v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"></div>
                                 </div>
                             </div>
 
@@ -133,11 +146,11 @@
                             <!--                            />-->
 
                             <!--                            &lt;!&ndash; dump table &ndash;&gt;-->
-                            <!--                            <DumpTable-->
-                            <!--                                class="w-full"-->
-                            <!--                                v-if="isOpen && props.payload.type === `table`"-->
-                            <!--                                :payload="payload"-->
-                            <!--                            />-->
+                                                        <DumpTable
+                                                            class="w-full"
+                                                            v-if="isOpen && props.payload.type === `table`"
+                                                            :payload="payload"
+                                                        />
 
                             <!--                            &lt;!&ndash; dump table v2 &ndash;&gt;-->
                             <!--                            <DumpTableV2-->

@@ -8,9 +8,9 @@
                         <MagnifyingGlassIcon class="w-5 h-5 text-primary-700 dark:text-primary-200" />
                     </div>
                     <input
-                        type="text"
                         v-model="search"
-                        class="block w-full p-2 dark:bg-primary-700 text-primary-500 focus:outline-none focus:ring-1 focus:text-primary-700 dark:text-primary-100 dark:placeholder-primary-400 rounded-md border-gray-300 pl-10 dark:!border-primary-400 focus:border-primary-400 focus:ring-primary-500 text-xs"
+                        type="text"
+                        class="block w-full p-1.5 text-primary-500 focus:outline-none focus:ring-1 focus:text-primary-700 dark:bg-primary-800 dark:text-primary-300 dark:placeholder-primary-400 rounded-md border-[1px] border-primary-200 pl-10 dark:!border-primary-600 focus:border-primary-400 focus:ring-primary-500 text-xs"
                         placeholder="Search"
                     />
                 </div>
