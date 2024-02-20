@@ -174,10 +174,7 @@ import HeaderGlobalFilter from "@/components/HeaderGlobalFilter.vue";
 import AppHeader from "@/components/AppHeader.vue";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
-import LivewireHandler from "@/components/LivewireHandler.vue";
-import TheFooter from "@/components/TheFooter.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
-import { TrashIcon } from "@heroicons/vue/24/outline";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -193,7 +190,7 @@ const showInstallationInfo = ref({
     }
 });
 
-const selectedTheme = ref('nord')
+const selectedTheme = ref('dim')
 
 const themes = ref([
     { value: 'light', label: 'Light' },

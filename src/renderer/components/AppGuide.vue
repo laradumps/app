@@ -44,7 +44,7 @@ const tips = ref([
             "doc.install_laradumps"
         )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-blue-500 underline cursor-pointer ml-1">https://laradumps.dev</span></li>
         <li>${i18n.t("doc.add")}
-            <code class="bg-base-300 text-base-600 p-1 rounded">ds('Hello world!')</code>
+            <code class="bg-primary text-primary-content text-sm p-1 rounded">ds('Hello world!')</code>
              ${i18n.t("doc.somewhere_in_your_code")}</li>
         <li>${i18n.t("doc.run_your_application_and_see_what_happens_here")}</li>
     </div>`,
@@ -56,26 +56,26 @@ const tips = ref([
         </div>
     </div>`,
     `<div>
-        <div class="space-y-3">
+        <div class="space-y-3 text-base-content">
             <div class="font-semibold text-base">${i18n.t("doc.add_project_here")}</div>
-            <li>${i18n.t("doc.run_in_php_project")}: <code class="bg-base-300 p-1 rounded">vendor/bin/laradumps configure</code></li>
+            <li>${i18n.t("doc.run_in_php_project")}: <code class="bg-primary text-primary-content text-sm p-1 rounded">vendor/bin/laradumps configure</code></li>
             <li>${i18n.t("doc.finish_setting_env_vars")}</li>
         </div>
     </div>`,
     `<div>
-        <div class="space-y-3">
-            <div class="font-semibold text-base">${i18n.t("doc.install_laradumps_globally")}</div>
+        <div class="space-y-3 text-base-content">
+            <div class="font-semibold">${i18n.t("doc.install_laradumps_globally")}</div>
             <li>
                 <code class="bg-base-300 p-1 rounded">composer global require laradumps/global-laradumps</code>
             </li>
-            <li>${i18n.t("doc.run")} <code class="bg-white dark:bg-base-700 text-base-600 dark:text-base-300 p-1 rounded">global-laradumps install</code></li>
+            <li>${i18n.t("doc.run")} <code class="bg-primary text-primary-content text-sm p-1 rounded">global-laradumps install</code></li>
         </div>
     </div>`,
     `<div>
-        <div class="space-y-3">
-            <div class="font-semibold text-base">${i18n.t("doc.update_laradumps_environments")}</div>
+        <div class="space-y-3 text-base-content">
+            <div class="font-semibold">${i18n.t("doc.update_laradumps_environments")}</div>
             <li>${i18n.t("doc.choose_project")}</li>
-            <li>${i18n.t("doc.update_keys")}: <code class="bg-white dark:bg-base-700 text-base-600 dark:text-base-300 p-1 rounded">DS_LOGS_APPLICATION, DS_SEND_MAIL</code> ...</li>
+            <li>${i18n.t("doc.update_keys")}: <code class="bg-primary text-primary-content text-sm p-1 rounded">DS_LOGS_APPLICATION, DS_SEND_MAIL</code> ...</li>
         </div>
     </div>`
 ]);

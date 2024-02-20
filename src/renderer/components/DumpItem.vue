@@ -210,23 +210,28 @@
                             v-show="!isOpen"
                             @dblclick="isOpen = true"
                             :class="{ 'mt-3': isOpen }"
-                            class="px-3 gap-2 w-full flex justify-between font-light text-[12px] bg-base-800 py-3 dark:text-base-400"
+                            class="px-3 gap-2 w-full flex justify-between font-light text-[12px] bg-base-300 py-3 text-base-content"
                         >
-                            <div class="flex gap-2">
-                                <span>{{ props.payload.date_time }}</span> -
-                                <DumpLink
-                                    v-if="fullIdeHandle"
-                                    :class="{ 'blur-sm': !privacy.isOpen }"
-                                    :href="props.payload.ide_handle.handler"
-                                    :title="`Open ` + fullIdeHandle"
-                                    :value="fullIdeHandle"
-                                />
-                            </div>
-                            <div
-                                v-if="props.payload.dump?.variable_type !== undefined"
-                                class="text-[0.70rem] text-orange-500 select-none"
-                                v-text="`(${props.payload.dump.variable_type})`"
-                            ></div>
+                            <ul class="flex gap-6 !list-disc">
+                                <li class="list-none">
+                                    <div class="flex gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+
+                                        {{ props.payload.date_time }}
+                                    </div>
+                                </li>
+                                <li>
+                                    <DumpLink
+                                        v-if="fullIdeHandle"
+                                        :class="{ 'blur-sm': !privacy.isOpen }"
+                                        :href="props.payload.ide_handle.handler"
+                                        :title="`Open ` + fullIdeHandle"
+                                        :value="fullIdeHandle"
+                                    />
+                                </li>
+                            </ul>
 
                             <div
                                 :class="{ 'blur-sm': !privacy.isOpen }"
