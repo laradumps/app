@@ -2,7 +2,7 @@
     <div
         :class="{ 'items-center hover:bg-gradient-to-t from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-800': !isOpen }"
         @mouseenter="markDumpItemViewed"
-        class="group bg-neutral-100 dark:bg-neutral-900 text-sm flex transition-all"
+        class="group dark:bg-neutral-900 text-sm flex transition-all"
     >
         <Transition
             enter-active-class="transition ease-out duration-300"
@@ -79,7 +79,7 @@
                             v-show="isOpen"
                         >
                             <div
-                                class="w-full p-3 rounded-sm bg-neutral-200/65 dark:bg-neutral-800 dark:text-slate-300"
+                                class="w-full p-3 rounded-sm bg-primary-200/35 transition-all hover:bg-primary-200 dark:bg-neutral-800 dark:text-slate-300"
                                 v-if="props.payload.type === 'dump'"
                                 v-show="props.payload.dump?.dump !== ''"
                             >

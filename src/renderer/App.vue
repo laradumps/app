@@ -121,7 +121,7 @@
                                 v-if="payload.length > 0 && !settingStore.setting"
                             >
                                 <div
-                                    class="w-full border border-neutral-200/70 dark:border-neutral-900/70 pt-3"
+                                    class="w-full pt-3"
                                     :id="payload.id"
                                     v-for="payload in dumpsBagFiltered"
                                     :key="payload.sf_dump_id"
