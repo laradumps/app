@@ -5,7 +5,7 @@
         class="justify-center cursor-pointer group flex items-center p-2"
     >
         <div>
-            <IconSave class="w-3.5 h-3.5 text-primary-500 hover:neutral dark:text-primary-500/75 dark:hover:text-primary-200" />
+            <IconSave class="w-3.5 h-3.5 text-primary-500 hover:neutral dark:text-primary-400/75 dark:hover:text-primary-400" />
         </div>
     </div>
 </template>

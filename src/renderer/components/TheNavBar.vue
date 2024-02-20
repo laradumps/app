@@ -8,19 +8,19 @@
                 class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"
                 @click="clear()"
             >
-                <TrashIcon class="w-4 text-primary-600 hover:text-primary-900 dark:text-primary-500 dark:hover:text-primary-300" />
+                <TrashIcon class="w-4 text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300" />
             </a>
 
             <!-- saved dumps -->
             <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
 
-<!--            &lt;!&ndash; toggleCollapseAll &ndash;&gt;-->
-<!--            <NavBarCollapseAll v-if="payloadCount > 0 && !settingStore.setting" />-->
+            <!--            &lt;!&ndash; toggleCollapseAll &ndash;&gt;-->
+            <!--            <NavBarCollapseAll v-if="payloadCount > 0 && !settingStore.setting" />-->
 
-<!--            &lt;!&ndash; togglePrivacyMode &ndash;&gt;-->
-<!--            <NavBarPrivacy v-if="payloadCount > 0 && !settingStore.setting" />-->
+            <!--            &lt;!&ndash; togglePrivacyMode &ndash;&gt;-->
+            <!--            <NavBarPrivacy v-if="payloadCount > 0 && !settingStore.setting" />-->
 
-<!--            <NavBarReorder v-if="payloadCount > 0 && !settingStore.setting" />-->
+            <!--            <NavBarReorder v-if="payloadCount > 0 && !settingStore.setting" />-->
 
             <!--                        <div class="absolute bottom-4 w-full text-center left-0 space-y-3">-->
             <!--                            &lt;!&ndash; toggleAlwaysOnTop &ndash;&gt;-->

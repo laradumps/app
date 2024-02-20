@@ -1,6 +1,5 @@
 <template>
     <div
-        :class="{ 'items-center hover:bg-gradient-to-t from-primary-100 to-primary-50 dark:from-primary-900 dark:to-primary-800': !isOpen }"
         @mouseenter="markDumpItemViewed"
         class="group dark:bg-primary-900 text-sm flex transition-all"
     >
@@ -19,83 +18,85 @@
                         :class="{
                             [`!border-l-4 ` + color]: typeof color !== 'undefined',
                             'cursor-pointer !bg-transparent': !isOpen
-                        }">
-<!--                        <div class="items-center text-xs flex justify-between dark:text-primary-400">-->
-<!--                            &lt;!&ndash; label &ndash;&gt;-->
-<!--                            <div-->
-<!--                                v-if="isOpen && (props.payload.label || props.payload.type)"-->
-<!--                                @click="isOpen = false"-->
-<!--                                class="dark:text-primary-400 cursor-pointer py-2 items-center uppercase text-[11px] select-none flex gap-3 w-full mr-3"-->
-<!--                            >-->
-<!--                                <div class="cursor-pointer items-center flex justify-between gap-2 hover:text-primary-800">-->
-<!--                                    <IconChevronDown class="!w-4 !h-4 group-hover:text-blue-500" />-->
+                        }"
+                    >
+                        <!--                        <div class="items-center text-xs flex justify-between dark:text-primary-400">-->
+                        <!--                            &lt;!&ndash; label &ndash;&gt;-->
+                        <!--                            <div-->
+                        <!--                                v-if="isOpen && (props.payload.label || props.payload.type)"-->
+                        <!--                                @click="isOpen = false"-->
+                        <!--                                class="dark:text-primary-400 cursor-pointer py-2 items-center uppercase text-[11px] select-none flex gap-3 w-full mr-3"-->
+                        <!--                            >-->
+                        <!--                                <div class="cursor-pointer items-center flex justify-between gap-2 hover:text-primary-800">-->
+                        <!--                                    <IconChevronDown class="!w-4 !h-4 group-hover:text-blue-500" />-->
 
-<!--                                    &lt;!&ndash; dateTime &ndash;&gt;-->
-<!--                                    <span-->
-<!--                                        :class="{-->
-<!--                                    'font-normal text-primary-800 dark:text-primary-400': isOpen,-->
-<!--                                    'dark:text-primary-400': !isOpen-->
-<!--                                }"-->
-<!--                                        class="line-clamp-2 !hidden select-none max-w-[100px] text-xs italic"-->
-<!--                                    >-->
-<!--                                <span>{{ props.payload.date_time }}</span>-->
-<!--                            </span>-->
-<!--                                </div>-->
+                        <!--                                    &lt;!&ndash; dateTime &ndash;&gt;-->
+                        <!--                                    <span-->
+                        <!--                                        :class="{-->
+                        <!--                                    'font-normal text-primary-800 dark:text-primary-400': isOpen,-->
+                        <!--                                    'dark:text-primary-400': !isOpen-->
+                        <!--                                }"-->
+                        <!--                                        class="line-clamp-2 !hidden select-none max-w-[100px] text-xs italic"-->
+                        <!--                                    >-->
+                        <!--                                <span>{{ props.payload.date_time }}</span>-->
+                        <!--                            </span>-->
+                        <!--                                </div>-->
 
-<!--                                <div class="font-normal cursor-pointer">{{ props.payload.label ?? props.payload.type }}</div>-->
-<!--                            </div>-->
+                        <!--                                <div class="font-normal cursor-pointer">{{ props.payload.label ?? props.payload.type }}</div>-->
+                        <!--                            </div>-->
 
-<!--                            <div-->
-<!--                                v-show="isOpen"-->
-<!--                                class="text-xs flex items-center gap-3 italic font-normal"-->
-<!--                            >-->
-<!--                                <div class="group-hover:block hidden cursor-pointer">-->
-<!--                                    <div-->
-<!--                                        @click="saveDump"-->
-<!--                                        v-if="isOpen && !inSavedDumpsWindow"-->
-<!--                                    >-->
-<!--                                        <IconSave class="w-3 h-3 text-primary-500 dark:text-primary-400 hover:text-primary-600" />-->
-<!--                                    </div>-->
-<!--                                    <div-->
-<!--                                        @click="removeSaveDump"-->
-<!--                                        v-if="isOpen && inSavedDumpsWindow"-->
-<!--                                    >-->
-<!--                                        <TrashIcon class="w-4 h-4 text-red-500 hover:text-primary-600" />-->
-<!--                                    </div>-->
-<!--                                </div>-->
+                        <!--                            <div-->
+                        <!--                                v-show="isOpen"-->
+                        <!--                                class="text-xs flex items-center gap-3 italic font-normal"-->
+                        <!--                            >-->
+                        <!--                                <div class="group-hover:block hidden cursor-pointer">-->
+                        <!--                                    <div-->
+                        <!--                                        @click="saveDump"-->
+                        <!--                                        v-if="isOpen && !inSavedDumpsWindow"-->
+                        <!--                                    >-->
+                        <!--                                        <IconSave class="w-3 h-3 text-primary-500 dark:text-primary-400 hover:text-primary-600" />-->
+                        <!--                                    </div>-->
+                        <!--                                    <div-->
+                        <!--                                        @click="removeSaveDump"-->
+                        <!--                                        v-if="isOpen && inSavedDumpsWindow"-->
+                        <!--                                    >-->
+                        <!--                                        <TrashIcon class="w-4 h-4 text-red-500 hover:text-primary-600" />-->
+                        <!--                                    </div>-->
+                        <!--                                </div>-->
 
-<!--                                <div-->
-<!--                                    v-show="!viewed"-->
-<!--                                    class="rounded-full w-[10px] h-[010px] animate-pulse bg-orange-400"-->
-<!--                                ></div>-->
+                        <!--                                <div-->
+                        <!--                                    v-show="!viewed"-->
+                        <!--                                    class="rounded-full w-[10px] h-[010px] animate-pulse bg-orange-400"-->
+                        <!--                                ></div>-->
 
-<!--                                <span>{{ props.payload.date_time }}</span>-->
-<!--                            </div>-->
-<!--                        </div>-->
+                        <!--                                <span>{{ props.payload.date_time }}</span>-->
+                        <!--                            </div>-->
+                        <!--                        </div>-->
 
                         <!-- default -->
                         <!-- border-gray-200 shadow-sm shadow-primary-300 dark:shadow-primary-600 dark:text-primary-200 -->
-                        <div
-                            v-show="isOpen"
-                        >
+                        <div v-show="isOpen">
                             <div
                                 class="w-full p-3 rounded-sm bg-primary-200/35 transition-all hover:bg-primary-200 dark:bg-primary-800 dark:text-primary-300"
                                 v-if="props.payload.type === 'dump'"
                                 v-show="props.payload.dump?.dump !== ''"
                             >
                                 <div class="gap-2 flex flex-col">
-                                    <div class="gap-2 justify-between font-light flex text-[12px] dark:text-primary-400">
+                                    <div
+                                        @dblclick="isOpen = false"
+                                        class="gap-2 justify-between font-light flex text-[12px] dark:text-primary-400"
+                                    >
                                         <div class="flex gap-2">
                                             <span>{{ props.payload.date_time }}</span> -
                                             <span>
-                                            <DumpLink
-                                                v-if="fullIdeHandle"
-                                                :class="{ 'blur-sm': !privacy.isOpen }"
-                                                :href="props.payload.ide_handle.handler"
-                                                :title="`Open ` + fullIdeHandle"
-                                                :value="fullIdeHandle"
-                                            />
-                                        </span>
+                                                <DumpLink
+                                                    v-if="fullIdeHandle"
+                                                    :class="{ 'blur-sm': !privacy.isOpen }"
+                                                    :href="props.payload.ide_handle.handler"
+                                                    :title="`Open ` + fullIdeHandle"
+                                                    :value="fullIdeHandle"
+                                                />
+                                            </span>
                                         </div>
                                         <div
                                             v-if="props.payload.dump?.variable_type !== undefined"
@@ -107,78 +108,78 @@
                                 </div>
                             </div>
 
-<!--                            &lt;!&ndash; dump time-track &ndash;&gt;-->
-<!--                            <DumpTimeTrack-->
-<!--                                v-if="isOpen && props.payload.type === `time_track`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump time-track &ndash;&gt;-->
+                            <!--                            <DumpTimeTrack-->
+                            <!--                                v-if="isOpen && props.payload.type === `time_track`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump mailable &ndash;&gt;-->
-<!--                            <DumpMailable-->
-<!--                                v-if="isOpen && props.payload.type === `mailable`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump mailable &ndash;&gt;-->
+                            <!--                            <DumpMailable-->
+                            <!--                                v-if="isOpen && props.payload.type === `mailable`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump html &ndash;&gt;-->
-<!--                            <DumpHTML-->
-<!--                                v-if="isOpen && props.payload.type === `html`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump html &ndash;&gt;-->
+                            <!--                            <DumpHTML-->
+                            <!--                                v-if="isOpen && props.payload.type === `html`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump notification &ndash;&gt;-->
-<!--                            <DumpMail-->
-<!--                                v-if="isOpen && props.payload.type === `mail`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump notification &ndash;&gt;-->
+                            <!--                            <DumpMail-->
+                            <!--                                v-if="isOpen && props.payload.type === `mail`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump table &ndash;&gt;-->
-<!--                            <DumpTable-->
-<!--                                class="w-full"-->
-<!--                                v-if="isOpen && props.payload.type === `table`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump table &ndash;&gt;-->
+                            <!--                            <DumpTable-->
+                            <!--                                class="w-full"-->
+                            <!--                                v-if="isOpen && props.payload.type === `table`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump table v2 &ndash;&gt;-->
-<!--                            <DumpTableV2-->
-<!--                                class="w-full"-->
-<!--                                v-if="isOpen && ['table_v2', 'http_client'].includes(props.payload.type)"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump table v2 &ndash;&gt;-->
+                            <!--                            <DumpTableV2-->
+                            <!--                                class="w-full"-->
+                            <!--                                v-if="isOpen && ['table_v2', 'http_client'].includes(props.payload.type)"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump model &ndash;&gt;-->
-<!--                            <DumpJson-->
-<!--                                class="w-full"-->
-<!--                                v-if="isOpen && props.payload.type === `json`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump model &ndash;&gt;-->
+                            <!--                            <DumpJson-->
+                            <!--                                class="w-full"-->
+                            <!--                                v-if="isOpen && props.payload.type === `json`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump model &ndash;&gt;-->
-<!--                            <DumpModel-->
-<!--                                class="w-full p-4 shadow bg-primary-100 dark:bg-primary-800"-->
-<!--                                v-if="isOpen && props.payload.type === `model`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump model &ndash;&gt;-->
+                            <!--                            <DumpModel-->
+                            <!--                                class="w-full p-4 shadow bg-primary-100 dark:bg-primary-800"-->
+                            <!--                                v-if="isOpen && props.payload.type === `model`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump log &ndash;&gt;-->
-<!--                            <DumpLog-->
-<!--                                class="w-full p-4 shadow-md dark:shadow-primary-800 bg-primary-50 dark:bg-primary-800"-->
-<!--                                v-if="isOpen && props.payload.type === `log_application`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump log &ndash;&gt;-->
+                            <!--                            <DumpLog-->
+                            <!--                                class="w-full p-4 shadow-md dark:shadow-primary-800 bg-primary-50 dark:bg-primary-800"-->
+                            <!--                                v-if="isOpen && props.payload.type === `log_application`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump queries &ndash;&gt;-->
-<!--                            <DumpQueries-->
-<!--                                class="w-full p-4 bg-primary-50 dark:bg-primary-800"-->
-<!--                                v-if="isOpen && props.payload.type === `queries`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump queries &ndash;&gt;-->
+                            <!--                            <DumpQueries-->
+                            <!--                                class="w-full p-4 bg-primary-50 dark:bg-primary-800"-->
+                            <!--                                v-if="isOpen && props.payload.type === `queries`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
 
-<!--                            &lt;!&ndash; dump query &ndash;&gt;-->
-<!--                            <DumpQuery-->
-<!--                                class="w-full p-4 bg-primary-50 dark:bg-primary-700"-->
-<!--                                v-if="isOpen && props.payload.type === `query`"-->
-<!--                                :payload="payload"-->
-<!--                            />-->
+                            <!--                            &lt;!&ndash; dump query &ndash;&gt;-->
+                            <!--                            <DumpQuery-->
+                            <!--                                class="w-full p-4 bg-primary-50 dark:bg-primary-700"-->
+                            <!--                                v-if="isOpen && props.payload.type === `query`"-->
+                            <!--                                :payload="payload"-->
+                            <!--                            />-->
                         </div>
 
                         <DumpContains
@@ -194,15 +195,25 @@
                         <!-- handle link close -->
                         <div
                             v-show="!isOpen"
-                            @click="isOpen = true"
+                            @dblclick="isOpen = true"
                             :class="{ 'mt-3': isOpen }"
-                            class="py-2 items-center text-xs flex justify-between dark:text-primary-400"
+                            class="px-3 gap-2 w-full flex justify-between font-light text-[12px] bg-primary-800 py-3 dark:text-primary-400"
                         >
-                            <div class="dark:text-primary-400 uppercase text-[11px] cursor-pointer select-none flex gap-3">
-                                <IconChevronRight class="!w-4 !h-4 dark:text-primary-600 group-hover:text-blue-500" />
-
-                                <div class="font-normal">{{ props.payload.label ?? props.payload.type }}</div>
+                            <div class="flex gap-2">
+                                <span>{{ props.payload.date_time }}</span> -
+                                <DumpLink
+                                    v-if="fullIdeHandle"
+                                    :class="{ 'blur-sm': !privacy.isOpen }"
+                                    :href="props.payload.ide_handle.handler"
+                                    :title="`Open ` + fullIdeHandle"
+                                    :value="fullIdeHandle"
+                                />
                             </div>
+                            <div
+                                v-if="props.payload.dump?.variable_type !== undefined"
+                                class="text-[0.70rem] text-orange-500 select-none"
+                                v-text="`(${props.payload.dump.variable_type})`"
+                            ></div>
 
                             <div
                                 :class="{ 'blur-sm': !privacy.isOpen }"
@@ -213,15 +224,12 @@
                                         v-show="!viewed"
                                         class="rounded-full w-[10px] h-[010px] animate-pulse bg-orange-400"
                                     ></div>
-
-                                    <span>{{ fullIdeHandle }} | {{ props.payload.date_time }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </Transition>
     </div>
 </template>

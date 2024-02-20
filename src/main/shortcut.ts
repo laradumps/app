@@ -267,7 +267,6 @@ function configureLocalShortcut(mainWindow: BrowserWindow): void {
      * Retrieves all stored shortcuts from storage and sends them to the mainWindow.
      */
     ipcMain.on("local-shortcut:get", (): void => {
-
         storage.keys((error: Error | null, keys: string[]): void => {
             if (error) {
                 // eslint-disable-next-line no-console

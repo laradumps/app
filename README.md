@@ -40,7 +40,7 @@ Here's an example:
 ```php
 // File: routes/web.php
 
-<?php 
+<?php
 
 Route::get('/', function () {
     ds('Home page accessed!');
@@ -52,6 +52,6 @@ Route::get('/', function () {
 
 LaraDumps is a free open-source project, and it was inspired by [Spatie Ray](https://github.com/spatie/ray), check it out!
 
-- Author: [Luan Freitas](https://github.com/luanfreitasdev)
+-   Author: [Luan Freitas](https://github.com/luanfreitasdev)
 
-- Logo by [Vitor S. Rodrigues](https://github.com/vs0uz4)
+-   Logo by [Vitor S. Rodrigues](https://github.com/vs0uz4)

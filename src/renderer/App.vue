@@ -7,42 +7,42 @@
         <div class="absolute w-full h-full min-h-full">
             <TheModal v-model:modal-attributes="modalAttributes" />
 
-<!--            <div class="px-2 py-1 bg-primary-100">-->
-<!--                <div class="flex justify-between items-center">-->
-<!--                    <div>-->
-<!--                        <div class="flex gap-2 ml-2">-->
-<!--                            <div>-->
-<!--                                <a-->
-<!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
-<!--                                    :title="$t('menu.clear')"-->
-<!--                                    class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"-->
-<!--                                >-->
-<!--                                    <TrashIcon class="h-5 w-5 text-primary-500 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" />-->
-<!--                                </a>-->
-<!--                            </div>-->
-<!--                            <div>-->
-<!--                                <a-->
-<!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
-<!--                                    :title="$t('menu.clear')"-->
-<!--                                    class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"-->
-<!--                                >-->
-<!--                                    <TrashIcon class="h-5 w-5 text-primary-500 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" />-->
-<!--                                </a>-->
-<!--                            </div>-->
-<!--                            <div>-->
-<!--                                <a-->
-<!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
-<!--                                    :title="$t('menu.clear')"-->
-<!--                                    class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"-->
-<!--                                >-->
-<!--                                    <TrashIcon class="h-5 w-5 text-primary-500 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" />-->
-<!--                                </a>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
+            <!--            <div class="px-2 py-1 bg-primary-100">-->
+            <!--                <div class="flex justify-between items-center">-->
+            <!--                    <div>-->
+            <!--                        <div class="flex gap-2 ml-2">-->
+            <!--                            <div>-->
+            <!--                                <a-->
+            <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
+            <!--                                    :title="$t('menu.clear')"-->
+            <!--                                    class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"-->
+            <!--                                >-->
+            <!--                                    <TrashIcon class="h-5 w-5 text-primary-500 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" />-->
+            <!--                                </a>-->
+            <!--                            </div>-->
+            <!--                            <div>-->
+            <!--                                <a-->
+            <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
+            <!--                                    :title="$t('menu.clear')"-->
+            <!--                                    class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"-->
+            <!--                                >-->
+            <!--                                    <TrashIcon class="h-5 w-5 text-primary-500 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" />-->
+            <!--                                </a>-->
+            <!--                            </div>-->
+            <!--                            <div>-->
+            <!--                                <a-->
+            <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
+            <!--                                    :title="$t('menu.clear')"-->
+            <!--                                    class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"-->
+            <!--                                >-->
+            <!--                                    <TrashIcon class="h-5 w-5 text-primary-500 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300" />-->
+            <!--                                </a>-->
+            <!--                            </div>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
 
-<!--                </div>-->
-<!--            </div>-->
+            <!--                </div>-->
+            <!--            </div>-->
 
             <div>
                 <TheNavBar
@@ -53,9 +53,7 @@
                 />
 
                 <!-- content -->
-                <div
-                    class="flex overflow-hidden flex-col flex-1 right-0 absolute left-0 h-fill-available"
-                >
+                <div class="flex overflow-hidden flex-col flex-1 right-0 absolute left-0 h-fill-available">
                     <!-- main -->
                     <main
                         :class="{
@@ -73,18 +71,18 @@
                         </div>
 
                         <!-- header global filter -->
-<!--                        <div-->
-<!--                            class="py-2 px-1 min-[350px] bg-white dark:bg-primary-900 group flex justify-end items-center"-->
-<!--                            v-if="payload.length > 0 && !settingStore.setting"-->
-<!--                        >-->
-<!--                            <div class="flex gap-3 mr-2">-->
-<!--                                <HeaderGlobalFilter-->
-<!--                                    v-model:payload="payload"-->
-<!--                                    v-model:total="dumpsBagFiltered.length"-->
-<!--                                    v-model:has-color="hasColor"-->
-<!--                                />-->
-<!--                            </div>-->
-<!--                        </div>-->
+                        <!--                        <div-->
+                        <!--                            class="py-2 px-1 min-[350px] bg-white dark:bg-primary-900 group flex justify-end items-center"-->
+                        <!--                            v-if="payload.length > 0 && !settingStore.setting"-->
+                        <!--                        >-->
+                        <!--                            <div class="flex gap-3 mr-2">-->
+                        <!--                                <HeaderGlobalFilter-->
+                        <!--                                    v-model:payload="payload"-->
+                        <!--                                    v-model:total="dumpsBagFiltered.length"-->
+                        <!--                                    v-model:has-color="hasColor"-->
+                        <!--                                />-->
+                        <!--                            </div>-->
+                        <!--                        </div>-->
 
                         <AutoUpdater />
 
@@ -403,22 +401,22 @@ const clearAll = (): void => {
 };
 
 function registerDefaultLocalShortcuts() {
-  let shortcutClearAllObject = {
-    alias: "clearAll",
-    label: "settings.shortcut.clear",
-    shortcut: "ds_shortcut_clearAll",
-    originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
-    keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K"
-  };
-  window.ipcRenderer.send("local-shortcut:set", shortcutClearAllObject);
-  let shortcutDarkModeObject = {
-    alias: "darkMode",
-    label: "settings.shortcut.darkMode",
-    shortcut: "ds_shortcut_darkMode",
-    originalValue: process.platform === "darwin" ? "⌥+⇧+D" : "Ctrl+Shift+D",
-    keys: process.platform === "darwin" ? "Alt+Shift+D" : "Ctrl+Shift+D"
-  };
-  window.ipcRenderer.send("local-shortcut:set", shortcutDarkModeObject);
+    let shortcutClearAllObject = {
+        alias: "clearAll",
+        label: "settings.shortcut.clear",
+        shortcut: "ds_shortcut_clearAll",
+        originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
+        keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K"
+    };
+    window.ipcRenderer.send("local-shortcut:set", shortcutClearAllObject);
+    let shortcutDarkModeObject = {
+        alias: "darkMode",
+        label: "settings.shortcut.darkMode",
+        shortcut: "ds_shortcut_darkMode",
+        originalValue: process.platform === "darwin" ? "⌥+⇧+D" : "Ctrl+Shift+D",
+        keys: process.platform === "darwin" ? "Alt+Shift+D" : "Ctrl+Shift+D"
+    };
+    window.ipcRenderer.send("local-shortcut:set", shortcutDarkModeObject);
 }
 
 onMounted(() => {
@@ -426,11 +424,11 @@ onMounted(() => {
         document.title = "LaraDumps - " + appVersion.value;
     }, 300);
 
-  window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
-    if (arg === 0) {
-      registerDefaultLocalShortcuts();
-    }
-  });
+    window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
+        if (arg === 0) {
+            registerDefaultLocalShortcuts();
+        }
+    });
 
     window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
 

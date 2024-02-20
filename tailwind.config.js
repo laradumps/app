@@ -35,9 +35,9 @@ module.exports = {
         },
         extend: {
             colors: {
-                primary: colors.neutral,
-            },
-        },
+                primary: colors.neutral
+            }
+        }
     },
     plugins: [
         require("postcss-import"),
