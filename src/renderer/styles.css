@@ -5,9 +5,15 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+   @apply leading-6
+}
+
+pre {
+    @apply text-xs
+}
+
 body {
-    color: #18171b;
-    font-weight: 100;
     margin: 0;
     padding-bottom: 3rem;
 }
@@ -35,4 +41,10 @@ table {
 
 ::-webkit-scrollbar-thumb:hover {
     background-color: #9d9a9a;
+}
+
+.btn {
+    min-height: unset;
+    height: unset;
+    border-right: 0 !important;
 }

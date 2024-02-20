@@ -18,7 +18,7 @@ pre.sf-dump .sf-dump-ref span {
 pre.sf-dump .sf-dump-public,
 pre.sf-dump .sf-dump-protected,
 pre.sf-dump .sf-dump-private {
-    @apply !text-base-content font-normal text-sm leading-normal;
+    @apply !text-base-content text-sm;
 }
 
 pre.sf-dump .sf-dump-ref,
@@ -44,7 +44,7 @@ pre.sf-dump .sf-dump-index {
 }
 
 pre.sf-dump .sf-dump-const {
-    @apply text-accent text-sm;
+    @apply text-accent text-sm font-semibold;
 }
 
 span.dump-clock {
@@ -71,7 +71,7 @@ pre.sf-dump .sf-dump-note {
 pre.sf-dump .sf-dump-public,
 pre.sf-dump .sf-dump-protected,
 pre.sf-dump .sf-dump-private {
-    @apply text-neutral-content;
+    @apply !text-base-content;
 }
 
 pre.sf-dump:after {

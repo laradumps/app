@@ -17,7 +17,7 @@
                         class="w-full"
                         :class="{
                             [`!border-l-4 ` + color]: typeof color !== 'undefined',
-                            'cursor-pointer !bg-transparent': !isOpen
+                            '!bg-transparent': !isOpen
                         }"
                     >
 
@@ -78,7 +78,7 @@
                         <!-- border-gray-200 shadow-sm shadow-base-300 dark:shadow-base-600 dark:text-base-200 -->
                         <div v-show="isOpen">
                             <div
-                                class="w-full p-3 rounded-sm bg-base-200 transition-all"
+                                class="w-full p-3 rounded-sm bg-base-300 transition-all"
                                 v-if="props.payload.type === 'dump'"
                                 v-show="props.payload.dump?.dump !== ''"
                             >
@@ -111,13 +111,13 @@
                                         <div class="flex gap-2 items-center">
                                             <div
                                                 v-if="props.payload.dump?.variable_type !== undefined"
-                                                class="text-[0.70rem] text-secondary select-none"
+                                                class="text-[0.70rem] text-primary-100 select-none"
                                                 v-text="`(${props.payload.dump.variable_type})`"
                                             ></div>
-                                            <div class="font-semibold capitalize leading-4 shadow rounded-lg px-2 p-0.75 text-neutral-content bg-primary">{{ props.payload.label ?? props.payload.type }}</div>
+                                            <div class="badge badge-primary">{{ props.payload.label ?? props.payload.type }}</div>
                                         </div>
                                     </div>
-                                    <div class="mt-2" v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"></div>
+                                    <div class="mt-2 text-base-content" v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"></div>
                                 </div>
                             </div>
 

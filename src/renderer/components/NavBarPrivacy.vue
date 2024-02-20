@@ -1,13 +1,13 @@
 <template>
     <a
-        class="justify-center cursor-pointer text-base-500 group flex items-center p-2"
+        class="justify-center cursor-pointer group flex items-center p-2"
         @click="privacyStore.toggle()"
     >
         <div v-if="privacyStore.isOpen">
-            <EyeIcon class="h-5 w-5 hover:text-base-900 dark:text-base-400 dark:hover:text-base-200" />
+            <EyeIcon class="h-5 w-5 text-base hover:text-neutral" />
         </div>
         <div v-if="!privacyStore.isOpen">
-            <EyeSlashIcon class="h-5 w-5 hover:text-base-900 dark:text-base-400 dark:hover:text-base-300" />
+            <EyeSlashIcon class="h-5 w-5 text-base hover:text-neutral" />
         </div>
     </a>
 </template>

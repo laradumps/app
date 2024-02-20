@@ -1,13 +1,13 @@
 <template>
     <a
-        class="justify-center cursor-pointer text-base1-500 group flex items-center p-2"
+        class="justify-center cursor-pointer flex items-center p-2"
         @click="collapseStore.toggle()"
     >
         <div v-if="!collapseStore.isOpen">
-            <IconCollapseClose class="hover:text-base-900 dark:text-base-400 dark:hover:text-base-300" />
+            <IconCollapseClose class="text-base hover:text-neutral" />
         </div>
         <div v-if="collapseStore.isOpen">
-            <IconCollapseOpen class="hover:text-base-900 dark:text-base-400 dark:hover:text-base-300" />
+            <IconCollapseOpen class="text-base hover:text-neutral" />
         </div>
     </a>
 </template>

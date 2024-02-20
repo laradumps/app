@@ -1,20 +1,16 @@
 <template>
     <div
-        class="select-none gap-1 flex py-1 dark:text-base-200"
+        class="select-none gap-1 flex py-1"
         v-for="(screen, index) in screens"
         :key="screen"
     >
         <button
             :class="{
                 'ml-1': index > 0,
-                'btn-danger border-0': screen.screen_name === 'danger',
-                'btn-success border-0': screen.screen_name === 'success',
-                'btn-warning border-0': screen.screen_name === 'warning',
-                'btn-info border-0': screen.screen_name === 'info',
-                'active border border-base-400 dark:border-base-500': screen.screen_name === screenStore.screen && screens.length > 1,
-                'transition-all ease-in duration-100 focus:ring-2 focus:ring-offset-1': screen.screen_name === screenStore.screen && index > 0
+                'active !btn-primary': screen.screen_name === screenStore.screen && screens.length > 1,
+                'transition-all ease-in duration-100 !btn-primary': screen.screen_name === screenStore.screen && index > 0
             }"
-            class="btn !flex btn-white rounded-t-sm text-x"
+            class="btn btn-neutral text-base lowercase !flex rounded-none text-xs"
             @dblclick="toggleScreen(screen.screen_name, true)"
             @click="toggleScreen(screen.screen_name)"
         >
@@ -35,7 +31,7 @@
             <span v-text="screen.screen_name"></span>
 
             <div v-show="screenStore.pinned === screen.screen_name">
-                <IconPin class="w-3 h-3 !text-red-500 dark:!text-red-400" />
+                <IconPin class="w-3 h-3 !text-red-500" />
             </div>
         </button>
     </div>

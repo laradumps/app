@@ -8,11 +8,15 @@
                 class="justify-center cursor-pointer text-base-500 group flex items-center p-2"
                 @click="clear()"
             >
-                <TrashIcon class="w-4 text-base hover:text-base" />
+                <TrashIcon class="w-4 text-base hover:text-neutral" />
             </a>
 
             <!-- saved dumps -->
-            <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
+<!--            <NavBarSavedDumps v-if="!inSavedDumpsWindow" />-->
+
+            <NavBarCollapseAll v-if="payloadCount > 0 && !settingStore.setting" />
+
+            <NavBarPrivacy v-if="payloadCount > 0 && !settingStore.setting" />
 
             <!--            &lt;!&ndash; toggleCollapseAll &ndash;&gt;-->
             <!--            <NavBarCollapseAll v-if="payloadCount > 0 && !settingStore.setting" />-->
