@@ -2,9 +2,9 @@
     <div>
         <button
             :class="{
-                'bg-primary-200 shadow border border-primary-300 dark:border-primary-500 dark:bg-primary-800 dark:hover:border-primary-400': settingStore.setting
+                'bg-base-200 shadow border border-base-300 dark:border-base-500 dark:bg-base-800 dark:hover:border-base-400': settingStore.setting
             }"
-            class="rounded-full p-1.5 text-primary-600 dark:text-primary-400 dark:hover:text-primary-200"
+            class="rounded-full p-1.5 text-base-600 dark:text-base-400 dark:hover:text-base-200"
             :title="$t('menu.settings')"
             @click="settingStore.toggle()"
         >

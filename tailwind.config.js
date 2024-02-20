@@ -35,7 +35,8 @@ module.exports = {
         },
         extend: {
             colors: {
-                primary: colors.neutral
+                base: colors.neutral,
+                primary: colors.amber
             }
         }
     },

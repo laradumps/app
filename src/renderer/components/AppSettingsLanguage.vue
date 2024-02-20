@@ -1,6 +1,6 @@
 <template>
     <div>
-        <label class="text-sm font-normal text-primary-700 dark:text-primary-400"> {{ $t("settings.language") }} </label>
+        <label class="text-sm font-normal text-base-700 dark:text-base-400"> {{ $t("settings.language") }} </label>
 
         <div class="mt-0">
             <SelectMenu

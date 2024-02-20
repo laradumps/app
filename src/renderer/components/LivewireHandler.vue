@@ -2,7 +2,7 @@
     <div class="flex relative left-[3px] mr-[15px]">
         <div
             style="height: calc(100vh - 120px)"
-            class="px-3 w-[40%] overflow-y-none overflow-y-auto rounded-sm dark:bg-primary-900 text-primary-600 dark:text-primary-300 font-normal text-xs"
+            class="px-3 w-[40%] overflow-y-none overflow-y-auto rounded-sm dark:bg-base-900 text-base-600 dark:text-base-300 font-normal text-xs"
         >
             {{ $t("total") }}: {{ dumpsBag.length }}
             <div
@@ -20,14 +20,14 @@
 
         <div
             v-if="typeof payload.content === 'undefined'"
-            class="w-2/3 p-3 mb-4 flex justify-center items-center text-primary-500 font-light"
+            class="w-2/3 p-3 mb-4 flex justify-center items-center text-base-500 font-light"
         >
             {{ $t("please_select_a_component") }}
         </div>
 
         <div
             v-if="typeof payload.content !== 'undefined'"
-            class="w-[60%] right-0 bg-primary-50 dark:bg-primary-800 p-3 align-middle items-start"
+            class="w-[60%] right-0 bg-base-50 dark:bg-base-800 p-3 align-middle items-start"
         >
             <div class="text-right dark:text-gray-300 flex justify-between text-sm text-gray-600">
                 <div class="py-2 text-sm font-semibold text-left">

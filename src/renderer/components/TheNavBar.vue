@@ -1,14 +1,14 @@
 <template>
-    <div class="flex justify-between items-center px-3 py-1 bg-primary-100 shadow text-center z-100 dark:bg-primary-900 dark:border dark:border-primary-950">
+    <div class="flex justify-between items-center px-3 py-1 bg-base-100 shadow text-center z-100 dark:bg-base-900 dark:border dark:border-base-950">
         <nav class="flex">
             <!-- clear -->
             <a
                 v-show="!inSavedDumpsWindow && !settingStore.setting"
                 :title="$t('menu.clear')"
-                class="justify-center cursor-pointer text-primary-500 group flex items-center p-2"
+                class="justify-center cursor-pointer text-base-500 group flex items-center p-2"
                 @click="clear()"
             >
-                <TrashIcon class="w-4 text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300" />
+                <TrashIcon class="w-4 text-base-600 hover:text-base-800 dark:text-base-400 dark:hover:text-base-300" />
             </a>
 
             <!-- saved dumps -->
@@ -37,11 +37,11 @@
             <div class="relative rounded-md shadow-sm w-[250px]">
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                     <!-- SearchIcon -->
-                    <MagnifyingGlassIcon class="w-4 h-4 text-primary-400 dark:text-primary-500" />
+                    <MagnifyingGlassIcon class="w-4 h-4 text-base-400 dark:text-base-500" />
                 </div>
                 <input
                     type="text"
-                    class="block w-full p-1.5 text-primary-500 focus:outline-none focus:ring-1 focus:text-primary-700 dark:bg-primary-800 dark:text-primary-300 dark:placeholder-primary-400 rounded-md border-[1px] border-primary-200 pl-10 dark:!border-primary-600 focus:border-primary-400 focus:ring-primary-500 text-xs"
+                    class="block w-full p-1.5 text-base-500 focus:outline-none focus:ring-1 focus:text-base-700 dark:bg-base-800 dark:text-base-300 dark:placeholder-base-400 rounded-md border-[1px] border-base-200 pl-10 dark:!border-base-600 focus:border-base-400 focus:ring-base-500 text-xs"
                     placeholder="Search"
                 />
             </div>

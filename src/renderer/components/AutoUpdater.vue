@@ -1,7 +1,7 @@
 <template>
     <div
         v-if="loading"
-        class="text-sm dark:text-primary-300 p-3 w-[150px] fixed right-2"
+        class="text-sm dark:text-base-300 p-3 w-[150px] fixed right-2"
     >
         <div class="w-full bg-gray-200 rounded-full h-[8px] dark:bg-gray-700">
             <div

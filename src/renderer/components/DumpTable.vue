@@ -1,16 +1,16 @@
 <template>
-    <div class="bg-primary-100 p-2 space-y-2 dark:bg-primary-800 rounded-sm pr-2">
+    <div class="bg-base-100 p-2 space-y-2 dark:bg-base-800 rounded-sm pr-2">
         <div>
             <div>
                 <div class="relative rounded-md shadow-sm">
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <!-- SearchIcon -->
-                        <MagnifyingGlassIcon class="w-5 h-5 text-primary-700 dark:text-primary-200" />
+                        <MagnifyingGlassIcon class="w-5 h-5 text-base-700 dark:text-base-200" />
                     </div>
                     <input
                         v-model="search"
                         type="text"
-                        class="block w-full p-1.5 text-primary-500 focus:outline-none focus:ring-1 focus:text-primary-700 dark:bg-primary-800 dark:text-primary-300 dark:placeholder-primary-400 rounded-md border-[1px] border-primary-200 pl-10 dark:!border-primary-600 focus:border-primary-400 focus:ring-primary-500 text-xs"
+                        class="block w-full p-1.5 text-base-500 focus:outline-none focus:ring-1 focus:text-base-700 dark:bg-base-800 dark:text-base-300 dark:placeholder-base-400 rounded-md border-[1px] border-base-200 pl-10 dark:!border-base-600 focus:border-base-400 focus:ring-base-500 text-xs"
                         placeholder="Search"
                     />
                 </div>
@@ -50,7 +50,7 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
     const thead = document.createElement("thead");
     const thr = document.createElement("tr");
 
-    thr.setAttribute("class", "text-xs border border-primary-300 rounded-md shadow-sm bg-primary-200 dark:bg-primary-700 dark:text-primary-400 dark:border-primary-800 text-gray-800");
+    thr.setAttribute("class", "text-xs border border-base-300 rounded-md shadow-sm bg-base-200 dark:bg-base-700 dark:text-base-400 dark:border-base-800 text-gray-800");
     table.setAttribute("id", `table-${payloadId}`);
 
     fieldTitles.forEach((fieldTitle) => {

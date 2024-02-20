@@ -1,7 +1,7 @@
 <template>
     <div
         :class="{ 'pl-20': menuOpenStore.show, 'pl-3': !menuOpenStore.show }"
-        class="fixed flex bg-white dark:bg-primary-900 select-none justify-between text-[11px] text-primary-600 bottom-0 w-auto right-0 left-0 z-40 p-1.5 dark:text-primary-400 dark:dark-primary-900 dark:font-normal px-2"
+        class="fixed flex bg-white dark:bg-base-900 select-none justify-between text-[11px] text-base-600 bottom-0 w-auto right-0 left-0 z-40 p-1.5 dark:text-base-400 dark:dark-base-900 dark:font-normal px-2"
     >
         <span
             >⭐ {{ $t("footer.support_laradumps") }},

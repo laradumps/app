@@ -1,7 +1,7 @@
 <template>
     <div
         @mouseenter="markDumpItemViewed"
-        class="group dark:bg-primary-900 text-sm flex transition-all"
+        class="group dark:bg-base-900 text-sm flex transition-all"
     >
         <Transition
             enter-active-class="transition ease-out duration-300"
@@ -21,21 +21,21 @@
                         }"
                     >
 
-                        <!--                        <div class="items-center text-xs flex justify-between dark:text-primary-400">-->
+                        <!--                        <div class="items-center text-xs flex justify-between dark:text-base-400">-->
                         <!--                            &lt;!&ndash; label &ndash;&gt;-->
                         <!--                            <div-->
                         <!--                                v-if="isOpen && (props.payload.label || props.payload.type)"-->
                         <!--                                @click="isOpen = false"-->
-                        <!--                                class="dark:text-primary-400 cursor-pointer py-2 items-center uppercase text-[11px] select-none flex gap-3 w-full mr-3"-->
+                        <!--                                class="dark:text-base-400 cursor-pointer py-2 items-center uppercase text-[11px] select-none flex gap-3 w-full mr-3"-->
                         <!--                            >-->
-                        <!--                                <div class="cursor-pointer items-center flex justify-between gap-2 hover:text-primary-800">-->
+                        <!--                                <div class="cursor-pointer items-center flex justify-between gap-2 hover:text-base-800">-->
                         <!--                                    <IconChevronDown class="!w-4 !h-4 group-hover:text-blue-500" />-->
 
                         <!--                                    &lt;!&ndash; dateTime &ndash;&gt;-->
                         <!--                                    <span-->
                         <!--                                        :class="{-->
-                        <!--                                    'font-normal text-primary-800 dark:text-primary-400': isOpen,-->
-                        <!--                                    'dark:text-primary-400': !isOpen-->
+                        <!--                                    'font-normal text-base-800 dark:text-base-400': isOpen,-->
+                        <!--                                    'dark:text-base-400': !isOpen-->
                         <!--                                }"-->
                         <!--                                        class="line-clamp-2 !hidden select-none max-w-[100px] text-xs italic"-->
                         <!--                                    >-->
@@ -55,13 +55,13 @@
                         <!--                                        @click="saveDump"-->
                         <!--                                        v-if="isOpen && !inSavedDumpsWindow"-->
                         <!--                                    >-->
-                        <!--                                        <IconSave class="w-3 h-3 text-primary-500 dark:text-primary-400 hover:text-primary-600" />-->
+                        <!--                                        <IconSave class="w-3 h-3 text-base-500 dark:text-base-400 hover:text-base-600" />-->
                         <!--                                    </div>-->
                         <!--                                    <div-->
                         <!--                                        @click="removeSaveDump"-->
                         <!--                                        v-if="isOpen && inSavedDumpsWindow"-->
                         <!--                                    >-->
-                        <!--                                        <TrashIcon class="w-4 h-4 text-red-500 hover:text-primary-600" />-->
+                        <!--                                        <TrashIcon class="w-4 h-4 text-red-500 hover:text-base-600" />-->
                         <!--                                    </div>-->
                         <!--                                </div>-->
 
@@ -75,17 +75,17 @@
                         <!--                        </div>-->
 
                         <!-- default -->
-                        <!-- border-gray-200 shadow-sm shadow-primary-300 dark:shadow-primary-600 dark:text-primary-200 -->
+                        <!-- border-gray-200 shadow-sm shadow-base-300 dark:shadow-base-600 dark:text-base-200 -->
                         <div v-show="isOpen">
                             <div
-                                class="w-full p-3 rounded-sm bg-primary-200/35 transition-all hover:bg-primary-200 dark:bg-primary-800 dark:text-primary-300"
+                                class="w-full p-3 rounded-sm bg-base-200/35 transition-all hover:bg-base-200 dark:bg-base-800 dark:text-base-300"
                                 v-if="props.payload.type === 'dump'"
                                 v-show="props.payload.dump?.dump !== ''"
                             >
                                 <div class="gap-2 flex flex-col">
                                     <div
                                         @dblclick="isOpen = false"
-                                        class="gap-2 justify-between items-center font-light flex text-[12px] dark:text-primary-300/75"
+                                        class="gap-2 justify-between items-center font-light flex text-[12px] dark:text-base-300/75"
                                     >
                                         <ul class="flex gap-6 !list-disc">
                                             <li class="list-none">
@@ -114,7 +114,7 @@
                                                 class="text-[0.70rem] text-orange-500 select-none"
                                                 v-text="`(${props.payload.dump.variable_type})`"
                                             ></div>
-                                            <div class="font-semibold capitalize leading-4 dark:text-primary-900 shadow rounded-lg px-2 p-0.75 bg-amber-400">{{ props.payload.label ?? props.payload.type }}</div>
+                                            <div class="font-semibold capitalize leading-4 dark:text-base-900 shadow rounded-lg px-2 p-0.75 bg-amber-400">{{ props.payload.label ?? props.payload.type }}</div>
                                         </div>
                                     </div>
                                     <div class="mt-2" v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"></div>
@@ -168,28 +168,28 @@
 
                             <!--                            &lt;!&ndash; dump model &ndash;&gt;-->
                             <!--                            <DumpModel-->
-                            <!--                                class="w-full p-4 shadow bg-primary-100 dark:bg-primary-800"-->
+                            <!--                                class="w-full p-4 shadow bg-base-100 dark:bg-base-800"-->
                             <!--                                v-if="isOpen && props.payload.type === `model`"-->
                             <!--                                :payload="payload"-->
                             <!--                            />-->
 
                             <!--                            &lt;!&ndash; dump log &ndash;&gt;-->
                             <!--                            <DumpLog-->
-                            <!--                                class="w-full p-4 shadow-md dark:shadow-primary-800 bg-primary-50 dark:bg-primary-800"-->
+                            <!--                                class="w-full p-4 shadow-md dark:shadow-base-800 bg-base-50 dark:bg-base-800"-->
                             <!--                                v-if="isOpen && props.payload.type === `log_application`"-->
                             <!--                                :payload="payload"-->
                             <!--                            />-->
 
                             <!--                            &lt;!&ndash; dump queries &ndash;&gt;-->
                             <!--                            <DumpQueries-->
-                            <!--                                class="w-full p-4 bg-primary-50 dark:bg-primary-800"-->
+                            <!--                                class="w-full p-4 bg-base-50 dark:bg-base-800"-->
                             <!--                                v-if="isOpen && props.payload.type === `queries`"-->
                             <!--                                :payload="payload"-->
                             <!--                            />-->
 
                             <!--                            &lt;!&ndash; dump query &ndash;&gt;-->
                             <!--                            <DumpQuery-->
-                            <!--                                class="w-full p-4 bg-primary-50 dark:bg-primary-700"-->
+                            <!--                                class="w-full p-4 bg-base-50 dark:bg-base-700"-->
                             <!--                                v-if="isOpen && props.payload.type === `query`"-->
                             <!--                                :payload="payload"-->
                             <!--                            />-->
@@ -210,7 +210,7 @@
                             v-show="!isOpen"
                             @dblclick="isOpen = true"
                             :class="{ 'mt-3': isOpen }"
-                            class="px-3 gap-2 w-full flex justify-between font-light text-[12px] bg-primary-800 py-3 dark:text-primary-400"
+                            class="px-3 gap-2 w-full flex justify-between font-light text-[12px] bg-base-800 py-3 dark:text-base-400"
                         >
                             <div class="flex gap-2">
                                 <span>{{ props.payload.date_time }}</span> -
@@ -230,7 +230,7 @@
 
                             <div
                                 :class="{ 'blur-sm': !privacy.isOpen }"
-                                class="dark:text-primary-500 cursor-pointer font-light line-clamp-2 select-none text-xs italic"
+                                class="dark:text-base-500 cursor-pointer font-light line-clamp-2 select-none text-xs italic"
                             >
                                 <div class="gap-2 flex items-center">
                                     <div

@@ -44,7 +44,7 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
 
         const keyTd = document.createElement("td");
         keyTd.setAttribute("style", headerStyle);
-        keyTd.setAttribute("class", "p-2 font-semibold bg-primary-200 dark:bg-primary-700 dark:text-primary-400");
+        keyTd.setAttribute("class", "p-2 font-semibold bg-base-200 dark:bg-base-700 dark:text-base-400");
         keyTd.appendChild(document.createTextNode(key));
         tr.appendChild(keyTd);
 

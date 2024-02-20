@@ -20,11 +20,11 @@
                     :title="$t('toggle_format')"
                 >
                     <BarsArrowDownIcon
-                        class="w-[1.1rem] h-[1.1rem] text-primary-500 dark:text-primary-300 hover:text-primary-800 dark:hover:text-yellow-400"
+                        class="w-[1.1rem] h-[1.1rem] text-base-500 dark:text-base-300 hover:text-base-800 dark:hover:text-yellow-400"
                         v-show="!formatted"
                     />
                     <BarsArrowUpIcon
-                        class="w-[1.1rem] h-[1.1rem] text-primary-500 dark:text-primary-300 hover:text-primary-800 dark:hover:text-yellow-400"
+                        class="w-[1.1rem] h-[1.1rem] text-base-500 dark:text-base-300 hover:text-base-800 dark:hover:text-yellow-400"
                         v-show="formatted"
                     />
                 </div>
@@ -35,11 +35,11 @@
                     :title="$t('show_details')"
                 >
                     <EyeIcon
-                        class="w-[1.1rem] h-[1.1rem] text-primary-400 hover:text-primary-800 dark:hover:text-yellow-400"
+                        class="w-[1.1rem] h-[1.1rem] text-base-400 hover:text-base-800 dark:hover:text-yellow-400"
                         v-show="showDetails"
                     />
                     <EyeSlashIcon
-                        class="w-[1.1rem] h-[1.1rem] text-primary-400 hover:text-primary-800 dark:hover:text-yellow-400"
+                        class="w-[1.1rem] h-[1.1rem] text-base-400 hover:text-base-800 dark:hover:text-yellow-400"
                         v-show="!showDetails"
                     />
                 </div>
@@ -52,7 +52,7 @@
                         showCopiedBadge();
                     "
                 >
-                    <ClipboardIcon class="w-[1.1rem] h-[1.1rem] text-primary-700 dark:text-primary-400 hover:text-primary-800 dark:hover:text-yellow-400" />
+                    <ClipboardIcon class="w-[1.1rem] h-[1.1rem] text-base-700 dark:text-base-400 hover:text-base-800 dark:hover:text-yellow-400" />
                 </div>
 
                 <div
@@ -64,20 +64,20 @@
 
                 <div
                     v-show="privacyStore.isOpen"
-                    class="text-xs select-none text-primary-500 dark:text-primary-400 hidden"
+                    class="text-xs select-none text-base-500 dark:text-base-400 hidden"
                     :class="{
                         '!block': showDetails
                     }"
                 >
                     <span>connection/database</span> |
-                    <span class="text-xs text-primary-500 dark:text-primary-400 font-bold">
+                    <span class="text-xs text-base-500 dark:text-base-400 font-bold">
                         {{ props.payload.queries.connectionName + "/" + props.payload.queries.database }}
                     </span>
                 </div>
             </div>
 
             <div class="justify-end flex gap-4 items-center select-none">
-                <span class="text-base font-bold text-primary-600 dark:text-primary-200"> {{ props.payload.queries.time }} <span class="text-xs font-normal">ms</span></span>
+                <span class="text-base font-bold text-base-600 dark:text-base-200"> {{ props.payload.queries.time }} <span class="text-xs font-normal">ms</span></span>
             </div>
         </div>
 
@@ -85,7 +85,7 @@
             v-if="formatted"
             class="flex relative group pt-3 select-none"
         >
-            <code class='language-sql widgets-sql !text-sm dark:text-primary-300' v-html="formatSql"></code>
+            <code class='language-sql widgets-sql !text-sm dark:text-base-300' v-html="formatSql"></code>
         </pre>
 
         <div
@@ -93,7 +93,7 @@
             class="pt-3"
         >
             <code
-                class="widgets-sql !text-sm dark:text-primary-300 select-none"
+                class="widgets-sql !text-sm dark:text-base-300 select-none"
                 v-html="formatSql"
             ></code>
         </div>

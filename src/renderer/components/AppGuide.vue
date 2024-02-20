@@ -5,7 +5,7 @@
             class="arrow left hidden group-hover:block"
             @click="previous"
         >
-            <ChevronLeftIcon class="w-5 dark:text-primary-500 dark:hover:text-primary-300" />
+            <ChevronLeftIcon class="w-5 dark:text-base-500 dark:hover:text-base-300" />
         </button>
         <div class="content">
             <div
@@ -22,7 +22,7 @@
             class="arrow right hidden group-hover:block"
             @click="next"
         >
-            <ChevronRightIcon class="w-5 dark:text-primary-500 dark:hover:text-primary-300" />
+            <ChevronRightIcon class="w-5 dark:text-base-500 dark:hover:text-base-300" />
         </button>
     </div>
 </template>
@@ -44,7 +44,7 @@ const tips = ref([
             "doc.install_laradumps"
         )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-blue-500 underline cursor-pointer dark:text-blue-300 ml-1">https://laradumps.dev</span></li>
         <li>${i18n.t("doc.add")}
-            <code class="bg-white dark:bg-primary-700 text-primary-600 dark:text-primary-300 p-1 rounded">ds('Hello world!')</code>
+            <code class="bg-white dark:bg-base-700 text-base-600 dark:text-base-300 p-1 rounded">ds('Hello world!')</code>
              ${i18n.t("doc.somewhere_in_your_code")}</li>
         <li>${i18n.t("doc.run_your_application_and_see_what_happens_here")}</li>
     </div>`,
@@ -52,13 +52,13 @@ const tips = ref([
         <div class="space-y-3">
             <div class="font-semibold text-base">${i18n.t("doc.global_shortcuts")}</div>
             <li>${i18n.t("doc.customize_shortcuts")}</li>
-            <li>${i18n.t("doc.available")}: <span class="italic font-light dark:text-primary-400">${i18n.t("doc.shortcuts_list")}</span></li>
+            <li>${i18n.t("doc.available")}: <span class="italic font-light dark:text-base-400">${i18n.t("doc.shortcuts_list")}</span></li>
         </div>
     </div>`,
     `<div>
         <div class="space-y-3">
             <div class="font-semibold text-base">${i18n.t("doc.add_project_here")}</div>
-            <li>${i18n.t("doc.run_in_php_project")}: <code class="bg-white dark:bg-primary-700 text-primary-600 dark:text-primary-300 p-1 rounded">vendor/bin/laradumps configure</code></li>
+            <li>${i18n.t("doc.run_in_php_project")}: <code class="bg-white dark:bg-base-700 text-base-600 dark:text-base-300 p-1 rounded">vendor/bin/laradumps configure</code></li>
             <li>${i18n.t("doc.finish_setting_env_vars")}</li>
         </div>
     </div>`,
@@ -66,16 +66,16 @@ const tips = ref([
         <div class="space-y-3">
             <div class="font-semibold text-base">${i18n.t("doc.install_laradumps_globally")}</div>
             <li>
-                <code class="bg-white dark:bg-primary-700 text-primary-600 dark:text-primary-300 p-1 rounded">composer global require laradumps/global-laradumps</code>
+                <code class="bg-white dark:bg-base-700 text-base-600 dark:text-base-300 p-1 rounded">composer global require laradumps/global-laradumps</code>
             </li>
-            <li>${i18n.t("doc.run")} <code class="bg-white dark:bg-primary-700 text-primary-600 dark:text-primary-300 p-1 rounded">global-laradumps install</code></li>
+            <li>${i18n.t("doc.run")} <code class="bg-white dark:bg-base-700 text-base-600 dark:text-base-300 p-1 rounded">global-laradumps install</code></li>
         </div>
     </div>`,
     `<div>
         <div class="space-y-3">
             <div class="font-semibold text-base">${i18n.t("doc.update_laradumps_environments")}</div>
             <li>${i18n.t("doc.choose_project")}</li>
-            <li>${i18n.t("doc.update_keys")}: <code class="bg-white dark:bg-primary-700 text-primary-600 dark:text-primary-300 p-1 rounded">DS_LOGS_APPLICATION, DS_SEND_MAIL</code> ...</li>
+            <li>${i18n.t("doc.update_keys")}: <code class="bg-white dark:bg-base-700 text-base-600 dark:text-base-300 p-1 rounded">DS_LOGS_APPLICATION, DS_SEND_MAIL</code> ...</li>
         </div>
     </div>`
 ]);

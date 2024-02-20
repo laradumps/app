@@ -12,15 +12,15 @@
                 <span class="font-semibold">{{ $t("package_update_info.to_upgrade_lara_dumps_in_your_project_run") }}</span>
             </p>
             <div class="mt-5">
-                <span class="p-1.5 bg-primary-200 text-md rounded mr-1 cursor-pointer leading-normal">
+                <span class="p-1.5 bg-base-200 text-md rounded mr-1 cursor-pointer leading-normal">
                     <button
                         :title="$t('click_to_copy')"
                         @click="$clipboard('composer upgrade laradumps/laradumps', 'copyComposerIcon')"
                     >
-                        <div class="flex justify-between dark:text-primary-700">
+                        <div class="flex justify-between dark:text-base-700">
                             <span>composer upgrade laradumps/laradumps</span>
                             <div title="Click to copy">
-                                <ClipboardIcon class="w-5 h-5 text-primary-700 dark:text-primary-400 hover:text-primary-800 dark:hover:text-yellow-400" />
+                                <ClipboardIcon class="w-5 h-5 text-base-700 dark:text-base-400 hover:text-base-800 dark:hover:text-yellow-400" />
                             </div>
                         </div>
                     </button>

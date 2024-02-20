@@ -3,14 +3,14 @@
         id="log"
         class="space-y-3"
     >
-        <div class="dark:text-primary-300 dark:bg-primary-800 rounded-t-sm">
+        <div class="dark:text-base-300 dark:bg-base-800 rounded-t-sm">
             {{ props.payload.log_application.message }}
         </div>
 
         <div v-html="props.payload.log_application?.context[0]"></div>
 
         <div
-            class="bg-primary-100 dark:bg-primary-800 rounded-t-sm"
+            class="bg-base-100 dark:bg-base-800 rounded-t-sm"
             v-html="searchBar"
         ></div>
     </div>
@@ -49,7 +49,7 @@ const searchBar = computed(() => {
                 (searchBar += `<button @click="openLink('${searchOption.url}${searchString}')" class="btn !w-auto flex-shrink-0 btn-white rounded-t-sm text-xs justify-center items-center select-none">🔎  ${searchOption.name}</button>`)
         );
 
-        searchBar = `<div class="my-2 flex text-xs dark:text-primary-700 space-x-2">${searchBar}</div>`;
+        searchBar = `<div class="my-2 flex text-xs dark:text-base-700 space-x-2">${searchBar}</div>`;
     }
 
     return searchBar;

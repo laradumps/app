@@ -163,11 +163,11 @@ table {
 }
 
 .input {
-    @apply text-sm h-[35px] dark:bg-primary-800 form-input dark:text-primary-400 dark:placeholder-primary-500 border border-primary-300 focus:ring-primary-500 focus:border-primary-500 dark:border-primary-600 block w-full rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm;
+    @apply text-sm h-[35px] dark:bg-base-800 form-input dark:text-base-400 dark:placeholder-base-500 border border-base-300 focus:ring-base-500 focus:border-base-500 dark:border-base-600 block w-full rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm;
 }
 
 .btn {
-    @apply text-sm h-[32px] dark:bg-primary-800 dark:text-primary-400 dark:placeholder-primary-500 border border-primary-300 focus:ring-primary-500 focus:border-primary-500 dark:border-primary-600 block w-full rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm;
+    @apply text-sm h-[32px] dark:bg-base-800 dark:text-base-400 dark:placeholder-base-500 border border-base-300 focus:ring-base-500 focus:border-base-500 dark:border-base-600 block w-full rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm;
 }
 
 .btn-rounded-dark {
@@ -183,30 +183,30 @@ table {
 }
 
 .btn-rounded-white {
-    @apply outline-none h-[32px] inline-flex justify-center items-center transition-all ease-in duration-150 focus:ring-2 focus:ring-offset-2 hover:shadow-sm disabled:opacity-80 disabled:cursor-not-allowed rounded-full gap-x-2 text-sm px-4 py-2 border text-primary-500 hover:bg-primary-100 ring-primary-200
-    dark:ring-primary-600 dark:border-primary-500 dark:hover:bg-primary-700
-    dark:ring-offset-primary-800 dark:text-primary-400;
+    @apply outline-none h-[32px] inline-flex justify-center items-center transition-all ease-in duration-150 focus:ring-2 focus:ring-offset-2 hover:shadow-sm disabled:opacity-80 disabled:cursor-not-allowed rounded-full gap-x-2 text-sm px-4 py-2 border text-base-500 hover:bg-base-100 ring-base-200
+    dark:ring-base-600 dark:border-base-500 dark:hover:bg-base-700
+    dark:ring-offset-base-800 dark:text-base-400;
 }
 
 .btn-rounded-negative {
     @apply outline-none h-[32px] inline-flex justify-center items-center transition-all ease-in duration-150 focus:ring-2 focus:ring-offset-2 hover:shadow-sm disabled:opacity-80 disabled:cursor-not-allowed rounded-full gap-x-2 text-sm px-4 py-2 ring-red-500 text-white bg-red-500 hover:bg-red-600 hover:ring-red-600
-    dark:ring-offset-primary-800 dark:bg-red-700 dark:ring-red-700
+    dark:ring-offset-base-800 dark:bg-red-700 dark:ring-red-700
     dark:hover:bg-red-600 dark:hover:ring-red-600;
 }
 
 .btn-updates {
     @apply mb-3 outline-none inline-flex justify-center items-center transition-all ease-in duration-150 focus:ring-2 focus:ring-offset-2 hover:shadow-sm disabled:opacity-80 disabled:cursor-not-allowed rounded-full gap-x-2 text-sm px-3 h-[30px] ring-orange-500 text-white bg-orange-500 hover:bg-orange-600 hover:ring-orange-600
-    dark:ring-offset-primary-800 dark:bg-orange-700 dark:ring-orange-700
+    dark:ring-offset-base-800 dark:bg-orange-700 dark:ring-orange-700
     dark:hover:bg-orange-600 dark:hover:ring-orange-600;
 }
 .checkbox {
     @apply form-checkbox rounded transition ease-in-out duration-100
-    border-primary-300 text-primary-600 focus:ring-primary-600 focus:border-primary-400
-    dark:border-primary-500 dark:checked:border-primary-600 dark:focus:ring-primary-600
-    dark:focus:border-primary-500 dark:bg-primary-600 dark:text-primary-600
-    dark:focus:ring-offset-primary-800;
+    border-base-300 text-base-600 focus:ring-base-600 focus:border-base-400
+    dark:border-base-500 dark:checked:border-base-600 dark:focus:ring-base-600
+    dark:focus:border-base-500 dark:bg-base-600 dark:text-base-600
+    dark:focus:ring-offset-base-800;
 }
 .vjs-key,
 .vjs-node-index {
-    @apply dark:text-primary-300;
+    @apply dark:text-base-300;
 }

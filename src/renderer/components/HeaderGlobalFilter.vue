@@ -85,7 +85,7 @@ defineProps({
 });
 
 const isDark = computed(() => ({
-    "!bg-black dark:!bg-primary-600 !text-white": selectedColors.colors.includes("black")
+    "!bg-black dark:!bg-base-600 !text-white": selectedColors.colors.includes("black")
 }));
 
 const isRed = computed(() => ({
