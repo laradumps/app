@@ -1,12 +1,12 @@
 <template>
     <div class="space-y-3">
         <p
-            class="dark:text-base-300 border-b dark:border-base-600 pb-1"
+            class="pb-1 text-accent"
             v-text="props.payload.model?.className"
         ></p>
         <div v-html="props.payload.model?.attributes[0]"></div>
         <div v-show="props.payload.model?.relations.length > 0">
-            <div class="dark:text-base-300 py-3">Relations</div>
+            <div class="py-3">Relations</div>
             <div v-html="props.payload.model?.relations[0]"></div>
         </div>
     </div>

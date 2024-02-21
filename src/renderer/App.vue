@@ -3,10 +3,21 @@
         v-cloak
         id="app"
     >
-        <div :data-theme="selectedTheme" class="absolute w-full h-full min-h-full">
-
-            <select id="themeSelect" v-model="selectedTheme">
-                <option v-for="(theme, index) in themes" :key="index" :value="theme.value">{{ theme.label }}</option>
+        <div
+            :data-theme="selectedTheme"
+            class="absolute w-full h-full min-h-full"
+        >
+            <select
+                id="themeSelect"
+                v-model="selectedTheme"
+            >
+                <option
+                    v-for="(theme, index) in themes"
+                    :key="index"
+                    :value="theme.value"
+                >
+                    {{ theme.label }}
+                </option>
             </select>
 
             <TheModal v-model:modal-attributes="modalAttributes" />
@@ -61,7 +72,7 @@
                     <!-- main -->
                     <main
                         :class="{
-                            'overflow-auto': payload.length > 0,
+                            'overflow-auto': payload.length > 0
                         }"
                         class="flex-1 flex flex-col shrink-0 left-16 right-0 min-h-full"
                     >
@@ -122,7 +133,7 @@
                                 v-if="payload.length > 0 && !settingStore.setting"
                             >
                                 <div
-                                    class="w-full pt-3"
+                                    class="w-full pt-2"
                                     :id="payload.id"
                                     v-for="payload in dumpsBagFiltered"
                                     :key="payload.sf_dump_id"
@@ -190,42 +201,42 @@ const showInstallationInfo = ref({
     }
 });
 
-const selectedTheme = ref('dim')
+const selectedTheme = ref("dim");
 
 const themes = ref([
-    { value: 'light', label: 'Light' },
-    { value: 'dark', label: 'Dark' },
-    { value: 'cupcake', label: 'Cupcake' },
-    { value: 'bumblebee', label: 'Bumblebee' },
-    { value: 'emerald', label: 'Emerald' },
-    { value: 'corporate', label: 'Corporate' },
-    { value: 'synthwave', label: 'Synthwave' },
-    { value: 'retro', label: 'Retro' },
-    { value: 'cyberpunk', label: 'Cyberpunk' },
-    { value: 'valentine', label: 'Valentine' },
-    { value: 'halloween', label: 'Halloween' },
-    { value: 'garden', label: 'Garden' },
-    { value: 'forest', label: 'Forest' },
-    { value: 'aqua', label: 'Aqua' },
-    { value: 'lofi', label: 'Lofi' },
-    { value: 'pastel', label: 'Pastel' },
-    { value: 'fantasy', label: 'Fantasy' },
-    { value: 'wireframe', label: 'Wireframe' },
-    { value: 'black', label: 'Black' },
-    { value: 'luxury', label: 'Luxury' },
-    { value: 'dracula', label: 'Dracula' },
-    { value: 'cmyk', label: 'CMYK' },
-    { value: 'autumn', label: 'Autumn' },
-    { value: 'business', label: 'Business' },
-    { value: 'acid', label: 'Acid' },
-    { value: 'lemonade', label: 'Lemonade' },
-    { value: 'night', label: 'Night' },
-    { value: 'coffee', label: 'Coffee' },
-    { value: 'winter', label: 'Winter' },
-    { value: 'dim', label: 'Dim' },
-    { value: 'nord', label: 'Nord' },
-    { value: 'sunset', label: 'Sunset' }
-])
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+    { value: "cupcake", label: "Cupcake" },
+    { value: "bumblebee", label: "Bumblebee" },
+    { value: "emerald", label: "Emerald" },
+    { value: "corporate", label: "Corporate" },
+    { value: "synthwave", label: "Synthwave" },
+    { value: "retro", label: "Retro" },
+    { value: "cyberpunk", label: "Cyberpunk" },
+    { value: "valentine", label: "Valentine" },
+    { value: "halloween", label: "Halloween" },
+    { value: "garden", label: "Garden" },
+    { value: "forest", label: "Forest" },
+    { value: "aqua", label: "Aqua" },
+    { value: "lofi", label: "Lofi" },
+    { value: "pastel", label: "Pastel" },
+    { value: "fantasy", label: "Fantasy" },
+    { value: "wireframe", label: "Wireframe" },
+    { value: "black", label: "Black" },
+    { value: "luxury", label: "Luxury" },
+    { value: "dracula", label: "Dracula" },
+    { value: "cmyk", label: "CMYK" },
+    { value: "autumn", label: "Autumn" },
+    { value: "business", label: "Business" },
+    { value: "acid", label: "Acid" },
+    { value: "lemonade", label: "Lemonade" },
+    { value: "night", label: "Night" },
+    { value: "coffee", label: "Coffee" },
+    { value: "winter", label: "Winter" },
+    { value: "dim", label: "Dim" },
+    { value: "nord", label: "Nord" },
+    { value: "sunset", label: "Sunset" }
+]);
 
 const defaultScreen = ref({
     screen_name: "screen 1",

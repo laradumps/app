@@ -2,13 +2,7 @@ const colors = require("tailwindcss/colors");
 module.exports = {
     content: ["./src/renderer/*.vue", "./src/renderer/components/*.vue", "./src/renderer/views/*.vue"],
     darkMode: "class",
-    safelist: [
-        "bg-black",
-        "w-[1rem]",
-        "h-[1rem]",
-        "w-20",
-        "gap-2"
-    ],
+    safelist: ["bg-black", "w-[1rem]", "h-[1rem]", "w-20", "gap-2"],
     theme: {
         listStyleType: {
             none: "none",
@@ -28,7 +22,7 @@ module.exports = {
         },
         extend: {
             colors: {
-                base1: colors.neutral,
+                base1: colors.neutral
             }
         }
     },
@@ -65,12 +59,8 @@ module.exports = {
             "winter",
             "dim",
             "nord",
-            "sunset",
-        ],
+            "sunset"
+        ]
     },
-    plugins: [
-        require("postcss-import"),
-        require("daisyui"),
-        require("@tailwindcss/typography")
-    ]
+    plugins: [require("postcss-import"), require("daisyui"), require("@tailwindcss/typography")]
 };

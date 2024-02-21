@@ -22,4 +22,3 @@ const props = defineProps<{
     payload: Payload;
 }>();
 </script>
-

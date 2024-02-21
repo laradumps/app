@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-between items-center px-3 py-1 bg-base-100 shadow text-center z-100 ">
+    <div class="flex justify-between items-center px-3 py-1 bg-base-100 shadow text-center z-100">
         <nav class="flex">
             <!-- clear -->
             <a
@@ -12,9 +12,10 @@
             </a>
 
             <!-- saved dumps -->
-<!--            <NavBarSavedDumps v-if="!inSavedDumpsWindow" />-->
+            <!--            <NavBarSavedDumps v-if="!inSavedDumpsWindow" />-->
 
-            <NavBarCollapseAll v-if="payloadCount > 0 && !settingStore.setting" />
+            <NavBarAlwaysOnTop />
+            <!--            <NavBarCollapseAll v-if="payloadCount > 0 && !settingStore.setting" />-->
 
             <NavBarPrivacy v-if="payloadCount > 0 && !settingStore.setting" />
 

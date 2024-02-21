@@ -1,6 +1,5 @@
-#livewire pre.sf-dump,
-#livewire.sf-dump-default {
-    @apply p-3 text-indigo-800 bg-base1-50;
+pre {
+    @apply !text-xs;
 }
 
 pre.sf-dump-expanded {
@@ -22,7 +21,6 @@ pre.sf-dump .sf-dump-private {
 }
 
 pre.sf-dump .sf-dump-ref,
-
 pre.sf-dump .sf-dump-note {
     @apply text-primary font-normal !text-sm leading-4;
 }

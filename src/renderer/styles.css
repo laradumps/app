@@ -6,11 +6,11 @@
 @tailwind utilities;
 
 * {
-   @apply leading-6
+    @apply leading-6;
 }
 
 pre {
-    @apply text-xs
+    @apply text-xs;
 }
 
 body {
