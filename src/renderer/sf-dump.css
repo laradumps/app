@@ -26,7 +26,7 @@ pre.sf-dump .sf-dump-note {
 }
 
 pre.sf-dump .sf-dump-str {
-    @apply text-secondary !font-normal text-sm leading-tight;
+    @apply text-base !font-normal text-sm leading-tight;
 }
 
 pre.sf-dump .sf-dump-index {

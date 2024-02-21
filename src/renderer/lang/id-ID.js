@@ -40,7 +40,6 @@ export default {
         servers: "Servers",
         shortcut: {
             clear: "Bersihkan",
-            darkMode: "Mode Gelap",
             alwaysOnTop: "Selalu di Atas",
             globalSearch: "Pencarian Global",
             toggleMenu: "Toggle Menu",

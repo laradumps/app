@@ -40,7 +40,6 @@ export default {
         servers: "Servidores",
         shortcut: {
             clear: "Limpiar",
-            darkMode: "Modo oscuro",
             alwaysOnTop: "Siempre encima",
             globalSearch: "Búsqueda global",
             toggleMenu: "Alternar menú",

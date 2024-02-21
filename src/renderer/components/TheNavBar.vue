@@ -12,44 +12,25 @@
             </a>
 
             <!-- saved dumps -->
-            <!--            <NavBarSavedDumps v-if="!inSavedDumpsWindow" />-->
-
-            <NavBarAlwaysOnTop />
-            <!--            <NavBarCollapseAll v-if="payloadCount > 0 && !settingStore.setting" />-->
+            <!--  <NavBarSavedDumps v-if="!inSavedDumpsWindow" />-->
 
             <NavBarPrivacy v-if="payloadCount > 0 && !settingStore.setting" />
 
-            <!--            &lt;!&ndash; toggleCollapseAll &ndash;&gt;-->
-            <!--            <NavBarCollapseAll v-if="payloadCount > 0 && !settingStore.setting" />-->
-
-            <!--            &lt;!&ndash; togglePrivacyMode &ndash;&gt;-->
-            <!--            <NavBarPrivacy v-if="payloadCount > 0 && !settingStore.setting" />-->
-
-            <!--            <NavBarReorder v-if="payloadCount > 0 && !settingStore.setting" />-->
+            <!--  <NavBarReorder v-if="payloadCount > 0 && !settingStore.setting" />-->
 
             <!--                        <div class="absolute bottom-4 w-full text-center left-0 space-y-3">-->
             <!--                            &lt;!&ndash; toggleAlwaysOnTop &ndash;&gt;-->
             <!--                            <NavBarAlwaysOnTop />-->
 
-            <!--                            &lt;!&ndash; darkMode &ndash;&gt;-->
-            <!--                            <NavBarDarkButton />-->
-
             <!--                            &lt;!&ndash; setting &ndash;&gt;-->
             <!--                            <NavBarSetting v-if="!inSavedDumpsWindow" />-->
             <!--                        </div>-->
         </nav>
-        <div>
-            <div class="relative rounded-md shadow-sm w-[250px]">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <!-- SearchIcon -->
-                    <MagnifyingGlassIcon class="w-4 h-4 text-base-400 dark:text-base-500" />
-                </div>
-                <input
-                    type="text"
-                    class="block w-full p-1.5 bg-base-200 text-base-500 focus:outline-none focus:ring-1 focus:text-base-700 rounded-md border-[1px] border-base-200 pl-10 focus:border-base-400 focus:ring-base-500 text-xs"
-                    placeholder="Search"
-                />
-            </div>
+
+
+        <div class="flex gap-3 items-center">
+            <GlobalSearch />
+            <NavBarAlwaysOnTop />
         </div>
     </div>
 </template>
@@ -65,6 +46,8 @@ import NavBarReorder from "@/components/NavBarReorder.vue";
 import NavBarSavedDumps from "@/components/NavBarSavedDumps.vue";
 import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
 import { useSettingStore } from "@/store/setting";
+import IconPin from "@/components/Icons/IconPin.vue";
+import GlobalSearch from "@/components/GlobalSearch.vue";
 
 defineProps({
     payloadCount: {

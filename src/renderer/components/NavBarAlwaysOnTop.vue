@@ -2,18 +2,18 @@
     <button
         :title="$t('always_on_top')"
         :class="{
-            'bg-base-200 shadow border border-base-300 dark:border-base-500 dark:bg-base-800 dark:hover:border-base-400': isAlwaysOnTop
+            '!btn-primary text-secondary-content': isAlwaysOnTop
         }"
         @click="toggleAlwaysOnTop()"
-        class="rounded-full p-1.5"
+        class="btn rounded-full"
     >
-        <IconAlwaysOnTop />
+        <IconPin class="w-3 cursor-pointer text-content hover:text-neutral" />
     </button>
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
-import IconAlwaysOnTop from "@/components/Icons/IconAlwaysOnTop.vue";
+import IconPin from "@/components/Icons/IconPin.vue";
 
 const isAlwaysOnTop = ref(false);
 

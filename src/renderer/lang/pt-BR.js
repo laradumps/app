@@ -39,7 +39,6 @@ export default {
         servers: "Servidores",
         shortcut: {
             clear: "Limpar",
-            darkMode: "Alternar Tema Escuro",
             alwaysOnTop: "App sempre no primeiro plano",
             globalSearch: "Busca global",
             toggleMenu: "Alternar Menu",

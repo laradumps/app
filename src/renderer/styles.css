@@ -5,15 +5,9 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-    @apply leading-6;
-}
-
-pre {
-    @apply text-xs;
-}
-
 body {
+    color: #18171b;
+    font-weight: 100;
     margin: 0;
     padding-bottom: 3rem;
 }
@@ -45,6 +39,8 @@ table {
 
 .btn {
     min-height: unset;
-    height: unset;
+    height: 28px;
+    padding-left: 8px;
+    padding-right: 8px;
     border-right: 0 !important;
 }

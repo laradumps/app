@@ -10,14 +10,14 @@
                 'active !btn-primary': screen.screen_name === screenStore.screen && screens.length > 1,
                 'transition-all ease-in duration-100 !btn-primary': screen.screen_name === screenStore.screen && index > 0
             }"
-            class="btn btn-neutral text-base lowercase !flex rounded-none text-xs"
+            class="btn btn-neutral lowercase !flex rounded-none text-xs"
             @dblclick="toggleScreen(screen.screen_name, true)"
             @click="toggleScreen(screen.screen_name)"
         >
             <svg
                 v-if="hasCount(screen.screen_name)"
                 :class="{ 'animate-bounce': !visualized[screen.screen_name] }"
-                class="-ml-0.5 h-2 w-2 text-red-500"
+                class="-ml-0.5 h-2 w-2 text-primary"
                 fill="currentColor"
                 viewBox="0 0 8 8"
             >
@@ -30,9 +30,8 @@
 
             <span v-text="screen.screen_name"></span>
 
-            <div v-show="screenStore.pinned === screen.screen_name">
-                <IconPin class="w-3 h-3 !text-red-500" />
-            </div>
+            <IconPin v-show="screenStore.pinned === screen.screen_name"
+                     class="w-3 h-3 !text-secondary-content" />
         </button>
     </div>
 </template>

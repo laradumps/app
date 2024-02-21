@@ -40,7 +40,6 @@ export default {
         servers: "服务器",
         shortcut: {
             clear: "清除",
-            darkMode: "深色模式",
             alwaysOnTop: "始终置顶",
             globalSearch: "全局搜索",
             toggleMenu: "切换菜单",

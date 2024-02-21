@@ -4,22 +4,9 @@
         id="app"
     >
         <div
-            :data-theme="selectedTheme"
+            :data-theme="appearanceStore.theme"
             class="absolute w-full h-full min-h-full"
         >
-            <select
-                id="themeSelect"
-                v-model="selectedTheme"
-            >
-                <option
-                    v-for="(theme, index) in themes"
-                    :key="index"
-                    :value="theme.value"
-                >
-                    {{ theme.label }}
-                </option>
-            </select>
-
             <TheModal v-model:modal-attributes="modalAttributes" />
 
             <!--            <div class="px-2 py-1 bg-base1-100">-->
@@ -181,7 +168,6 @@ import humanizeDuration from "humanize-duration";
 import TheModal from "@/components/TheModal.vue";
 import TheNavBar from "@/components/TheNavBar.vue";
 import AppSetting from "@/components/AppSetting.vue";
-import HeaderGlobalFilter from "@/components/HeaderGlobalFilter.vue";
 import AppHeader from "@/components/AppHeader.vue";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
@@ -200,43 +186,6 @@ const showInstallationInfo = ref({
         }
     }
 });
-
-const selectedTheme = ref("dim");
-
-const themes = ref([
-    { value: "light", label: "Light" },
-    { value: "dark", label: "Dark" },
-    { value: "cupcake", label: "Cupcake" },
-    { value: "bumblebee", label: "Bumblebee" },
-    { value: "emerald", label: "Emerald" },
-    { value: "corporate", label: "Corporate" },
-    { value: "synthwave", label: "Synthwave" },
-    { value: "retro", label: "Retro" },
-    { value: "cyberpunk", label: "Cyberpunk" },
-    { value: "valentine", label: "Valentine" },
-    { value: "halloween", label: "Halloween" },
-    { value: "garden", label: "Garden" },
-    { value: "forest", label: "Forest" },
-    { value: "aqua", label: "Aqua" },
-    { value: "lofi", label: "Lofi" },
-    { value: "pastel", label: "Pastel" },
-    { value: "fantasy", label: "Fantasy" },
-    { value: "wireframe", label: "Wireframe" },
-    { value: "black", label: "Black" },
-    { value: "luxury", label: "Luxury" },
-    { value: "dracula", label: "Dracula" },
-    { value: "cmyk", label: "CMYK" },
-    { value: "autumn", label: "Autumn" },
-    { value: "business", label: "Business" },
-    { value: "acid", label: "Acid" },
-    { value: "lemonade", label: "Lemonade" },
-    { value: "night", label: "Night" },
-    { value: "coffee", label: "Coffee" },
-    { value: "winter", label: "Winter" },
-    { value: "dim", label: "Dim" },
-    { value: "nord", label: "Nord" },
-    { value: "sunset", label: "Sunset" }
-]);
 
 const defaultScreen = ref({
     screen_name: "screen 1",
@@ -268,6 +217,10 @@ const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 
 const i18n = useI18n();
+
+window.ipcRenderer.on("changeTheme", (event, args) => {
+    appearanceStore.setTheme(args.theme);
+});
 
 window.ipcRenderer.on("debug", (event, args) => {
     console.log(event, args);
@@ -383,7 +336,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         payload.value.push(content);
     }
 
-    if (!["Livewire", "Logs", "Queries"].includes(screenName)) {
+    if (!["Logs", "Queries"].includes(screenName)) {
         const autoInvokeApp = typeof content.meta === "object" ? content.meta.auto_invoke_app : true;
 
         maximizeApp(autoInvokeApp);
@@ -457,14 +410,6 @@ function registerDefaultLocalShortcuts() {
         keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K"
     };
     window.ipcRenderer.send("local-shortcut:set", shortcutClearAllObject);
-    let shortcutDarkModeObject = {
-        alias: "darkMode",
-        label: "settings.shortcut.darkMode",
-        shortcut: "ds_shortcut_darkMode",
-        originalValue: process.platform === "darwin" ? "⌥+⇧+D" : "Ctrl+Shift+D",
-        keys: process.platform === "darwin" ? "Alt+Shift+D" : "Ctrl+Shift+D"
-    };
-    window.ipcRenderer.send("local-shortcut:set", shortcutDarkModeObject);
 }
 
 onMounted(() => {
@@ -517,23 +462,21 @@ onMounted(() => {
 
     window.ipcRenderer.on("app:local-shortcut-execute::clearAll", () => clearAll());
 
-    window.ipcRenderer.on("app:local-shortcut-execute::darkMode", () => appearanceStore.toggle());
-
-    if (appearanceStore.theme === "auto") {
-        window.ipcRenderer.send("native-theme", localStorage.theme);
-    }
-
-    window.ipcRenderer.on("app:theme-dark", () => {
-        if (appearanceStore.theme === "auto") {
-            appearanceStore.setDark(false);
-        }
-    });
-
-    window.ipcRenderer.on("app:theme-light", () => {
-        if (appearanceStore.theme === "auto") {
-            appearanceStore.setLight(false);
-        }
-    });
+    // if (appearanceStore.theme === "auto") {
+    //     window.ipcRenderer.send("native-theme", localStorage.theme);
+    // }
+    //
+    // window.ipcRenderer.on("app:theme-dark", () => {
+    //     if (appearanceStore.theme === "auto") {
+    //         appearanceStore.setTheme(false);
+    //     }
+    // });
+    //
+    // window.ipcRenderer.on("app:theme-light", () => {
+    //     if (appearanceStore.theme === "auto") {
+    //         appearanceStore.setLight(false);
+    //     }
+    // });
 
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
 

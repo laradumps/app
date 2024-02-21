@@ -40,7 +40,6 @@ export default {
         servers: "Serverat",
         shortcut: {
             clear: "Pastro",
-            darkMode: "Modaliteti i errët",
             alwaysOnTop: "Lart në çdo kohë",
             globalSearch: "Kërkim global",
             toggleMenu: "Ndërro menu",

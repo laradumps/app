@@ -55,10 +55,6 @@ const shortcuts = ref([
         alias: "clearAll"
     },
     {
-        label: "settings.shortcut.darkMode",
-        alias: "darkMode"
-    },
-    {
         label: "settings.shortcut.alwaysOnTop",
         alias: "alwaysOnTop"
     },

@@ -40,7 +40,6 @@ export default {
         servers: "سرورها",
         shortcut: {
             clear: "پاک کردن",
-            darkMode: "حالت تاریک",
             alwaysOnTop: "همیشه در بالا",
             globalSearch: "جستجوی سراسری",
             toggleMenu: "تغییر وضعیت منو",

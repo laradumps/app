@@ -41,30 +41,6 @@ const registerLocalShortCutForClearAll = (mainWindow: BrowserWindow): void => {
 };
 
 /**
- * Registers a local shortcut for dark mode.
- * @param mainWindow - The BrowserWindow instance.
- */
-const registerLocalShortCutForDarkMode = (mainWindow: BrowserWindow): void => {
-    storage.setDataPath(os.tmpdir());
-
-    // @ts-ignore
-    storage.get("ds_shortcut_darkMode", (error, data: ShortcutData): void => {
-        // eslint-disable-next-line no-console
-        if (error) console.error(error);
-
-        if (data.keys.toString() !== "") {
-            // @ts-ignore
-            electronLocalShortcut.register(data.keys, (): void => {
-                // eslint-disable-next-line no-console
-                console.log("executing darkMode!");
-
-                mainWindow.webContents.send("app:local-shortcut-execute::darkMode");
-            });
-        }
-    });
-};
-
-/**
  * Registers a local shortcut for  always on top.
  * @param mainWindow - The BrowserWindow instance.
  */
@@ -154,9 +130,6 @@ function registerShortcuts(mainWindow: BrowserWindow, alias = null): void {
                             case "clearAll":
                                 registerLocalShortCutForClearAll(mainWindow);
                                 break;
-                            case "darkMode":
-                                registerLocalShortCutForDarkMode(mainWindow);
-                                break;
                             case "alwaysOnTop":
                                 registerLocalShortCutForAlwaysOnTop(mainWindow);
                                 break;
@@ -178,9 +151,6 @@ function registerShortcuts(mainWindow: BrowserWindow, alias = null): void {
     switch (alias) {
         case "clearAll":
             registerLocalShortCutForClearAll(mainWindow);
-            break;
-        case "darkMode":
-            registerLocalShortCutForDarkMode(mainWindow);
             break;
         case "alwaysOnTop":
             registerLocalShortCutForAlwaysOnTop(mainWindow);

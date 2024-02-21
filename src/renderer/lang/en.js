@@ -40,7 +40,6 @@ export default {
         servers: "Servers",
         shortcut: {
             clear: "Clear",
-            darkMode: "Dark Mode",
             alwaysOnTop: "Always On Top",
             globalSearch: "Global Search",
             toggleMenu: "Toggle Menu",

@@ -40,7 +40,6 @@ export default {
         servers: "Server",
         shortcut: {
             clear: "Cancella",
-            darkMode: "Dark Mode",
             alwaysOnTop: "Sempre in evidenza",
             globalSearch: "Ricerca globale",
             toggleMenu: "Attiva/disattiva Menù",
