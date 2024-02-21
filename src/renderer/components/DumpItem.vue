@@ -1,161 +1,143 @@
 <template>
-    <div
-        @mouseenter="markDumpItemViewed"
-        class="group text-sm flex transition-all"
-    >
-        <Transition
-            enter-active-class="transition ease-out duration-300"
-            enter-class="transform opacity-0 scale-95"
-            enter-to-class="transform opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-300"
-            leave-class="transform opacity-100 scale-100"
-            leave-to-class="transform opacity-0 scale-95"
-        >
-            <div class="px-3 w-full">
-                <div class="collapse collapse-plus border border-base-300 bg-base-200">
-                    <input
-                        type="checkbox"
-                        checked
-                        class="peer"
-                    />
-                    <div class="collapse-title text-xl font-medium">
-                        <div class="gap-2 text-base-content justify-between items-center font-light flex text-[12px]">
-                            <ul class="flex gap-6 !list-disc">
-                                <li class="list-none">
-                                    <div class="flex gap-1">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke-width="1.5"
-                                            stroke="currentColor"
-                                            class="w-3"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                            />
-                                        </svg>
+    <div class="group text-sm flex transition-all !block">
+        <div class="px-3 w-full">
+            <div class="collapse collapse-plus border border-base-300 bg-base-200">
+                <input
+                    type="checkbox"
+                    checked
+                    class="peer"
+                />
+                <div class="collapse-title text-xl font-medium">
+                    <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
+                        <ul class="flex gap-6 !list-disc">
+                            <li class="list-none">
+                                <div class="flex gap-1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke-width="1.5"
+                                        stroke="currentColor"
+                                        class="w-3"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                        />
+                                    </svg>
 
-                                        {{ props.payload.date_time }}
-                                    </div>
-                                </li>
-                                <li>
-                                    <DumpLink
-                                        v-if="fullIdeHandle"
-                                        :class="{ 'blur-sm': !privacy.isOpen }"
-                                        :href="props.payload.ide_handle.handler"
-                                        :title="`Open ` + fullIdeHandle"
-                                        :value="fullIdeHandle"
-                                    />
-                                </li>
-                            </ul>
+                                    {{ props.payload.date_time }}
+                                </div>
+                            </li>
+                            <li>
+                                <DumpLink
+                                    v-if="fullIdeHandle"
+                                    :class="{ 'blur-sm': !privacy.isOpen }"
+                                    :href="props.payload.ide_handle.handler"
+                                    :title="`Open ` + fullIdeHandle"
+                                    :value="fullIdeHandle"
+                                />
+                            </li>
+                        </ul>
 
-                            <div class="flex gap-2 items-center">
-                                <div
-                                    v-if="props.payload.dump?.variable_type !== undefined"
-                                    class="text-[0.70rem] text-primary-100 select-none"
-                                    v-text="`(${props.payload.dump.variable_type})`"
-                                ></div>
-                                <div class="badge badge-primary">{{ props.payload.label ?? props.payload.type }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="collapse-content">
-                        <div>
+                        <div class="flex gap-2 items-center">
                             <div
-                                v-if="props.payload.type === 'dump'"
-                                v-show="props.payload.dump?.dump !== ''"
-                                class="mt-2 text-base-content"
-                                v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"
+                                v-if="props.payload.dump?.variable_type !== undefined"
+                                class="text-[0.70rem] text-primary-100 select-none"
+                                v-text="`(${props.payload.dump.variable_type})`"
                             ></div>
-
-                            <DumpModel
-                                class="mt-2 text-base-content"
-                                v-if="props.payload.type === `model`"
-                                :payload="payload"
-                            />
-
-                            <DumpTimeTrack
-                                v-if="isOpen && props.payload.type === `time_track`"
-                                :payload="payload"
-                            />
-
-                            <!-- dump mailable -->
-                            <DumpMailable
-                                v-if="isOpen && props.payload.type === `mailable`"
-                                :payload="payload"
-                            />
-
-                            <!-- dump html -->
-                            <DumpHTML
-                                v-if="isOpen && props.payload.type === `html`"
-                                :payload="payload"
-                            />
-
-                            <!-- dump notification -->
-                            <DumpMail
-                                v-if="isOpen && props.payload.type === `mail`"
-                                :payload="payload"
-                            />
-
-                            <!-- dump table -->
-                            <DumpTable
-                                class="w-full"
-                                v-if="isOpen && props.payload.type === `table`"
-                                :payload="payload"
-                            />
-
-                            <!-- dump table v2 -->
-                            <DumpTableV2
-                                class="w-full"
-                                v-if="isOpen && ['table_v2', 'http_client'].includes(props.payload.type)"
-                                :payload="payload"
-                            />
-
-                            <!-- dump model -->
-                            <DumpJson
-                                class="w-full"
-                                v-if="isOpen && props.payload.type === `json`"
-                                :payload="payload"
-                            />
-
-                            <!-- dump log -->
-                            <DumpLog
-                                class="w-full p-4 shadow-md dark:shadow-base-800 bg-base-50 dark:bg-base-800"
-                                v-if="isOpen && props.payload.type === `log_application`"
-                                :payload="payload"
-                            />
-
-                            <!-- dump queries -->
-                            <DumpQueries
-                                class="w-full p-4 bg-base-50 dark:bg-base-800"
-                                v-if="isOpen && props.payload.type === `queries`"
-                                :payload="payload"
-                            />
-
-                            <!-- dump query -->
-                            <DumpQuery
-                                class="w-full p-4 bg-base-50 dark:bg-base-700"
-                                v-if="isOpen && props.payload.type === `query`"
-                                :payload="payload"
-                            />
-
-                            <DumpContains
-                                v-show="isOpen"
-                                :payload="payload"
-                            />
-
-                            <DumpIsJson
-                                v-show="isOpen"
-                                :payload="payload"
-                            />
+                            <div class="badge badge-primary text-[11px]">{{ props.payload.label ?? props.payload.type }}</div>
                         </div>
                     </div>
                 </div>
+                <div class="collapse-content">
+                    <div>
+                        <div
+                            v-if="props.payload.type === 'dump'"
+                            v-show="props.payload.dump?.dump !== ''"
+                            class="mt-2 text-base-content"
+                            v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"
+                        ></div>
+
+                        <DumpModel
+                            class="mt-2 text-base-content"
+                            v-if="props.payload.type === `model`"
+                            :payload="payload"
+                        />
+
+                        <DumpTimeTrack
+                            v-if="props.payload.type === `time_track`"
+                            :payload="payload"
+                        />
+
+                        <!-- dump mailable -->
+                        <DumpMailable
+                            v-if="props.payload.type === `mailable`"
+                            :payload="payload"
+                        />
+
+                        <!-- dump html -->
+                        <DumpHTML
+                            v-if="props.payload.type === `html`"
+                            :payload="payload"
+                        />
+
+                        <!-- dump notification -->
+                        <DumpMail
+                            v-if="props.payload.type === `mail`"
+                            :payload="payload"
+                        />
+
+                        <!-- dump table -->
+                        <DumpTable
+                            class="w-full"
+                            v-if="props.payload.type === `table`"
+                            :payload="payload"
+                        />
+
+                        <!-- dump table v2 -->
+                        <DumpTableV2
+                            class="w-full"
+                            v-if="['table_v2', 'http_client'].includes(props.payload.type)"
+                            :payload="payload"
+                        />
+
+                        <!-- dump model -->
+                        <DumpJson
+                            class="w-full"
+                            v-if="props.payload.type === `json`"
+                            :payload="payload"
+                        />
+
+                        <!-- dump log -->
+                        <DumpLog
+                            class="w-full"
+                            v-if="props.payload.type === `log_application`"
+                            :payload="payload"
+                        />
+
+                        <!-- dump queries -->
+                        <DumpQueries
+                            class="w-full"
+                            v-if="props.payload.type === `queries`"
+                            :payload="payload"
+                        />
+
+                        <!-- dump query -->
+                        <DumpQuery
+                            class="w-full"
+                            v-if="props.payload.type === `query`"
+                            :payload="payload"
+                        />
+
+                        <DumpContains :payload="payload" />
+
+                        <DumpIsJson :payload="payload" />
+                    </div>
+                </div>
             </div>
-        </Transition>
+        </div>
     </div>
 </template>
 
@@ -188,14 +170,8 @@ const timeStore = useTimeStore();
 const collapseStore = useCollapse();
 const privacy = usePrivacy();
 
-const isOpen = ref(true);
 const viewed = ref(false);
 
-const markDumpItemViewed = () => {
-    if (isOpen.value) {
-        viewed.value = true;
-    }
-};
 const saveDump = () => window.ipcRenderer.send("main:save-dumps", JSON.stringify(props.payload));
 
 const removeSaveDump = () => {
@@ -208,8 +184,6 @@ const props = defineProps<{
     payload: Payload;
     inSavedDumpsWindow?: boolean;
 }>();
-
-watch(collapseStore, (value) => (isOpen.value = value.isOpen));
 
 onMounted(() => {
     if (props.payload.dump?.dump) {

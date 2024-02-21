@@ -1,21 +1,21 @@
 <template>
-    <div class="bg-base-100 p-2 space-y-2 dark:bg-base-800 rounded-sm pr-2">
+    <div class="space-y-2 rounded-sm pr-2">
         <div>
             <div>
-                <div class="relative rounded-md shadow-sm">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <!-- SearchIcon -->
-                        <MagnifyingGlassIcon class="w-5 h-5 text-base-700 dark:text-base-200" />
-                    </div>
-                    <input
-                        v-model="search"
-                        type="text"
-                        class="block w-full p-1.5 text-base-500 focus:outline-none focus:ring-1 focus:text-base-700 dark:bg-base-800 dark:text-base-300 dark:placeholder-base-400 rounded-md border-[1px] border-base-200 pl-10 dark:!border-base-600 focus:border-base-400 focus:ring-base-500 text-xs"
-                        placeholder="Search"
-                    />
+                <div class="flex justify-end">
+                    <label class="flex justify-end input input-bordered input-sm items-e gap-2 max-w-[200px]">
+                        <input
+                            v-model="search"
+                            type="text"
+                            class="grow text-base-content"
+                            placeholder="Search"
+                        />
+                        <MagnifyingGlassIcon class="w-4 h-4 text-base" />
+                    </label>
                 </div>
+
                 <div
-                    class="overflow-x-auto rounded-lg max-h-[412px] dstable"
+                    class="overflow-x-auto rounded-lg max-h-[412px]"
                     v-html="table"
                 ></div>
             </div>
@@ -50,8 +50,9 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
     const thead = document.createElement("thead");
     const thr = document.createElement("tr");
 
-    thr.setAttribute("class", "text-xs border border-base-300 rounded-md shadow-sm bg-base-200 dark:bg-base-700 dark:text-base-400 dark:border-base-800 text-gray-800");
+    thr.setAttribute("class", "text-xs uppercase");
     table.setAttribute("id", `table-${payloadId}`);
+    table.setAttribute("class", "table text-base-content");
 
     fieldTitles.forEach((fieldTitle) => {
         const th = document.createElement("th");
@@ -63,8 +64,6 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
 
     const tbody = document.createElement("tbody");
     let tr = document.createElement("tr");
-
-    tbody.setAttribute("class", "tbody bg-white");
 
     objectArray.forEach((object) => {
         tr = document.createElement("tr");

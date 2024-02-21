@@ -199,6 +199,12 @@ function createMenu(): void {
                     }
                 },
                 {
+                    label: "Settings",
+                    click: async (): Promise<void> => {
+                        mainWindow.webContents.send("app::toggle-settings");
+                    }
+                },
+                {
                     type: "separator"
                 },
                 {

@@ -17,7 +17,7 @@
             <svg
                 v-if="hasCount(screen.screen_name)"
                 :class="{ 'animate-bounce': !visualized[screen.screen_name] }"
-                class="-ml-0.5 h-2 w-2 text-primary"
+                class="-ml-0.5 h-2 w-2 text-primary-content"
                 fill="currentColor"
                 viewBox="0 0 8 8"
             >
