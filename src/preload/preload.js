@@ -1,9 +1,10 @@
-import { ipcRenderer, webFrame } from "electron";
+import { ipcRenderer, webFrame, shell } from "electron";
 import express from "express";
 import bodyParser from "body-parser";
 
 window.ipcRenderer = ipcRenderer;
 window.webFrame = webFrame;
+window.shell = shell;
 
 import cors from "cors";
 import fs from "fs";

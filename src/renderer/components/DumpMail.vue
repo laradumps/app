@@ -48,7 +48,7 @@
             >
                 <div class="flex gap-2">
                     <button
-                        class="btn-rounded-white"
+                        class="btn btn-secondary flex gap-2 items-center"
                         v-for="attachment in props.payload.mail.attachments"
                         :key="attachment"
                         @click.prevent="openInBrowser(attachment.path)"
@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import { defineProps, onMounted, ref } from "vue";
 import { Payload } from "@/types/Payload";
-import { CloudArrowDownIcon, EyeIcon, ArrowTopRightOnSquareIcon } from "@heroicons/vue/24/outline";
+import { CloudArrowDownIcon, ArrowTopRightOnSquareIcon } from "@heroicons/vue/24/outline";
 
 const filePath = ref("");
 
