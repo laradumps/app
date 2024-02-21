@@ -5,9 +5,9 @@
     >
         <div class="relative">
             <ListboxButton
-                class="relative w-full h-[34px] cursor-default rounded-md border border-base-300 bg-white py-1.5 pl-3 pr-10 text-left shadow-sm focus:border-base-700 focus:outline-none focus:ring-1 focus:ring-base-500 sm:text-sm dark:bg-base-800 dark:text-base-300 dark:border-base-600"
+                class="relative w-full h-[34px] cursor-default rounded-md border border-base-300  py-1.5 pl-3 pr-10 text-left shadow-sm focus:border-base-700 focus:outline-none focus:ring-1 focus:ring-base-500 sm:text-sm"
             >
-                <span class="block truncate">{{ selected?.label }}</span>
+                <span class="block truncate text-base-content">{{ selected?.label }}</span>
                 <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                     <ChevronUpDownIcon
                         class="h-5 w-5 text-gray-400"
@@ -22,7 +22,7 @@
                 leave-to-class="opacity-0"
             >
                 <ListboxOptions
-                    class="absolute z-300 dark:bg-base-800 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                    class="absolute z-300 dark:bg-base-800 mt-1 max-h-60 w-full overflow-auto rounded-md bg-base-300 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
                 >
                     <ListboxOption
                         as="template"

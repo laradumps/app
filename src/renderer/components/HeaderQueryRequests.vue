@@ -1,9 +1,9 @@
 <template>
     <div
         v-if="timeStore.groups.length > 0"
-        class="flex justify-between items-center gap-2 dark:text-base-400"
+        class="flex h-[40px] justify-between items-center gap-2 text-base-content"
     >
-        <span class="font-semibold text-sm select-none">{{ total }}</span>
+        <span class="font-semibold text-sm select-none ml-1">total: {{ total }}</span>
 
         <div class="flex gap-2 text-sm items-center">
             <SelectMenu

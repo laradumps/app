@@ -48,33 +48,18 @@
                 class="rounded-full btn-outline-gray h-[14px] w-[14px]"
             ></button>
         </div>
-
-        <div v-if="screenStore.screen === 'Queries'">
-            <HeaderQueryRequests
-                :payload="payload"
-                :total="total"
-            />
-        </div>
-        <GlobalSearch />
     </div>
 </template>
 
 <script setup>
 import { computed } from "vue";
 import { useColorStore } from "@/store/colors";
-import GlobalSearch from "@/components/GlobalSearch.vue";
-import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 import { useScreenStore } from "@/store/screen";
 
 const selectedColors = useColorStore();
 const screenStore = useScreenStore();
 
 defineProps({
-    total: {
-        type: Number,
-        default: 0,
-        required: true
-    },
     hasColor: {
         type: Boolean,
         required: true

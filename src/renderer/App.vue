@@ -71,19 +71,18 @@
                             <AppSetting :local-shortcut-list="localShortcutList" />
                         </div>
 
-                        <!-- header global filter -->
-                        <!--                        <div-->
-                        <!--                            class="py-2 px-1 min-[350px] bg-white dark:bg-base1-900 group flex justify-end items-center"-->
-                        <!--                            v-if="payload.length > 0 && !settingStore.setting"-->
-                        <!--                        >-->
-                        <!--                            <div class="flex gap-3 mr-2">-->
-                        <!--                                <HeaderGlobalFilter-->
-                        <!--                                    v-model:payload="payload"-->
-                        <!--                                    v-model:total="dumpsBagFiltered.length"-->
-                        <!--                                    v-model:has-color="hasColor"-->
-                        <!--                                />-->
-                        <!--                            </div>-->
-                        <!--                        </div>-->
+<!--                        &lt;!&ndash; header global filter &ndash;&gt;-->
+<!--                        <div-->
+<!--                            class="py-2 px-1 min-[350px] group flex justify-end items-center"-->
+<!--                            v-if="payload.length > 0 && !settingStore.setting"-->
+<!--                        >-->
+<!--                            <div class="flex gap-3 mr-2">-->
+<!--                                <HeaderGlobalFilter-->
+<!--                                    v-model:payload="payload"-->
+<!--                                    v-model:has-color="hasColor"-->
+<!--                                />-->
+<!--                            </div>-->
+<!--                        </div>-->
 
                         <AutoUpdater />
 
@@ -111,7 +110,16 @@
                             }"
                             class="rounded-sm text-base1-600 overflow-auto"
                         >
+
                             <div id="top"></div>
+
+                            <div class="px-3" v-if="screenStore.screen === 'Queries'">
+                                <HeaderQueryRequests
+                                    :payload="payload"
+                                    :total="dumpsBagFiltered.length"
+                                />
+                            </div>
+
                             <div
                                 class="mb-[60px]"
                                 :class="{
@@ -120,7 +128,7 @@
                                 v-if="payload.length > 0 && !settingStore.setting"
                             >
                                 <div
-                                    class="w-full pt-2"
+                                    class="w-full"
                                     :id="payload.id"
                                     v-for="payload in dumpsBagFiltered"
                                     :key="payload.sf_dump_id"
@@ -171,6 +179,8 @@ import AppHeader from "@/components/AppHeader.vue";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
+import HeaderGlobalFilter from "@/components/HeaderGlobalFilter.vue";
+import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);

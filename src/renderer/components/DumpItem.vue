@@ -1,5 +1,5 @@
 <template>
-    <div class="group text-sm flex transition-all !block">
+    <div class="group text-sm pt-2">
         <div class="px-3 w-full">
             <div class="collapse collapse-plus border border-base-300 bg-base-200">
                 <input
@@ -9,7 +9,7 @@
                 />
                 <div class="collapse-title text-xl font-medium">
                     <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
-                        <ul class="flex gap-6 !list-disc">
+                        <ul class="flex gap-6" style="list-style-type: disc;">
                             <li class="list-none">
                                 <div class="flex gap-1">
                                     <svg
