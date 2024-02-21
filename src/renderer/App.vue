@@ -48,7 +48,6 @@
 
             <div>
                 <TheNavBar
-                    v-if="menuOpenStore.show"
                     v-model:in-saved-dumps-window="inSavedDumpsWindow"
                     v-model:payload-count="payload.length"
                     @clear-all="clearAll($event)"
@@ -156,7 +155,6 @@ import { useAppearanceStore } from "@/store/appearance";
 import { useI18nStore } from "@/store/i18n";
 import { useReorder } from "@/store/reorder";
 import { useSettingStore } from "@/store/setting";
-import { useMenuOpenStore } from "@/store/menu-open";
 import { useTimeStore } from "@/store/time";
 import { useGlobalSearchStore } from "@/store/global-search";
 import { useI18n } from "vue-i18n";
@@ -211,7 +209,6 @@ const appearanceStore = useAppearanceStore();
 const localeStore = useI18nStore();
 const reorderStore = useReorder();
 const settingStore = useSettingStore();
-const menuOpenStore = useMenuOpenStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
@@ -462,21 +459,21 @@ onMounted(() => {
 
     window.ipcRenderer.on("app:local-shortcut-execute::clearAll", () => clearAll());
 
-    // if (appearanceStore.theme === "auto") {
-    //     window.ipcRenderer.send("native-theme", localStorage.theme);
-    // }
-    //
-    // window.ipcRenderer.on("app:theme-dark", () => {
-    //     if (appearanceStore.theme === "auto") {
-    //         appearanceStore.setTheme(false);
-    //     }
-    // });
-    //
-    // window.ipcRenderer.on("app:theme-light", () => {
-    //     if (appearanceStore.theme === "auto") {
-    //         appearanceStore.setLight(false);
-    //     }
-    // });
+    if (appearanceStore.theme === "auto") {
+        window.ipcRenderer.send("native-theme", appearanceStore.theme);
+    }
+
+    window.ipcRenderer.on("app:theme-dark", () => {
+        if (appearanceStore.theme === "auto") {
+            appearanceStore.setTheme('dim');
+        }
+    });
+
+    window.ipcRenderer.on("app:theme-light", () => {
+        if (appearanceStore.theme === "auto") {
+            appearanceStore.setTheme('dim');
+        }
+    });
 
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
 
