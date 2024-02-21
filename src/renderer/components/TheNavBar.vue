@@ -37,8 +37,7 @@
 
 <script setup>
 import { defineProps, defineEmits } from "vue";
-import { MagnifyingGlassIcon, TrashIcon } from "@heroicons/vue/24/outline";
-import NavBarDarkButton from "@/components/NavBarDarkButton.vue";
+import { TrashIcon } from "@heroicons/vue/24/outline";
 import NavBarCollapseAll from "@/components/NavBarCollapseAll.vue";
 import NavBarPrivacy from "@/components/NavBarPrivacy.vue";
 import NavBarSetting from "@/components/NavBarSetting.vue";
