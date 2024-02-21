@@ -27,7 +27,6 @@
             <!--                        </div>-->
         </nav>
 
-
         <div class="flex gap-3 items-center">
             <GlobalSearch />
             <NavBarAlwaysOnTop />

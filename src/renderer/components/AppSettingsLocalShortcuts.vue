@@ -4,10 +4,11 @@
             v-for="shortcut in shortcuts"
             :key="shortcut.alias"
         >
-            <label class="block text-sm font-normal leading-6 text-base1-900">
-                {{ $t(shortcut.label) }}
-            </label>
-            <div class="flex rounded-md shadow-sm border border-base1-300">
+            <label class="form-control w-full">
+                <div class="label">
+                    <span class="label-text">{{ $t(shortcut.label) }}</span>
+                </div>
+
                 <input
                     type="text"
                     :placeholder="editMode !== 'disabled' ? 'type here ...' : ''"
@@ -16,23 +17,24 @@
                     :name="shortcut.alias"
                     :data-label="shortcut.label"
                     :id="shortcut.alias"
-                    class="js-shortcut input"
+                    class="js-shortcut grow input input-bordered w-full"
                 />
-            </div>
+            </label>
         </div>
 
         <div class="flex gap-2 justify-end">
             <button
                 @click="editShortcut"
                 type="button"
-                class="btn-rounded-dark"
+                class="btn btn-default"
             >
                 {{ $t("settings.edit") }}
             </button>
 
             <button
                 @click="save"
-                class="btn-rounded-sky"
+                type="button"
+                class="btn btn-secondary"
             >
                 {{ $t("settings.save") }}
             </button>

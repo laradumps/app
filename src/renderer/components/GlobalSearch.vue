@@ -1,6 +1,11 @@
 <template>
     <label class="input input-bordered input-sm flex items-center gap-2 max-w-[200px]">
-        <input v-model="globalSearch.search" type="text" class="grow" placeholder="Search" />
+        <input
+            v-model="globalSearch.search"
+            type="text"
+            class="grow"
+            placeholder="Search"
+        />
         <MagnifyingGlassIcon class="w-4 h-4 opacity-70" />
     </label>
 </template>

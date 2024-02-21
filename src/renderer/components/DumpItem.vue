@@ -154,7 +154,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </Transition>
     </div>

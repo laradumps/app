@@ -48,6 +48,7 @@
 
             <div>
                 <TheNavBar
+                    v-if="!settingStore.setting"
                     v-model:in-saved-dumps-window="inSavedDumpsWindow"
                     v-model:payload-count="payload.length"
                     @clear-all="clearAll($event)"
@@ -465,13 +466,13 @@ onMounted(() => {
 
     window.ipcRenderer.on("app:theme-dark", () => {
         if (appearanceStore.theme === "auto") {
-            appearanceStore.setTheme('dim');
+            appearanceStore.setTheme("dim");
         }
     });
 
     window.ipcRenderer.on("app:theme-light", () => {
         if (appearanceStore.theme === "auto") {
-            appearanceStore.setTheme('dim');
+            appearanceStore.setTheme("dim");
         }
     });
 

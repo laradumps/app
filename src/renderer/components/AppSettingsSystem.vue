@@ -1,6 +1,5 @@
 <template>
     <div class="space-y-5">
-        <AppSettingsAppearance />
         <AppSettingsLanguage />
         <AppSettingsAutoUpdate />
 
@@ -26,7 +25,6 @@
 
 <script setup lang="ts">
 import AppSettingsLanguage from "@/components/AppSettingsLanguage.vue";
-import AppSettingsAppearance from "@/components/AppSettingsAppearance.vue";
 import { useI18n } from "vue-i18n";
 import AppSettingsAutoUpdate from "@/components/AppSettingsAutoUpdate.vue";
 

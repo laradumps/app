@@ -30,8 +30,10 @@
 
             <span v-text="screen.screen_name"></span>
 
-            <IconPin v-show="screenStore.pinned === screen.screen_name"
-                     class="w-3 h-3 !text-secondary-content" />
+            <IconPin
+                v-show="screenStore.pinned === screen.screen_name"
+                class="w-3 h-3 !text-secondary-content"
+            />
         </button>
     </div>
 </template>
