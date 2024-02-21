@@ -9,7 +9,10 @@
                 />
                 <div class="collapse-title text-xl font-medium">
                     <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
-                        <ul class="flex gap-6" style="list-style-type: disc;">
+                        <ul
+                            class="flex gap-6"
+                            v-bind:style="fullIdeHandle ? 'list-style-type: disc;' : ''"
+                        >
                             <li class="list-none">
                                 <div class="flex gap-1">
                                     <svg

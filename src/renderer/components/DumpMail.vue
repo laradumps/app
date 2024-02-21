@@ -1,56 +1,77 @@
 <template>
-    <div class="dark:text-base-400 rounded-sm px-2 p-1 space-y-3">
-        <div class="space-y-1">
-            <div class="dark:text-base-300 font-normal">Headers:</div>
+    <div class="text-base-content">
+        <div
+            role="tablist"
+            class="tabs tabs-lifted"
+        >
+            <input
+                type="radio"
+                :name="'my_tabs_' + props.payload.id"
+                role="tab"
+                class="tab"
+                aria-label="Header"
+                checked
+            />
             <div
-                v-for="header in props.payload.mail.headers"
-                :key="header"
-                v-text="header"
-            ></div>
-        </div>
+                role="tabpanel"
+                class="tab-content bg-base-100 p-4 rounded-md"
+            >
+                <div
+                    v-for="header in props.payload.mail.headers"
+                    :key="header"
+                    v-text="header"
+                ></div>
 
-        <div class="space-y-1">
-            <div class="dark:text-base-300 font-normal">Attachments:</div>
-            <div class="flex gap-2">
-                <button
-                    class="btn-rounded-white"
-                    v-for="attachment in props.payload.mail.attachments"
-                    :key="attachment"
-                    @click.prevent="openInBrowser(attachment.path)"
-                >
-                    <CloudArrowDownIcon class="w-4 h-4" />
-                    {{ attachment.filename }}
-                </button>
-            </div>
-        </div>
-
-        <div>
-            <div class="dark:text-base-300 font-normal flex justify-between">
-                Content:
-                <button
-                    class="flex gap-2"
-                    @click.prevent="createNewWindow()"
-                >
-                    <ArrowTopRightOnSquareIcon class="w-4" />
-                    New Window
-                </button>
+                <div class="flex justify-center mt-3 my-2">
+                    <button
+                        @click.prevent="createNewWindow()"
+                        class="btn btn-secondary !h-[38px] !px-4"
+                    >
+                        View Content
+                        <ArrowTopRightOnSquareIcon class="w-5" />
+                    </button>
+                </div>
             </div>
 
-            <div class="mt-2 h-[415px] w-full">
-                <iframe
-                    :src="`http://localhost:9191/${filePath}.html`"
-                    width="100%"
-                    height="100%"
-                ></iframe>
-            </div>
-        </div>
-
-        <div class="space-y-1">
-            <div class="dark:text-base-300 font-normal">Details:</div>
+            <input
+                v-if="props.payload.mail.attachments.length > 0"
+                type="radio"
+                :name="'my_tabs_' + props.payload.id"
+                role="tab"
+                class="tab"
+                aria-label="Attachments"
+            />
             <div
-                class="bg-base-100 space-y-2 dark:bg-base-800 rounded-sm p-2"
-                v-html="props.payload.mail.details[0]"
-            ></div>
+                v-if="props.payload.mail.attachments.length > 0"
+                role="tabpanel"
+                class="tab-content bg-base-100 border-base-300 rounded-box p-6"
+            >
+                <div class="flex gap-2">
+                    <button
+                        class="btn-rounded-white"
+                        v-for="attachment in props.payload.mail.attachments"
+                        :key="attachment"
+                        @click.prevent="openInBrowser(attachment.path)"
+                    >
+                        <CloudArrowDownIcon class="w-4 h-4" />
+                        {{ attachment.filename }}
+                    </button>
+                </div>
+            </div>
+
+            <input
+                type="radio"
+                :name="'my_tabs_' + props.payload.id"
+                role="tab"
+                class="tab"
+                aria-label="Dump"
+            />
+            <div
+                role="tabpanel"
+                class="tab-content bg-base-100 border-base-300 rounded-box p-6"
+            >
+                <div v-html="props.payload.mail.details[0]"></div>
+            </div>
         </div>
     </div>
 </template>
@@ -58,7 +79,7 @@
 <script setup lang="ts">
 import { defineProps, onMounted, ref } from "vue";
 import { Payload } from "@/types/Payload";
-import { CloudArrowDownIcon, ArrowTopRightOnSquareIcon } from "@heroicons/vue/24/outline";
+import { CloudArrowDownIcon, EyeIcon, ArrowTopRightOnSquareIcon } from "@heroicons/vue/24/outline";
 
 const filePath = ref("");
 

@@ -1,5 +1,5 @@
 <template>
-    <div class="border border-base1-300 rounded-sm">
+    <div class="text-base-content">
         <div v-html="props.payload.mailable.html"></div>
     </div>
 </template>

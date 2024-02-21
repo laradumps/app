@@ -71,18 +71,18 @@
                             <AppSetting :local-shortcut-list="localShortcutList" />
                         </div>
 
-<!--                        &lt;!&ndash; header global filter &ndash;&gt;-->
-<!--                        <div-->
-<!--                            class="py-2 px-1 min-[350px] group flex justify-end items-center"-->
-<!--                            v-if="payload.length > 0 && !settingStore.setting"-->
-<!--                        >-->
-<!--                            <div class="flex gap-3 mr-2">-->
-<!--                                <HeaderGlobalFilter-->
-<!--                                    v-model:payload="payload"-->
-<!--                                    v-model:has-color="hasColor"-->
-<!--                                />-->
-<!--                            </div>-->
-<!--                        </div>-->
+                        <!--                        &lt;!&ndash; header global filter &ndash;&gt;-->
+                        <!--                        <div-->
+                        <!--                            class="py-2 px-1 min-[350px] group flex justify-end items-center"-->
+                        <!--                            v-if="payload.length > 0 && !settingStore.setting"-->
+                        <!--                        >-->
+                        <!--                            <div class="flex gap-3 mr-2">-->
+                        <!--                                <HeaderGlobalFilter-->
+                        <!--                                    v-model:payload="payload"-->
+                        <!--                                    v-model:has-color="hasColor"-->
+                        <!--                                />-->
+                        <!--                            </div>-->
+                        <!--                        </div>-->
 
                         <AutoUpdater />
 
@@ -110,10 +110,12 @@
                             }"
                             class="rounded-sm text-base1-600 overflow-auto"
                         >
-
                             <div id="top"></div>
 
-                            <div class="px-3" v-if="screenStore.screen === 'Queries'">
+                            <div
+                                class="px-3"
+                                v-if="screenStore.screen === 'Queries'"
+                            >
                                 <HeaderQueryRequests
                                     :payload="payload"
                                     :total="dumpsBagFiltered.length"
