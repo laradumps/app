@@ -294,7 +294,26 @@ function createMenu(): void {
                     click: () => {
                         mainWindow.webContents.send("changeTheme", { theme: "dim" });
                     }
+                },
+                {
+                    label: "Lemonade",
+                    click: () => {
+                        mainWindow.webContents.send("changeTheme", { theme: "lemonade" });
+                    }
+                },
+                {
+                    label: "Retro",
+                    click: () => {
+                        mainWindow.webContents.send("changeTheme", { theme: "retro" });
+                    }
+                },
+                {
+                    label: "Halloween",
+                    click: () => {
+                        mainWindow.webContents.send("changeTheme", { theme: "halloween" });
+                    }
                 }
+
             ]
         }
     ];

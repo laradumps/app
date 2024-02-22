@@ -4,10 +4,10 @@
         @click="privacyStore.toggle()"
     >
         <div v-if="privacyStore.isOpen">
-            <EyeIcon class="h-5 w-5 text-base hover:text-neutral" />
+            <EyeIcon class="h-5 w-5 text-base hover:opacity-75" />
         </div>
         <div v-if="!privacyStore.isOpen">
-            <EyeSlashIcon class="h-5 w-5 text-base hover:text-neutral" />
+            <EyeSlashIcon class="h-5 w-5 text-base hover:opacity-75" />
         </div>
     </a>
 </template>

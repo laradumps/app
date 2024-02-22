@@ -1,5 +1,5 @@
 pre {
-    @apply !text-xs;
+    @apply !text-[11px];
 }
 
 pre.sf-dump-expanded {
@@ -12,21 +12,6 @@ pre.sf-dump .sf-dump-ref {
 
 pre.sf-dump .sf-dump-ref span {
     @apply px-1 text-[0.8rem];
-}
-
-pre.sf-dump .sf-dump-public,
-pre.sf-dump .sf-dump-protected,
-pre.sf-dump .sf-dump-private {
-    @apply !text-base-content text-sm;
-}
-
-pre.sf-dump .sf-dump-ref,
-pre.sf-dump .sf-dump-note {
-    @apply text-primary font-normal !text-sm leading-4;
-}
-
-pre.sf-dump .sf-dump-str {
-    @apply text-base !font-normal text-sm leading-tight;
 }
 
 pre.sf-dump .sf-dump-index {
@@ -64,12 +49,6 @@ pre {
 pre.sf-dump .sf-dump-note {
     @apply text-sm;
     line-height: unset;
-}
-
-pre.sf-dump .sf-dump-public,
-pre.sf-dump .sf-dump-protected,
-pre.sf-dump .sf-dump-private {
-    @apply !text-base-content;
 }
 
 pre.sf-dump:after {
@@ -217,8 +196,23 @@ pre.sf-dump .sf-dump-ns {
     display: none;
 }
 
+pre.sf-dump .sf-dump-ref,
+pre.sf-dump .sf-dump-note {
+    @apply text-primary font-normal !text-sm leading-4;
+}
+
 pre.sf-dump .sf-dump-key {
-    @apply text-base-content text-sm font-normal;
+    @apply text-base-content text-sm font-light;
+}
+
+pre.sf-dump .sf-dump-public,
+pre.sf-dump .sf-dump-protected,
+pre.sf-dump .sf-dump-private {
+    @apply text-base-content text-sm !font-light;
+}
+
+pre.sf-dump .sf-dump-str {
+    @apply text-primary !font-normal text-sm leading-tight;
 }
 
 .sf-dump-search-input-previous {
@@ -228,3 +222,4 @@ pre.sf-dump .sf-dump-key {
 .sf-dump-search-input-next {
     @apply p-1 !border-none mr-0.5 flex !items-center;
 }
+

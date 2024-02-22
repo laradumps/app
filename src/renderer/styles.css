@@ -44,3 +44,17 @@ table {
     padding-right: 8px;
     border-right: 0 !important;
 }
+
+/* daisyui */
+.collapse {
+    @apply rounded-md
+}
+.collapse-title, :where(.collapse > input[type="checkbox"]), :where(.collapse > input[type="radio"]) {
+    padding-inline-end: 1rem !important;
+    min-height: 2.75rem;
+    padding: 0.5rem;
+}
+.collapse-plus > .collapse-title:after {
+    top: 0.4rem;
+    display:none !important;
+}

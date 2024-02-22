@@ -14,26 +14,9 @@
                             v-bind:style="fullIdeHandle ? 'list-style-type: disc;' : ''"
                         >
                             <li class="list-none">
-                                <div class="flex gap-1">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke-width="1.5"
-                                        stroke="currentColor"
-                                        class="w-3"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                        />
-                                    </svg>
-
-                                    {{ props.payload.date_time }}
-                                </div>
+                                {{ props.payload.date_time }}
                             </li>
-                            <li>
+                            <li style="margin-left: -5px;">
                                 <DumpLink
                                     v-if="fullIdeHandle"
                                     :class="{ 'blur-sm': !privacy.isOpen }"

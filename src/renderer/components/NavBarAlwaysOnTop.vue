@@ -2,10 +2,9 @@
     <button
         :title="$t('always_on_top')"
         :class="{
-            '!btn-primary text-secondary-content': isAlwaysOnTop
+            '!text-primary': isAlwaysOnTop
         }"
         @click="toggleAlwaysOnTop()"
-        class="btn rounded-full"
     >
         <IconPin class="w-3 cursor-pointer text-content hover:text-neutral" />
     </button>

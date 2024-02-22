@@ -8,7 +8,7 @@
                 class="justify-center cursor-pointer text-base-500 group flex items-center p-2"
                 @click="clear()"
             >
-                <TrashIcon class="w-4 text-base hover:text-neutral" />
+                <TrashIcon class="w-4 text-base hover:opacity-75" />
             </a>
 
             <!-- saved dumps -->
@@ -28,8 +28,8 @@
         </nav>
 
         <div class="flex gap-3 items-center">
-            <GlobalSearch />
             <NavBarAlwaysOnTop />
+            <GlobalSearch />
         </div>
     </div>
 </template>
