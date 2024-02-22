@@ -22,7 +22,7 @@
                 leave-to-class="opacity-0"
             >
                 <ListboxOptions
-                    class="absolute z-300 dark:bg-base-800 mt-1 max-h-60 w-full overflow-auto rounded-md bg-base-300 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                    class="absolute z-300 mt-1 max-h-60 w-full overflow-auto rounded-md bg-base-300 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
                 >
                     <ListboxOption
                         as="template"
@@ -31,12 +31,12 @@
                         :value="item"
                         v-slot="{ active, selected }"
                     >
-                        <li :class="[active ? 'text-white bg-base-600' : 'text-base-900 dark:text-base-300 ', 'relative cursor-default select-none py-2 pl-8 pr-4 text-xs']">
+                        <li :class="[active ? 'text-primary bg-base-600' : 'text-base-900', 'relative hover:text-base-900 cursor-pointer select-none py-2 pl-8 pr-4 text-xs']">
                             <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{ item.label }}</span>
 
                             <span
                                 v-if="selected"
-                                :class="[active ? 'text-white' : 'text-base-600', 'absolute inset-y-0 left-0 flex items-center pl-1.5']"
+                                :class="[active ? 'text-primary' : 'text-base-600', 'absolute inset-y-0 left-0 flex items-center pl-1.5']"
                             >
                                 <CheckIcon
                                     class="h-5 w-5"
