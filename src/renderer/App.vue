@@ -231,7 +231,7 @@ const i18n = useI18n();
 const assetsPath = ref();
 
 window.ipcRenderer.on("assetsPath", (event, args) => {
-    nextTick(() => (document.getElementById("themeStylesheet").href = assetsPath.value + "/sf-dump-dark.css"));
+    nextTick(() => (document.getElementById("themeStylesheet").href = args + "/sf-dump-dark.css"));
     assetsPath.value = args;
 });
 

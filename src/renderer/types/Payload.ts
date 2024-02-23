@@ -75,6 +75,7 @@ export interface LogApplicationPayload {
     message: string;
     level: string;
     context: string | string[];
+    exception: any;
     value: string;
 }
 

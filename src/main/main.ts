@@ -174,6 +174,8 @@ function createWindow(): BrowserWindow {
 
     globalShortcut.register("CommandOrControl+Shift+X", (): void => {
         mainWindow.reload();
+
+        mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
     });
 
     win.once("ready-to-show", (): void => {
@@ -561,6 +563,7 @@ ipcMain.on("main:is-always-on-top", (): void => {
 
 ipcMain.on("main:get-app-version", (): void => {
     mainWindow.webContents.send("main:app-version", { version: app.getVersion() });
+    mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
 });
 
 ipcMain.on("main:show", (): void => {
