@@ -57,7 +57,7 @@
                         <ClipboardIcon class="w-[1.1rem] h-[1.1rem] text-base-content" />
                     </div>
 
-                    <span class="font-semibold text-xs text-secondary"> {{ props.payload.queries.time }} <span class="font-normal">ms</span></span>
+                    <span class="font-semibold text-sm badge badge-primary text-primary-content"> {{ props.payload.queries.time }} <span class="font-normal text-xs">ms</span></span>
                 </div>
             </div>
         </div>

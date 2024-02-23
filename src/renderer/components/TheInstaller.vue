@@ -66,7 +66,7 @@
         <div class="text-lg text-left font-normal">
             {{ $t("installer.configure_lara_dumps") }}
         </div>
-        <div class="mt-4">
+        <div class="mt-4 form-control">
             <label
                 :key="env.id"
                 :for="`env-` + env.id"
@@ -78,7 +78,7 @@
                             :name="`env-` + env.id"
                             :id="`env-` + env.id"
                             type="checkbox"
-                            class="h-4 w-4 checkbox"
+                            class="checkbox checkbox-success"
                             v-model="env.selected"
                         />
                     </div>
@@ -92,14 +92,14 @@
 
         <div class="flex justify-end gap-2">
             <button
-                class="btn-rounded-negative text-sm font-semibold"
+                class="btn btn-default text-sm font-semibold"
                 @click="cancel"
             >
                 {{ $t("installer.cancel") }}
             </button>
 
             <button
-                class="btn-rounded-sky text-sm font-semibold"
+                class="btn btn-primary text-sm font-semibold"
                 @click="save"
             >
                 {{ $t("installer.save") }}

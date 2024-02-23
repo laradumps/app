@@ -179,6 +179,9 @@ function createWindow(): BrowserWindow {
     win.once("ready-to-show", (): void => {
         win.show();
         win.focus();
+
+        mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
+
         if (isDev) {
             win.webContents.openDevTools();
         }
@@ -312,8 +315,13 @@ function createMenu(): void {
                     click: () => {
                         mainWindow.webContents.send("changeTheme", { theme: "halloween" });
                     }
+                },
+                {
+                    label: "Cyberpunk",
+                    click: () => {
+                        mainWindow.webContents.send("changeTheme", { theme: "cyberpunk" });
+                    }
                 }
-
             ]
         }
     ];

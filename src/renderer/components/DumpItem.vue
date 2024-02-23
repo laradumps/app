@@ -1,7 +1,9 @@
 <template>
     <div class="group text-sm pt-2">
         <div class="px-3 w-full">
-            <div class="collapse collapse-plus border border-base-300 bg-base-200">
+            <div :class="{
+                [`!border-l-4 ` + color]: typeof color !== 'undefined',
+            }" class="collapse collapse-plus border border-base-300 bg-base-200">
                 <input
                     type="checkbox"
                     checked
@@ -16,7 +18,7 @@
                             <li class="list-none">
                                 {{ props.payload.date_time }}
                             </li>
-                            <li style="margin-left: -5px;">
+                            <li style="margin-left: -5px">
                                 <DumpLink
                                     v-if="fullIdeHandle"
                                     :class="{ 'blur-sm': !privacy.isOpen }"
@@ -33,7 +35,38 @@
                                 class="text-[0.70rem] text-primary-100 select-none"
                                 v-text="`(${props.payload.dump.variable_type})`"
                             ></div>
-                            <div class="badge badge-primary text-[11px]">{{ props.payload.label ?? props.payload.type }}</div>
+
+                            <div
+                                v-if="props.payload.type !== `queries`"
+                                :class="{
+                                    'badge-warning alert-warning': props.payload.label === 'warning',
+                                    'badge-error alert-error': props.payload.label === 'error' || props.payload.label === 'critical',
+                                    'badge-success alert-success': props.payload.label === 'notice',
+                                    'badge-info alert-info': props.payload.label === 'debug',
+                                }"
+                                class="badge flex gap-2 badge-secondary text-badge-content text-[11px]"
+                            >
+                                <svg
+                                    v-if="props.payload.label === 'warning' || props.payload.label === 'notice'"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="stroke-current shrink-0 h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                    />
+                                </svg>
+
+                                <svg v-if="props.payload.label === 'error' || props.payload.label === 'critical'" xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+
+                                <svg v-if="props.payload.label === 'info'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+
+                                {{ props.payload.label ?? props.payload.type }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -210,20 +243,20 @@ const color = computed(() => {
 
     switch (color) {
         case "red":
-            border = "border-red-500";
+            border = "border-l-error";
             break;
         case "warning":
         case "orange":
-            border = "border-orange-500";
+            border = "border-l-warning";
             break;
         case "green":
-            border = "border-green-500";
+            border = "border-l-success";
             break;
         case "blue":
-            border = "border-blue-500";
+            border = "border-l-info";
             break;
         case "gray":
-            border = "border-gray-500";
+            border = "border-l-neutral";
             break;
         case "black":
             border = "border-black";

@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-3">
         <p
-            class="pb-1 text-accent"
+            class="pb-1 font-normal text-base-content"
             v-text="props.payload.model?.className"
         ></p>
         <div v-html="props.payload.model?.attributes[0]"></div>

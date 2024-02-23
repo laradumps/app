@@ -16,7 +16,7 @@
                 leave-from="opacity-100"
                 leave-to="opacity-0"
             >
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                <div class="fixed inset-0 bg-base-content bg-opacity-75 transition-opacity" />
             </TransitionChild>
 
             <div class="fixed inset-0 z-10 overflow-y-auto">
@@ -31,7 +31,7 @@
                         leave-to="opacity-0 tranbase-y-4 sm:tranbase-y-0 sm:scale-95"
                     >
                         <DialogPanel
-                            class="relative transform overflow-hidden rounded-lg bg-white dark:bg-base-700 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
+                            class="relative transform overflow-hidden bg-neutral rounded-lg bg-base text-base-content px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
                         >
                             <div>
                                 <div class="mt-3 text-center sm:mt-5">
@@ -50,7 +50,7 @@
                                 <button
                                     v-if="modalAttributes.cancelLabel"
                                     type="button"
-                                    class="btn-white"
+                                    class="btn btn-primary"
                                     @click="modalAttributes.open = false"
                                 >
                                     {{ modalAttributes.cancelLabel }}

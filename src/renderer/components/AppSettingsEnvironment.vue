@@ -66,7 +66,7 @@
                                                         <input
                                                             :name="`env-` + env.id"
                                                             type="checkbox"
-                                                            class="h-4 w-4 checkbox"
+                                                            class="checkbox checkbox-secondary"
                                                             v-model="env.selected"
                                                         />
                                                     </div>
@@ -139,7 +139,7 @@
                                     v-if="environments.length > 0"
                                     @click="removeEnvironment"
                                     type="button"
-                                    class="btn-rounded-negative"
+                                    class="btn btn-danger"
                                 >
                                     {{ $t("settings.remove") }}
                                 </button>
@@ -148,7 +148,7 @@
                                     v-if="environments.length > 0"
                                     @click="saveEnvironment"
                                     type="button"
-                                    class="btn-rounded-sky"
+                                    class="btn btn-primary"
                                 >
                                     {{ $t("settings.save") }}
                                 </button>

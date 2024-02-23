@@ -228,7 +228,18 @@ const globalSearchStore = useGlobalSearchStore();
 
 const i18n = useI18n();
 
+const assetsPath = ref();
+
+window.ipcRenderer.on("assetsPath", (event, args) => {
+    nextTick(() => (document.getElementById("themeStylesheet").href = assetsPath.value + "/sf-dump-dark.css"));
+    assetsPath.value = args;
+});
+
 window.ipcRenderer.on("changeTheme", (event, args) => {
+    const theme = ["limonade", "retro", "light", "cyberpunk"].includes(args.theme) ? assetsPath.value + "/sf-dump-light.css" : assetsPath.value + "/sf-dump-dark.css";
+
+    document.getElementById("themeStylesheet").href = theme;
+
     appearanceStore.setTheme(args.theme);
 });
 
@@ -426,6 +437,10 @@ onMounted(() => {
     setTimeout(() => {
         document.title = "LaraDumps - " + appVersion.value;
     }, 300);
+
+    const theme = ["limonade", "retro", "light", "cyberpunk"].includes(appearanceStore.theme) ? assetsPath.value + "/sf-dump-light.css" : assetsPath.value + "/sf-dump-dark.css";
+
+    document.getElementById("themeStylesheet").href = theme;
 
     window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
         if (arg === 0) {
