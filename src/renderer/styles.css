@@ -54,9 +54,5 @@ table {
 :where(.collapse > input[type="radio"]) {
     padding-inline-end: 1rem !important;
     min-height: 2.75rem;
-    padding: 0.5rem;
 }
-.collapse-plus > .collapse-title:after {
-    top: 0.4rem;
-    display: none !important;
-}
+

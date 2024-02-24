@@ -170,13 +170,13 @@ pre.sf-dump .sf-dump-ref {
     color: #a0a0a0;
 }
 pre.sf-dump .sf-dump-public {
-    color: #ffffff;
+    @apply text-base-content
 }
 pre.sf-dump .sf-dump-protected {
-    color: #ffffff;
+    @apply text-base-content
 }
 pre.sf-dump .sf-dump-private {
-    color: #ffffff;
+    @apply text-base-content
 }
 pre.sf-dump .sf-dump-meta {
     color: #b729d9;

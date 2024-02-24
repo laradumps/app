@@ -147,6 +147,7 @@ pre.sf-dump .sf-dump-default {
     position: relative;
     z-index: 99999;
     word-break: break-all;
+    padding: 0;
 }
 .sf-dump-str {
     font-size: 0.75rem !important;
@@ -169,13 +170,13 @@ pre.sf-dump .sf-dump-ref {
     color: #6e6e6e;
 }
 pre.sf-dump .sf-dump-public {
-    color: #262626;
+    @apply text-base-content
 }
 pre.sf-dump .sf-dump-protected {
-    color: #262626;
+    @apply text-base-content
 }
 pre.sf-dump .sf-dump-private {
-    color: #262626;
+    @apply text-base-content
 }
 pre.sf-dump .sf-dump-meta {
     color: #b729d9;

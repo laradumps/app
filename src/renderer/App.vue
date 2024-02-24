@@ -181,7 +181,6 @@ import AppHeader from "@/components/AppHeader.vue";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
-import HeaderGlobalFilter from "@/components/HeaderGlobalFilter.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 
 markRaw(ThePackageUpdateInfo);

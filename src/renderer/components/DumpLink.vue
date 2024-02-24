@@ -4,7 +4,7 @@
         :title="title"
         class="flex items-center group"
     >
-        <div class="break-all text-[12px] cursor-pointer">
+        <div class="break-all tracking-wider hover:opacity-75 cursor-pointer">
             <span>{{ value }}</span>
         </div>
     </a>

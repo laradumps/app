@@ -1,15 +1,10 @@
 <template>
     <div class="group text-sm pt-2">
         <div class="px-3 w-full">
-            <div :class="{
+            <details :class="{
                 [`!border-l-4 ` + color]: typeof color !== 'undefined',
-            }" class="collapse collapse-plus border border-base-300 bg-base-200">
-                <input
-                    type="checkbox"
-                    checked
-                    class="peer"
-                />
-                <div class="collapse-title text-xl font-medium">
+            }" class="collapse border border-base-300 bg-base-200" open>
+                <summary class="collapse-title text-xl font-medium">
                     <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
                         <ul
                             class="flex gap-6"
@@ -69,7 +64,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </summary>
                 <div class="collapse-content">
                     <div>
                         <div
@@ -155,7 +150,7 @@
                         <DumpIsJson :payload="payload" />
                     </div>
                 </div>
-            </div>
+            </details>
         </div>
     </div>
 </template>
@@ -223,7 +218,7 @@ onMounted(() => {
 
 const fullIdeHandle = computed(() => {
     if (props.payload.ide_handle.line.toString() !== "") {
-        return props.payload.ide_handle.class_name + ":" + props.payload.ide_handle.line;
+        return props.payload.ide_handle.path + ":" + props.payload.ide_handle.line;
     }
 
     if (props.payload.ide_handle.class_name === "Tinker") {
