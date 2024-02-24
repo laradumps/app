@@ -55,4 +55,6 @@ table {
     padding-inline-end: 1rem !important;
     min-height: 2.75rem;
 }
-
+.collapse-title {
+    @apply py-1.5
+}

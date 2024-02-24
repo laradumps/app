@@ -3,7 +3,7 @@
         <div class="px-3 w-full">
             <details :class="{
                 [`!border-l-4 ` + color]: typeof color !== 'undefined',
-            }" class="collapsable collapse border border-base-300 bg-base-200" open>
+            }" class="collapsable collapse border border-base-300 bg-base-300" open>
                 <summary class="collapse-title text-xl font-medium">
                     <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
                         <ul
@@ -87,12 +87,12 @@
                         <div
                             v-if="props.payload.type === 'dump'"
                             v-show="props.payload.dump?.dump !== ''"
-                            class="mt-2 text-base-content"
+                            class="text-base-content"
                             v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"
                         ></div>
 
                         <DumpModel
-                            class="mt-2 text-base-content"
+                            class="text-base-content"
                             v-if="props.payload.type === `model`"
                             :payload="payload"
                         />

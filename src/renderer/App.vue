@@ -182,6 +182,7 @@ import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
+import { usePrivacy } from "@/store/privacy";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -224,6 +225,7 @@ const settingStore = useSettingStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
+const privacyStore = usePrivacy();
 
 const i18n = useI18n();
 
@@ -502,7 +504,10 @@ onMounted(() => {
         }
     });
 
+    window.ipcRenderer.on("app::toggle-privacy", () => privacyStore.toggle());
+    window.ipcRenderer.on("app::toggle-reorder", () => reorderStore.toggle());
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
+    window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"))
 
     window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
         localShortcutList.value = arg;

@@ -242,6 +242,29 @@ function createMenu(): void {
             ]
         },
         {
+            label: "Options",
+            submenu: [
+                {
+                    label: "Reorder",
+                    click: async (): Promise<void> => {
+                        mainWindow.webContents.send("app::toggle-reorder");
+                    }
+                },
+                {
+                    label: "Privacy Mode",
+                    click: async (): Promise<void> => {
+                        mainWindow.webContents.send("app::toggle-privacy");
+                    }
+                },
+                {
+                    label: "Saved Dumps",
+                    click: async (): Promise<void> => {
+                        mainWindow.webContents.send("app::show-saved-dumps");
+                    }
+                }
+            ]
+        },
+        {
             label: "Theme",
             // { value: "light", label: "Light" },
             // { value: "dark", label: "Dark" },
