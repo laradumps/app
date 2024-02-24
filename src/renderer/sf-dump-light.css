@@ -149,7 +149,6 @@ pre.sf-dump .sf-dump-default {
     word-wrap: break-word;
     white-space: pre-wrap;
     position: relative;
-    z-index: 99999;
     word-break: break-all;
 }
 pre.sf-dump .sf-dump-num {

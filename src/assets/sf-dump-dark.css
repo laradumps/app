@@ -1,5 +1,5 @@
 .sf-dump {
-    @apply !leading-5;
+    @apply !leading-6;
 }
 
 .sf-js-enabled pre.sf-dump .sf-dump-compact,
@@ -144,7 +144,6 @@ pre.sf-dump .sf-dump-default {
     word-wrap: break-word;
     white-space: pre-wrap;
     position: relative;
-    z-index: 99999;
     word-break: break-all;
     padding: 0;
     font-size: 0.75rem;
@@ -174,6 +173,9 @@ pre.sf-dump .sf-dump-public {
 }
 pre.sf-dump .sf-dump-protected {
     @apply text-base-content
+}
+pre.sf-dump .sf-dump-compact {
+    display: block;
 }
 pre.sf-dump .sf-dump-private {
     @apply text-base-content

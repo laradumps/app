@@ -1,5 +1,5 @@
 .sf-dump {
-    @apply !leading-5;
+    @apply !leading-6;
 }
 
 .sf-js-enabled pre.sf-dump .sf-dump-compact,
@@ -145,7 +145,6 @@ pre.sf-dump .sf-dump-default {
     word-wrap: break-word;
     white-space: pre-wrap;
     position: relative;
-    z-index: 99999;
     word-break: break-all;
     padding: 0;
 }

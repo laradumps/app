@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, onMounted } from "vue";
+import { defineProps, nextTick, onMounted } from "vue";
 import { Payload } from "@/types/Payload";
 
 const props = defineProps<{

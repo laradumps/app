@@ -141,8 +141,7 @@
             "description": "LaraDumps a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
             "icon": "./build/icon.icns",
             "target": [
-                "AppImage",
-                "snap"
+                "AppImage"
             ],
             "desktop": {
                 "Name": "LaraDumps",

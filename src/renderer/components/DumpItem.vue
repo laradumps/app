@@ -25,11 +25,6 @@
                         </ul>
 
                         <div class="flex gap-2 items-center">
-                            <div
-                                v-if="props.payload.dump?.variable_type !== undefined"
-                                class="text-[0.70rem] text-primary-100 select-none"
-                                v-text="`(${props.payload.dump.variable_type})`"
-                            ></div>
 
                             <div
                                 v-if="props.payload.type !== `queries`"
@@ -67,6 +62,28 @@
                 </summary>
                 <div class="collapse-content">
                     <div>
+
+                        <div class="flex opacity-0 group-hover:opacity-100 transition-all absolute right-4 z-300 gap-4 items-center text-base-content">
+                            <!-- variable type -->
+                            <div
+                                v-if="props.payload.dump?.variable_type !== undefined"
+                                class="text-[0.70rem]"
+                                v-text="`(${props.payload.dump.variable_type})`"
+                            ></div>
+
+                            <CopyToClick @click="copyDump" />
+
+                            <!-- save dumps -->
+                            <div
+                                @click="saveDump"
+                                class="cursor-pointer opacity-60 hover:opacity-100"
+                                v-if="!inSavedDumpsWindow"
+                            >
+                                <IconSave class="w-3 h-3 opacity-70" id="saveIcon" />
+                            </div>
+
+                        </div>
+
                         <div
                             v-if="props.payload.type === 'dump'"
                             v-show="props.payload.dump?.dump !== ''"
@@ -156,10 +173,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, onMounted, ref, watch } from "vue";
-import { TrashIcon } from "@heroicons/vue/20/solid";
-import IconChevronRight from "@/components/Icons/IconChevronRight.vue";
-import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
+import { computed, defineProps, nextTick, onMounted, ref, watch } from "vue";
+import { CheckIcon } from "@heroicons/vue/20/solid";
 import { useCollapse } from "@/store/collapse";
 import { usePrivacy } from "@/store/privacy";
 import { useTimeStore } from "@/store/time";
@@ -179,6 +194,9 @@ import DumpTableV2 from "@/components/DumpTableV2.vue";
 import DumpQuery from "@/components/DumpQuery.vue";
 import { Payload } from "@/types/Payload";
 import DumpMail from "@/components/DumpMail.vue";
+import CopyToClick from "@/components/CopyToClick.vue";
+
+import { ClipboardIcon } from "@heroicons/vue/24/outline";
 
 const timeStore = useTimeStore();
 const collapseStore = useCollapse();
@@ -199,6 +217,13 @@ const props = defineProps<{
     inSavedDumpsWindow?: boolean;
 }>();
 
+const copyDump = () => {
+    const value = document.getElementById(`sf-dump-${props.payload.sf_dump_id}`)?.innerText
+
+    navigator.clipboard.writeText(value).then(() => {})
+    changeIcon()
+}
+
 onMounted(() => {
     if (props.payload.dump?.dump) {
         const { dump } = props.payload.dump;
@@ -216,9 +241,27 @@ onMounted(() => {
     }
 });
 
+const changeIcon = () => {
+    document.getElementById('saveIcon').innerHTML = '√';
+    setTimeout(function () {
+        document.getElementById('saveIcon').innerHTML = '';
+    }, 2000);
+}
+
+const expandAll = () => {
+    setTimeout(() => {
+        const elements = document.querySelectorAll(`#sf-dump-${props.payload.sf_dump_id} .sf-dump-toggle`);
+        elements.forEach((element, index) => {
+            if (index !== 0) {
+                element.click();
+            }
+        });
+    }, 1);
+}
+
 const fullIdeHandle = computed(() => {
     if (props.payload.ide_handle.line.toString() !== "") {
-        return props.payload.ide_handle.path + ":" + props.payload.ide_handle.line;
+        return props.payload.ide_handle.class_name + ":" + props.payload.ide_handle.line;
     }
 
     if (props.payload.ide_handle.class_name === "Tinker") {

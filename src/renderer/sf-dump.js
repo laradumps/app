@@ -452,6 +452,8 @@ const Sfdump =
                     }
                 }
             } catch (e) {}
+
+            collapseAll(root);
         };
     })(document);
 
