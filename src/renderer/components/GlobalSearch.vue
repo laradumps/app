@@ -1,9 +1,9 @@
 <template>
-    <label class="input input-bordered input-sm flex items-center gap-2 max-w-[200px]">
+    <label class="input input-bordered input-sm flex items-center gap-2">
         <input
             v-model="globalSearch.search"
             type="text"
-            class="grow"
+            class="grow input-xs"
             placeholder="Search"
         />
         <MagnifyingGlassIcon class="w-4 h-4 opacity-70" />

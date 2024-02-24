@@ -6,7 +6,7 @@
         }"
         @click="toggleAlwaysOnTop()"
     >
-        <IconPin class="w-3 cursor-pointer text-content hover:text-neutral" />
+        <IconPin class="w-3 cursor-pointer text-content hover:opacity-75" />
     </button>
 </template>
 

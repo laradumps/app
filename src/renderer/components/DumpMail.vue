@@ -25,7 +25,7 @@
                 <div class="flex justify-center mt-3 my-2">
                     <button
                         @click.prevent="createNewWindow()"
-                        class="btn btn-secondary !h-[38px] !px-4"
+                        class="btn btn-primary !h-[38px] !px-4"
                     >
                         View Content
                         <ArrowTopRightOnSquareIcon class="w-5" />
@@ -48,7 +48,7 @@
             >
                 <div class="flex gap-2">
                     <button
-                        class="btn btn-secondary flex gap-2 items-center"
+                        class="btn btn-primary flex gap-2 items-center"
                         v-for="attachment in props.payload.mail.attachments"
                         :key="attachment"
                         @click.prevent="openInBrowser(attachment.path)"

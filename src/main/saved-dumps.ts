@@ -1,5 +1,5 @@
-import { BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from "electron";
-import { join, resolve } from "path";
+import { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from "electron";
+import path, { join, resolve } from "path";
 import { format } from "url";
 import storage from "electron-json-storage";
 import os from "os";
@@ -52,7 +52,9 @@ const initSavedDumps = () => {
 
 ipcMain.on("saved-dumps:show", (event: Electron.IpcMainEvent, arg: any) => {
     savedDumps.show();
-    savedDumps.webContents.send("app:load-all-saved-dumps", arg);
+    savedDumps.webContents.send("app:load-all-saved-dumps", {
+        assets: path.join(app.getAppPath(), "src/assets")
+    });
     savedDumps.setAlwaysOnTop(true);
 });
 

@@ -3,7 +3,7 @@
         <div class="px-3 w-full">
             <details :class="{
                 [`!border-l-4 ` + color]: typeof color !== 'undefined',
-            }" class="collapsable collapse border border-base-300 bg-base-300" open>
+            }" class="collapsable collapse border border-base-200 bg-base-200" open>
                 <summary class="collapse-title text-xl font-medium">
                     <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
                         <ul
@@ -34,7 +34,7 @@
                                     'badge-success alert-success': props.payload.label === 'notice',
                                     'badge-info alert-info': props.payload.label === 'debug',
                                 }"
-                                class="badge flex gap-2 badge-secondary text-badge-content text-[11px]"
+                                class="badge flex gap-2 badge-primary text-primary-content text-[11px]"
                             >
                                 <svg
                                     v-if="props.payload.label === 'warning' || props.payload.label === 'notice'"

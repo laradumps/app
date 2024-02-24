@@ -231,17 +231,13 @@ const i18n = useI18n();
 
 const assetsPath = ref();
 
-window.ipcRenderer.on("assetsPath", (event, args) => {
-    nextTick(() => (document.getElementById("themeStylesheet").href = args + "/sf-dump-dark.css"));
-    assetsPath.value = args;
-});
 
 window.ipcRenderer.on("changeTheme", (event, args) => {
-    const theme = ["limonade", "retro", "light", "cyberpunk"].includes(args.theme) ? assetsPath.value + "/sf-dump-light.css" : assetsPath.value + "/sf-dump-dark.css";
-
-    document.getElementById("themeStylesheet").href = theme;
-
     appearanceStore.setTheme(args.theme);
+
+    setTimeout(() => {
+        document.title = "LaraDumps - " + appearanceStore.theme;
+    }, 50);
 });
 
 window.ipcRenderer.on("debug", (event, args) => {
@@ -437,11 +433,11 @@ function registerDefaultLocalShortcuts() {
 onMounted(() => {
     setTimeout(() => {
         document.title = "LaraDumps - " + appVersion.value;
-    }, 300);
+    }, 100);
 
-    const theme = ["limonade", "retro", "light", "cyberpunk"].includes(appearanceStore.theme) ? assetsPath.value + "/sf-dump-light.css" : assetsPath.value + "/sf-dump-dark.css";
-
-    document.getElementById("themeStylesheet").href = theme;
+    setTimeout(() => {
+        document.title = "LaraDumps - " + appearanceStore.theme;
+    }, 100);
 
     window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
         if (arg === 0) {
@@ -469,9 +465,10 @@ onMounted(() => {
 
     addScreen(defaultScreen.value);
 
-    window.ipcRenderer.on("app:load-all-saved-dumps", async () => {
+    window.ipcRenderer.on("app:load-all-saved-dumps", async (event, args) => {
         inSavedDumpsWindow.value = true;
         clearAll();
+
         await loadAllSavedPayload();
     });
 
