@@ -16,7 +16,7 @@
 
             <NavBarPrivacy v-if="payloadCount > 0 && !settingStore.setting" />
 
-            <!--  <NavBarReorder v-if="payloadCount > 0 && !settingStore.setting" />-->
+            <NavBarReorder v-if="payloadCount > 0 && !settingStore.setting" />
 
             <!--                        <div class="absolute bottom-4 w-full text-center left-0 space-y-3">-->
             <!--                            &lt;!&ndash; toggleAlwaysOnTop &ndash;&gt;-->

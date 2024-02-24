@@ -1,14 +1,13 @@
 <template>
     <form>
         <div
-            role="alert"
-            class="alert alert-info text-sm"
+            class="flex gap-4 items-center opacity-70 text-xs"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                class="stroke-current shrink-0 w-6 h-6"
+                class="stroke-current shrink-0 w-4 h-4"
             >
                 <path
                     stroke-linecap="round"
@@ -33,7 +32,7 @@
                     <div @click="changeDefaultProject(project.value)">
                         <div
                             :class="{ 'bg-base-200 dark:bg-base-700': selectedProject == project.value }"
-                            class="mx-auto border border-base-200 dark:border-base-700 flex max-w-4xl group justify-between gap-x-6 cursor-pointer hover:border-base-300 dark:hover:bg-base-700 rounded-md p-2"
+                            class="mx-auto bg-neutral border border-base-200 dark:border-base-700 flex max-w-4xl group justify-between gap-x-6 cursor-pointer hover:border-base-300 dark:hover:bg-base-700 rounded-md p-2"
                         >
                             <div class="flex gap-x-4">
                                 <div class="min-w-0 flex-auto">
@@ -66,14 +65,14 @@
                                                         <input
                                                             :name="`env-` + env.id"
                                                             type="checkbox"
-                                                            class="checkbox checkbox-secondary"
+                                                            class="checkbox checkbox-sm checkbox-secondary"
                                                             v-model="env.selected"
                                                         />
                                                     </div>
                                                     <div class="ml-3 text-sm">
                                                         <label
                                                             :for="`env-` + env.id"
-                                                            class="font-light text-gray-700 dark:text-base-400"
+                                                            class="font-light text-base-content"
                                                         >
                                                             {{ env.name }}
                                                         </label>
@@ -110,7 +109,7 @@
                                                 <input
                                                     type="text"
                                                     v-model="selectedIdeHandler"
-                                                    class="input !w-full text-sm"
+                                                    class="input input-bordered input-sm !w-full text-sm"
                                                 />
                                             </div>
                                             <div class="space-y-1">
@@ -124,7 +123,7 @@
                                                     type="text"
                                                     v-model="projectPath"
                                                     placeholder="/Users/luan.freitas/my-project"
-                                                    class="input !w-full text-sm"
+                                                    class="input input-bordered input-sm !w-full text-sm"
                                                 />
                                             </div>
                                         </div>

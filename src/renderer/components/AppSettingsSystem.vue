@@ -4,7 +4,7 @@
         <AppSettingsAutoUpdate />
 
         <div>
-            <div class="mt-40 border-t text-sm border-gray-200 space-y-3">
+            <div class="mt-40 text-sm space-y-3">
                 <div class="text-lg text-left mt-4 font-normal text-base-700">
                     {{ $t("settings.reset_data") }}
                 </div>
@@ -14,7 +14,7 @@
                 <button
                     @click="clearAllSettings"
                     type="button"
-                    class="btn-rounded-negative"
+                    class="btn btn-danger"
                 >
                     {{ $t("settings.clear_all_settings") }}
                 </button>

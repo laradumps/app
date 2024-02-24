@@ -11,15 +11,10 @@
                 'transition-all ease-in duration-100 !btn-primary': screen.screen_name === screenStore.screen && index > 0
             }"
             class="btn btn-neutral uppercase tracking-wider text-[10px] !flex rounded-none text-xs"
-            @dblclick="toggleScreen(screen.screen_name, true)"
+            @dblclick="toggleScreen(screen.screen_name)"
             @click="toggleScreen(screen.screen_name)"
         >
             <span v-text="screen.screen_name"></span>
-
-            <IconPin
-                v-show="screenStore.pinned === screen.screen_name"
-                class="w-3 h-3 !text-secondary-content"
-            />
         </button>
     </div>
 </template>

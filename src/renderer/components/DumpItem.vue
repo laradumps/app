@@ -3,7 +3,7 @@
         <div class="px-3 w-full">
             <details :class="{
                 [`!border-l-4 ` + color]: typeof color !== 'undefined',
-            }" class="collapse border border-base-300 bg-base-200" open>
+            }" class="collapsable collapse border border-base-300 bg-base-200" open>
                 <summary class="collapse-title text-xl font-medium">
                     <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
                         <ul

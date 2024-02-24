@@ -1,5 +1,5 @@
 <template>
-    <div class="space-y-6 sm:space-y-5">
+    <div class="space-y-3 sm:space-y-5">
         <div
             v-for="shortcut in shortcuts"
             :key="shortcut.alias"
@@ -17,7 +17,7 @@
                     :name="shortcut.alias"
                     :data-label="shortcut.label"
                     :id="shortcut.alias"
-                    class="js-shortcut grow input input-bordered w-full"
+                    class="js-shortcut grow input input-bordered input-sm w-full"
                 />
             </label>
         </div>
