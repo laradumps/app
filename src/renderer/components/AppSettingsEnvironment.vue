@@ -30,16 +30,16 @@
                     <div @click="changeDefaultProject(project.value)">
                         <div
                             :class="{ 'bg-base-200 dark:bg-base-700': selectedProject == project.value }"
-                            class="mx-auto bg-neutral border border-base-200 dark:border-base-700 flex max-w-4xl group justify-between gap-x-6 cursor-pointer hover:border-base-300 dark:hover:bg-base-700 rounded-md p-2"
+                            class="mx-auto bg-base border border-base-200 dark:border-base-700 flex max-w-4xl group justify-between gap-x-6 cursor-pointer hover:border-base-300 dark:hover:bg-base-700 rounded-md p-2"
                         >
                             <div class="flex gap-x-4">
                                 <div class="min-w-0 flex-auto">
-                                    <p class="text-sm font-semibold leading-6 text-base-900 dark:text-base-300">
+                                    <p class="text-sm text-primary font-semibold leading-6">
                                         {{ project.id }}
                                     </p>
                                     <p
                                         :class="{ 'text-base-800': selectedProject == project.value }"
-                                        class="mt-1 flex text-xs leading-5 text-base-500 dark:text-base-400 group-hover:text-base-800 dark:group-hover:text-base-400"
+                                        class="mt-1 flex text-xs leading-5 text-base-500 group-hover:text-base-800 font-normal"
                                     >
                                         {{ project.value }}
                                     </p>

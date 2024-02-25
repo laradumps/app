@@ -78,7 +78,7 @@ function configureEnvironment(mainWindow: Electron.BrowserWindow): void {
             });
         });
 
-        // mainWindow.webContents.send("app-setting:env-update-environment-success");
+        mainWindow.webContents.send("app-setting:env-update-environment-success");
     });
 
     /**

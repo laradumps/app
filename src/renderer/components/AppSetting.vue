@@ -12,9 +12,12 @@
         </div>
 
         <div class="p-4">
+            <article class="prose">
+                <h4>Settings</h4>
+            </article>
             <div
                 role="tablist"
-                class="tabs tabs-boxed"
+                class="tabs tabs-boxed my-4"
             >
                 <a
                     @click="selectedPage = 'Environment'"
@@ -40,7 +43,7 @@
             </div>
 
             <div>
-                <div class="flex justify-between items-end border-b border-base-200">
+                <div class="flex justify-between items-end">
                     <div v-show="hasUpdates">
                         <button
                             type="button"
@@ -54,14 +57,16 @@
             </div>
 
             <div class="py-4">
-                <AppSettingsEnvironment v-if="selectedPage === 'Environment'" />
+                <AppSettingsEnvironment
+                    v-if="selectedPage === 'Environment'" />
 
                 <AppSettingsLocalShortcuts
                     :local-shortcut-list="localShortcutList"
                     v-if="selectedPage === 'Shortcuts'"
                 />
 
-                <AppSettingsSystem v-if="selectedPage === 'System'" />
+                <AppSettingsSystem
+                    v-if="selectedPage === 'System'" />
             </div>
         </div>
     </div>

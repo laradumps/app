@@ -15,18 +15,23 @@
         <div class="flex gap-4 items-center">
             <!-- global search -->
             <GlobalSearch />
+
             <!-- always on top -->
             <NavBarAlwaysOnTop />
+
+            <!-- listening -->
+            <TheNavBarListening />
         </div>
     </div>
 </template>
 
 <script setup>
 import { defineProps, defineEmits } from "vue";
-import { TrashIcon } from "@heroicons/vue/24/outline";
+import { TrashIcon, SignalIcon } from "@heroicons/vue/24/outline";
 import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
 import { useSettingStore } from "@/store/setting";
 import GlobalSearch from "@/components/GlobalSearch.vue";
+import TheNavBarListening from "@/components/TheNavBarListening.vue";
 
 defineProps({
     payloadCount: {
