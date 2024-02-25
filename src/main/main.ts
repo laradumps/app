@@ -308,8 +308,7 @@ function createMenu(): void {
                     click: () => {
                         mainWindow.webContents.send("changeTheme", { theme: "cyberpunk" });
                     }
-                },
-
+                }
             ]
         }
     ];

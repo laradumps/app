@@ -56,5 +56,5 @@ table {
     min-height: 2.75rem;
 }
 .collapse-title {
-    @apply py-1.5
+    @apply py-1.5;
 }

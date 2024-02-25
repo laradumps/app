@@ -32,7 +32,7 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
 
     // div.setAttribute("class", "overflow-x-auto rounded-lg");
     table.setAttribute("id", `table-${payloadId}`);
-    table.setAttribute("class", "dstable w-full");
+    table.setAttribute("class", "table w-full");
 
     const tbody = document.createElement("tbody");
     let tr = document.createElement("tr");

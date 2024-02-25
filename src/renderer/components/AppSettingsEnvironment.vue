@@ -1,8 +1,6 @@
 <template>
     <form>
-        <div
-            class="flex gap-4 items-center opacity-70 text-xs"
-        >
+        <div class="flex gap-4 items-center opacity-70 text-xs">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"

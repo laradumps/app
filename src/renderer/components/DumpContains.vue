@@ -1,6 +1,6 @@
 <template>
     <div
-        class="border-gray-200 px-2 dark:text-base-200"
+        class="text-base-content"
         v-if="props.payload.str_contains"
     >
         <div class="flex w-full left-0 items-center p-2">

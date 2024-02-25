@@ -4,23 +4,27 @@
 }
 
 .dstable table thead {
-    @apply bg-base1-200 text-base1-600 uppercase text-xs leading-normal dark:bg-base1-700 dark:text-base1-300;
+    @apply text-primary uppercase text-xs leading-normal
 }
 
 .dstable table thead th {
-    @apply py-2 px-4 text-left;
+    @apply py-2 px-4 text-left text-primary uppercase text-xs leading-normal;
 }
 
 .dstable table tbody {
-    @apply text-base1-600 text-sm font-normal dark:bg-base1-800 dark:text-base1-300;
+    @apply text-sm font-normal
 }
 
 .dstable table tbody tr {
-    @apply border-b border-base1-200 bg-base1-100 dark:bg-base1-800 hover:bg-base1-50 dark:hover:bg-base1-800 dark:border-base1-600;
+    @apply border-b bg-base-100 text-base-content
+}
+
+.dstable table tbody tr td:first-child {
+    @apply text-primary pl-0 !rounded-none;
 }
 
 .dstable table tbody td {
-    @apply py-2 px-4 text-left;
+    @apply py-2 px-4 text-left rounded-lg;
 }
 
 /*!

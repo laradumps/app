@@ -231,7 +231,6 @@ const i18n = useI18n();
 
 const assetsPath = ref();
 
-
 window.ipcRenderer.on("changeTheme", (event, args) => {
     appearanceStore.setTheme(args.theme);
 
@@ -504,7 +503,7 @@ onMounted(() => {
     window.ipcRenderer.on("app::toggle-privacy", () => privacyStore.toggle());
     window.ipcRenderer.on("app::toggle-reorder", () => reorderStore.toggle());
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
-    window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"))
+    window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
 
     window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
         localShortcutList.value = arg;

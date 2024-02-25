@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-between items-center px-3 py-1 bg-base-100 shadow text-center z-100">
+    <div class="flex justify-between items-center px-3 py-1 bg-base text-center z-100">
         <nav class="flex">
             <!-- clear -->
             <a
@@ -13,7 +13,6 @@
         </nav>
 
         <div class="flex gap-4 items-center">
-
             <!-- global search -->
             <GlobalSearch />
             <!-- always on top -->

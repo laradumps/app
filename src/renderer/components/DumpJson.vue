@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-base-100 dark:bg-base-800 rounded-sm px-2 p-1 py-2">
+    <div class="text-base-content">
         <VueJsonPretty
             :show-icon="true"
             :show-lenght="true"

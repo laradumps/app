@@ -1,9 +1,13 @@
 <template>
     <div class="group text-sm pt-2">
         <div class="px-3 w-full">
-            <details :class="{
-                [`!border-l-4 ` + color]: typeof color !== 'undefined',
-            }" class="collapsable collapse border border-base-200 bg-base-200" open>
+            <details
+                :class="{
+                    [`!border-l-4 ` + color]: typeof color !== 'undefined'
+                }"
+                class="collapsable collapse border border-base-200 bg-base-200"
+                open
+            >
                 <summary class="collapse-title text-xl font-medium">
                     <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
                         <ul
@@ -25,19 +29,20 @@
                         </ul>
 
                         <div class="flex gap-2 items-center">
-
                             <div
                                 v-if="props.payload.type !== `queries`"
                                 :class="{
-                                    'badge-warning alert-warning': props.payload.label === 'warning',
-                                    'badge-error alert-error': props.payload.label === 'error' || props.payload.label === 'critical',
-                                    'badge-success alert-success': props.payload.label === 'notice',
-                                    'badge-info alert-info': props.payload.label === 'debug',
+                                    '!badge-warning !alert-warning': props.payload.label === 'warning',
+                                    '!badge-error !alert-error': props.payload.label === 'alert' || props.payload.label === 'error' || props.payload.label === 'danger' || props.payload.label === 'critical',
+                                    '!badge-base !alert-base': props.payload.label === 'dark',
+                                    '!badge-success !alert-success': props.payload.label === 'success',
+                                    '!badge-info !alert-info': props.payload.label === 'info'
                                 }"
                                 class="badge flex gap-2 badge-primary text-primary-content text-[11px]"
                             >
+                                <!-- warning icon -->
                                 <svg
-                                    v-if="props.payload.label === 'warning' || props.payload.label === 'notice'"
+                                    v-if="props.payload.label === 'warning' || props.payload.label === 'notice' || props.payload.label === 'warning'"
                                     xmlns="http://www.w3.org/2000/svg"
                                     class="stroke-current shrink-0 h-4 w-4"
                                     fill="none"
@@ -51,9 +56,35 @@
                                     />
                                 </svg>
 
-                                <svg v-if="props.payload.label === 'error' || props.payload.label === 'critical'" xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <svg
+                                    v-if="props.payload.label === 'error' || props.payload.label === 'danger' || props.payload.label === 'alert'"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="stroke-current shrink-0 h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
 
-                                <svg v-if="props.payload.label === 'info'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <svg
+                                    v-if="props.payload.label === 'info'"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    class="stroke-current shrink-0 w-4 h-4"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    ></path>
+                                </svg>
 
                                 {{ props.payload.label ?? props.payload.type }}
                             </div>
@@ -62,7 +93,6 @@
                 </summary>
                 <div class="collapse-content">
                     <div>
-
                         <div class="flex opacity-0 group-hover:opacity-100 transition-all absolute right-4 z-300 gap-4 items-center text-base-content">
                             <!-- variable type -->
                             <div
@@ -79,9 +109,11 @@
                                 class="cursor-pointer opacity-60 hover:opacity-100"
                                 v-if="!inSavedDumpsWindow"
                             >
-                                <IconSave class="w-3 h-3 opacity-70" id="saveIcon" />
+                                <IconSave
+                                    class="w-3 h-3 opacity-70"
+                                    id="saveIcon"
+                                />
                             </div>
-
                         </div>
 
                         <div
@@ -218,11 +250,11 @@ const props = defineProps<{
 }>();
 
 const copyDump = () => {
-    const value = document.getElementById(`sf-dump-${props.payload.sf_dump_id}`)?.innerText
+    const value = document.getElementById(`sf-dump-${props.payload.sf_dump_id}`)?.innerText;
 
-    navigator.clipboard.writeText(value).then(() => {})
-    changeIcon()
-}
+    navigator.clipboard.writeText(value).then(() => {});
+    changeIcon();
+};
 
 onMounted(() => {
     if (props.payload.dump?.dump) {
@@ -242,11 +274,11 @@ onMounted(() => {
 });
 
 const changeIcon = () => {
-    document.getElementById('saveIcon').innerHTML = '√';
+    document.getElementById("saveIcon").innerHTML = "√";
     setTimeout(function () {
-        document.getElementById('saveIcon').innerHTML = '';
+        document.getElementById("saveIcon").innerHTML = "";
     }, 2000);
-}
+};
 
 const expandAll = () => {
     setTimeout(() => {
@@ -257,7 +289,7 @@ const expandAll = () => {
             }
         });
     }, 1);
-}
+};
 
 const fullIdeHandle = computed(() => {
     if (props.payload.ide_handle.line.toString() !== "") {

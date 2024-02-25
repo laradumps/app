@@ -21,21 +21,21 @@
                     role="tab"
                     :class="{ 'tab-active': selectedPage === 'Environment' }"
                     class="tab"
-                >{{ $t("settings.environment") }}</a
+                    >{{ $t("settings.environment") }}</a
                 >
                 <a
                     @click="selectedPage = 'Shortcuts'"
                     role="tab"
                     class="tab"
                     :class="{ 'tab-active': selectedPage === 'Shortcuts' }"
-                >{{ $t("settings.shortcuts") }}</a
+                    >{{ $t("settings.shortcuts") }}</a
                 >
                 <a
                     @click="selectedPage = 'System'"
                     role="tab"
                     class="tab"
                     :class="{ 'tab-active': selectedPage === 'System' }"
-                >{{ $t("settings.system") }}</a
+                    >{{ $t("settings.system") }}</a
                 >
             </div>
 
@@ -88,8 +88,8 @@ const checkUpdates = computed(() => {
 });
 
 const toggleSetting = () => {
-    settingStore.toggle()
-}
+    settingStore.toggle();
+};
 
 defineProps({
     localShortcutList: {
