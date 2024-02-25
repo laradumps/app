@@ -57,16 +57,14 @@
             </div>
 
             <div class="py-4">
-                <AppSettingsEnvironment
-                    v-if="selectedPage === 'Environment'" />
+                <AppSettingsEnvironment v-if="selectedPage === 'Environment'" />
 
                 <AppSettingsLocalShortcuts
                     :local-shortcut-list="localShortcutList"
                     v-if="selectedPage === 'Shortcuts'"
                 />
 
-                <AppSettingsSystem
-                    v-if="selectedPage === 'System'" />
+                <AppSettingsSystem v-if="selectedPage === 'System'" />
             </div>
         </div>
     </div>

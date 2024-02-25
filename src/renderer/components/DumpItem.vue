@@ -21,6 +21,7 @@
                                 <DumpLink
                                     v-if="fullIdeHandle"
                                     :class="{ 'blur-sm': !privacy.isOpen }"
+                                    :ide-handler="props.payload.ide_handle"
                                     :href="props.payload.ide_handle.handler"
                                     :title="`Open ` + fullIdeHandle"
                                     :value="fullIdeHandle"

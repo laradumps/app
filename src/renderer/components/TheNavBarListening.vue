@@ -21,7 +21,7 @@ onMounted(async () => {
                     }
                 });
 
-                const uniqueProjectsArray = Array.from(uniqueProjects.values()).map(environment => ({
+                const uniqueProjectsArray = Array.from(uniqueProjects.values()).map((environment) => ({
                     id: environment.projectName,
                     label: environment.projectName + " - " + environment.envFile,
                     value: environment.envFile
@@ -112,7 +112,7 @@ const changeDefaultProject = () => {
                 </option>
             </select>
 
-            <div v-if="environments.length === 0">Empty</div>
+            <div v-if="environments.length === 0">Select a Project</div>
 
             <div class="max-h-[300px] overflow-auto">
                 <li

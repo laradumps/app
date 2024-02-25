@@ -13,6 +13,7 @@ import * as url from "url";
 import fs from "fs";
 import { download } from "electron-dl";
 import { CompletedInfo } from "@/types/Updater";
+import { createMenu } from "./main-menu";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
@@ -192,151 +193,12 @@ function createWindow(): BrowserWindow {
     return win;
 }
 
-function createMenu(): void {
-    const menuTemplate: Electron.MenuItemConstructorOptions[] = [
-        {
-            label: "Menu",
-            submenu: [
-                {
-                    label: "About LaraDumps",
-                    click: async (): Promise<void> => {
-                        await shell.openExternal("https://github.com/laradumps/app");
-                    }
-                },
-                {
-                    label: "Settings",
-                    click: async (): Promise<void> => {
-                        mainWindow.webContents.send("app::toggle-settings");
-                    }
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    label: "Quit LaraDumps",
-                    accelerator: process.platform === "darwin" ? "Command+Q" : "Ctrl+Q",
-                    click: () => {
-                        app.quit();
-                    }
-                }
-            ]
-        },
-        {
-            label: "Help",
-            submenu: [
-                {
-                    label: "Documentation",
-                    click: async (): Promise<void> => {
-                        await shell.openExternal("https://laradumps.dev");
-                    }
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    label: "Releases",
-                    click: async (): Promise<void> => {
-                        await shell.openExternal("https://github.com/laradumps/app/releases");
-                    }
-                }
-            ]
-        },
-        {
-            label: "Options",
-            submenu: [
-                {
-                    label: "Reorder",
-                    click: async (): Promise<void> => {
-                        mainWindow.webContents.send("app::toggle-reorder");
-                    }
-                },
-                {
-                    label: "Privacy Mode",
-                    click: async (): Promise<void> => {
-                        mainWindow.webContents.send("app::toggle-privacy");
-                    }
-                },
-                {
-                    label: "Saved Dumps",
-                    click: async (): Promise<void> => {
-                        mainWindow.webContents.send("app::show-saved-dumps");
-                    }
-                }
-            ]
-        },
-        {
-            label: "Theme",
-            submenu: [
-                {
-                    label: "Light",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "light" });
-                    }
-                },
-                {
-                    label: "Dark",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "dark" });
-                    }
-                },
-                {
-                    label: "Dracula",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "dracula" });
-                    }
-                },
-                {
-                    label: "Dim",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "dim" });
-                    }
-                },
-                {
-                    label: "Retro",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "retro" });
-                    }
-                },
-                {
-                    label: "Halloween",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "halloween" });
-                    }
-                },
-                {
-                    label: "Cyberpunk",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "cyberpunk" });
-                    }
-                }
-            ]
-        }
-    ];
-
-    // Enables copy to clipboard in macOS
-    if (process.platform === "darwin") {
-        menuTemplate.splice(1, 0, {
-            label: "Edit",
-            submenu: [
-                {
-                    label: "Copy",
-                    accelerator: "CmdOrCtrl+C",
-                    selector: "copy:"
-                }
-            ]
-        });
-    }
-
-    const menu: Menu = Menu.buildFromTemplate(menuTemplate);
-    Menu.setApplicationMenu(menu);
-}
-
 app.whenReady().then(async (): Promise<void> => {
-    createMenu();
-
     mainWindow = createWindow();
     coffeeWindow = initCoffeeWindow();
     savedDumpWindow = initSavedDumps();
+
+    createMenu(mainWindow);
 
     mainWindow.on("minimize", (event: Event): void => {
         event.preventDefault();

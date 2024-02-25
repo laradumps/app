@@ -157,7 +157,7 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { markRaw, nextTick, ref, computed, onBeforeMount, onMounted, watch } from "vue";
+import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref, watch } from "vue";
 import ThePackageUpdateInfo from "@/components/ThePackageUpdateInfo.vue";
 import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
 import TheInstaller from "@/components/TheInstaller.vue";
@@ -183,6 +183,7 @@ import WelcomePage from "@/components/WelcomePage.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 import { usePrivacy } from "@/store/privacy";
+import { useIDEHandler } from "@/store/ide-handler";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -226,10 +227,9 @@ const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const privacyStore = usePrivacy();
+const IDEHandler = useIDEHandler();
 
 const i18n = useI18n();
-
-const assetsPath = ref();
 
 window.ipcRenderer.on("changeTheme", (event, args) => {
     appearanceStore.setTheme(args.theme);
@@ -237,6 +237,10 @@ window.ipcRenderer.on("changeTheme", (event, args) => {
     setTimeout(() => {
         document.title = "LaraDumps - " + appearanceStore.theme;
     }, 50);
+});
+
+window.ipcRenderer.on("changeIDE", (event, args) => {
+    IDEHandler.value = args.value;
 });
 
 window.ipcRenderer.on("debug", (event, args) => {
