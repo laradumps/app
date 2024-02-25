@@ -28,72 +28,20 @@
                             </li>
                         </ul>
 
-                        <div class="flex gap-2 items-center">
-                            <div
-                                v-if="props.payload.type !== `queries`"
-                                :class="{
-                                    '!badge-warning !alert-warning': props.payload.label === 'warning',
-                                    '!badge-error !alert-error': props.payload.label === 'alert' || props.payload.label === 'error' || props.payload.label === 'danger' || props.payload.label === 'critical',
-                                    '!badge-base !alert-base': props.payload.label === 'dark',
-                                    '!badge-success !alert-success': props.payload.label === 'success',
-                                    '!badge-info !alert-info': props.payload.label === 'info'
-                                }"
-                                class="badge flex gap-2 badge-primary text-primary-content text-[11px]"
-                            >
-                                <!-- warning icon -->
-                                <svg
-                                    v-if="props.payload.label === 'warning' || props.payload.label === 'notice' || props.payload.label === 'warning'"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="stroke-current shrink-0 h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                                    />
-                                </svg>
-
-                                <svg
-                                    v-if="props.payload.label === 'error' || props.payload.label === 'danger' || props.payload.label === 'alert'"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="stroke-current shrink-0 h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
-
-                                <svg
-                                    v-if="props.payload.label === 'info'"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    class="stroke-current shrink-0 w-4 h-4"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    ></path>
-                                </svg>
-
-                                {{ props.payload.label ?? props.payload.type }}
-                            </div>
+                        <div
+                            v-if="props.payload.type !== `queries`"
+                            class="text-primary uppercase text-[10px] font-semibold tracking-wider"
+                        >
+                            {{ props.payload.label ?? props.payload.type }}
                         </div>
                     </div>
                 </summary>
                 <div class="collapse-content">
                     <div>
-                        <div class="flex opacity-0 group-hover:opacity-100 transition-all absolute right-4 z-300 gap-4 items-center text-base-content">
+                        <div
+                            v-if="props.payload.type !== `queries`"
+                            class="flex opacity-0 group-hover:opacity-100 transition-all absolute right-4 z-300 gap-4 items-center text-base-content"
+                        >
                             <!-- variable type -->
                             <div
                                 v-if="props.payload.dump?.variable_type !== undefined"
@@ -101,7 +49,11 @@
                                 v-text="`(${props.payload.dump.variable_type})`"
                             ></div>
 
-                            <CopyToClick @click="copyDump" />
+                            <!-- click to copy -->
+                            <CopyToClick
+                                @click="copyDump"
+                                class="opacity-60 hover:opacity-100"
+                            />
 
                             <!-- save dumps -->
                             <div
@@ -227,8 +179,6 @@ import DumpQuery from "@/components/DumpQuery.vue";
 import { Payload } from "@/types/Payload";
 import DumpMail from "@/components/DumpMail.vue";
 import CopyToClick from "@/components/CopyToClick.vue";
-
-import { ClipboardIcon } from "@heroicons/vue/24/outline";
 
 const timeStore = useTimeStore();
 const collapseStore = useCollapse();

@@ -4,7 +4,7 @@
 }
 
 .dstable table thead {
-    @apply text-primary uppercase text-xs leading-normal
+    @apply text-primary uppercase text-xs leading-normal;
 }
 
 .dstable table thead th {
@@ -12,11 +12,11 @@
 }
 
 .dstable table tbody {
-    @apply text-sm font-normal
+    @apply text-sm font-normal;
 }
 
 .dstable table tbody tr {
-    @apply border-b bg-base-100 text-base-content
+    @apply border-b bg-base-100 text-base-content;
 }
 
 .dstable table tbody tr td:first-child {

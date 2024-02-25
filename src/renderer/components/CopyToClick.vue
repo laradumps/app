@@ -2,7 +2,7 @@
     <div
         :title="$t('click_to_copy')"
         @click="copyDump"
-        class="cursor-pointer transition-all opacity-60 hover:opacity-100"
+        class="cursor-pointer transition-all"
     >
         <CheckIcon
             v-if="showCheck"

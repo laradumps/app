@@ -30,7 +30,7 @@
                     ></div>
                 </div>
 
-                <div class="w-[180px] flex justify-end gap-3 items-center">
+                <div class="flex justify-end gap-3 items-center opacity-70 absolute top-[15px] right-[15px]">
                     <div
                         class="cursor-pointer"
                         @click="toggleFormatted"
@@ -46,16 +46,13 @@
                         />
                     </div>
 
-                    <div
-                        class="cursor-pointer"
-                        :title="$t('click_to_copy')"
+                    <CopyToClick
                         @click="
                             $clipboard(props.payload.queries?.sql);
                             showCopiedBadge();
                         "
-                    >
-                        <ClipboardIcon class="w-[1.1rem] h-[1.1rem] text-base-content" />
-                    </div>
+                        class="text-base-content"
+                    />
 
                     <span class="font-semibold text-sm badge badge-primary text-primary-content"> {{ props.payload.queries.time }} <span class="font-normal text-xs">ms</span></span>
                 </div>
@@ -75,6 +72,7 @@ import { Payload } from "@/types/Payload";
 
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
+import CopyToClick from "@/components/CopyToClick.vue";
 hljs.registerLanguage("sql", sql);
 
 const formatted = ref(false);
