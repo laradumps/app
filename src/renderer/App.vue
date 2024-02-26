@@ -341,6 +341,8 @@ const toggleScreen = (value: string): void => {
 type EventType = "label" | "color" | "screen" | "dump";
 
 const dispatch = (type: string, event: EventType, content: any): void => {
+    window.ipcRenderer.send("environment::check", { applicationPath: content.application_path });
+
     content.rendered = false;
     settingStore.setting = false;
 

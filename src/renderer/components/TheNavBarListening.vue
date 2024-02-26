@@ -1,58 +1,53 @@
 <script setup lang="ts">
 import { SignalIcon } from "@heroicons/vue/24/outline";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 
-const selectedProject = ref();
-const projects = ref([]);
-const environments = ref([]);
+interface Project {
+    path: string;
+    project: string;
+}
+
+interface Environment {
+    id: number;
+    value: string;
+    selected: boolean;
+}
+
+const selectedProject = ref<string>("");
+const projects = ref<Project[]>([]);
+const environments = ref<Environment[]>([]);
 
 onMounted(async () => {
     projects.value = [];
 
-    const loadEnvironment = async () => {
-        await window.ipcRenderer.send("main:get-environment");
+    window.ipcRenderer.send("environment::get");
 
-        window.ipcRenderer.on("app-setting:set-environment", (event: Event, value: any) => {
-            if (value != null) {
-                const uniqueProjects = new Map();
-                value.forEach((environment) => {
-                    if (!uniqueProjects.has(environment.projectName)) {
-                        uniqueProjects.set(environment.projectName, environment);
-                    }
-                });
+    window.ipcRenderer.on("app-setting:set-active", (event, value) => {
+        if (value.length > 0) {
+            selectedProject.value = value;
+            setActiveProject();
+        }
+    });
 
-                const uniqueProjectsArray = Array.from(uniqueProjects.values()).map((environment) => ({
-                    id: environment.projectName,
-                    label: environment.projectName + " - " + environment.envFile,
-                    value: environment.envFile
-                }));
+    window.ipcRenderer.on("app-setting:set-environment", (event, value: Project[]) => {
+        projects.value = value;
 
-                projects.value = uniqueProjectsArray;
-            }
-        });
-    };
-
-    await loadEnvironment();
-
-    window.ipcRenderer.send("main:get-ide-handler");
-
-    window.ipcRenderer.on("app-setting:env-update-environment-success", () => {
-        console.log("Updated !");
+        if (value.length > 0) {
+            selectedProject.value = value[0].path;
+            setActiveProject();
+        }
     });
 
     window.ipcRenderer.on("settings:env-file-contents", (event, value) => {
         if (value != null) {
             environments.value = [];
-            value
-                .filter((environment) => environment.value !== "DS_INSTALLED")
-                .forEach((entry) => {
-                    environments.value.push({
-                        id: entry.id,
-                        value: entry.value,
-                        name: entry.name,
-                        selected: entry.selected
-                    });
+            value.forEach((entry: Environment) => {
+                environments.value.push({
+                    id: entry.id,
+                    value: entry.value,
+                    selected: entry.selected
                 });
+            });
         }
     });
 });
@@ -67,14 +62,35 @@ const selectedEnvironment = computed(() => {
 });
 
 const save = async (): Promise<void> => {
-    await window.ipcRenderer.send("main:settings-update-environment", {
+    window.ipcRenderer.send("main:settings-update-environment", {
         selected: selectedEnvironment.value,
         file: selectedProject.value,
         create: false
     });
 };
 
-const changeDefaultProject = () => {
+const removeEnvironment = () => {
+    if (selectedProject.value !== "") {
+        window.ipcRenderer.on("main:dialog-choice", (event, arg) => {
+            if (arg === 0) {
+                window.ipcRenderer.send("main:setting-remove-environments", selectedProject.value);
+
+                selectedProject.value = "";
+                environments.value = [];
+
+                alert("The project was removed successfully!");
+            }
+        });
+
+        window.ipcRenderer.send("main:dialog", {
+            buttons: ["Yes", "No"],
+            title: "Remove Project",
+            message: "Are you sure you want to remove the configuration from this Project?"
+        });
+    }
+};
+
+const setActiveProject = () => {
     window.ipcRenderer.send("main:setting-get-environments", selectedProject.value);
 };
 </script>
@@ -94,25 +110,30 @@ const changeDefaultProject = () => {
         >
             <select
                 v-model="selectedProject"
-                @change="changeDefaultProject()"
+                @change="setActiveProject()"
                 class="mb-5 select select-bordered select-xs w-full max-w-xs"
             >
                 <option
                     disabled
                     selected
                 >
-                    Select Project
+                    Select a project
                 </option>
 
                 <option
                     v-for="project in projects"
-                    :ref="project.id"
+                    :ref="project.project"
                 >
-                    {{ project.value }}
+                    {{ project.path }}
                 </option>
             </select>
 
-            <div v-if="environments.length === 0">Select a Project</div>
+            <div
+                v-if="environments.length === 0"
+                class="text-[10px]"
+            >
+                No laradumps.yaml found in this project
+            </div>
 
             <div class="max-h-[300px] overflow-auto">
                 <li
@@ -127,12 +148,19 @@ const changeDefaultProject = () => {
                             class="toggle toggle-xs toggle-primary"
                             @change="save"
                         />
-                        <span class="text-[0.7rem] tracking-wide font-semibold">{{ env.name }}</span>
+                        <span class="text-[0.7rem] tracking-wide font-semibold">{{ env.value.replaceAll("_", " ") }}</span>
                     </label>
                 </li>
+            </div>
+
+            <div class="flex justify-center">
+                <button
+                    class="btn btn-danger btn-warning mt-2 w-[100px] text-[10px]"
+                    @click="removeEnvironment"
+                >
+                    Remove Project
+                </button>
             </div>
         </ul>
     </div>
 </template>
-
-<style scoped></style>

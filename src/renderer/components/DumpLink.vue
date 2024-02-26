@@ -1,18 +1,19 @@
 <template>
     <a
         :href="link"
-        :title="title"
+        :title="label"
         class="flex items-center group"
     >
         <div class="break-all tracking-wider hover:opacity-75 cursor-pointer">
-            <span>{{ value }}</span>
+            <span>{{ label }}</span>
         </div>
     </a>
 </template>
 
 <script setup lang="ts">
-import { defineProps, onMounted, ref } from "vue";
+import { computed, defineProps, onMounted, ref } from "vue";
 import { useIDEHandler } from "@/store/ide-handler";
+import IdeHandle from "@/types/IdeHandle";
 
 const IDEHandler = useIDEHandler();
 
@@ -28,23 +29,19 @@ onMounted(() => {
     });
 });
 
-const props = defineProps({
-    ideHandler: {
-        type: Object
-    },
-    href: {
-        type: String,
-        default: null,
-        required: true
-    },
-    value: {
-        type: String,
-        default: null,
-        required: true
-    },
-    title: {
-        type: String,
-        default: null
+const label = computed(() => {
+    if (props.ideHandler.line?.toString() !== "") {
+        return props.ideHandler.class_name + ":" + props.ideHandler.line;
     }
+
+    if (props.ideHandler.class_name === "Tinker") {
+        return "Tinker";
+    }
+
+    return null;
 });
+
+const props = defineProps<{
+    ideHandler: IdeHandle;
+}>();
 </script>

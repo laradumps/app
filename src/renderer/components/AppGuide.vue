@@ -58,7 +58,7 @@ const tips = ref([
     `<div>
         <div class="space-y-3 text-base-content">
             <div class="font-semibold text-base">${i18n.t("doc.add_project_here")}</div>
-            <li>${i18n.t("doc.run_in_php_project")}: <code class="bg-primary text-primary-content text-sm p-1 rounded">vendor/bin/laradumps configure</code></li>
+            <li>${i18n.t("doc.run_in_php_project")}: <code class="bg-primary text-primary-content text-sm p-1 rounded">vendor/bin/laradumps init</code></li>
             <li>${i18n.t("doc.finish_setting_env_vars")}</li>
         </div>
     </div>`,
@@ -140,11 +140,11 @@ function nextRandom() {
     @apply h-[200px] flex items-center justify-center relative;
 }
 
-.carousel .content {
-    @apply left-[15px] absolute w-full top-[28px];
+.carousel1 .content {
+    @apply left-[15px] absolute w-full top-0;
 }
 
-.carousel > div.active {
+.carousel1 > div.active {
     @apply block;
 }
 

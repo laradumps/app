@@ -10,7 +10,7 @@
                 'active !btn-primary': screen.screen_name === screenStore.screen && screens.length > 1,
                 'transition-all ease-in duration-100 !btn-primary': screen.screen_name === screenStore.screen && index > 0
             }"
-            class="btn btn-neutral uppercase tracking-wider text-[9px] !flex rounded-none text-xs"
+            class="btn btn-neutral uppercase tracking-wider !text-[9px] !flex rounded-none"
             @dblclick="toggleScreen(screen.screen_name)"
             @click="toggleScreen(screen.screen_name)"
         >

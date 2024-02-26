@@ -110,6 +110,7 @@ export interface Payload {
     request_id: never;
     ide_handle: IdeHandle;
     date_time: string;
+    application_path: string;
     sf_dump_id: string;
     dump?: DumpPayload;
     model?: ModelPayload;

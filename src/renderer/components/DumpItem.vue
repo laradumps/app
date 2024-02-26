@@ -12,20 +12,13 @@
                     <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
                         <ul
                             class="flex gap-6"
-                            v-bind:style="fullIdeHandle ? 'list-style-type: disc;' : ''"
+                            v-bind:style="props.payload.ide_handle ? 'list-style-type: disc;' : ''"
                         >
                             <li class="list-none">
                                 {{ props.payload.date_time }}
                             </li>
                             <li style="margin-left: -5px">
-                                <DumpLink
-                                    v-if="fullIdeHandle"
-                                    :class="{ 'blur-sm': !privacy.isOpen }"
-                                    :ide-handler="props.payload.ide_handle"
-                                    :href="props.payload.ide_handle.handler"
-                                    :title="`Open ` + fullIdeHandle"
-                                    :value="fullIdeHandle"
-                                />
+                                <DumpLink :ide-handler="props.payload.ide_handle" />
                             </li>
                         </ul>
 
@@ -241,18 +234,6 @@ const expandAll = () => {
         });
     }, 1);
 };
-
-const fullIdeHandle = computed(() => {
-    if (props.payload.ide_handle.line.toString() !== "") {
-        return props.payload.ide_handle.class_name + ":" + props.payload.ide_handle.line;
-    }
-
-    if (props.payload.ide_handle.class_name === "Tinker") {
-        return "Tinker";
-    }
-
-    return null;
-});
 
 const color = computed(() => {
     let border;

@@ -14,7 +14,7 @@
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 ></path>
             </svg>
-            <span v-html="i18n.t('settings.run_to_add_your_project_here').replace('vendor/bin/laradumps configure', '<b>vendor/bin/laradumps configure</b>')"></span>
+            <span v-html="i18n.t('settings.run_to_add_your_project_here').replace('vendor/bin/laradumps init', '<b>vendor/bin/laradumps init</b>')"></span>
         </div>
 
         <div>
@@ -188,17 +188,17 @@ onMounted(async () => {
     const loadEnvironment = async () => {
         window.ipcRenderer.send("main:get-environment");
 
-        await window.ipcRenderer.on("app-setting:set-environment", (event, value) => {
-            if (value != null) {
-                value.forEach((environment) => {
-                    projects.value.push({
-                        id: environment.projectName,
-                        label: environment.projectName + " - " + environment.envFile,
-                        value: environment.envFile
-                    });
-                });
-            }
-        });
+        // await window.ipcRenderer.on("app-setting:set-environment", (event, value) => {
+        //     if (value != null) {
+        //         value.forEach((environment) => {
+        //             projects.value.push({
+        //                 id: environment.projectName,
+        //                 label: environment.projectName + " - " + environment.envFile,
+        //                 value: environment.envFile
+        //             });
+        //         });
+        //     }
+        // });
     };
 
     await loadEnvironment();

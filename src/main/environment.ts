@@ -1,193 +1,134 @@
-import { dialog, ipcMain } from "electron";
-import fs from "fs";
-import dotenv from "dotenv";
+import { ipcMain, BrowserWindow, IpcMainEvent } from "electron";
 import storage from "electron-json-storage";
 
-interface EnvironmentFile {
-    value: string;
-    selected: string;
+interface EnvironmentStorage {
+    project: string;
+    path: any;
 }
 
-let projectExists = false;
+function configureEnvironment(mainWindow: BrowserWindow): void {
+    ipcMain.on("environment::get", async () => {
+        const all = (): Promise<EnvironmentStorage[]> => {
+            return new Promise((resolve, reject) => {
+                storage.keys((error: Error | null, keys: string[]) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
 
-function configureEnvironment(mainWindow: Electron.BrowserWindow): void {
-    /**
-     * Clears the environment storage.
-     */
-    ipcMain.on("main:settings-clear-all-settings", (): void => {
-        storage.clear((error) => {
-            if (error) {
-                console.log(error);
-            }
-        });
+                    const projects: EnvironmentStorage[] = [];
+
+                    for (const key of keys) {
+                        if (key.startsWith("environment_")) {
+                            const project = key.replace("environment_", "");
+                            const path = storage.getSync(key);
+                            const existingProjectIndex = projects.findIndex((p) => p.project === project);
+                            if (existingProjectIndex === -1) {
+                                projects.push({ project, path });
+                            } else {
+                                projects[existingProjectIndex].path = path;
+                            }
+                        }
+                    }
+
+                    resolve(projects);
+                });
+            });
+        };
+
+        const environmentStorages = await all();
+        mainWindow.webContents.send("app-setting:set-environment", environmentStorages);
+        console.log(environmentStorages);
     });
 
-    /**
-     * Updates the environment file with the selected environment variables.
-     * @param event - The Electron.IpcMainEvent instance.
-     * @param value - The value containing the file and selected environment variables.
-     */
-    ipcMain.on("main:settings-update-environment", (event: Electron.IpcMainEvent, value): void => {
-        const file = value.file;
-        const selected: EnvironmentFile = value.selected;
-        const selectedIdeHandler = value.selectedIdeHandler;
-        const projectPath = value.projectPath;
+    ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath: string }): void => {
+        let path = value.applicationPath;
 
-        const storageEnvironment = async (): Promise<object> => await storage.getSync("environment");
+        if (path.endsWith("/")) {
+            path = path.slice(0, -1);
+        }
 
-        storageEnvironment().then((storageEnvironment: any): void => {
-            const exists = Array.from(storageEnvironment).filter((environment: any): boolean => environment.envFile === file);
+        const project = path.split("/").pop();
 
-            if (exists.length > 0 && value.create) {
-                mainWindow.webContents.send("main:search-environment-by-path");
-                projectExists = true;
-
+        // Check if the storage key 'environment_' + project exists
+        storage.has(`environment_${project}`, (error: Error | null, hasKey: boolean): void => {
+            if (error) {
+                console.error("Error checking storage:", error);
                 return;
             }
 
-            projectExists = false;
+            // If the key doesn't exist, add it with the corresponding value
+            if (!hasKey) {
+                storage.set(`environment_${project}`, path, (error: Error | null): void => {
+                    if (error) {
+                        console.error("Error setting storage:", error);
+                        return;
+                    }
+                    console.log(`Added environment_${project} to storage with value: ${path}`);
+                });
+            } else {
+                console.log(`environment_${project} already exists in storage.`);
+            }
 
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const editDotenv = require("edit-dotenv");
+            const storageEnvironment = (): Promise<object> => {
+                return new Promise((resolve) => {
+                    storage.get(`environment_${project}`, (error: Error | null, data: any) => {
+                        if (error) {
+                            console.error("Error getting storage:", error);
+                            resolve({});
+                            return;
+                        }
+                        resolve(data);
+                    });
+                });
+            };
 
-            fs.readFile(file, "utf8", (err, data) => {
-                if (err) {
-                    console.log(err);
-                    mainWindow.webContents.send("app-setting:env-update-environment-file-not-exists");
-                    return;
-                }
-
-                const changes = {};
-
-                // @ts-ignore
-                for (const key of selected) {
-                    const value = key.text ?? key.value;
-                    changes[key.value] = key.selected?.toString() ?? value.toString();
-                }
-
-                if (selectedIdeHandler !== undefined) {
-                    changes["DS_FILE_HANDLER"] = selectedIdeHandler;
-                }
-                if (projectPath !== undefined) {
-                    changes["DS_PROJECT_PATH"] = projectPath;
-                }
-
-                const newFile = editDotenv(data, changes);
-
-                fs.writeFileSync(file, newFile, "utf-8");
+            storageEnvironment().then(async (storageEnvironment: Object): Promise<void> => {
+                ipcMain.emit("environment::get")
+                setTimeout(() => mainWindow.webContents.send("app-setting:set-active", storageEnvironment), 200,)
             });
-        });
-
-        mainWindow.webContents.send("app-setting:env-update-environment-success");
-    });
-
-    /**
-     * Removes the specified environment file from storage.
-     * @param event - The Electron.IpcMainEvent instance.
-     * @param value - The environment file to be removed.
-     */
-    ipcMain.on("main:setting-remove-environments", (event: Electron.IpcMainEvent, value): void => {
-        const storageEnvironment = async (): Promise<object> => await storage.getSync("environment");
-
-        storageEnvironment().then(async (storageEnvironment: any): Promise<void> => {
-            const updatedEnvironment = storageEnvironment.filter((environment: any): boolean => {
-                return environment.envFile !== value;
-            });
-
-            // @ts-ignore
-            storage.set(`environment`, updatedEnvironment);
         });
     });
 
-    /**
-     * Retrieves the contents of the specified environment file and sends them to the mainWindow.
-     * @param event - The Electron.IpcMainEvent instance.
-     * @param value - The environment file path.
-     */
-    ipcMain.on("main:setting-get-environments", (event: Electron.IpcMainEvent, value: string): void => {
-        const file = value;
-
-        if (file.toString() == "") {
-            return;
-        }
-
-        // eslint-disable-next-line no-console
-        console.log("get environment file: " + file);
+    ipcMain.on("main:setting-get-environments", (event: IpcMainEvent, value: string): void => {
+        const file = value + "/laradumps.yaml";
 
         try {
-            const env: Buffer = fs.readFileSync(file);
-            const buf: Buffer = Buffer.from(env);
-            const currentConfig: dotenv.DotenvParseOutput = dotenv.parse(buf);
+            const yaml = require("js-yaml");
+            const fs = require("fs");
 
-            dotenv.config({ path: file });
+            const readFile = yaml.load(fs.readFileSync(file, "utf8"));
 
-            const envContents = Object.entries({ ...currentConfig })
-                .filter(([key, val]) => key.includes("DS_") && (val.includes("true") || val.includes("false")))
-                .map(([key, val], index) => {
-                    return {
-                        id: index,
-                        value: key,
-                        name: key.replace("DS_", "").replace("SEND", "").replaceAll("_", " "),
-                        selected: val
-                    };
-                });
-
-            mainWindow.webContents.send("settings:env-file-contents", envContents);
-        } catch (error) {
-            console.log(error);
-        }
-    });
-
-    /**
-     * Opens a file dialog for choosing an environment file.
-     */
-    ipcMain.on("main:choose-environment-file", () => {
-        dialog
-            .showOpenDialog(mainWindow, {
-                properties: ["openFile", "showHiddenFiles"]
-            })
-            .then((result) => {
-                mainWindow.webContents.send("app-setting:env-file", result.filePaths[0]);
-            })
-            .catch((err) => {
-                console.log(err);
+            const parseYaml = Object.entries({ ...readFile.observers }).map(([key, val], index) => {
+                return {
+                    id: index,
+                    value: key,
+                    name: key.replace(/_/g, " "),
+                    selected: val
+                };
             });
+
+            mainWindow.webContents.send("settings:env-file-contents", parseYaml);
+        } catch (e) {
+            console.error(e);
+            mainWindow.webContents.send("settings:env-file-contents", []);
+        }
     });
 
-    /**
-     * Saves the environment settings to storage.
-     * @param event - The Electron.IpcMainEvent instance.
-     * @param arg - The environment settings to be saved.
-     */
-    ipcMain.on("main:store-config", (event: Electron.IpcMainEvent, arg): void => {
-        const storageEnvironment = () => storage.getSync("environment");
+    ipcMain.on("main:setting-remove-environments", (event: IpcMainEvent, value: string): void => {
+        let path = value;
 
-        if (projectExists) {
-            return;
+        if (path.endsWith("/")) {
+            path = path.slice(0, -1);
         }
 
-        if (Object.values(storageEnvironment()).length > 0) {
-            // @ts-ignore
-            storage.set(`environment`, [arg].concat(storageEnvironment()));
+        const project = path.split("/").pop();
 
-            return;
-        }
-
-        // @ts-ignore
-        storage.set(`environment`, [arg]);
-
-        mainWindow.webContents.send("installer:close-modal");
-    });
-
-    /**
-     * Retrieves the environment settings from storage and sends them to the mainWindow.
-     */
-    ipcMain.on("main:get-environment", (): void => {
-        // @ts-ignore
-        const storageEnvironment = async (): Promise<object> => await storage.getSync("environment");
-
-        storageEnvironment().then((storageEnvironment): void => {
-            mainWindow.webContents.send("app-setting:set-environment", Object.values(storageEnvironment).length > 0 ? storageEnvironment : []);
+        storage.remove(`environment_${project}`, (error: Error | null) => {
+            if (error) {
+                console.error("Error removing storage:", error);
+            }
+            ipcMain.emit("environment::get");
         });
     });
 }
