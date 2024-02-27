@@ -1,5 +1,6 @@
 import { ipcMain, BrowserWindow, IpcMainEvent } from "electron";
 import storage from "electron-json-storage";
+import JSConfetti from "js-confetti";
 
 interface EnvironmentStorage {
     project: string;
@@ -38,7 +39,6 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
 
         const environmentStorages = await all();
         mainWindow.webContents.send("app-setting:set-environment", environmentStorages);
-        console.log(environmentStorages);
     });
 
     ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath: string }): void => {
@@ -64,6 +64,13 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
                         console.error("Error setting storage:", error);
                         return;
                     }
+
+                    mainWindow.webContents.send("app-setting:project-added")
+
+                    const notification = { title: "Test", body: "112312" }
+
+                    ipcMain.emit("notification", notification)
+
                     console.log(`Added environment_${project} to storage with value: ${path}`);
                 });
             } else {
@@ -85,7 +92,7 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
 
             storageEnvironment().then(async (storageEnvironment: Object): Promise<void> => {
                 ipcMain.emit("environment::get")
-                setTimeout(() => mainWindow.webContents.send("app-setting:set-active", storageEnvironment), 200,)
+                setTimeout(() => mainWindow.webContents.send("app-setting:set-active", storageEnvironment), 200)
             });
         });
     });

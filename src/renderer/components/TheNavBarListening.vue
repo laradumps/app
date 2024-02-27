@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { SignalIcon } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref } from "vue";
+import JSConfetti from "js-confetti";
 
 interface Project {
     path: string;
@@ -14,6 +15,7 @@ interface Environment {
 }
 
 const selectedProject = ref<string>("");
+const newProject = ref<boolean>(false)
 const projects = ref<Project[]>([]);
 const environments = ref<Environment[]>([]);
 
@@ -22,8 +24,18 @@ onMounted(async () => {
 
     window.ipcRenderer.send("environment::get");
 
+    window.ipcRenderer.on("app-setting:project-added", () => {
+        const jsConfetti = new JSConfetti()
+
+        jsConfetti.addConfetti()
+
+        newProject.value = true
+        setTimeout(() => newProject.value = false, 5000)
+    })
+
     window.ipcRenderer.on("app-setting:set-active", (event, value) => {
         if (value.length > 0) {
+
             selectedProject.value = value;
             setActiveProject();
         }
@@ -78,7 +90,7 @@ const removeEnvironment = () => {
                 selectedProject.value = "";
                 environments.value = [];
 
-                alert("The project was removed successfully!");
+                window.ipcRenderer.emit("environment::get")
             }
         });
 
@@ -102,7 +114,7 @@ const setActiveProject = () => {
             role="button"
             class="m-1"
         >
-            <SignalIcon class="w-5 hover:text-primary" />
+            <SignalIcon :class="{'animate-pulse text-primary' : newProject}" class="w-5 hover:text-primary" />
         </div>
         <ul
             tabindex="0"
@@ -135,7 +147,7 @@ const setActiveProject = () => {
                 No laradumps.yaml found in this project
             </div>
 
-            <div class="max-h-[300px] overflow-auto">
+            <div class="max-h-[330px] overflow-auto">
                 <li
                     :key="env.value"
                     v-for="env in environments"

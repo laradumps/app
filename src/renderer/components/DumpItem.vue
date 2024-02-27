@@ -9,7 +9,7 @@
                 open
             >
                 <summary class="collapse-title text-xl font-medium">
-                    <div class="gap-2 text-base-content justify-between items-center font-light flex text-[11px]">
+                    <div class="gap-2 text-base-content opacity-70 justify-between items-center font-light flex text-[11px]">
                         <ul
                             class="flex gap-6"
                             v-bind:style="props.payload.ide_handle ? 'list-style-type: disc;' : ''"

@@ -1,4 +1,4 @@
-import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
+import { app, Tray, nativeTheme, nativeImage, Notification, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
 import windowStateKeeper from "electron-window-state";
 import path, { join, resolve } from "path";
 import contextMenu from "electron-context-menu";

@@ -2,7 +2,7 @@
     <div class="space-y-2 rounded-sm pr-2">
         <div>
             <div>
-                <div class="flex justify-end">
+                <div class="flex justify-start">
                     <label class="flex justify-end input input-bordered input-sm items-e gap-2 max-w-[200px]">
                         <input
                             v-model="search"
