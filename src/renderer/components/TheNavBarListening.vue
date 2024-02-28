@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SignalIcon } from "@heroicons/vue/24/outline";
+import { SignalIcon, SignalSlashIcon } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref } from "vue";
 import JSConfetti from "js-confetti";
 
@@ -76,8 +76,7 @@ const selectedEnvironment = computed(() => {
 const save = async (): Promise<void> => {
     window.ipcRenderer.send("main:settings-update-environment", {
         selected: selectedEnvironment.value,
-        file: selectedProject.value,
-        create: false
+        project: selectedProject.value,
     });
 };
 
@@ -114,7 +113,12 @@ const setActiveProject = () => {
             role="button"
             class="m-1"
         >
-            <SignalIcon :class="{'animate-pulse text-primary' : newProject}" class="w-5 hover:text-primary" />
+            <SignalSlashIcon v-if="selectedProject.length === 0"
+                             class="w-5 text-error hover:text-primary" />
+
+            <SignalIcon v-else
+                        :class="{'animate-pulse text-primary' : newProject}"
+                        class="w-5 text-success hover:text-primary" />
         </div>
         <ul
             tabindex="0"
@@ -126,8 +130,7 @@ const setActiveProject = () => {
                 class="mb-5 select select-bordered select-xs w-full max-w-xs"
             >
                 <option
-                    disabled
-                    selected
+                    value=""
                 >
                     Select a project
                 </option>

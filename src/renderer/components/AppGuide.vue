@@ -70,13 +70,6 @@ const tips = ref([
             </li>
             <li>${i18n.t("doc.run")} <code class="bg-base-300 text-sm p-1 rounded">global-laradumps install</code></li>
         </div>
-    </div>`,
-    `<div>
-        <div class="space-y-3 text-base-content">
-            <div class="font-semibold">${i18n.t("doc.update_laradumps_environments")}</div>
-            <li>${i18n.t("doc.choose_project")}</li>
-            <li>${i18n.t("doc.update_keys")}: <code class="bg-base-300 text-sm p-1 rounded">DS_LOGS_APPLICATION, DS_SEND_MAIL</code> ...</li>
-        </div>
     </div>`
 ]);
 

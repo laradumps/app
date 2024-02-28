@@ -7,6 +7,27 @@ interface EnvironmentStorage {
     path: any;
 }
 
+interface DataStructure {
+    app: {
+        primary_host: string;
+        secondary_host: string;
+        port: number;
+        workdir: string;
+        project_path: string;
+    };
+    config: {
+        auto_clear_on_page_reload: boolean;
+        auto_invoke_app: boolean;
+        theme: string;
+        sleep: number;
+        color_in_screen: boolean;
+        docker: boolean;
+    };
+    observers: {
+        [key: string]: boolean;
+    };
+}
+
 function configureEnvironment(mainWindow: BrowserWindow): void {
     ipcMain.on("environment::get", async () => {
         const all = (): Promise<EnvironmentStorage[]> => {
@@ -143,6 +164,38 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
             ipcMain.emit("environment::get");
         });
     });
+
+    ipcMain.on("main:settings-update-environment", (event: Electron.IpcMainEvent, value): void => {
+        const { selected, project } = value;
+        const filePath = `${project}/laradumps.yaml`;
+
+        const yaml = require("js-yaml");
+        const fs = require("fs");
+
+        let data: DataStructure;
+
+        try {
+            const fileContents = fs.readFileSync(filePath, 'utf8');
+            data = yaml.load(fileContents);
+
+            selected.forEach((item: { value: string; selected: boolean }) => {
+                data.observers[item.value] = item.selected;
+            });
+
+            const yamlData = yaml.dump(data);
+
+            fs.writeFile(filePath, yamlData, (err: NodeJS.ErrnoException | null): void => {
+                if (err) {
+                    console.error("Error writing to file:", err);
+                    return;
+                }
+                console.log("laradumps.yaml has been updated successfully.");
+            });
+
+        } catch (err) {
+            console.error(err);
+        }
+    })
 }
 
 export { configureEnvironment };
