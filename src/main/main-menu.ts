@@ -30,26 +30,6 @@ function createMenu(mainWindow: BrowserWindow): void {
             ]
         },
         {
-            label: "Help",
-            submenu: [
-                {
-                    label: "Documentation",
-                    click: async (): Promise<void> => {
-                        await shell.openExternal("https://laradumps.dev");
-                    }
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    label: "Releases",
-                    click: async (): Promise<void> => {
-                        await shell.openExternal("https://github.com/laradumps/app/releases");
-                    }
-                }
-            ]
-        },
-        {
             label: "Options",
             submenu: [
                 {
@@ -168,7 +148,24 @@ function createMenu(mainWindow: BrowserWindow): void {
                     type: "radio"
                 }
             ]
-        }
+        },
+        {
+            label: "Help",
+            submenu: [
+                {
+                    label: "Documentation",
+                    click: async (): Promise<void> => {
+                        await shell.openExternal("https://laradumps.dev");
+                    }
+                },
+                {
+                    label: "Releases",
+                    click: async (): Promise<void> => {
+                        await shell.openExternal("https://github.com/laradumps/app/releases");
+                    }
+                }
+            ]
+        },
     ];
 
     // Enables copy to clipboard in macOS

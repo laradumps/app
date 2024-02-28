@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow, IpcMainEvent } from "electron";
+import { ipcMain, BrowserWindow, IpcMainEvent, Notification } from "electron";
 import storage from "electron-json-storage";
 import JSConfetti from "js-confetti";
 
@@ -44,6 +44,15 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
     ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath: string }): void => {
         let path = value.applicationPath;
 
+        if (path == '') {
+            new Notification({
+                title: 'LaraDumps Info',
+                body: 'The file: "laradumps.yaml" is not found in the project root'
+            }).show()
+
+            return;
+        }
+
         if (path.endsWith("/")) {
             path = path.slice(0, -1);
         }
@@ -66,10 +75,6 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
                     }
 
                     mainWindow.webContents.send("app-setting:project-added")
-
-                    const notification = { title: "Test", body: "112312" }
-
-                    ipcMain.emit("notification", notification)
 
                     console.log(`Added environment_${project} to storage with value: ${path}`);
                 });

@@ -135,8 +135,9 @@ const setActiveProject = () => {
                 <option
                     v-for="project in projects"
                     :ref="project.project"
+                    :value="project.path"
                 >
-                    {{ project.path }}
+                    {{ project.project }} - {{ project.path }}
                 </option>
             </select>
 

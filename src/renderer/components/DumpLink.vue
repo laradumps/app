@@ -20,12 +20,14 @@ const IDEHandler = useIDEHandler();
 const link = ref();
 
 onMounted(() => {
-    link.value = IDEHandler.value.replace("{filepath}", props.ideHandler.path).replace("{line}", props.ideHandler.line);
+    const path = props.ideHandler.project_path
+
+    link.value = IDEHandler.value.replace("{filepath}", path).replace("{line}", props.ideHandler.line);
 
     window.ipcRenderer.on("changeIDE", (event, args) => {
         let ide = args.value;
 
-        link.value = ide.replace("{filepath}", props.ideHandler.path).replace("{line}", props.ideHandler.line);
+        link.value = ide.replace("{filepath}", props.ideHandler.real_path).replace("{line}", props.ideHandler.line);
     });
 });
 

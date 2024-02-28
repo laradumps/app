@@ -9,7 +9,7 @@
         >
             <TheModal v-model:modal-attributes="modalAttributes" />
 
-            <!--            <div class="px-2 py-1 bg-base1-100">-->
+            <!--            <div class="px-2 py-1 bg-base-100">-->
             <!--                <div class="flex justify-between items-center">-->
             <!--                    <div>-->
             <!--                        <div class="flex gap-2 ml-2">-->
@@ -108,7 +108,7 @@
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
                             }"
-                            class="rounded-sm text-base1-600 overflow-auto"
+                            class="rounded-sm text-base overflow-auto"
                         >
                             <div id="top"></div>
 
