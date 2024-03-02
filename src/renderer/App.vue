@@ -156,6 +156,7 @@ const payload = ref([]);
 const screens = ref([]);
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
+const applicationPath = ref('');
 
 const screenStore = useScreenStore();
 const appearanceStore = useAppearanceStore();
@@ -286,7 +287,12 @@ const toggleScreen = (value: string): void => {
 type EventType = "label" | "color" | "screen" | "dump";
 
 const dispatch = (type: string, event: EventType, content: any): void => {
-    window.ipcRenderer.send("environment::check", { applicationPath: content.application_path });
+    if (applicationPath.value !=  content.application_path) {
+
+        console.log("environment::check")
+        window.ipcRenderer.send("environment::check", { applicationPath: content.application_path });
+        applicationPath.value = content.application_path
+    }
 
     content.rendered = false;
     settingStore.setting = false;

@@ -190,9 +190,10 @@ function createWindow(): BrowserWindow {
 
         mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
 
-        if (isDev) {
-            win.webContents.openDevTools();
-        }
+        win.webContents.openDevTools();
+        // if (isDev) {
+        //     win.webContents.openDevTools();
+        // }
     });
 
     return win;
