@@ -1,8 +1,5 @@
 <template>
     <div class="space-y-5">
-        <AppSettingsLanguage />
-        <AppSettingsAutoUpdate />
-
         <div>
             <div class="mt-40 text-sm space-y-3">
                 <div class="text-lg text-left mt-4 font-normal text-base-700">
@@ -24,9 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import AppSettingsLanguage from "@/components/AppSettingsLanguage.vue";
 import { useI18n } from "vue-i18n";
-import AppSettingsAutoUpdate from "@/components/AppSettingsAutoUpdate.vue";
 
 const i18n = useI18n();
 

@@ -20,7 +20,7 @@ const IDEHandler = useIDEHandler();
 const link = ref();
 
 onMounted(() => {
-    const path = props.ideHandler.project_path
+    const path = props.ideHandler.project_path;
 
     link.value = IDEHandler.value.replace("{filepath}", path).replace("{line}", props.ideHandler.line);
 

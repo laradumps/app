@@ -1,17 +1,22 @@
-import { app, Tray, nativeTheme, nativeImage, Notification, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
+import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
 import windowStateKeeper from "electron-window-state";
-import path, { join, resolve } from "path";
-import contextMenu from "electron-context-menu";
-import storage from "electron-json-storage";
-import os from "os";
-import { initSavedDumps } from "./saved-dumps";
-import { initCoffeeWindow } from "./coffee";
-import { configureLocalShortcut, registerShortcuts } from "./shortcut";
-import { configureEnvironment } from "./environment";
 import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
+import { download } from "electron-dl";
+
+import path, { join, resolve } from "path";
+import os from "os";
 import * as url from "url";
 import fs from "fs";
-import { download } from "electron-dl";
+
+import contextMenu from "electron-context-menu";
+import storage from "electron-json-storage";
+
+import { initSavedDumps } from "./window/saved-dumps";
+import { initCoffeeWindow } from "./window/coffee";
+
+import { configureLocalShortcut, registerShortcuts } from "./shortcut";
+import { configureEnvironment } from "./environment";
+
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
 
@@ -24,7 +29,7 @@ let savedDumpWindow: BrowserWindow;
 let tray: Electron.Tray;
 let isQuiting: boolean;
 
-const minPackageVersion = "0.1.0";
+const minPackageVersion = "2.0.0";
 
 if (isDev) {
     contextMenu({

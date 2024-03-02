@@ -1,29 +1,31 @@
 <template>
-    <div class="carousel1">
-        <button
-            v-if="currentIndex > 0"
-            class="arrow left hidden group-hover:block"
-            @click="previous"
-        >
-            <ChevronLeftIcon class="w-5" />
-        </button>
-        <div class="content">
-            <div
-                :key="currentTipKey"
-                class="mt-3 text-sm font-normal"
+    <div>
+        <div class="carousel1 mt-6">
+            <button
+                v-if="currentIndex > 0"
+                class="arrow left hidden group-hover:block"
+                @click="previous"
             >
+                <ChevronLeftIcon class="w-5" />
+            </button>
+            <div class="content">
                 <div
-                    v-html="currentTip"
-                    class="!text-neutral"
-                ></div>
+                    :key="currentTipKey"
+                    class="mt-3 text-xs font-normal"
+                >
+                    <div
+                        v-html="currentTip"
+                        class="!text-neutral"
+                    ></div>
+                </div>
             </div>
+            <button
+                class="arrow right hidden group-hover:block"
+                @click="next"
+            >
+                <ChevronRightIcon class="w-5 dark:text-base-500 dark:hover:text-base-300" />
+            </button>
         </div>
-        <button
-            class="arrow right hidden group-hover:block"
-            @click="next"
-        >
-            <ChevronRightIcon class="w-5 dark:text-base-500 dark:hover:text-base-300" />
-        </button>
     </div>
 </template>
 
@@ -39,7 +41,7 @@ const currentTipKey = ref(0);
 
 const tips = ref([
     `<div class="space-y-3 text-base-content">
-        <div class="font-semibold">${i18n.t("doc.guide")}</div>
+        <div class="font-semibold text-base">${i18n.t("doc.guide")}</div>
         <li>${i18n.t(
             "doc.install_laradumps"
         )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-blue-500 underline cursor-pointer ml-1">https://laradumps.dev</span></li>
@@ -64,7 +66,7 @@ const tips = ref([
     </div>`,
     `<div>
         <div class="space-y-3 text-base-content">
-            <div class="font-semibold">${i18n.t("doc.install_laradumps_globally")}</div>
+            <div class="font-semibold text-base">${i18n.t("doc.install_laradumps_globally")}</div>
             <li>
                 <code class="bg-base-300 p-1 rounded">composer global require laradumps/global-laradumps</code>
             </li>

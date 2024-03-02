@@ -94,7 +94,7 @@
                             <div class="py-1 flex-1 px-3">
                                 <div class="flex items-center justify-between overflow-x-auto">
                                     <div class="flex">
-                                        <AppHeader
+                                        <DumpScreens
                                             v-model:screens="screens"
                                             v-model:payload="payload"
                                         />
@@ -177,13 +177,13 @@ import humanizeDuration from "humanize-duration";
 import TheModal from "@/components/TheModal.vue";
 import TheNavBar from "@/components/TheNavBar.vue";
 import AppSetting from "@/components/AppSetting.vue";
-import AppHeader from "@/components/AppHeader.vue";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 import { usePrivacy } from "@/store/privacy";
 import { useIDEHandler } from "@/store/ide-handler";
+import DumpScreens from "@/components/DumpScreens.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -212,15 +212,9 @@ const payload = ref([]);
 const screens = ref([]);
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
-const renderedDumps = ref([]);
-const activeScreen = ref("screen 1");
-
-const currentProgress = ref(0);
-const isLoading = ref(false);
 
 const screenStore = useScreenStore();
 const appearanceStore = useAppearanceStore();
-const localeStore = useI18nStore();
 const reorderStore = useReorder();
 const settingStore = useSettingStore();
 const timeStore = useTimeStore();
@@ -229,14 +223,21 @@ const globalSearchStore = useGlobalSearchStore();
 const privacyStore = usePrivacy();
 const IDEHandler = useIDEHandler();
 
-const i18n = useI18n();
+const i18n = useI18n({ useScope: "global" });
+const localeStore = useI18nStore();
 
 window.ipcRenderer.on("changeTheme", (event, args) => {
     appearanceStore.setTheme(args.theme);
+});
 
-    setTimeout(() => {
-        document.title = "LaraDumps - " + appearanceStore.theme;
-    }, 50);
+window.ipcRenderer.on("settings:set-language", (event, args) => {
+    localeStore.set(args.value);
+    i18n.locale.value = args.value;
+    location.reload();
+});
+
+window.ipcRenderer.on("settings:check-for-updates", (event, args) => {
+    localStorage.autoUpdate = args.value;
 });
 
 window.ipcRenderer.on("changeIDE", (event, args) => {
@@ -365,6 +366,12 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         maximizeApp(autoInvokeApp);
     }
 
+    payload.value.map((dump: Payload) => {
+        if (typeof dump.date_time == "undefined") {
+            dump.date_time = moment().format("hh:mm:ss");
+        }
+    });
+
     toggleScreen(screenName);
 };
 
@@ -436,13 +443,7 @@ function registerDefaultLocalShortcuts() {
 }
 
 onMounted(() => {
-    setTimeout(() => {
-        document.title = "LaraDumps - " + appVersion.value;
-    }, 100);
-
-    setTimeout(() => {
-        document.title = "LaraDumps - " + appearanceStore.theme;
-    }, 100);
+    setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
 
     window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
         if (arg === 0) {

@@ -1,3 +1,116 @@
+<script setup lang="ts">
+import { computed, defineProps, onMounted, ref, watch } from "vue";
+import { useTimeStore } from "@/store/time";
+import DumpLink from "@/components/DumpLink.vue";
+import DumpQueries from "@/components/DumpQueries.vue";
+import DumpJson from "@/components/DumpJson.vue";
+import DumpLog from "@/components/DumpLog.vue";
+import DumpModel from "@/components/DumpModel.vue";
+import DumpTable from "@/components/DumpTable.vue";
+import DumpHTML from "@/components/DumpHTML.vue";
+import IconSave from "@/components/Icons/IconSave.vue";
+import DumpTimeTrack from "@/components/DumpTimeTrack.vue";
+import DumpContains from "@/components/DumpContains.vue";
+import DumpMailable from "@/components/DumpMailable.vue";
+import DumpIsJson from "@/components/DumpIsJson.vue";
+import DumpTableV2 from "@/components/DumpTableV2.vue";
+import DumpQuery from "@/components/DumpQuery.vue";
+import { Payload } from "@/types/Payload";
+import DumpMail from "@/components/DumpMail.vue";
+import CopyToClick from "@/components/CopyToClick.vue";
+
+const timeStore = useTimeStore();
+
+const saveDump = () => window.ipcRenderer.send("main:save-dumps", JSON.stringify(props.payload));
+
+const removeSaveDump = () => {
+    const payloadId = props.payload.id;
+    window.ipcRenderer.send("saved-dumps:remove", payloadId);
+    document.getElementById(payloadId).remove();
+};
+
+const props = defineProps<{
+    payload: Payload;
+    inSavedDumpsWindow?: boolean;
+}>();
+
+const copyDump = () => {
+    const value = document.getElementById(`sf-dump-${props.payload.sf_dump_id}`)?.innerText;
+
+    navigator.clipboard.writeText(value).then(() => {});
+    changeIcon();
+};
+
+onMounted(() => {
+    if (props.payload.dump?.dump) {
+        const { dump } = props.payload.dump;
+
+        if (typeof dump === "string" && props.payload.sf_dump_id) {
+            if (dump.includes(`sf-dump-${props.payload.sf_dump_id}`)) {
+                window.Sfdump(`sf-dump-${props.payload.sf_dump_id}`);
+            }
+        }
+    }
+
+    if (props.payload.type === "queries") {
+        const { time } = props.payload.queries;
+        timeStore.increment(props.payload.request_id, props.payload.id, time);
+    }
+});
+
+const changeIcon = () => {
+    document.getElementById("saveIcon").innerHTML = "√";
+    setTimeout(function () {
+        document.getElementById("saveIcon").innerHTML = "";
+    }, 2000);
+};
+
+const expandAll = () => {
+    setTimeout(() => {
+        const elements = document.querySelectorAll(`#sf-dump-${props.payload.sf_dump_id} .sf-dump-toggle`);
+        elements.forEach((element, index) => {
+            if (index !== 0) {
+                element.click();
+            }
+        });
+    }, 1);
+};
+
+const color = computed(() => {
+    let border;
+    let color;
+
+    if (typeof props.payload.color !== "undefined") {
+        color = props.payload.color;
+    }
+
+    switch (color) {
+        case "red":
+            border = "border-l-error";
+            break;
+        case "warning":
+        case "orange":
+            border = "border-l-warning";
+            break;
+        case "green":
+            border = "border-l-success";
+            break;
+        case "blue":
+            border = "border-l-info";
+            break;
+        case "gray":
+            border = "border-l-neutral";
+            break;
+        case "black":
+            border = "border-black";
+            break;
+        default:
+            props.payload.color;
+    }
+
+    return border;
+});
+</script>
 <template>
     <div class="group text-sm pt-2">
         <div class="px-3 w-full">
@@ -149,124 +262,3 @@
         </div>
     </div>
 </template>
-
-<script setup lang="ts">
-import { computed, defineProps, nextTick, onMounted, ref, watch } from "vue";
-import { CheckIcon } from "@heroicons/vue/20/solid";
-import { useCollapse } from "@/store/collapse";
-import { usePrivacy } from "@/store/privacy";
-import { useTimeStore } from "@/store/time";
-import DumpLink from "@/components/DumpLink.vue";
-import DumpQueries from "@/components/DumpQueries.vue";
-import DumpJson from "@/components/DumpJson.vue";
-import DumpLog from "@/components/DumpLog.vue";
-import DumpModel from "@/components/DumpModel.vue";
-import DumpTable from "@/components/DumpTable.vue";
-import DumpHTML from "@/components/DumpHTML.vue";
-import IconSave from "@/components/Icons/IconSave.vue";
-import DumpTimeTrack from "@/components/DumpTimeTrack.vue";
-import DumpContains from "@/components/DumpContains.vue";
-import DumpMailable from "@/components/DumpMailable.vue";
-import DumpIsJson from "@/components/DumpIsJson.vue";
-import DumpTableV2 from "@/components/DumpTableV2.vue";
-import DumpQuery from "@/components/DumpQuery.vue";
-import { Payload } from "@/types/Payload";
-import DumpMail from "@/components/DumpMail.vue";
-import CopyToClick from "@/components/CopyToClick.vue";
-
-const timeStore = useTimeStore();
-const collapseStore = useCollapse();
-const privacy = usePrivacy();
-
-const viewed = ref(false);
-
-const saveDump = () => window.ipcRenderer.send("main:save-dumps", JSON.stringify(props.payload));
-
-const removeSaveDump = () => {
-    const payloadId = props.payload.id;
-    window.ipcRenderer.send("saved-dumps:remove", payloadId);
-    document.getElementById(payloadId).remove();
-};
-
-const props = defineProps<{
-    payload: Payload;
-    inSavedDumpsWindow?: boolean;
-}>();
-
-const copyDump = () => {
-    const value = document.getElementById(`sf-dump-${props.payload.sf_dump_id}`)?.innerText;
-
-    navigator.clipboard.writeText(value).then(() => {});
-    changeIcon();
-};
-
-onMounted(() => {
-    if (props.payload.dump?.dump) {
-        const { dump } = props.payload.dump;
-
-        if (typeof dump === "string" && props.payload.sf_dump_id) {
-            if (dump.includes(`sf-dump-${props.payload.sf_dump_id}`)) {
-                window.Sfdump(`sf-dump-${props.payload.sf_dump_id}`);
-            }
-        }
-    }
-
-    if (props.payload.type === "queries") {
-        const { time } = props.payload.queries;
-        timeStore.increment(props.payload.request_id, props.payload.id, time);
-    }
-});
-
-const changeIcon = () => {
-    document.getElementById("saveIcon").innerHTML = "√";
-    setTimeout(function () {
-        document.getElementById("saveIcon").innerHTML = "";
-    }, 2000);
-};
-
-const expandAll = () => {
-    setTimeout(() => {
-        const elements = document.querySelectorAll(`#sf-dump-${props.payload.sf_dump_id} .sf-dump-toggle`);
-        elements.forEach((element, index) => {
-            if (index !== 0) {
-                element.click();
-            }
-        });
-    }, 1);
-};
-
-const color = computed(() => {
-    let border;
-    let color;
-
-    if (typeof props.payload.color !== "undefined") {
-        color = props.payload.color;
-    }
-
-    switch (color) {
-        case "red":
-            border = "border-l-error";
-            break;
-        case "warning":
-        case "orange":
-            border = "border-l-warning";
-            break;
-        case "green":
-            border = "border-l-success";
-            break;
-        case "blue":
-            border = "border-l-info";
-            break;
-        case "gray":
-            border = "border-l-neutral";
-            break;
-        case "black":
-            border = "border-black";
-            break;
-        default:
-            props.payload.color;
-    }
-
-    return border;
-});
-</script>

@@ -1,3 +1,33 @@
+<script setup>
+import { computed, ref } from "vue";
+
+import AppSettingsLocalShortcuts from "@/components/AppSettingsLocalShortcuts.vue";
+import AppSettingsSystem from "@/components/AppSettingsSystem.vue";
+import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
+import { useSettingStore } from "@/store/setting";
+
+const selectedPage = ref("Shortcuts");
+const settingStore = useSettingStore();
+
+const hasUpdates = computed(() => {
+    return localStorage.updateAvailable === "true";
+});
+
+const checkUpdates = computed(() => {
+    window.ipcRenderer.send("main:check-upload");
+});
+
+const toggleSetting = () => {
+    settingStore.toggle();
+};
+
+defineProps({
+    localShortcutList: {
+        required: true,
+        type: Array
+    }
+});
+</script>
 <template>
     <div>
         <div class="flex justify-between items-center px-3 py-1 bg-base-100 shadow text-center z-100">
@@ -19,13 +49,6 @@
                 role="tablist"
                 class="tabs tabs-boxed my-4"
             >
-                <a
-                    @click="selectedPage = 'Environment'"
-                    role="tab"
-                    :class="{ 'tab-active': selectedPage === 'Environment' }"
-                    class="tab"
-                    >{{ $t("settings.environment") }}</a
-                >
                 <a
                     @click="selectedPage = 'Shortcuts'"
                     role="tab"
@@ -57,8 +80,6 @@
             </div>
 
             <div class="py-4">
-                <AppSettingsEnvironment v-if="selectedPage === 'Environment'" />
-
                 <AppSettingsLocalShortcuts
                     :local-shortcut-list="localShortcutList"
                     v-if="selectedPage === 'Shortcuts'"
@@ -69,35 +90,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { computed, ref } from "vue";
-
-import AppSettingsLocalShortcuts from "@/components/AppSettingsLocalShortcuts.vue";
-import AppSettingsEnvironment from "@/components/AppSettingsEnvironment.vue";
-import AppSettingsSystem from "@/components/AppSettingsSystem.vue";
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
-import { useSettingStore } from "@/store/setting";
-
-const selectedPage = ref("Environment");
-const settingStore = useSettingStore();
-
-const hasUpdates = computed(() => {
-    return localStorage.updateAvailable === "true";
-});
-
-const checkUpdates = computed(() => {
-    window.ipcRenderer.send("main:check-upload");
-});
-
-const toggleSetting = () => {
-    settingStore.toggle();
-};
-
-defineProps({
-    localShortcutList: {
-        required: true,
-        type: Array
-    }
-});
-</script>

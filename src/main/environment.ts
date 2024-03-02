@@ -65,11 +65,11 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
     ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath: string }): void => {
         let path = value.applicationPath;
 
-        if (path == '') {
+        if (path == "") {
             new Notification({
-                title: 'LaraDumps Info',
+                title: "LaraDumps Info",
                 body: 'The file: "laradumps.yaml" is not found in the project root'
-            }).show()
+            }).show();
 
             return;
         }
@@ -95,7 +95,7 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
                         return;
                     }
 
-                    mainWindow.webContents.send("app-setting:project-added")
+                    mainWindow.webContents.send("app-setting:project-added");
 
                     console.log(`Added environment_${project} to storage with value: ${path}`);
                 });
@@ -117,8 +117,8 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
             };
 
             storageEnvironment().then(async (storageEnvironment: Object): Promise<void> => {
-                ipcMain.emit("environment::get")
-                setTimeout(() => mainWindow.webContents.send("app-setting:set-active", storageEnvironment), 200)
+                ipcMain.emit("environment::get");
+                setTimeout(() => mainWindow.webContents.send("app-setting:set-active", storageEnvironment), 200);
             });
         });
     });
@@ -175,7 +175,7 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
         let data: DataStructure;
 
         try {
-            const fileContents = fs.readFileSync(filePath, 'utf8');
+            const fileContents = fs.readFileSync(filePath, "utf8");
             data = yaml.load(fileContents);
 
             selected.forEach((item: { value: string; selected: boolean }) => {
@@ -191,11 +191,10 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
                 }
                 console.log("laradumps.yaml has been updated successfully.");
             });
-
         } catch (err) {
             console.error(err);
         }
-    })
+    });
 }
 
 export { configureEnvironment };

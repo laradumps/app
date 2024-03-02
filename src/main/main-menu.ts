@@ -18,6 +18,122 @@ function createMenu(mainWindow: BrowserWindow): void {
                     }
                 },
                 {
+                    label: "Language",
+                    submenu: [
+                        {
+                            label: "English",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "en",
+                                    label: "English"
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
+                            label: "Português (BR)",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "pt_BR",
+                                    label: "Português (BR)"
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
+                            label: "Español (ES)",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "es_ES",
+                                    label: "Español (ES)"
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
+                            label: "فارسی (IR)",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "es_ES",
+                                    label: "فارسی (IR)"
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
+                            label: "Italiano (IT)",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "it_IT",
+                                    label: "Italiano (IT)"
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
+                            label: "Chinese (CN)",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "zh_CN",
+                                    label: "Chinese (CN)"
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
+                            label: "Indonesian (ID)",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "id_ID",
+                                    label: "Indonesian (ID)"
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
+                            label: "Shqip (AL)",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "al_AL",
+                                    label: "Shqip (AL)"
+                                });
+                            },
+                            type: "radio"
+                        }
+                    ]
+                },
+                {
+                    label: "Check for Updates",
+                    submenu: [
+                        {
+                            label: "Automatic",
+                            click(menuItem, browserWindow, event) {
+                                mainWindow.webContents.send("settings:check-for-updates", {
+                                    value: "auto_download",
+                                    label: "Automatic"
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
+                            label: "Manual",
+                            click(menuItem, browserWindow, event) {
+                                mainWindow.webContents.send("settings:check-for-updates", {
+                                    value: "manual_download",
+                                    label: "Manual Download"
+                                });
+                            },
+                            type: "radio"
+                        }
+                    ]
+                },
+                {
+                    label: "Shortcuts",
+                    click: async (): Promise<void> => {
+                        mainWindow.webContents.send("app::toggle-settings");
+                    }
+                },
+                {
                     type: "separator"
                 },
                 {
@@ -165,7 +281,7 @@ function createMenu(mainWindow: BrowserWindow): void {
                     }
                 }
             ]
-        },
+        }
     ];
 
     // Enables copy to clipboard in macOS

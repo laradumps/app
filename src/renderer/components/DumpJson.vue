@@ -3,7 +3,7 @@
         <VueJsonPretty
             :show-icon="true"
             :show-lenght="true"
-            :show-line-number="true"
+            :show-line="false"
             :data="value"
         />
     </div>

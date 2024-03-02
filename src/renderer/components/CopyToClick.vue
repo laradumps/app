@@ -1,3 +1,19 @@
+<script setup>
+import { CheckIcon } from "@heroicons/vue/20/solid";
+import { ClipboardIcon } from "@heroicons/vue/24/outline";
+
+import { ref } from "vue";
+
+const showCheck = ref(false);
+
+const copyDump = () => {
+    showCheck.value = true;
+
+    setTimeout(() => {
+        showCheck.value = false;
+    }, 2000);
+};
+</script>
 <template>
     <div
         :title="$t('click_to_copy')"
@@ -15,20 +31,3 @@
         />
     </div>
 </template>
-
-<script setup>
-import { CheckIcon } from "@heroicons/vue/20/solid";
-import { ClipboardIcon } from "@heroicons/vue/24/outline";
-
-import { ref } from "vue";
-
-const showCheck = ref(false);
-
-const copyDump = () => {
-    showCheck.value = true;
-
-    setTimeout(() => {
-        showCheck.value = false;
-    }, 2000);
-};
-</script>
