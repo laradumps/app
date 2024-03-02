@@ -7,45 +7,6 @@
             :data-theme="appearanceStore.theme"
             class="absolute w-full h-full min-h-full"
         >
-            <TheModal v-model:modal-attributes="modalAttributes" />
-
-            <!--            <div class="px-2 py-1 bg-base-100">-->
-            <!--                <div class="flex justify-between items-center">-->
-            <!--                    <div>-->
-            <!--                        <div class="flex gap-2 ml-2">-->
-            <!--                            <div>-->
-            <!--                                <a-->
-            <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
-            <!--                                    :title="$t('menu.clear')"-->
-            <!--                                    class="justify-center cursor-pointer text-base1-500 group flex items-center p-2"-->
-            <!--                                >-->
-            <!--                                    <TrashIcon class="h-5 w-5 text-base1-500 hover:text-base1-900 dark:text-base1-400 dark:hover:text-base1-300" />-->
-            <!--                                </a>-->
-            <!--                            </div>-->
-            <!--                            <div>-->
-            <!--                                <a-->
-            <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
-            <!--                                    :title="$t('menu.clear')"-->
-            <!--                                    class="justify-center cursor-pointer text-base1-500 group flex items-center p-2"-->
-            <!--                                >-->
-            <!--                                    <TrashIcon class="h-5 w-5 text-base1-500 hover:text-base1-900 dark:text-base1-400 dark:hover:text-base1-300" />-->
-            <!--                                </a>-->
-            <!--                            </div>-->
-            <!--                            <div>-->
-            <!--                                <a-->
-            <!--                                    v-show="!inSavedDumpsWindow && !settingStore.setting"-->
-            <!--                                    :title="$t('menu.clear')"-->
-            <!--                                    class="justify-center cursor-pointer text-base1-500 group flex items-center p-2"-->
-            <!--                                >-->
-            <!--                                    <TrashIcon class="h-5 w-5 text-base1-500 hover:text-base1-900 dark:text-base1-400 dark:hover:text-base1-300" />-->
-            <!--                                </a>-->
-            <!--                            </div>-->
-            <!--                        </div>-->
-            <!--                    </div>-->
-
-            <!--                </div>-->
-            <!--            </div>-->
-
             <div>
                 <TheNavBar
                     v-if="!settingStore.setting"
@@ -70,19 +31,6 @@
                         >
                             <AppSetting :local-shortcut-list="localShortcutList" />
                         </div>
-
-                        <!--                        &lt;!&ndash; header global filter &ndash;&gt;-->
-                        <!--                        <div-->
-                        <!--                            class="py-2 px-1 min-[350px] group flex justify-end items-center"-->
-                        <!--                            v-if="payload.length > 0 && !settingStore.setting"-->
-                        <!--                        >-->
-                        <!--                            <div class="flex gap-3 mr-2">-->
-                        <!--                                <HeaderGlobalFilter-->
-                        <!--                                    v-model:payload="payload"-->
-                        <!--                                    v-model:has-color="hasColor"-->
-                        <!--                                />-->
-                        <!--                            </div>-->
-                        <!--                        </div>-->
 
                         <AutoUpdater />
 
@@ -160,7 +108,6 @@
 import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref, watch } from "vue";
 import ThePackageUpdateInfo from "@/components/ThePackageUpdateInfo.vue";
 import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
-import TheInstaller from "@/components/TheInstaller.vue";
 import { useScreenStore } from "@/store/screen";
 import { useAppearanceStore } from "@/store/appearance";
 import { useI18nStore } from "@/store/i18n";
@@ -174,7 +121,6 @@ import { Payload, ScreenPayload } from "@/types/Payload";
 import * as Helper from "@/helpers";
 import moment from "moment/moment";
 import humanizeDuration from "humanize-duration";
-import TheModal from "@/components/TheModal.vue";
 import TheNavBar from "@/components/TheNavBar.vue";
 import AppSetting from "@/components/AppSetting.vue";
 import DumpItem from "@/components/DumpItem.vue";
@@ -187,7 +133,6 @@ import DumpScreens from "@/components/DumpScreens.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
-markRaw(TheInstaller);
 
 const showInstallationInfo = ref({
     open: false,
@@ -206,7 +151,6 @@ const defaultScreen = ref({
 
 const appVersion = ref("");
 const localShortcutList = ref([]);
-const modalAttributes = ref({ open: false, component: {}, props: {} });
 
 const payload = ref([]);
 const screens = ref([]);
@@ -462,11 +406,7 @@ onMounted(() => {
     window.ipcRenderer.on("main:app-version", (event, arg) => setTimeout(() => (appVersion.value = `v${arg.version}`), 100));
 
     window.ipcRenderer.on("main:update-available", (event, arg) => {
-        modalAttributes.value = {
-            component: TheUpdateModalInfo,
-            props: { updateInfo: arg },
-            open: true
-        };
+        console.log(arg)
     });
 
     addScreen(defaultScreen.value);
@@ -516,23 +456,6 @@ onMounted(() => {
         localShortcutList.value = arg;
     });
 
-    window.ipcRenderer.on("install", (event, { content }) => {
-        showInstallationInfo.value = {
-            open: true,
-            content
-        };
-
-        modalAttributes.value = {
-            component: TheInstaller,
-            props: {
-                environmentList: content.install.environment,
-                envPath: content.install.env_path,
-                name: content.install.name
-            },
-            open: true
-        };
-    });
-
     window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));
 
     window.ipcRenderer.on("mailable", (event, { content }) => dispatch("mailable", event, content));
@@ -573,11 +496,7 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("ipc:package-down", (event, arg) => {
-        modalAttributes.value = {
-            component: ThePackageUpdateInfo,
-            props: { updateInfo: arg },
-            open: false
-        };
+        console.log(arg)
     });
 
     window.ipcRenderer.on("table", (event, { content }) => {
