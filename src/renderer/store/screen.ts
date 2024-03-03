@@ -8,19 +8,10 @@ type State = {
 export const useScreenStore = defineStore("screen", {
     state: (): State => ({
         screen: "",
-        pinned: ""
     }),
     actions: {
-        activeScreen(value: string, pinned = false) {
+        activeScreen(value: string) {
             this.screen = value;
-
-            if (pinned) {
-                if (value === this.pinned) {
-                    this.pinned = null;
-                } else {
-                    this.pinned = value;
-                }
-            }
         }
     }
 });

@@ -64,8 +64,11 @@ const props = defineProps({
         type: Array,
         default: null
     },
-    defaultValue: {
+    selected: {
         type: Object,
+        default: null
+    },
+    defaultValue: {
         default: null
     }
 });
@@ -75,8 +78,6 @@ watch(selected, (value) => {
 });
 
 onMounted(() => {
-    nextTick(() => {
-        selected.value = props.data[props.defaultValue] ?? props.data[0];
-    });
+    selected.value = props.data[props.defaultValue] ?? props.data[0];
 });
 </script>

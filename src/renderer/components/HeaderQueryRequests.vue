@@ -3,7 +3,7 @@
         v-if="timeStore.groups.length > 0"
         class="flex h-[40px] justify-between items-center gap-2 text-base-content"
     >
-        <span class="font-semibold text-sm select-none ml-1">total: {{ total }}</span>
+        <span class="font-normal text-xs select-none ml-1">total: {{ totalFiltered }} / {{ total }}</span>
 
         <div class="flex gap-2 text-sm items-center">
             <SelectMenu
@@ -23,7 +23,7 @@
 <script setup>
 import { useTimeStore } from "@/store/time";
 import SelectMenu from "@/components/SelectMenu.vue";
-import { computed, ref } from "vue";
+import { computed, onMounted, onUpdated, ref, watch } from "vue";
 
 const totalPayload = ref(0);
 
@@ -31,7 +31,7 @@ const timeStore = useTimeStore();
 
 const requests = timeStore.requests;
 const groups = timeStore.groups;
-const selected = timeStore.selected;
+const selected = ref();
 
 const props = defineProps({
     total: {
@@ -40,7 +40,11 @@ const props = defineProps({
     },
     payload: {
         type: Object
-    }
+    },
+    totalFiltered: {
+        type: Number,
+        default: 0
+    },
 });
 
 const queryOrder = computed(() => {

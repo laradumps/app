@@ -43,6 +43,7 @@
                                 <div class="flex items-center justify-between overflow-x-auto">
                                     <div class="flex">
                                         <DumpScreens
+                                            @toggleScreen="toggleScreen"
                                             v-model:screens="screens"
                                             v-model:payload="payload"
                                         />
@@ -67,6 +68,7 @@
                                 <HeaderQueryRequests
                                     :payload="payload"
                                     :total="dumpsBagFiltered.length"
+                                    :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
                                 />
                             </div>
 
@@ -105,7 +107,7 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref, watch } from "vue";
+import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref } from "vue";
 import ThePackageUpdateInfo from "@/components/ThePackageUpdateInfo.vue";
 import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
 import { useScreenStore } from "@/store/screen";
@@ -133,16 +135,6 @@ import DumpScreens from "@/components/DumpScreens.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
-
-const showInstallationInfo = ref({
-    open: false,
-    content: {
-        install: {
-            environment: "",
-            env_path: ""
-        }
-    }
-});
 
 const defaultScreen = ref({
     screen_name: "screen 1",
@@ -233,7 +225,7 @@ const dumpsBagFiltered = computed(() => {
     const sort = reverseTimeOrder(timeStore.order);
 
     return dumpsBag.value
-        .filter((dump) => JSON.stringify(dump).toString()?.toLowerCase().includes(globalSearchStore.search.toLowerCase()) || dump.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase()))
+        .filter((dump) => JSON.stringify(dump[dump.type] ?? '').toString()?.toLowerCase().includes(globalSearchStore.search.toLowerCase()) || dump.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase()))
         .filter((dump) => {
             if (colorStore.colors.length > 0) {
                 return colorStore.colors.includes(dump.color);
@@ -270,11 +262,23 @@ const maximizeApp = (autoInvokeApp: string | boolean): void => {
  * Toggles the active screen and updates the `dumpsBag` based on the selected screen.
  * @param {string} value - The name of the screen to be toggled.
  */
-const toggleScreen = (value: string): void => {
+const toggleScreen = async (value: string): Promise<void> => {
     screenStore.activeScreen(value);
+
     dumpsBag.value = payload.value.filter((payload) => payload.type !== "screen" && payload.screen.screen_name === value);
 
     nextTick(() => document.getElementById("top").scrollIntoView({ behavior: "smooth" }));
+
+    clearInterval(interval.value)
+
+    await setTimeout(() => {
+        interval.value = null
+
+        const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
+        if (lastPayload)
+            timeStore.selected = lastPayload.request_id;
+    }, 800)
+
 };
 
 /**
@@ -286,10 +290,10 @@ const toggleScreen = (value: string): void => {
 
 type EventType = "label" | "color" | "screen" | "dump";
 
+const interval = ref(null);
+
 const dispatch = (type: string, event: EventType, content: any): void => {
     if (applicationPath.value !=  content.application_path) {
-
-        console.log("environment::check")
         window.ipcRenderer.send("environment::check", { applicationPath: content.application_path });
         applicationPath.value = content.application_path
     }
@@ -300,8 +304,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     let screenName = "screen 1";
 
     if (content.type === "screen") {
-        screenName = content.screen.screen_name;
-
         payload.value.filter((dump: Payload) => dump.id === content.id).map((dump: Payload) => (dump.screen = content.screen));
 
         addScreen(content.screen);
@@ -310,7 +312,9 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         payload.value.push(content);
     }
 
+    screenName = content.screen.screen_name;
     if (!["Logs", "Queries"].includes(screenName)) {
+
         const autoInvokeApp = typeof content.meta === "object" ? content.meta.auto_invoke_app : true;
 
         maximizeApp(autoInvokeApp);
@@ -322,15 +326,19 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         }
     });
 
-    toggleScreen(screenName);
+    if (interval.value == null) {
+        interval.value = setInterval(() => {
+            toggleScreen(content.screen.screen_name)
+        }, 500);
+    }
 };
 
-/**
- * Watches for changes in the screenStore and toggles the screen accordingly.
- */
-watch(screenStore, (screen) => {
-    toggleScreen(screen.screen);
-});
+// /**
+//  * Watches for changes in the screenStore and toggles the screen accordingly.
+//  */
+// watch(screenStore, (screen) => {
+//     toggleScreen(screen.screen);
+// });
 
 /**
  * Loads all saved payloads and sets the document title accordingly.
@@ -630,21 +638,21 @@ onMounted(() => {
     window.ipcRenderer.on("coffee", (event, arg) => {
         window.ipcRenderer.send("coffee:grab-a-coffee", arg);
     });
-
-    //* * Convert shortcuts to Electron format **/
-    Object.defineProperty(String.prototype, "beautifyShortcut", {
-        value() {
-            if (process.platform === "darwin") {
-                return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
-            }
-            return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
-        }
-    });
-
-    Object.defineProperty(String.prototype, "toElectronFormat", {
-        value() {
-            return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
-        }
-    });
+    //
+    // //* * Convert shortcuts to Electron format **/
+    // Object.defineProperty(String.prototype, "beautifyShortcut", {
+    //     value() {
+    //         if (process.platform === "darwin") {
+    //             return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
+    //         }
+    //         return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
+    //     }
+    // });
+    //
+    // Object.defineProperty(String.prototype, "toElectronFormat", {
+    //     value() {
+    //         return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
+    //     }
+    // });
 });
 </script>

@@ -11,8 +11,7 @@
                 'transition-all ease-in duration-100 !btn-primary': screen.screen_name === screenStore.screen && index > 0
             }"
             class="btn btn-neutral uppercase tracking-wider !text-[9px] !flex rounded-none"
-            @dblclick="toggleScreen(screen.screen_name)"
-            @click="toggleScreen(screen.screen_name)"
+            @click="$emit('toggleScreen', screen.screen_name)"
         >
             <span v-text="screen.screen_name"></span>
         </button>
@@ -20,13 +19,12 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from "vue";
+import { defineProps, ref, defineEmits } from "vue";
 import { useScreenStore } from "@/store/screen";
-import IconPin from "@/components/Icons/IconPin.vue";
+
+defineEmits(['toggleScreen']);
 
 const screenStore = useScreenStore();
-
-const visualized = ref([]);
 
 const props = defineProps({
     screens: {
@@ -38,20 +36,6 @@ const props = defineProps({
         default: null
     }
 });
-
-const toggleScreen = (value, pinned = false) => {
-    screenStore.activeScreen(value, pinned);
-
-    visualized.value[value] = true;
-};
-
-const hasCount = (screenName) => {
-    return (
-        props.payload.filter((item) => {
-            return ["Logs", "Queries"].includes(item.screen.screen_name) && item.screen.screen_name === screenName;
-        }).length > 0
-    );
-};
 </script>
 <style scoped>
 .active {
