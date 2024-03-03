@@ -1,3 +1,46 @@
+<script setup>
+import { computed } from "vue";
+import { useColorStore } from "@/store/colors";
+import { useScreenStore } from "@/store/screen";
+
+const selectedColors = useColorStore();
+const screenStore = useScreenStore();
+
+defineProps({
+    hasColor: {
+        type: Boolean,
+        required: true
+    },
+    payload: {
+        type: Object
+    }
+});
+
+const isDark = computed(() => ({
+    "!bg-black dark:!bg-base-600 !text-white": selectedColors.colors.includes("black")
+}));
+
+const isRed = computed(() => ({
+    "!bg-red-500 dark:bg-red-700 !text-white": selectedColors.colors.includes("red")
+}));
+
+const isGray = computed(() => ({
+    "!bg-gray-500 dark:bg-gray-700 !text-white": selectedColors.colors.includes("gray")
+}));
+
+const isBlue = computed(() => ({
+    "!bg-blue-500 dark:bg-blue-700 !text-white": selectedColors.colors.includes("blue")
+}));
+
+const isGreen = computed(() => ({
+    "!bg-green-500 dark:bg-green-700 !text-white": selectedColors.colors.includes("green")
+}));
+
+const isOrange = computed(() => ({
+    "!bg-orange-500 dark:!bg-orange-700 !text-white": selectedColors.colors.includes("orange")
+}));
+</script>
+
 <template>
     <div class="space-x-2 flex justify-end items-center">
         <div
@@ -50,46 +93,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { computed } from "vue";
-import { useColorStore } from "@/store/colors";
-import { useScreenStore } from "@/store/screen";
-
-const selectedColors = useColorStore();
-const screenStore = useScreenStore();
-
-defineProps({
-    hasColor: {
-        type: Boolean,
-        required: true
-    },
-    payload: {
-        type: Object
-    }
-});
-
-const isDark = computed(() => ({
-    "!bg-black dark:!bg-base-600 !text-white": selectedColors.colors.includes("black")
-}));
-
-const isRed = computed(() => ({
-    "!bg-red-500 dark:bg-red-700 !text-white": selectedColors.colors.includes("red")
-}));
-
-const isGray = computed(() => ({
-    "!bg-gray-500 dark:bg-gray-700 !text-white": selectedColors.colors.includes("gray")
-}));
-
-const isBlue = computed(() => ({
-    "!bg-blue-500 dark:bg-blue-700 !text-white": selectedColors.colors.includes("blue")
-}));
-
-const isGreen = computed(() => ({
-    "!bg-green-500 dark:bg-green-700 !text-white": selectedColors.colors.includes("green")
-}));
-
-const isOrange = computed(() => ({
-    "!bg-orange-500 dark:!bg-orange-700 !text-white": selectedColors.colors.includes("orange")
-}));
-</script>

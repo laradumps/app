@@ -1,15 +1,3 @@
-<template>
-    <button
-        :title="$t('always_on_top')"
-        :class="{
-            '!text-primary': isAlwaysOnTop
-        }"
-        @click="toggleAlwaysOnTop()"
-    >
-        <IconPin class="w-3 cursor-pointer text-content hover:opacity-75" />
-    </button>
-</template>
-
 <script setup>
 import { onMounted, ref } from "vue";
 import IconPin from "@/components/Icons/IconPin.vue";
@@ -33,3 +21,15 @@ const toggleAlwaysOnTop = () => {
     window.ipcRenderer.send("main:toggle-always-on-top", isAlwaysOnTop.value);
 };
 </script>
+
+<template>
+    <button
+        :title="$t('always_on_top')"
+        :class="{
+            '!text-primary': isAlwaysOnTop
+        }"
+        @click="toggleAlwaysOnTop()"
+    >
+        <IconPin class="w-3 cursor-pointer text-content hover:opacity-75" />
+    </button>
+</template>

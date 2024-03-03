@@ -1,47 +1,3 @@
-<template>
-    <div class="space-y-3 sm:space-y-5">
-        <div
-            v-for="shortcut in shortcuts"
-            :key="shortcut.alias"
-        >
-            <label class="form-control w-full">
-                <div class="label">
-                    <span class="label-text">{{ $t(shortcut.label) }}</span>
-                </div>
-
-                <input
-                    type="text"
-                    :placeholder="editMode !== 'disabled' ? 'type here ...' : ''"
-                    :disabled="editMode === 'disabled'"
-                    readonly
-                    :name="shortcut.alias"
-                    :data-label="shortcut.label"
-                    :id="shortcut.alias"
-                    class="js-shortcut grow input input-bordered input-sm w-full"
-                />
-            </label>
-        </div>
-
-        <div class="flex gap-2 justify-end">
-            <button
-                @click="editShortcut"
-                type="button"
-                class="btn btn-default"
-            >
-                {{ $t("settings.edit") }}
-            </button>
-
-            <button
-                @click="save"
-                type="button"
-                class="btn btn-secondary"
-            >
-                {{ $t("settings.save") }}
-            </button>
-        </div>
-    </div>
-</template>
-
 <script setup lang="ts">
 import hotkeys from "hotkeys-js";
 import { onMounted, ref } from "vue";
@@ -150,3 +106,47 @@ const save = () => {
     editMode.value = "disabled";
 };
 </script>
+
+<template>
+    <div class="space-y-3 sm:space-y-5">
+        <div
+            v-for="shortcut in shortcuts"
+            :key="shortcut.alias"
+        >
+            <label class="form-control w-full">
+                <div class="label">
+                    <span class="label-text">{{ $t(shortcut.label) }}</span>
+                </div>
+
+                <input
+                    type="text"
+                    :placeholder="editMode !== 'disabled' ? 'type here ...' : ''"
+                    :disabled="editMode === 'disabled'"
+                    readonly
+                    :name="shortcut.alias"
+                    :data-label="shortcut.label"
+                    :id="shortcut.alias"
+                    class="js-shortcut grow input input-bordered input-sm w-full"
+                />
+            </label>
+        </div>
+
+        <div class="flex gap-2 justify-end">
+            <button
+                @click="editShortcut"
+                type="button"
+                class="btn btn-default"
+            >
+                {{ $t("settings.edit") }}
+            </button>
+
+            <button
+                @click="save"
+                type="button"
+                class="btn btn-secondary"
+            >
+                {{ $t("settings.save") }}
+            </button>
+        </div>
+    </div>
+</template>

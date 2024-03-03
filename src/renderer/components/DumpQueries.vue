@@ -1,3 +1,53 @@
+
+<script setup lang="ts">
+import { computed, defineProps, ref } from "vue";
+import { format } from "sql-formatter";
+import { useTimeStore } from "@/store/time";
+import { BarsArrowDownIcon, BarsArrowUpIcon } from "@heroicons/vue/20/solid";
+import { Payload } from "@/types/Payload";
+
+import hljs from "highlight.js/lib/core";
+import sql from "highlight.js/lib/languages/sql";
+import CopyToClick from "@/components/CopyToClick.vue";
+hljs.registerLanguage("sql", sql);
+
+const formatted = ref(false);
+const copied = ref(false);
+
+const timeStore = useTimeStore();
+
+const showCopiedBadge = () => {
+    copied.value = true;
+    setTimeout(() => {
+        copied.value = false;
+    }, 2000);
+};
+
+const toggleFormatted = () => {
+    formatted.value = !formatted.value;
+};
+
+const props = defineProps<{
+    payload: Payload;
+}>();
+
+const total = computed(() => timeStore.requests[props.payload.request_id]?.total ?? 0);
+const percentage = computed(() => ((100 * props.payload.queries?.time) / total.value).toFixed(2));
+const formatSql = computed(() => {
+    const sql = props.payload.queries?.sql;
+
+    if (sql != null) {
+        let formattedSql = formatted.value
+            ? format(sql, {
+                indent: "    "
+            })
+            : sql;
+
+        return hljs.highlight(formattedSql, { language: "sql" }).value;
+    }
+});
+</script>
+
 <template>
     <div class="rounded-sm">
         <pre
@@ -61,57 +111,6 @@
     </div>
 </template>
 
-<script setup lang="ts">
-import { computed, defineProps, ref } from "vue";
-import { format } from "sql-formatter";
-import { useTimeStore } from "@/store/time";
-import { usePrivacy } from "@/store/privacy";
-import { BarsArrowDownIcon, BarsArrowUpIcon } from "@heroicons/vue/20/solid";
-import { ClipboardIcon } from "@heroicons/vue/24/outline";
-import { Payload } from "@/types/Payload";
-
-import hljs from "highlight.js/lib/core";
-import sql from "highlight.js/lib/languages/sql";
-import CopyToClick from "@/components/CopyToClick.vue";
-hljs.registerLanguage("sql", sql);
-
-const formatted = ref(false);
-const copied = ref(false);
-
-const timeStore = useTimeStore();
-const privacyStore = usePrivacy();
-
-const showCopiedBadge = () => {
-    copied.value = true;
-    setTimeout(() => {
-        copied.value = false;
-    }, 2000);
-};
-
-const toggleFormatted = () => {
-    formatted.value = !formatted.value;
-};
-
-const props = defineProps<{
-    payload: Payload;
-}>();
-
-const total = computed(() => timeStore.requests[props.payload.request_id]?.total ?? 0);
-const percentage = computed(() => ((100 * props.payload.queries?.time) / total.value).toFixed(2));
-const formatSql = computed(() => {
-    const sql = props.payload.queries?.sql;
-
-    if (sql != null) {
-        let formattedSql = formatted.value
-            ? format(sql, {
-                  indent: "    "
-              })
-            : sql;
-
-        return hljs.highlight(formattedSql, { language: "sql" }).value;
-    }
-});
-</script>
 <style>
 .hljs-keyword {
     @apply !text-primary;

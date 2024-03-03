@@ -22,7 +22,7 @@
 import { defineProps, ref, defineEmits } from "vue";
 import { useScreenStore } from "@/store/screen";
 
-defineEmits(['toggleScreen']);
+defineEmits(["toggleScreen"]);
 
 const screenStore = useScreenStore();
 

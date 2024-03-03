@@ -72,7 +72,7 @@ const copied = ref(false);
 
 const showCopiedBadge = () => {
     copied.value = true;
-    setTimeout(() => copied.value = false, 2000);
+    setTimeout(() => (copied.value = false), 2000);
 };
 
 const toggleFormatted = () => {

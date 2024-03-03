@@ -1,3 +1,10 @@
+<script setup>
+import { AdjustmentsHorizontalIcon } from "@heroicons/vue/24/outline";
+import { useSettingStore } from "@/store/setting";
+
+const settingStore = useSettingStore();
+</script>
+
 <template>
     <div>
         <button
@@ -12,10 +19,3 @@
         </button>
     </div>
 </template>
-
-<script setup>
-import { AdjustmentsHorizontalIcon } from "@heroicons/vue/24/outline";
-import { useSettingStore } from "@/store/setting";
-
-const settingStore = useSettingStore();
-</script>

@@ -1,34 +1,3 @@
-<template>
-    <div>
-        <div class="carousel1 mt-6">
-            <button
-                v-if="currentIndex > 0"
-                class="arrow left hidden group-hover:block"
-                @click="previous"
-            >
-                <ChevronLeftIcon class="w-5" />
-            </button>
-            <div class="content">
-                <div
-                    :key="currentTipKey"
-                    class="mt-3 text-xs font-normal"
-                >
-                    <div
-                        v-html="currentTip"
-                        class="!text-neutral"
-                    ></div>
-                </div>
-            </div>
-            <button
-                class="arrow right hidden group-hover:block"
-                @click="next"
-            >
-                <ChevronRightIcon class="w-5 dark:text-base-500 dark:hover:text-base-300" />
-            </button>
-        </div>
-    </div>
-</template>
-
 <script setup>
 import { onMounted, onUnmounted, ref, computed } from "vue";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/24/outline";
@@ -129,6 +98,37 @@ function nextRandom() {
     currentTipKey.value++;
 }
 </script>
+
+<template>
+    <div>
+        <div class="carousel1 mt-6">
+            <button
+                v-if="currentIndex > 0"
+                class="arrow left hidden group-hover:block"
+                @click="previous"
+            >
+                <ChevronLeftIcon class="w-5" />
+            </button>
+            <div class="content">
+                <div
+                    :key="currentTipKey"
+                    class="mt-3 text-xs font-normal"
+                >
+                    <div
+                        v-html="currentTip"
+                        class="!text-neutral"
+                    ></div>
+                </div>
+            </div>
+            <button
+                class="arrow right hidden group-hover:block"
+                @click="next"
+            >
+                <ChevronRightIcon class="w-5 dark:text-base-500 dark:hover:text-base-300" />
+            </button>
+        </div>
+    </div>
+</template>
 
 <style>
 .carousel1 {

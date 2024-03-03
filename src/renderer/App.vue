@@ -148,7 +148,7 @@ const payload = ref([]);
 const screens = ref([]);
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
-const applicationPath = ref('');
+const applicationPath = ref("");
 
 const screenStore = useScreenStore();
 const appearanceStore = useAppearanceStore();
@@ -225,7 +225,13 @@ const dumpsBagFiltered = computed(() => {
     const sort = reverseTimeOrder(timeStore.order);
 
     return dumpsBag.value
-        .filter((dump) => JSON.stringify(dump[dump.type] ?? '').toString()?.toLowerCase().includes(globalSearchStore.search.toLowerCase()) || dump.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase()))
+        .filter(
+            (dump) =>
+                JSON.stringify(dump[dump.type] ?? "")
+                    .toString()
+                    ?.toLowerCase()
+                    .includes(globalSearchStore.search.toLowerCase()) || dump.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
+        )
         .filter((dump) => {
             if (colorStore.colors.length > 0) {
                 return colorStore.colors.includes(dump.color);
@@ -269,16 +275,14 @@ const toggleScreen = async (value: string): Promise<void> => {
 
     nextTick(() => document.getElementById("top").scrollIntoView({ behavior: "smooth" }));
 
-    clearInterval(interval.value)
+    clearInterval(interval.value);
 
     await setTimeout(() => {
-        interval.value = null
+        interval.value = null;
 
         const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
-        if (lastPayload)
-            timeStore.selected = lastPayload.request_id;
-    }, 800)
-
+        if (lastPayload) timeStore.selected = lastPayload.request_id;
+    }, 800);
 };
 
 /**
@@ -293,9 +297,9 @@ type EventType = "label" | "color" | "screen" | "dump";
 const interval = ref(null);
 
 const dispatch = (type: string, event: EventType, content: any): void => {
-    if (applicationPath.value !=  content.application_path) {
+    if (applicationPath.value != content.application_path) {
         window.ipcRenderer.send("environment::check", { applicationPath: content.application_path });
-        applicationPath.value = content.application_path
+        applicationPath.value = content.application_path;
     }
 
     content.rendered = false;
@@ -314,7 +318,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     screenName = content.screen.screen_name;
     if (!["Logs", "Queries"].includes(screenName)) {
-
         const autoInvokeApp = typeof content.meta === "object" ? content.meta.auto_invoke_app : true;
 
         maximizeApp(autoInvokeApp);
@@ -328,7 +331,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     if (interval.value == null) {
         interval.value = setInterval(() => {
-            toggleScreen(content.screen.screen_name)
+            toggleScreen(content.screen.screen_name);
         }, 500);
     }
 };
@@ -420,7 +423,7 @@ onMounted(() => {
     window.ipcRenderer.on("main:app-version", (event, arg) => setTimeout(() => (appVersion.value = `v${arg.version}`), 100));
 
     window.ipcRenderer.on("main:update-available", (event, arg) => {
-        console.log(arg)
+        console.log(arg);
     });
 
     addScreen(defaultScreen.value);
@@ -510,7 +513,7 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("ipc:package-down", (event, arg) => {
-        console.log(arg)
+        console.log(arg);
     });
 
     window.ipcRenderer.on("table", (event, { content }) => {

@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import { defineProps } from "vue";
+import { Payload } from "@/types/Payload";
+
+const props = defineProps<{
+    payload: Payload;
+}>();
+</script>
+
 <template>
     <div class="w-full text-base-content text-sm">
         &#8987; {{ $t("elapsed_time") }}:
@@ -13,12 +22,3 @@
         </div>
     </div>
 </template>
-
-<script setup lang="ts">
-import { defineProps } from "vue";
-import { Payload } from "@/types/Payload";
-
-const props = defineProps<{
-    payload: Payload;
-}>();
-</script>

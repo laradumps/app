@@ -1,3 +1,16 @@
+<script setup lang="ts">
+import { computed, defineProps } from "vue";
+import { Payload } from "@/types/Payload";
+
+const style = computed(() => (props.payload.is_json ? "bg-green-500" : "bg-red-500"));
+
+const text = computed(() => (props.payload.is_json ? "valid_json_format" : "invalid_json_format"));
+
+const props = defineProps<{
+    payload: Payload;
+}>();
+</script>
+
 <template>
     <div
         class="text-base-content"
@@ -12,16 +25,3 @@
         </div>
     </div>
 </template>
-
-<script setup lang="ts">
-import { computed, defineProps } from "vue";
-import { Payload } from "@/types/Payload";
-
-const style = computed(() => (props.payload.is_json ? "bg-green-500" : "bg-red-500"));
-
-const text = computed(() => (props.payload.is_json ? "valid_json_format" : "invalid_json_format"));
-
-const props = defineProps<{
-    payload: Payload;
-}>();
-</script>

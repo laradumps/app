@@ -1,3 +1,15 @@
+<script setup>
+import { ClipboardIcon } from "@heroicons/vue/24/outline";
+
+defineProps({
+    updateInfo: {
+        type: Object
+    }
+});
+
+const openLink = (link) => window.ipcRenderer.send("main:openLink", link);
+</script>
+
 <template>
     <div class="text-sm space-y-3">
         <div class="font-semibold text-lg">✨ {{ $t("package_update_info.lara_dumps_package_update_available") }}</div>
@@ -54,15 +66,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { ClipboardIcon } from "@heroicons/vue/24/outline";
-
-defineProps({
-    updateInfo: {
-        type: Object
-    }
-});
-
-const openLink = (link) => window.ipcRenderer.send("main:openLink", link);
-</script>

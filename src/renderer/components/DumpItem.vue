@@ -65,17 +65,6 @@ const changeIcon = () => {
     }, 2000);
 };
 
-const expandAll = () => {
-    setTimeout(() => {
-        const elements = document.querySelectorAll(`#sf-dump-${props.payload.sf_dump_id} .sf-dump-toggle`);
-        elements.forEach((element, index) => {
-            if (index !== 0) {
-                element.click();
-            }
-        });
-    }, 1);
-};
-
 const color = computed(() => {
     let border;
     let color;

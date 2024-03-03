@@ -1,3 +1,19 @@
+<script setup>
+import { computed } from "vue";
+
+const props = defineProps({
+    updateInfo: {
+        type: Array
+    }
+});
+
+const openLink = (link) => window.ipcRenderer.send("main:openLink", link);
+
+const releaseNotes = computed(() => {
+    return props.updateInfo.releaseNotes.replaceAll("href", "v-href").replace("<h2>What's Changed</h2>", '<div class="font-bold my-3">What\'s Changed</div>');
+});
+</script>
+
 <template>
     <div>
         <div class="font-semibold text-lg">✨ LaraDumps Update available!</div>
@@ -29,19 +45,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { computed } from "vue";
-
-const props = defineProps({
-    updateInfo: {
-        type: Array
-    }
-});
-
-const openLink = (link) => window.ipcRenderer.send("main:openLink", link);
-
-const releaseNotes = computed(() => {
-    return props.updateInfo.releaseNotes.replaceAll("href", "v-href").replace("<h2>What's Changed</h2>", '<div class="font-bold my-3">What\'s Changed</div>');
-});
-</script>

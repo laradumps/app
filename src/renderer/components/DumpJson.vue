@@ -1,14 +1,3 @@
-<template>
-    <div class="text-base-content">
-        <VueJsonPretty
-            :show-icon="true"
-            :show-lenght="true"
-            :show-line="false"
-            :data="value"
-        />
-    </div>
-</template>
-
 <script setup lang="ts">
 import VueJsonPretty from "vue-json-pretty";
 import { computed, defineProps, onMounted } from "vue";
@@ -26,3 +15,14 @@ const value = computed(() => JSON.parse(props.payload.json?.string ?? ""));
     background-color: transparent !important;
 }
 </style>
+
+<template>
+    <div class="text-base-content">
+        <VueJsonPretty
+            :show-icon="true"
+            :show-lenght="true"
+            :show-line="false"
+            :data="value"
+        />
+    </div>
+</template>

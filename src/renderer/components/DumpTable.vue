@@ -1,28 +1,3 @@
-<template>
-    <div class="space-y-2 rounded-sm pr-2">
-        <div>
-            <div>
-                <div class="flex justify-start">
-                    <label class="flex justify-end input input-bordered input-sm items-e gap-2 max-w-[200px]">
-                        <input
-                            v-model="search"
-                            type="text"
-                            class="grow text-base-content"
-                            placeholder="Search"
-                        />
-                        <MagnifyingGlassIcon class="w-4 h-4 text-base" />
-                    </label>
-                </div>
-
-                <div
-                    class="overflow-x-auto rounded-lg max-h-[412px]"
-                    v-html="table"
-                ></div>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted, ref, watch } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
@@ -102,3 +77,28 @@ const searchableTable = (search, id) => {
     });
 };
 </script>
+
+<template>
+    <div class="space-y-2 rounded-sm pr-2">
+        <div>
+            <div>
+                <div class="flex justify-start">
+                    <label class="flex justify-end input input-bordered input-sm items-e gap-2 max-w-[200px]">
+                        <input
+                            v-model="search"
+                            type="text"
+                            class="grow text-base-content"
+                            placeholder="Search"
+                        />
+                        <MagnifyingGlassIcon class="w-4 h-4 text-base" />
+                    </label>
+                </div>
+
+                <div
+                    class="overflow-x-auto rounded-lg max-h-[412px]"
+                    v-html="table"
+                ></div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,9 +1,3 @@
-<template>
-    <div class="dstable">
-        <div v-html="table"></div>
-    </div>
-</template>
-
 <script setup lang="ts">
 import { defineProps, nextTick, onMounted, ref } from "vue";
 import { Payload } from "@/types/Payload";
@@ -74,3 +68,9 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
     return { div, elements };
 };
 </script>
+
+<template>
+    <div class="dstable">
+        <div v-html="table"></div>
+    </div>
+</template>

@@ -7,7 +7,7 @@ type State = {
 
 export const useScreenStore = defineStore("screen", {
     state: (): State => ({
-        screen: "",
+        screen: ""
     }),
     actions: {
         activeScreen(value: string) {

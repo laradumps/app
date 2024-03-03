@@ -1,3 +1,34 @@
+<script setup>
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/vue";
+import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
+import { nextTick, onMounted, ref, watch } from "vue";
+
+const selected = ref(null);
+const emit = defineEmits(["selected"]);
+
+const props = defineProps({
+    data: {
+        type: Array,
+        default: null
+    },
+    selected: {
+        type: Object,
+        default: null
+    },
+    defaultValue: {
+        default: null
+    }
+});
+
+watch(selected, (value) => {
+    emit("selected", value);
+});
+
+onMounted(() => {
+    selected.value = props.data[props.defaultValue] ?? props.data[0];
+});
+</script>
+
 <template>
     <Listbox
         as="div"
@@ -50,34 +81,3 @@
         </div>
     </Listbox>
 </template>
-
-<script setup>
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/vue";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
-import { nextTick, onMounted, ref, watch } from "vue";
-
-const selected = ref(null);
-const emit = defineEmits(["selected"]);
-
-const props = defineProps({
-    data: {
-        type: Array,
-        default: null
-    },
-    selected: {
-        type: Object,
-        default: null
-    },
-    defaultValue: {
-        default: null
-    }
-});
-
-watch(selected, (value) => {
-    emit("selected", value);
-});
-
-onMounted(() => {
-    selected.value = props.data[props.defaultValue] ?? props.data[0];
-});
-</script>

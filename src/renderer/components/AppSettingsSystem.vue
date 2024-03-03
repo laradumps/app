@@ -1,25 +1,3 @@
-<template>
-    <div class="space-y-5">
-        <div>
-            <div class="mt-40 text-sm space-y-3">
-                <div class="text-lg text-left mt-4 font-normal text-base-700">
-                    {{ $t("settings.reset_data") }}
-                </div>
-                <p>{{ $t("settings.reset_data_description") }}</p>
-            </div>
-            <div class="flex justify-center mt-6">
-                <button
-                    @click="clearAllSettings"
-                    type="button"
-                    class="btn btn-danger"
-                >
-                    {{ $t("settings.clear_all_settings") }}
-                </button>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 
@@ -42,3 +20,25 @@ const clearAllSettings = (): void => {
     });
 };
 </script>
+
+<template>
+    <div class="space-y-5">
+        <div>
+            <div class="mt-40 text-sm space-y-3">
+                <div class="text-lg text-left mt-4 font-normal text-base-700">
+                    {{ $t("settings.reset_data") }}
+                </div>
+                <p>{{ $t("settings.reset_data_description") }}</p>
+            </div>
+            <div class="flex justify-center mt-6">
+                <button
+                    @click="clearAllSettings"
+                    type="button"
+                    class="btn btn-danger"
+                >
+                    {{ $t("settings.clear_all_settings") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</template>

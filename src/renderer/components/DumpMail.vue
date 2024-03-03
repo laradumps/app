@@ -1,3 +1,39 @@
+<script setup lang="ts">
+import { defineProps, onMounted, ref } from "vue";
+import { Payload } from "@/types/Payload";
+import { CloudArrowDownIcon, ArrowTopRightOnSquareIcon } from "@heroicons/vue/24/outline";
+
+const filePath = ref("");
+
+const props = defineProps<{
+    payload: Payload;
+}>();
+
+const openInBrowser = (path: string) => {
+    window.ipcRenderer.send("main:openLink", "file:///" + path);
+};
+
+const createNewWindow = () => {
+    window.ipcRenderer.send("main:open-custom-window", {
+        title: props.payload.mail.headers.toString(),
+        url: `http://localhost:9191/${filePath.value}.html`
+    });
+};
+
+onMounted(() => {
+    filePath.value = Math.random().toString(36).slice(2, 7);
+
+    window.ipcRenderer.send("main:create-static-tmp-file", {
+        name: filePath.value,
+        content: props.payload.mail.html
+    });
+
+    if (props.payload.mail.details[1]) {
+        window.Sfdump(`sf-dump-${props.payload.mail.details[1]}`);
+    }
+});
+</script>
+
 <template>
     <div class="text-base-content">
         <div
@@ -75,39 +111,3 @@
         </div>
     </div>
 </template>
-
-<script setup lang="ts">
-import { defineProps, onMounted, ref } from "vue";
-import { Payload } from "@/types/Payload";
-import { CloudArrowDownIcon, ArrowTopRightOnSquareIcon } from "@heroicons/vue/24/outline";
-
-const filePath = ref("");
-
-const props = defineProps<{
-    payload: Payload;
-}>();
-
-const openInBrowser = (path: string) => {
-    window.ipcRenderer.send("main:openLink", "file:///" + path);
-};
-
-const createNewWindow = () => {
-    window.ipcRenderer.send("main:open-custom-window", {
-        title: props.payload.mail.headers.toString(),
-        url: `http://localhost:9191/${filePath.value}.html`
-    });
-};
-
-onMounted(() => {
-    filePath.value = Math.random().toString(36).slice(2, 7);
-
-    window.ipcRenderer.send("main:create-static-tmp-file", {
-        name: filePath.value,
-        content: props.payload.mail.html
-    });
-
-    if (props.payload.mail.details[1]) {
-        window.Sfdump(`sf-dump-${props.payload.mail.details[1]}`);
-    }
-});
-</script>

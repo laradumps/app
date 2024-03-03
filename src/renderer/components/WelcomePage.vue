@@ -1,3 +1,13 @@
+<script setup>
+import AppGuide from "@/components/AppGuide.vue";
+
+defineProps({
+    localShortcutList: {
+        required: true,
+        type: Array
+    }
+});
+</script>
 <template>
     <div>
         <div class="right-0 flex justify-center items-center">
@@ -16,22 +26,11 @@
                         v-if="shortcut.hasOwnProperty('shortcut')"
                         :key="shortcut.alias"
                         class="font-light rounded-md p-1 px-2 text-xs"
-                        ><strong>{{ $t(shortcut.label) }}</strong
-                        >: {{ shortcut.originalValue }}</span
+                    ><strong>{{ $t(shortcut.label) }}</strong
+                    >: {{ shortcut.originalValue }}</span
                     >
                 </div>
             </div>
         </div>
     </div>
 </template>
-
-<script setup>
-import AppGuide from "@/components/AppGuide.vue";
-
-defineProps({
-    localShortcutList: {
-        required: true,
-        type: Array
-    }
-});
-</script>
