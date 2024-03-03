@@ -32,7 +32,7 @@
 
                 <div class="flex justify-end gap-3 items-center opacity-70 absolute top-[15px] right-[15px]">
                     <div
-                        class="cursor-pointer"
+                        class="cursor-pointer opacity-0 group-hover:opacity-100"
                         @click="toggleFormatted"
                         :title="$t('toggle_format')"
                     >
@@ -51,7 +51,7 @@
                             $clipboard(props.payload.queries?.sql);
                             showCopiedBadge();
                         "
-                        class="text-base-content"
+                        class="text-base-content opacity-0 group-hover:opacity-100"
                     />
 
                     <span class="font-semibold text-sm badge badge-primary text-primary-content"> {{ props.payload.queries.time }} <span class="font-normal text-xs">ms</span></span>
