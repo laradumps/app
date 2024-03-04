@@ -8,14 +8,21 @@ const IDEHandler = useIDEHandler();
 const link = ref();
 
 onMounted(() => {
-    const path = props.ideHandler.project_path;
+    const projectPath = props.ideHandler.project_path;
+    const realPath = props.ideHandler.real_path;
+    const workdir = props.ideHandler.workdir;
+    const separator = props.ideHandler.separator;
 
-    link.value = IDEHandler.value.replace("{filepath}", path).replace("{line}", props.ideHandler.line);
+    const relativePath = realPath.replace(workdir, '');
+
+    const linkPath = projectPath + separator + relativePath;
+
+    link.value = IDEHandler.value.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 
     window.ipcRenderer.on("changeIDE", (event, args) => {
         let ide = args.value;
 
-        link.value = ide.replace("{filepath}", props.ideHandler.real_path).replace("{line}", props.ideHandler.line);
+        link.value = ide.replace("{filepath}", realPath).replace("{line}", props.ideHandler.line);
     });
 });
 
@@ -35,6 +42,7 @@ const props = defineProps<{
     ideHandler: IdeHandle;
 }>();
 </script>
+
 
 <template>
     <a

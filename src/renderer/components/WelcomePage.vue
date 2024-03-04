@@ -26,8 +26,8 @@ defineProps({
                         v-if="shortcut.hasOwnProperty('shortcut')"
                         :key="shortcut.alias"
                         class="font-light rounded-md p-1 px-2 text-xs"
-                    ><strong>{{ $t(shortcut.label) }}</strong
-                    >: {{ shortcut.originalValue }}</span
+                        ><strong>{{ $t(shortcut.label) }}</strong
+                        >: {{ shortcut.originalValue }}</span
                     >
                 </div>
             </div>

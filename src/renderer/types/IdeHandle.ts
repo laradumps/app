@@ -4,4 +4,5 @@ export default interface IdeHandle {
     real_path: string;
     line: string;
     class_name: string;
+    separator: string;
 }

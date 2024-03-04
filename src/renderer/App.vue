@@ -1,111 +1,3 @@
-<template>
-    <div
-        v-cloak
-        id="app"
-    >
-        <div
-            :data-theme="appearanceStore.theme"
-            class="absolute w-full h-full min-h-full"
-        >
-            <div>
-                <TheNavBar
-                    v-if="!settingStore.setting"
-                    v-model:in-saved-dumps-window="inSavedDumpsWindow"
-                    v-model:payload-count="payload.length"
-                    @clear-all="clearAll($event)"
-                />
-
-                <!-- content -->
-                <div class="flex overflow-hidden flex-col flex-1 right-0 absolute left-0 h-fill-available">
-                    <!-- main -->
-                    <main
-                        :class="{
-                            'overflow-auto': payload.length > 0
-                        }"
-                        class="flex-1 flex flex-col shrink-0 left-16 right-0 min-h-full"
-                    >
-                        <!-- AppSettings -->
-                        <div
-                            class="overflow-auto min-h-screen pb-8"
-                            v-if="settingStore.setting"
-                        >
-                            <AppSetting :local-shortcut-list="localShortcutList" />
-                        </div>
-
-                        <AutoUpdater />
-
-                        <!-- screen buttons -->
-                        <div
-                            v-if="screens.length > 1 && !settingStore.setting"
-                            class="flex"
-                        >
-                            <div class="py-1 flex-1 px-3">
-                                <div class="flex items-center justify-between overflow-x-auto">
-                                    <div class="flex">
-                                        <DumpScreens
-                                            @toggleScreen="toggleScreen"
-                                            v-model:screens="screens"
-                                            v-model:payload="payload"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            :class="{
-                                'w-auto p-6 pb-8 items-center': payload.length === 0,
-                                'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
-                            }"
-                            class="rounded-sm text-base overflow-auto"
-                        >
-                            <div id="top"></div>
-
-                            <div
-                                class="px-3"
-                                v-if="screenStore.screen === 'Queries'"
-                            >
-                                <HeaderQueryRequests
-                                    :payload="payload"
-                                    :total="dumpsBagFiltered.length"
-                                    :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
-                                />
-                            </div>
-
-                            <div
-                                class="mb-[60px]"
-                                :class="{
-                                    'flex flex-col-reverse': reorderStore.reverse
-                                }"
-                                v-if="payload.length > 0 && !settingStore.setting"
-                            >
-                                <div
-                                    class="w-full"
-                                    :id="payload.id"
-                                    v-for="payload in dumpsBagFiltered"
-                                    :key="payload.sf_dump_id"
-                                >
-                                    <DumpItem
-                                        :in-saved-dumps-window="inSavedDumpsWindow"
-                                        v-show="screenStore.screen === 'Queries' ? payload.request_id === timeStore.selected : true"
-                                        :payload="payload"
-                                    />
-                                </div>
-                            </div>
-
-                            <div
-                                class="w-full h-full -mt-6"
-                                v-if="payload.length === 0 && !settingStore.setting"
-                            >
-                                <WelcomePage :local-shortcut-list="localShortcutList" />
-                            </div>
-                        </div>
-                    </main>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
 <script lang="ts" setup>
 import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref } from "vue";
 import ThePackageUpdateInfo from "@/components/ThePackageUpdateInfo.vue";
@@ -132,6 +24,7 @@ import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 import { usePrivacy } from "@/store/privacy";
 import { useIDEHandler } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
+import QueriesControl from "@/components/QueriesControl.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -160,7 +53,9 @@ const globalSearchStore = useGlobalSearchStore();
 const privacyStore = usePrivacy();
 const IDEHandler = useIDEHandler();
 
-const i18n = useI18n({ useScope: "global" });
+const i18n = useI18n({
+    useScope: "global"
+});
 const localeStore = useI18nStore();
 
 window.ipcRenderer.on("changeTheme", (event, args) => {
@@ -269,20 +164,25 @@ const maximizeApp = (autoInvokeApp: string | boolean): void => {
  * @param {string} value - The name of the screen to be toggled.
  */
 const toggleScreen = async (value: string): Promise<void> => {
+    clearInterval(interval.value);
+    interval.value = null
+
     screenStore.activeScreen(value);
 
     dumpsBag.value = payload.value.filter((payload) => payload.type !== "screen" && payload.screen.screen_name === value);
 
-    nextTick(() => document.getElementById("top").scrollIntoView({ behavior: "smooth" }));
+    nextTick(() =>
+        document.getElementById("top").scrollIntoView({
+            behavior: "smooth"
+        })
+    );
 
-    clearInterval(interval.value);
-
-    await setTimeout(() => {
-        interval.value = null;
-
-        const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
-        if (lastPayload) timeStore.selected = lastPayload.request_id;
-    }, 800);
+    if (screenStore.screen === "Queries") {
+        setTimeout(() => {
+            const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
+            if (lastPayload) timeStore.selected = lastPayload.request_id;
+        }, 800);
+    }
 };
 
 /**
@@ -298,7 +198,9 @@ const interval = ref(null);
 
 const dispatch = (type: string, event: EventType, content: any): void => {
     if (applicationPath.value != content.application_path) {
-        window.ipcRenderer.send("environment::check", { applicationPath: content.application_path });
+        window.ipcRenderer.send("environment::check", {
+            applicationPath: content.application_path
+        });
         applicationPath.value = content.application_path;
     }
 
@@ -325,23 +227,14 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     payload.value.map((dump: Payload) => {
         if (typeof dump.date_time == "undefined") {
-            dump.date_time = moment().format("hh:mm:ss");
+            dump.date_time = moment().format("hh:mm:ss a");
         }
     });
 
     if (interval.value == null) {
-        interval.value = setInterval(() => {
-            toggleScreen(content.screen.screen_name);
-        }, 500);
+        interval.value = setInterval(() => toggleScreen(content.screen.screen_name), 400);
     }
 };
-
-// /**
-//  * Watches for changes in the screenStore and toggles the screen accordingly.
-//  */
-// watch(screenStore, (screen) => {
-//     toggleScreen(screen.screen);
-// });
 
 /**
  * Loads all saved payloads and sets the document title accordingly.
@@ -374,7 +267,9 @@ const getZoomLevel = (value): void => {
                 window.webFrame.setZoomFactor(value);
             }
         },
-        { passive: false }
+        {
+            passive: false
+        }
     );
 };
 
@@ -641,21 +536,136 @@ onMounted(() => {
     window.ipcRenderer.on("coffee", (event, arg) => {
         window.ipcRenderer.send("coffee:grab-a-coffee", arg);
     });
-    //
-    // //* * Convert shortcuts to Electron format **/
-    // Object.defineProperty(String.prototype, "beautifyShortcut", {
-    //     value() {
-    //         if (process.platform === "darwin") {
-    //             return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
-    //         }
-    //         return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
-    //     }
-    // });
-    //
-    // Object.defineProperty(String.prototype, "toElectronFormat", {
-    //     value() {
-    //         return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
-    //     }
-    // });
+
+    //* * Convert shortcuts to Electron format **/
+    Object.defineProperty(String.prototype, "beautifyShortcut", {
+        value() {
+            if (process.platform === "darwin") {
+                return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
+            }
+            return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
+        }
+    });
+
+    Object.defineProperty(String.prototype, "toElectronFormat", {
+        value() {
+            return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
+        }
+    });
+
 });
 </script>
+<template>
+    <div
+        v-cloak
+        id="app"
+    >
+        <div
+            :data-theme="appearanceStore.theme"
+            class="absolute w-full h-full min-h-full"
+        >
+            <div>
+                <TheNavBar
+                    v-if="!settingStore.setting"
+                    v-model:in-saved-dumps-window="inSavedDumpsWindow"
+                    v-model:payload-count="payload.length"
+                    @clear-all="clearAll($event)"
+                />
+
+                <!-- content -->
+                <div class="flex overflow-hidden flex-col flex-1 right-0 absolute left-0 h-fill-available">
+                    <!-- main -->
+                    <main
+                        :class="{
+                            'overflow-auto': payload.length > 0
+                        }"
+                        class="flex-1 flex flex-col shrink-0 left-16 right-0 min-h-full"
+                    >
+                        <!-- AppSettings -->
+                        <div
+                            class="overflow-auto min-h-screen pb-8"
+                            v-if="settingStore.setting"
+                        >
+                            <AppSetting :local-shortcut-list="localShortcutList" />
+                        </div>
+
+                        <AutoUpdater />
+
+                        <!-- screen buttons -->
+                        <div
+                            v-if="screens.length > 1 && !settingStore.setting"
+                            class="flex"
+                        >
+                            <div class="py-1 flex-1 px-3">
+                                <div class="flex items-center justify-between overflow-x-auto">
+                                    <div class="flex">
+                                        <DumpScreens
+                                            @toggleScreen="toggleScreen"
+                                            v-model:screens="screens"
+                                            v-model:payload="payload"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            :class="{
+                                'w-auto p-6 pb-8 items-center': payload.length === 0,
+                                'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
+                            }"
+                            class="rounded-sm text-base overflow-auto"
+                        >
+                            <div id="top"></div>
+
+                            <div
+                                class="px-3"
+                                v-if="screenStore.screen === 'Queries'"
+                            >
+                                <HeaderQueryRequests
+                                    :payload="payload"
+                                    :total="dumpsBagFiltered.length"
+                                    :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
+                                />
+                            </div>
+
+                            <div :class="{'flex' : screenStore.screen === 'Queries' }">
+                                <div v-if="screenStore.screen === 'Queries'"
+                                     class="pl-3 pt-2">
+                                    <QueriesControl />
+                                </div>
+                                <div
+                                    class="mb-[60px] w-full"
+                                    :class="{
+                                        'flex flex-col-reverse': reorderStore.reverse
+                                    }"
+                                    v-if="payload.length > 0 && !settingStore.setting"
+                                >
+                                    <div
+                                        class="w-full"
+                                        :id="payload.id"
+                                        v-for="payload in dumpsBagFiltered"
+                                        :key="payload.sf_dump_id"
+                                    >
+                                        <DumpItem
+                                            :in-saved-dumps-window="inSavedDumpsWindow"
+                                            v-show="screenStore.screen === 'Queries' ? payload.request_id === timeStore.selected : true"
+                                            :payload="payload"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                class="w-full h-full -mt-6"
+                                v-if="payload.length === 0 && !settingStore.setting"
+                            >
+                                <WelcomePage :local-shortcut-list="localShortcutList" />
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

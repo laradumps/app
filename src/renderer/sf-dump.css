@@ -158,6 +158,17 @@ pre.sf-dump .sf-dump-num {
 pre.sf-dump .sf-dump-const {
     font-weight: bold;
 }
+
+[data-theme="light"] pre.sf-dump .sf-dump-str {
+    font-weight: bold;
+    @apply text-primary
+}
+
+[data-theme="retro"] pre.sf-dump .sf-dump-str {
+    font-weight: bold;
+    @apply text-primary
+}
+
 pre.sf-dump .sf-dump-str {
     font-weight: bold;
     color: #56db3a;

@@ -49,9 +49,8 @@ onMounted(() => {
         <div class="w-full bg-base-300 rounded-full h-[8px]">
             <div
                 class="bg-accent h-[8px] progress rounded-full"
-                :style="{ width:  progressPercentage + '%' }"
+                :style="{ width: progressPercentage + '%' }"
             ></div>
         </div>
     </div>
 </template>
-

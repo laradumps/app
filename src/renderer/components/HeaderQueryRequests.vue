@@ -3,7 +3,7 @@
         v-if="timeStore.groups.length > 0"
         class="flex h-[40px] justify-between items-center gap-2 text-base-content"
     >
-        <span class="font-normal text-xs select-none ml-1">total: {{ totalFiltered }} / {{ total }}</span>
+        <span class="font-normal text-[11px] select-none ml-1">{{ totalFiltered }} of {{ total }} queries</span>
 
         <div class="flex gap-2 text-sm items-center">
             <SelectMenu
@@ -11,11 +11,11 @@
                 class="w-[100px] dark:!bg-base-600 !text-xs"
                 v-model:data="queryOrder"
             />
-            <SelectMenu
-                @selected="timeStore.setSelectedRequest($event.id)"
-                class="w-[190px] !text-xs"
-                v-model:data="allRequests"
-            />
+<!--            <SelectMenu-->
+<!--                @selected="timeStore.setSelectedRequest($event.id)"-->
+<!--                class="w-[190px] !text-xs"-->
+<!--                v-model:data="allRequests"-->
+<!--            />-->
         </div>
     </div>
 </template>

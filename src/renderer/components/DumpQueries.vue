@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { computed, defineProps, ref } from "vue";
 import { format } from "sql-formatter";
@@ -39,8 +38,8 @@ const formatSql = computed(() => {
     if (sql != null) {
         let formattedSql = formatted.value
             ? format(sql, {
-                indent: "    "
-            })
+                  indent: "    "
+              })
             : sql;
 
         return hljs.highlight(formattedSql, { language: "sql" }).value;

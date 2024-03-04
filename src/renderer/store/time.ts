@@ -72,7 +72,7 @@ export const useTimeStore = defineStore("timeStore", {
             this.requests[requestId] = {
                 requestId,
                 total,
-                time: moment().format("HH:mm:ss")
+                time: moment().format("HH:mm:ss a")
             };
 
             if (!this.groups.includes(requestId)) {
