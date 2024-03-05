@@ -232,7 +232,10 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     });
 
     if (interval.value == null) {
-        interval.value = setInterval(() => toggleScreen(content.screen.screen_name), 400);
+        interval.value = setInterval( () => {
+             setTimeout(() => toggleScreen("screen 1"), 50);
+             setTimeout(() => toggleScreen(content.screen.screen_name), 100);
+        }, 700);
     }
 };
 
@@ -629,7 +632,7 @@ onMounted(() => {
                                 />
                             </div>
 
-                            <div :class="{'flex' : screenStore.screen === 'Queries' }">
+                            <div :class="{'flex divide' : screenStore.screen === 'Queries' }">
                                 <div v-if="screenStore.screen === 'Queries'"
                                      class="pl-3 pt-2">
                                     <QueriesControl />
@@ -637,7 +640,7 @@ onMounted(() => {
                                 <div
                                     class="mb-[60px] w-full"
                                     :class="{
-                                        'flex flex-col-reverse': reorderStore.reverse
+                                        'flex-col-reverse': reorderStore.reverse
                                     }"
                                     v-if="payload.length > 0 && !settingStore.setting"
                                 >

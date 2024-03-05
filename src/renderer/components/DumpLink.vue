@@ -13,11 +13,13 @@ onMounted(() => {
     const workdir = props.ideHandler.workdir;
     const separator = props.ideHandler.separator;
 
-    const relativePath = realPath.replace(workdir, '');
+    const relativePath = realPath?.replace(workdir, '');
 
     const linkPath = projectPath + separator + relativePath;
 
-    link.value = IDEHandler.value.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
+    if(realPath != null) {
+        link.value = IDEHandler.value.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
+    }
 
     window.ipcRenderer.on("changeIDE", (event, args) => {
         let ide = args.value;
@@ -31,11 +33,11 @@ const label = computed(() => {
         return props.ideHandler.class_name + ":" + props.ideHandler.line;
     }
 
-    if (props.ideHandler.class_name === "Tinker") {
+    if (props.ideHandler.real_path == null) {
         return "Tinker";
     }
 
-    return null;
+    return '🤔';
 });
 
 const props = defineProps<{
@@ -48,9 +50,10 @@ const props = defineProps<{
     <a
         :href="link"
         :title="label"
+        :class="{'cursor-pointer' : link}"
         class="flex items-center group"
     >
-        <div class="break-all tracking-wider hover:opacity-75 cursor-pointer">
+        <div class="break-all tracking-wider hover:opacity-75">
             <span>{{ label }}</span>
         </div>
     </a>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-
-import { computed, nextTick, onMounted, onUpdated, ref } from "vue";
+import { computed, nextTick, onUpdated, ref } from "vue";
 import { useTimeStore } from "@/store/time";
 
 const timeStore = useTimeStore();

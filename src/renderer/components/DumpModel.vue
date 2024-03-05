@@ -16,10 +16,10 @@ onMounted(() => {
 
 <template>
     <div class="space-y-3">
-        <p
-            class="pb-1 font-normal text-base-content"
+        <span
+            class="pb-1 font-normal font-sans text-base-content"
             v-text="props.payload.model?.className"
-        ></p>
+        ></span>
         <div v-html="props.payload.model?.attributes[0]"></div>
         <div v-show="props.payload.model?.relations.length > 0">
             <div class="py-3">Relations</div>
