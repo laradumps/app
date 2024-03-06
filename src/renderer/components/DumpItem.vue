@@ -107,7 +107,7 @@ const color = computed(() => {
                 :class="{
                     [`!border-l-4 ` + color]: typeof color !== 'undefined'
                 }"
-                class="collapsable collapse border border-base-200 bg-base-200"
+                class="collapsable collapse border border-base-300 bg-base-200"
                 open
             >
                 <summary class="collapse-title text-xl font-medium">
@@ -124,55 +124,58 @@ const color = computed(() => {
                             </li>
                         </ul>
 
-                        <div
-                            v-if="props.payload.type !== `queries`"
-                            class="text-primary uppercase text-[10px] font-semibold tracking-wider"
-                        >
-                            {{ props.payload.label ?? props.payload.type }}
+                        <div class="gap-4 flex">
+                            <div
+                                v-if="props.payload.type !== `queries`"
+                                class="flex opacity-0 group-hover:opacity-100 transition-all gap-4 items-center text-base-content"
+                            >
+                                <!-- variable type -->
+                                <div
+                                    v-if="props.payload.dump?.variable_type !== undefined"
+                                    class="text-[0.70rem]"
+                                    v-text="`(${props.payload.dump.variable_type})`"
+                                ></div>
+
+                                <!-- click to copy -->
+                                <CopyToClick
+                                    @click="copyDump"
+                                    class="opacity-60 hover:opacity-100"
+                                />
+
+                                <!-- save dumps -->
+                                <div
+                                    @click="saveDump"
+                                    class="cursor-pointer opacity-60 hover:opacity-100"
+                                    v-if="!inSavedDumpsWindow"
+                                >
+                                    <IconSave
+                                        class="w-3 h-3 opacity-70"
+                                        id="saveIcon"
+                                    />
+                                </div>
+                            </div>
+
+                            <div
+                                v-if="props.payload.type !== `queries`"
+                                class="text-primary uppercase text-[10px] font-semibold tracking-wider"
+                            >
+                                {{ props.payload.label ?? props.payload.type }}
+                            </div>
                         </div>
+
                     </div>
                 </summary>
                 <div class="collapse-content">
                     <div>
                         <div
-                            v-if="props.payload.type !== `queries`"
-                            class="flex opacity-0 group-hover:opacity-100 transition-all absolute right-4 z-300 gap-4 items-center text-base-content"
-                        >
-                            <!-- variable type -->
-                            <div
-                                v-if="props.payload.dump?.variable_type !== undefined"
-                                class="text-[0.70rem]"
-                                v-text="`(${props.payload.dump.variable_type})`"
-                            ></div>
-
-                            <!-- click to copy -->
-                            <CopyToClick
-                                @click="copyDump"
-                                class="opacity-60 hover:opacity-100"
-                            />
-
-                            <!-- save dumps -->
-                            <div
-                                @click="saveDump"
-                                class="cursor-pointer opacity-60 hover:opacity-100"
-                                v-if="!inSavedDumpsWindow"
-                            >
-                                <IconSave
-                                    class="w-3 h-3 opacity-70"
-                                    id="saveIcon"
-                                />
-                            </div>
-                        </div>
-
-                        <div
                             v-if="props.payload.type === 'dump'"
                             v-show="props.payload.dump?.dump !== ''"
-                            class="text-base-content"
+                            class="text-base-content break-all"
                             v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"
                         ></div>
 
                         <DumpModel
-                            class="text-base-content"
+                            class="text-base-content break-all"
                             v-if="props.payload.type === `model`"
                             :payload="payload"
                         />

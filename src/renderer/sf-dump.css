@@ -169,6 +169,11 @@ pre.sf-dump .sf-dump-const {
     @apply text-primary
 }
 
+[data-theme="laravel"] pre.sf-dump .sf-dump-str {
+    font-weight: bold;
+    @apply text-secondary
+}
+
 pre.sf-dump .sf-dump-str {
     font-weight: bold;
     color: #56db3a;

@@ -164,7 +164,7 @@ const maximizeApp = (autoInvokeApp: string | boolean): void => {
  * @param {string} value - The name of the screen to be toggled.
  */
 const toggleScreen = async (value: string): Promise<void> => {
-    clearInterval(interval.value);
+   // clearInterval(interval.value);
     interval.value = null
 
     screenStore.activeScreen(value);
@@ -176,13 +176,13 @@ const toggleScreen = async (value: string): Promise<void> => {
             behavior: "smooth"
         })
     );
-
-    if (screenStore.screen === "Queries") {
-        setTimeout(() => {
-            const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
-            if (lastPayload) timeStore.selected = lastPayload.request_id;
-        }, 800);
-    }
+    //
+    // if (screenStore.screen === "Queries") {
+    //     setTimeout(() => {
+    //         const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
+    //         if (lastPayload) timeStore.selected = lastPayload.request_id;
+    //     }, 800);
+    // }
 };
 
 /**
@@ -231,12 +231,13 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         }
     });
 
-    if (interval.value == null) {
-        interval.value = setInterval( () => {
-             setTimeout(() => toggleScreen("screen 1"), 50);
-             setTimeout(() => toggleScreen(content.screen.screen_name), 100);
-        }, 700);
-    }
+    setTimeout(() => toggleScreen(content.screen.screen_name));
+    // if (interval.value == null) {
+    //     interval.value = setInterval( () => {
+    //          setTimeout(() => toggleScreen("screen 1"), 50);
+    //          setTimeout(() => toggleScreen(content.screen.screen_name), 100);
+    //     }, 700);
+    // }
 };
 
 /**
@@ -640,7 +641,7 @@ onMounted(() => {
                                 <div
                                     class="mb-[60px] w-full"
                                     :class="{
-                                        'flex-col-reverse': reorderStore.reverse
+                                        'flex flex-col-reverse': reorderStore.reverse
                                     }"
                                     v-if="payload.length > 0 && !settingStore.setting"
                                 >

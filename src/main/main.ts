@@ -358,24 +358,6 @@ ipcMain.on("main:open-custom-window", (event, link) => {
             });
         `);
     });
-
-    const template = [
-        {
-            label: "View",
-            submenu: [
-                {
-                    label: "Toggle Dev Tools",
-                    accelerator: process.platform === "darwin" ? "Alt+Command+I" : "Ctrl+Shift+I",
-                    click: () => {
-                        window.webContents.toggleDevTools();
-                    }
-                }
-            ]
-        }
-    ];
-
-    const menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
 });
 
 ipcMain.on("main:create-static-tmp-file", (event, value) => {

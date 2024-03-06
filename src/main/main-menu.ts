@@ -220,6 +220,13 @@ function createMenu(mainWindow: BrowserWindow): void {
                         mainWindow.webContents.send("changeTheme", { theme: "cyberpunk" });
                     },
                     type: "radio"
+                },
+                {
+                    label: "Laravel",
+                    click: () => {
+                        mainWindow.webContents.send("changeTheme", { theme: "laravel" });
+                    },
+                    type: "radio"
                 }
             ]
         },

@@ -59,7 +59,15 @@ module.exports = {
             "winter",
             "dim",
             "nord",
-            "sunset"
+            "sunset",
+            {
+                laravel: {
+                    "primary": "#FF2D20",
+                    "secondary": "#ff8400",
+                    "neutral": "#3d4451",
+                    "base-100": "#18181a",
+                },
+            },
         ]
     },
     plugins: [require("postcss-import"), require("daisyui"), require("@tailwindcss/typography")]
