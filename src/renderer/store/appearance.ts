@@ -3,13 +3,13 @@ import { defineStore } from "pinia";
 export const useAppearanceStore = defineStore("theme", {
     state: () => {
         return {
-            theme: localStorage.theme
+            value: 'light'
         };
     },
     actions: {
         setTheme(theme: string) {
-            localStorage.theme = theme;
-            this.theme = theme;
+            this.value = theme;
+            localStorage.theme = theme
         }
     }
 });

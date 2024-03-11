@@ -1,7 +1,87 @@
-import { app, BrowserWindow, Menu, shell } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, shell } from "electron";
+import storage from "electron-json-storage";
 
-function createMenu(mainWindow: BrowserWindow): void {
-    const menuTemplate: Electron.MenuItemConstructorOptions[] = [
+interface IDEHandlerSelected {
+    value: string;
+}
+
+interface ThemeSelected {
+    value: string;
+}
+
+ipcMain.on('main-menu:set-ide-handler-selected', (event, args) => {
+    storage.set(`IDEHandler`, args, (error: Error | null): void => {
+        if (error) {
+            console.error("Error setting storage:", error);
+            return;
+        }
+    })
+})
+
+ipcMain.on('main-menu:set-theme-selected', (event, args) => {
+    storage.set(`Theme`, args, (error: Error | null): void => {
+        if (error) {
+            console.error("Error setting storage:", error);
+            return;
+        }
+    })
+})
+
+async function getMenuTemplate(mainWindow: BrowserWindow) {
+    let IDEHandlerSelected: IDEHandlerSelected;
+    let ThemeSelected: ThemeSelected;
+
+    try {
+        IDEHandlerSelected = await new Promise((resolve, reject) => {
+            storage.get(`IDEHandler`, (error, data: Object) => {
+                if (error) {
+                    console.error("Error getting storage:", error);
+                    reject(error);
+                } else {
+                    resolve(data);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error getting IDEHandler from storage:", error);
+        IDEHandlerSelected = { value : '' };
+    }
+
+    try {
+        ThemeSelected = await new Promise((resolve, reject) => {
+            storage.get(`Theme`, (error, data: Object) => {
+                if (error) {
+                    console.error("Error getting storage:", error);
+                    reject(error);
+                } else {
+                    resolve(data);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error getting IDEHandler from storage:", error);
+        ThemeSelected = { value : '' };
+    }
+
+    const createIDEItem = (label: string, value: string) => ({
+        label,
+        click: () => {
+            mainWindow.webContents.send("changeIDE", { value });
+        },
+        type: "radio",
+        checked: IDEHandlerSelected.value === value
+    });
+
+    const createThemeItem = (label: string, value: string) => ({
+        label,
+        click: () => {
+            mainWindow.webContents.send("changeTheme", { value });
+        },
+        type: "radio",
+        checked: ThemeSelected.value === value
+    })
+
+    const menuTemplate = [
         {
             label: "Menu",
             submenu: [
@@ -171,105 +251,24 @@ function createMenu(mainWindow: BrowserWindow): void {
         {
             label: "Theme",
             submenu: [
-                {
-                    label: "Light",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "light" });
-                    },
-                    type: "radio"
-                },
-                {
-                    label: "Dark",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "dark" });
-                    },
-                    type: "radio",
-                    checked: true
-                },
-                {
-                    label: "Dracula",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "dracula" });
-                    },
-                    type: "radio"
-                },
-                {
-                    label: "Dim",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "dim" });
-                    },
-                    type: "radio"
-                },
-                {
-                    label: "Retro",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "retro" });
-                    },
-                    type: "radio"
-                },
-                {
-                    label: "Halloween",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "halloween" });
-                    },
-                    type: "radio"
-                },
-                {
-                    label: "Cyberpunk",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "cyberpunk" });
-                    },
-                    type: "radio"
-                },
-                {
-                    label: "Laravel",
-                    click: () => {
-                        mainWindow.webContents.send("changeTheme", { theme: "laravel" });
-                    },
-                    type: "radio"
-                }
+                createThemeItem("Light", "light"),
+                createThemeItem("Dark", "dark"),
+                createThemeItem("Dracula", "dracula"),
+                createThemeItem("Dim", "dim"),
+                createThemeItem("Retro", "retro"),
+                createThemeItem("Halloween", "halloween"),
+                createThemeItem("Cyberpunk", "cyberpunk"),
+                createThemeItem("Laravel", "laravel"),
             ]
         },
         {
             label: "IDE",
             submenu: [
-                {
-                    label: "PHPStorm",
-                    click: () => {
-                        mainWindow.webContents.send("changeIDE", { value: "phpstorm://open?file={filepath}&line={line}" });
-                    },
-                    type: "radio",
-                    checked: true
-                },
-                {
-                    label: "VS Code",
-                    click: () => {
-                        mainWindow.webContents.send("changeIDE", { value: "vscode://file/{filepath}:{line}" });
-                    },
-                    type: "radio"
-                },
-
-                {
-                    label: "VS Code Remote",
-                    click: () => {
-                        mainWindow.webContents.send("changeIDE", { value: "vscode://vscode-remote/" });
-                    },
-                    type: "radio"
-                },
-                {
-                    label: "Sublime",
-                    click: () => {
-                        mainWindow.webContents.send("changeIDE", { value: "subl://open?url=file://{filepath}&line={line}" });
-                    },
-                    type: "radio"
-                },
-                {
-                    label: "Atom",
-                    click: () => {
-                        mainWindow.webContents.send("changeIDE", { value: "atom://core/open/file?filename={filepath}&line={line}" });
-                    },
-                    type: "radio"
-                }
+                createIDEItem("PHPStorm", "phpstorm://open?file={filepath}&line={line}"),
+                createIDEItem("VS Code", "vscode://file/{filepath}:{line}"),
+                createIDEItem("VS Code Remote", "vscode://vscode-remote/{wsl_config}{filepath}:{line}"),
+                createIDEItem("Sublime", "subl://open?url=file://{filepath}&line={line}"),
+                createIDEItem("Atom", "atom://core/open/file?filename={filepath}&line={line}")
             ]
         },
         {
@@ -305,7 +304,13 @@ function createMenu(mainWindow: BrowserWindow): void {
         });
     }
 
-    const menu: Menu = Menu.buildFromTemplate(menuTemplate);
+    return menuTemplate;
+}
+
+async function createMenu(mainWindow) {
+    const menuTemplate = await getMenuTemplate(mainWindow);
+
+    const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
 }
 

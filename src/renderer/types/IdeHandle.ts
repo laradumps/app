@@ -5,4 +5,5 @@ export default interface IdeHandle {
     line: string;
     class_name: string;
     separator: string;
+    wsl_config: string;
 }

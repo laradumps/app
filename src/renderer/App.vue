@@ -22,7 +22,7 @@ import WelcomePage from "@/components/WelcomePage.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 import { usePrivacy } from "@/store/privacy";
-import { useIDEHandler } from "@/store/ide-handler";
+import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import QueriesControl from "@/components/QueriesControl.vue";
 
@@ -51,15 +51,22 @@ const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const privacyStore = usePrivacy();
-const IDEHandler = useIDEHandler();
+const IDEHandler = useIDEHandlerStore();
 
 const i18n = useI18n({
     useScope: "global"
 });
+
 const localeStore = useI18nStore();
 
 window.ipcRenderer.on("changeTheme", (event, args) => {
-    appearanceStore.setTheme(args.theme);
+    window.ipcRenderer.send("main-menu:set-theme-selected", {value: args.value});
+    appearanceStore.setTheme(args.value)
+});
+
+window.ipcRenderer.on("changeIDE", (event, args) => {
+    window.ipcRenderer.send("main-menu:set-ide-handler-selected", {value: args.value});
+    IDEHandler.setValue(args.value);
 });
 
 window.ipcRenderer.on("settings:set-language", (event, args) => {
@@ -72,20 +79,9 @@ window.ipcRenderer.on("settings:check-for-updates", (event, args) => {
     localStorage.autoUpdate = args.value;
 });
 
-window.ipcRenderer.on("changeIDE", (event, args) => {
-    IDEHandler.value = args.value;
-});
 
 window.ipcRenderer.on("debug", (event, args) => {
     console.log(event, args);
-});
-
-onBeforeMount(() => {
-    /**
-     * Sets the current locale for internationalization (i18n) before the component is mounted.
-     */
-    i18n.locale.value = localeStore.value;
-    localStorage.updateAvailable = "false";
 });
 
 /**
@@ -302,7 +298,18 @@ function registerDefaultLocalShortcuts() {
     window.ipcRenderer.send("local-shortcut:set", shortcutClearAllObject);
 }
 
+onBeforeMount(() => {
+    localStorage.updateAvailable = "false";
+});
+
 onMounted(() => {
+
+    IDEHandler.setValue(localStorage.IDEHandler)
+    appearanceStore.setTheme(localStorage.theme)
+
+    window.ipcRenderer.send("main-menu:set-ide-handler-selected", {value: localStorage.IDEHandler});
+    window.ipcRenderer.send("main-menu:set-theme-selected", {value: localStorage.theme});
+
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
 
     window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
@@ -347,18 +354,18 @@ onMounted(() => {
 
     window.ipcRenderer.on("app:local-shortcut-execute::clearAll", () => clearAll());
 
-    if (appearanceStore.theme === "auto") {
-        window.ipcRenderer.send("native-theme", appearanceStore.theme);
+    if (appearanceStore.value === "auto") {
+        window.ipcRenderer.send("native-theme", appearanceStore.value);
     }
 
     window.ipcRenderer.on("app:theme-dark", () => {
-        if (appearanceStore.theme === "auto") {
+        if (appearanceStore.value === "auto") {
             appearanceStore.setTheme("dim");
         }
     });
 
     window.ipcRenderer.on("app:theme-light", () => {
-        if (appearanceStore.theme === "auto") {
+        if (appearanceStore.value === "auto") {
             appearanceStore.setTheme("dim");
         }
     });
@@ -565,7 +572,7 @@ onMounted(() => {
         id="app"
     >
         <div
-            :data-theme="appearanceStore.theme"
+            :data-theme="appearanceStore.value"
             class="absolute w-full h-full min-h-full"
         >
             <div>
