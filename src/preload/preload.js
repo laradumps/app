@@ -45,9 +45,7 @@ const server = app
     .listen(port, "0.0.0.0", () => {})
     .on("error", (err) => {
         console.error(err);
-        setTimeout(() => {
-            ipcRenderer.send("preload:server-failed", err);
-        }, 3000);
+        setTimeout(() => ipcRenderer.send("preload:server-failed", err), 3000);
     });
 
 ipcRenderer.on("server:close", (event, arg) => {
