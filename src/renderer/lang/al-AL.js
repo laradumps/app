@@ -27,7 +27,6 @@ export default {
         clear: "Pastro",
         language: "Gjuha",
         settings: "Cilësimet",
-        privacy_mode: "Modaliteti i privatësisë",
         reorder: "Rendit",
         saved_dumps: "Dhëmbëzat e ruajtura",
         toggle_menu: "Shfaq menu"

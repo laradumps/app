@@ -27,7 +27,6 @@ export default {
         clear: "Limpiar",
         language: "Idioma",
         settings: "Configuración",
-        privacy_mode: "Modo privado",
         reorder: "Reordenar",
         saved_dumps: "Volcados guardados",
         toggle_menu: "Mostar menú"

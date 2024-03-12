@@ -50,7 +50,6 @@ const settingStore = useSettingStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
-const privacyStore = usePrivacy();
 const IDEHandler = useIDEHandlerStore();
 
 const i18n = useI18n({
@@ -370,7 +369,6 @@ onMounted(() => {
         }
     });
 
-    window.ipcRenderer.on("app::toggle-privacy", () => privacyStore.toggle());
     window.ipcRenderer.on("app::toggle-reorder", () => reorderStore.toggle());
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
     window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));

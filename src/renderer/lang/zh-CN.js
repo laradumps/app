@@ -27,7 +27,6 @@ export default {
         clear: "清除",
         language: "语言",
         settings: "设置",
-        privacy_mode: "隐私模式",
         reorder: "重新排序",
         saved_dumps: "已保存的转储",
         toggle_menu: "显示菜单"

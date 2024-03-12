@@ -65,7 +65,6 @@ const props = defineProps<{
 }>();
 </script>
 
-
 <template>
     <a
         :href="link"

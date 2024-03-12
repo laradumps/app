@@ -27,7 +27,6 @@ export default {
         clear: "پاک کردن",
         language: "زبان",
         settings: "تنظیمات",
-        privacy_mode: "حالت حریم خصوصی",
         reorder: "مرتب سازی",
         saved_dumps: "دامپ‌های ذخیره شده",
         toggle_menu: "نمایش منو"

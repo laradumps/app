@@ -27,7 +27,6 @@ export default {
         clear: "Clear",
         language: "Language",
         settings: "Settings",
-        privacy_mode: "Privacy Mode",
         reorder: "Reorder",
         saved_dumps: "Saved Dumps",
         toggle_menu: "Show menu"

@@ -235,12 +235,6 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                     }
                 },
                 {
-                    label: "Privacy Mode",
-                    click: async (): Promise<void> => {
-                        mainWindow.webContents.send("app::toggle-privacy");
-                    }
-                },
-                {
                     label: "Saved Dumps",
                     click: async (): Promise<void> => {
                         mainWindow.webContents.send("app::show-saved-dumps");
@@ -281,9 +275,30 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                     }
                 },
                 {
-                    label: "Releases",
+                    label: "Desktop Releases",
                     click: async (): Promise<void> => {
                         await shell.openExternal("https://github.com/laradumps/app/releases");
+                    }
+                },
+                {
+                    label: "Laravel Package",
+                    click: async (): Promise<void> => {
+                        await shell.openExternal("https://github.com/laradumps/laradumps");
+                    }
+                },
+                {
+                    label: "Core Package",
+                    click: async (): Promise<void> => {
+                        await shell.openExternal("https://github.com/laradumps/laradumps-core");
+                    }
+                },
+                {
+                    type: "separator"
+                },
+                {
+                    label: "Sponsors",
+                    click: async (): Promise<void> => {
+                        await shell.openExternal("https://github.com/sponsors/luanfreitasdev");
                     }
                 }
             ]

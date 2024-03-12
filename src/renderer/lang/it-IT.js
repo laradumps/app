@@ -27,7 +27,6 @@ export default {
         clear: "Cancella",
         language: "Lingua",
         settings: "Impostazioni",
-        privacy_mode: "Modalità privata",
         reorder: "Riordina",
         saved_dumps: "Dumps salvati",
         toggle_menu: "Mostra il menù"

@@ -27,7 +27,6 @@ export default {
         clear: "Bersihkan",
         language: "Bahasa",
         settings: "Pengaturan",
-        privacy_mode: "Mode Privasi",
         reorder: "Urutkan Kembali",
         saved_dumps: "Dumps yang disimpan",
         toggle_menu: "Tampilkan Menu"

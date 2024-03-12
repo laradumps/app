@@ -28,7 +28,6 @@ export default {
         saved_dumps: "Dumps salvos",
         language: "Idioma",
         settings: "Configurações",
-        privacy_mode: "Modo privado",
         toggle_menu: "Mostrar menu"
     },
     settings: {
