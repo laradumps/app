@@ -41,7 +41,6 @@ export default {
             clear: "Cancella",
             alwaysOnTop: "Sempre in evidenza",
             globalSearch: "Ricerca globale",
-            toggleMenu: "Attiva/disattiva Menù",
             save_message: "La scorciatoia è stata aggiornata con successo"
         },
         choose_a_project: "Scegli un progetto",

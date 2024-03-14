@@ -88,30 +88,6 @@ const registerLocalShortCutForSearch = (mainWindow: BrowserWindow): void => {
     });
 };
 
-/**
- * Registers a local shortcut for toggle menu.
- * @param mainWindow - The BrowserWindow instance.
- */
-const registerLocalShortCutForToggleMenu = (mainWindow: BrowserWindow): void => {
-    storage.setDataPath(os.tmpdir());
-
-    // @ts-ignore
-    storage.get("ds_shortcut_toggleMenu", (error, data: ShortcutData): void => {
-        // eslint-disable-next-line no-console
-        if (error) console.error(error);
-
-        if (data.keys.toString() !== "") {
-            // @ts-ignore
-            electronLocalShortcut.register(data.keys, () => {
-                // eslint-disable-next-line no-console
-                console.log("executing toggleMenu!");
-
-                mainWindow.webContents.send("app:local-shortcut-execute::toggleMenu");
-            });
-        }
-    });
-};
-
 function registerShortcuts(mainWindow: BrowserWindow, alias = null): void {
     if (!alias) {
         // Sending configured shortcuts
@@ -135,9 +111,6 @@ function registerShortcuts(mainWindow: BrowserWindow, alias = null): void {
                                 break;
                             case "globalSearch":
                                 registerLocalShortCutForSearch(mainWindow);
-                                break;
-                            case "toggleMenu":
-                                registerLocalShortCutForToggleMenu(mainWindow);
                                 break;
                         }
                     });

@@ -41,7 +41,6 @@ export default {
             clear: "Clear",
             alwaysOnTop: "Always On Top",
             globalSearch: "Global Search",
-            toggleMenu: "Toggle Menu",
             save_message: "Shortcut was updated successfully"
         },
         choose_a_project: "Choose a Project",

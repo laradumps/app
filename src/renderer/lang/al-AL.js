@@ -41,7 +41,6 @@ export default {
             clear: "Pastro",
             alwaysOnTop: "Lart në çdo kohë",
             globalSearch: "Kërkim global",
-            toggleMenu: "Ndërro menu",
             save_message: "Shkurtesat u përditësuan me sukses"
         },
         choose_a_project: "Zgjidh një projekt",

@@ -41,7 +41,6 @@ export default {
             clear: "Limpiar",
             alwaysOnTop: "Siempre encima",
             globalSearch: "Búsqueda global",
-            toggleMenu: "Alternar menú",
             save_message: "El acceso directo se actualizó correctamente"
         },
         choose_a_project: "Elige un proyecto",

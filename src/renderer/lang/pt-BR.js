@@ -40,7 +40,6 @@ export default {
             clear: "Limpar",
             alwaysOnTop: "App sempre no primeiro plano",
             globalSearch: "Busca global",
-            toggleMenu: "Alternar Menu",
             save_message: "Atalhos salvos com sucesso!"
         },
         choose_a_project: "Selecione um Projeto",

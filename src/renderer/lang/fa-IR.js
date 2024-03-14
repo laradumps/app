@@ -41,7 +41,6 @@ export default {
             clear: "پاک کردن",
             alwaysOnTop: "همیشه در بالا",
             globalSearch: "جستجوی سراسری",
-            toggleMenu: "تغییر وضعیت منو",
             save_message: "میانبر با موفقیت به‌روزرسانی شد"
         },
         choose_a_project: "یک پروژه را انتخاب کنید",

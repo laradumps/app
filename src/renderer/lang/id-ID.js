@@ -41,7 +41,6 @@ export default {
             clear: "Bersihkan",
             alwaysOnTop: "Selalu di Atas",
             globalSearch: "Pencarian Global",
-            toggleMenu: "Toggle Menu",
             save_message: "Shortcut berhasil diperbarui"
         },
         choose_a_project: "Pilih Proyek",

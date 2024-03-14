@@ -16,10 +16,6 @@ const shortcuts = ref([
         label: "settings.shortcut.alwaysOnTop",
         alias: "alwaysOnTop"
     },
-    {
-        label: "settings.shortcut.toggleMenu",
-        alias: "toggleMenu"
-    }
 ]);
 
 onMounted(() => {

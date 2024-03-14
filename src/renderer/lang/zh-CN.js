@@ -41,7 +41,6 @@ export default {
             clear: "清除",
             alwaysOnTop: "始终置顶",
             globalSearch: "全局搜索",
-            toggleMenu: "切换菜单",
             save_message: "快捷键已成功更新"
         },
         choose_a_project: "选择一个项目",

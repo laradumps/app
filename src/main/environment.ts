@@ -74,6 +74,10 @@ function configureEnvironment(mainWindow: BrowserWindow): void {
             return;
         }
 
+        if (path == undefined) {
+            return;
+        }
+
         if (path.endsWith("/")) {
             path = path.slice(0, -1);
         }
