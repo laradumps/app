@@ -125,7 +125,7 @@ const setActiveProject = () => {
         </div>
         <ul
             tabindex="0"
-            class="dropdown-content z-100 menu p-2 bg-base-100 shadow rounded-box w-52 mt-[35px] !right-0"
+            class="dropdown-content z-200 menu p-2 bg-base-100 shadow rounded-box w-52 mt-[35px] !right-0"
         >
             <select
                 v-model="selectedProject"
@@ -163,7 +163,7 @@ const setActiveProject = () => {
                             class="toggle toggle-xs toggle-primary"
                             @change="save"
                         />
-                        <span class="text-[0.7rem] tracking-wide font-semibold">{{ env.value.replaceAll("_", " ") }}</span>
+                        <span class="text-[9px] tracking-wide font-light uppercase">{{ env.value.replaceAll("_", " ") }}</span>
                     </label>
                 </li>
             </div>

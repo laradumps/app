@@ -15,7 +15,7 @@ const shortcuts = ref([
     {
         label: "settings.shortcut.alwaysOnTop",
         alias: "alwaysOnTop"
-    },
+    }
 ]);
 
 onMounted(() => {

@@ -158,39 +158,39 @@ pre.sf-dump .sf-dump-num {
 }
 
 pre.sf-dump .sf-dump-const {
-    @apply font-normal
+    @apply font-normal;
 }
 
 [data-theme="light"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-primary
+    @apply font-normal text-primary;
 }
 
 [data-theme="dracula"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-secondary
+    @apply font-normal text-secondary;
 }
 
 [data-theme="retro"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-primary
+    @apply font-normal text-primary;
 }
 
 [data-theme="halloween"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-primary
+    @apply font-normal text-primary;
 }
 
 [data-theme="dark"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-primary
+    @apply font-normal text-primary;
 }
 
 [data-theme="dim"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-secondary
+    @apply font-normal text-secondary;
 }
 
 [data-theme="laravel"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-secondary
+    @apply font-normal text-secondary;
 }
 
 [data-theme="cyberpunk"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-primary
+    @apply font-normal text-primary;
 }
 
 pre.sf-dump .sf-dump-str {
@@ -225,7 +225,7 @@ pre.sf-dump .sf-dump-index {
     color: #1299da;
 }
 pre.sf-dump .sf-dump-ellipsis {
-    @apply text-secondary
+    @apply text-secondary;
 }
 pre.sf-dump .sf-dump-ns {
     user-select: none;

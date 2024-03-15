@@ -14,25 +14,19 @@ onMounted(() => {
     const separator = props.ideHandler.separator;
     const wsl_config = props.ideHandler.wsl_config;
 
-    const relativePath = realPath?.replace(workdir, '');
+    const relativePath = realPath?.replace(workdir, "");
 
     const linkPath = projectPath + separator + relativePath;
 
-    if(realPath != null) {
-        if (IDEHandler.value == 'vscode://vscode-remote/{wsl_config}{filepath}:{line}') {
+    if (realPath != null) {
+        if (IDEHandler.value == "vscode://vscode-remote/{wsl_config}{filepath}:{line}") {
             if (wsl_config != undefined) {
-                link.value = IDEHandler.value
-                    .replace("{wsl_config}", wsl_config)
-                    .replace("{filepath}", linkPath)
-                    .replace("{line}", props.ideHandler.line);
+                link.value = IDEHandler.value.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 
-                return
+                return;
             }
 
-            link.value = IDEHandler.value
-                .replace("{filepath}", linkPath)
-                .replace("{line}", props.ideHandler.line);
-
+            link.value = IDEHandler.value.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 
             return;
         }
@@ -56,7 +50,7 @@ const label = computed(() => {
         return "Tinker";
     }
 
-    return '';
+    return "";
 });
 
 const props = defineProps<{
@@ -68,7 +62,7 @@ const props = defineProps<{
     <a
         :href="link"
         :title="label"
-        :class="{'cursor-pointer' : link}"
+        :class="{ 'cursor-pointer': link }"
         class="flex items-center group"
     >
         <div class="break-all tracking-wider hover:opacity-75">

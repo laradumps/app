@@ -119,7 +119,7 @@ const color = computed(() => {
                             <li class="list-none">
                                 {{ props.payload.date_time }}
                             </li>
-                            <li style="margin-left: -5px">
+                            <li>
                                 <DumpLink :ide-handler="props.payload.ide_handle" />
                             </li>
                         </ul>
@@ -134,7 +134,7 @@ const color = computed(() => {
                 </summary>
                 <div class="collapse-content">
                     <div class="relative">
-                        <div class="gap-4 flex absolute right-0 z-300">
+                        <div class="gap-4 flex absolute right-0 z-100">
                             <div
                                 v-if="props.payload.type !== `queries`"
                                 class="flex opacity-0 group-hover:opacity-100 transition-all gap-4 items-center text-base-content"
@@ -257,11 +257,13 @@ const color = computed(() => {
 
                         <DumpContains
                             :id="`dump-content-${props.payload.sf_dump_id}`"
-                            :payload="payload" />
+                            :payload="payload"
+                        />
 
                         <DumpIsJson
                             :id="`dump-content-${props.payload.sf_dump_id}`"
-                            :payload="payload" />
+                            :payload="payload"
+                        />
                     </div>
                 </div>
             </details>

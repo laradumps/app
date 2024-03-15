@@ -79,7 +79,7 @@ const formatSql = computed(() => {
                     ></div>
                 </div>
 
-                <div class="flex justify-end gap-3 items-center opacity-70 absolute top-[15px] right-[15px]">
+                <div class="flex justify-end gap-3 items-center opacity-70 absolute -top-8 right-0">
                     <div
                         class="cursor-pointer opacity-0 group-hover:opacity-100"
                         @click="toggleFormatted"
@@ -103,7 +103,7 @@ const formatSql = computed(() => {
                         class="text-base-content opacity-0 group-hover:opacity-100"
                     />
 
-                    <span class="font-semibold text-sm badge badge-primary text-primary-content"> {{ props.payload.queries.time }} <span class="font-normal text-xs">ms</span></span>
+                    <span class="font-semibold text-sm text-base-content"> {{ props.payload.queries.time }} <span class="font-normal text-xs">ms</span></span>
                 </div>
             </div>
         </div>

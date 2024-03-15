@@ -9,23 +9,23 @@ interface ThemeSelected {
     value: string;
 }
 
-ipcMain.on('main-menu:set-ide-handler-selected', (event, args) => {
+ipcMain.on("main-menu:set-ide-handler-selected", (event, args) => {
     storage.set(`IDEHandler`, args, (error: Error | null): void => {
         if (error) {
             console.error("Error setting storage:", error);
             return;
         }
-    })
-})
+    });
+});
 
-ipcMain.on('main-menu:set-theme-selected', (event, args) => {
+ipcMain.on("main-menu:set-theme-selected", (event, args) => {
     storage.set(`Theme`, args, (error: Error | null): void => {
         if (error) {
             console.error("Error setting storage:", error);
             return;
         }
-    })
-})
+    });
+});
 
 async function getMenuTemplate(mainWindow: BrowserWindow) {
     let IDEHandlerSelected: IDEHandlerSelected;
@@ -44,7 +44,7 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
         });
     } catch (error) {
         console.error("Error getting IDEHandler from storage:", error);
-        IDEHandlerSelected = { value : '' };
+        IDEHandlerSelected = { value: "" };
     }
 
     try {
@@ -60,7 +60,7 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
         });
     } catch (error) {
         console.error("Error getting IDEHandler from storage:", error);
-        ThemeSelected = { value : '' };
+        ThemeSelected = { value: "" };
     }
 
     const createIDEItem = (label: string, value: string) => ({
@@ -79,7 +79,7 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
         },
         type: "radio",
         checked: ThemeSelected.value === value
-    })
+    });
 
     const menuTemplate = [
         {
@@ -252,28 +252,8 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                 createThemeItem("Retro", "retro"),
                 createThemeItem("Halloween", "halloween"),
                 createThemeItem("Cyberpunk", "cyberpunk"),
-                createThemeItem("Laravel", "laravel"),
-                {
-                    type: 'separator',
-                },
-                {
-                    label: "Dump Colors",
-                    submenu: [
-                        {
-                            label: "Original",
-                            click: async (): Promise<void> => {
-                                mainWindow.webContents.send("changeDumpColor", { value: 'original'});
-                            }
-                        },
-                        {
-                            label: "Theme",
-                            click: async (): Promise<void> => {
-                                mainWindow.webContents.send("changeDumpColor", { value: 'theme'});
-                            }
-                        }
-                    ]
-                },
-            ],
+                createThemeItem("Laravel", "laravel")
+            ]
         },
         {
             label: "IDE",

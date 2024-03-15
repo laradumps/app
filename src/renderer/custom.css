@@ -129,5 +129,5 @@
 }
 
 .vjs-tree-node {
-    @apply text-xs
+    @apply text-xs;
 }

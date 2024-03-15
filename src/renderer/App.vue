@@ -59,12 +59,12 @@ const i18n = useI18n({
 const localeStore = useI18nStore();
 
 window.ipcRenderer.on("changeTheme", (event, args) => {
-    window.ipcRenderer.send("main-menu:set-theme-selected", {value: args.value});
-    appearanceStore.setTheme(args.value)
+    window.ipcRenderer.send("main-menu:set-theme-selected", { value: args.value });
+    appearanceStore.setTheme(args.value);
 });
 
 window.ipcRenderer.on("changeIDE", (event, args) => {
-    window.ipcRenderer.send("main-menu:set-ide-handler-selected", {value: args.value});
+    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: args.value });
     IDEHandler.setValue(args.value);
 });
 
@@ -77,7 +77,6 @@ window.ipcRenderer.on("settings:set-language", (event, args) => {
 window.ipcRenderer.on("settings:check-for-updates", (event, args) => {
     localStorage.autoUpdate = args.value;
 });
-
 
 window.ipcRenderer.on("debug", (event, args) => {
     console.log(event, args);
@@ -159,8 +158,8 @@ const maximizeApp = (autoInvokeApp: string | boolean): void => {
  * @param {string} value - The name of the screen to be toggled.
  */
 const toggleScreen = async (value: string): Promise<void> => {
-   // clearInterval(interval.value);
-    interval.value = null
+    clearInterval(interval.value);
+    interval.value = null;
 
     screenStore.activeScreen(value);
 
@@ -171,13 +170,13 @@ const toggleScreen = async (value: string): Promise<void> => {
             behavior: "smooth"
         })
     );
-    //
-    // if (screenStore.screen === "Queries") {
-    //     setTimeout(() => {
-    //         const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
-    //         if (lastPayload) timeStore.selected = lastPayload.request_id;
-    //     }, 800);
-    // }
+
+    if (screenStore.screen === "Queries") {
+        setTimeout(() => {
+            const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
+            if (lastPayload) timeStore.selected = lastPayload.request_id;
+        }, 800);
+    }
 };
 
 /**
@@ -226,13 +225,16 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         }
     });
 
-    setTimeout(() => toggleScreen(content.screen.screen_name));
-    // if (interval.value == null) {
-    //     interval.value = setInterval( () => {
-    //          setTimeout(() => toggleScreen("screen 1"), 50);
-    //          setTimeout(() => toggleScreen(content.screen.screen_name), 100);
-    //     }, 700);
-    // }
+    if (interval.value == null) {
+        if(content.type === "queries") {
+            interval.value = setInterval( () => {
+                setTimeout(() => toggleScreen("screen 1"), 50);
+                setTimeout(() => toggleScreen(content.screen.screen_name), 100);
+            }, 700);
+        } else {
+            setTimeout(() => toggleScreen(content.screen.screen_name), 50);
+        }
+    }
 };
 
 /**
@@ -302,12 +304,11 @@ onBeforeMount(() => {
 });
 
 onMounted(() => {
+    IDEHandler.setValue(localStorage.IDEHandler);
+    appearanceStore.setTheme(localStorage.theme);
 
-    IDEHandler.setValue(localStorage.IDEHandler)
-    appearanceStore.setTheme(localStorage.theme)
-
-    window.ipcRenderer.send("main-menu:set-ide-handler-selected", {value: localStorage.IDEHandler});
-    window.ipcRenderer.send("main-menu:set-theme-selected", {value: localStorage.theme});
+    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
+    window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
 
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
 
@@ -561,7 +562,6 @@ onMounted(() => {
             return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
         }
     });
-
 });
 </script>
 <template>
@@ -638,11 +638,17 @@ onMounted(() => {
                                 />
                             </div>
 
-                            <div :class="{'flex divide' : screenStore.screen === 'Queries' }">
-                                <div v-if="screenStore.screen === 'Queries'"
-                                     class="pl-3 pt-2">
+                            <div :class="{ 'flex border-t border-base-content/20 mt-2 pl-3': screenStore.screen === 'Queries' }">
+                                <div class="pt-2"
+                                     v-if="screenStore.screen === 'Queries'">
                                     <QueriesControl />
                                 </div>
+
+                                <div class="w-full"
+                                     v-show="timeStore.selected === '' && screenStore.screen === 'Queries'">
+                                    <span class="font-normal tracking-wide text-[0.65rem] uppercase ml-3"> Select a request on the left side </span>
+                                </div>
+
                                 <div
                                     class="mb-[60px] w-full"
                                     :class="{

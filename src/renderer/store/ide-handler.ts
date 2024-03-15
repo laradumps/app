@@ -9,7 +9,7 @@ export const useIDEHandlerStore = defineStore("ide-handler", {
     actions: {
         setValue(value: string) {
             this.value = value;
-            localStorage.IDEHandler = value
+            localStorage.IDEHandler = value;
         }
     }
 });
