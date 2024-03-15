@@ -38,7 +38,7 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
 
         const keyTd = document.createElement("td");
         keyTd.setAttribute("style", headerStyle);
-        keyTd.setAttribute("class", "p-2 font-semibold bg-base-200 dark:bg-base-700 dark:text-base-400");
+        keyTd.setAttribute("class", "text-xs p-2 font-semibold bg-base-200 dark:bg-base-700 dark:text-base-400");
         keyTd.appendChild(document.createTextNode(key));
         tr.appendChild(keyTd);
 
@@ -47,7 +47,7 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
         if (["Headers", "Body", "Cookies", "Data", "Value"].includes(key)) {
             elements.push(`sf-dump-${val[1]}`);
             const preAttributes = document.createElement("pre");
-            preAttributes.setAttribute("class", "sf-dump-debug");
+            preAttributes.setAttribute("class", "sf-dump-debug max-h-40 overflow-auto text-xs break-all whitespace-pre-line");
             preAttributes.setAttribute("id", `sf-dump-${val[1]}`);
             preAttributes.setAttribute("data-indent-pad", "  ");
             preAttributes.innerHTML = val[0];

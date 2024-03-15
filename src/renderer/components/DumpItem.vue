@@ -136,7 +136,7 @@ const color = computed(() => {
                     <div class="relative">
                         <div class="gap-4 flex absolute right-0 z-100">
                             <div
-                                v-if="props.payload.type !== `queries`"
+                                v-if="!['queries', 'table_v2'].includes(props.payload.type)"
                                 class="flex opacity-0 group-hover:opacity-100 transition-all gap-4 items-center text-base-content"
                             >
                                 <!-- variable type -->
