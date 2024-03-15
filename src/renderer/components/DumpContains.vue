@@ -16,10 +16,10 @@ const props = defineProps<{
 
 <template>
     <div
-        class="text-base-content"
+        class="text-base-content text-xs"
         v-if="props.payload.str_contains"
     >
-        <div class="flex w-full left-0 items-center p-2">
+        <div class="flex w-full left-0 items-center mt-2">
             <div
                 class="items-center w-[0.50rem] h-[0.50rem] mr-2 rounded-full"
                 :class="{ [containsStyle]: true }"

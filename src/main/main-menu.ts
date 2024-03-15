@@ -253,7 +253,27 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                 createThemeItem("Halloween", "halloween"),
                 createThemeItem("Cyberpunk", "cyberpunk"),
                 createThemeItem("Laravel", "laravel"),
-            ]
+                {
+                    type: 'separator',
+                },
+                {
+                    label: "Dump Colors",
+                    submenu: [
+                        {
+                            label: "Original",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("changeDumpColor", { value: 'original'});
+                            }
+                        },
+                        {
+                            label: "Theme",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("changeDumpColor", { value: 'theme'});
+                            }
+                        }
+                    ]
+                },
+            ],
         },
         {
             label: "IDE",

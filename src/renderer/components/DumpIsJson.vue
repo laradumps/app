@@ -16,7 +16,7 @@ const props = defineProps<{
         class="text-base-content"
         v-if="props.payload.validate_json"
     >
-        <div class="flex w-full left-0 items-center p-2">
+        <div class="flex w-full left-0 items-center my-2">
             <div
                 class="items-center w-[0.50rem] h-[0.50rem] mr-2 rounded-full"
                 :class="{ [style]: true }"

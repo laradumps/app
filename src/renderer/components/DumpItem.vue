@@ -35,7 +35,7 @@ const props = defineProps<{
 }>();
 
 const copyDump = () => {
-    const value = document.getElementById(`sf-dump-${props.payload.sf_dump_id}`)?.innerText;
+    const value = document.getElementById(`dump-content-${props.payload.sf_dump_id}`)?.innerText;
 
     navigator.clipboard.writeText(value).then(() => {});
     changeIcon();
@@ -124,7 +124,17 @@ const color = computed(() => {
                             </li>
                         </ul>
 
-                        <div class="gap-4 flex">
+                        <div
+                            v-if="props.payload.type !== `queries`"
+                            class="text-primary uppercase text-[10px] font-semibold tracking-wider"
+                        >
+                            {{ props.payload.label ?? props.payload.type }}
+                        </div>
+                    </div>
+                </summary>
+                <div class="collapse-content">
+                    <div class="relative">
+                        <div class="gap-4 flex absolute right-0 z-300">
                             <div
                                 v-if="props.payload.type !== `queries`"
                                 class="flex opacity-0 group-hover:opacity-100 transition-all gap-4 items-center text-base-content"
@@ -154,57 +164,52 @@ const color = computed(() => {
                                     />
                                 </div>
                             </div>
-
-                            <div
-                                v-if="props.payload.type !== `queries`"
-                                class="text-primary uppercase text-[10px] font-semibold tracking-wider"
-                            >
-                                {{ props.payload.label ?? props.payload.type }}
-                            </div>
                         </div>
-
-                    </div>
-                </summary>
-                <div class="collapse-content">
-                    <div>
                         <div
                             v-if="props.payload.type === 'dump'"
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             v-show="props.payload.dump?.dump !== ''"
                             class="text-base-content break-all"
                             v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"
                         ></div>
 
                         <DumpModel
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="text-base-content break-all"
                             v-if="props.payload.type === `model`"
                             :payload="payload"
                         />
 
                         <DumpTimeTrack
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             v-if="props.payload.type === `time_track`"
                             :payload="payload"
                         />
 
                         <!-- dump mailable -->
                         <DumpMailable
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             v-if="props.payload.type === `mailable`"
                             :payload="payload"
                         />
 
                         <!-- dump html -->
                         <DumpHTML
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             v-if="props.payload.type === `html`"
                             :payload="payload"
                         />
 
                         <!-- dump notification -->
                         <DumpMail
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             v-if="props.payload.type === `mail`"
                             :payload="payload"
                         />
 
                         <!-- dump table -->
                         <DumpTable
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="w-full"
                             v-if="props.payload.type === `table`"
                             :payload="payload"
@@ -212,6 +217,7 @@ const color = computed(() => {
 
                         <!-- dump table v2 -->
                         <DumpTableV2
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="w-full"
                             v-if="['table_v2', 'http_client'].includes(props.payload.type)"
                             :payload="payload"
@@ -219,6 +225,7 @@ const color = computed(() => {
 
                         <!-- dump model -->
                         <DumpJson
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="w-full"
                             v-if="props.payload.type === `json`"
                             :payload="payload"
@@ -226,6 +233,7 @@ const color = computed(() => {
 
                         <!-- dump log -->
                         <DumpLog
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="w-full"
                             v-if="props.payload.type === `log_application`"
                             :payload="payload"
@@ -233,6 +241,7 @@ const color = computed(() => {
 
                         <!-- dump queries -->
                         <DumpQueries
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="w-full"
                             v-if="props.payload.type === `queries`"
                             :payload="payload"
@@ -240,14 +249,19 @@ const color = computed(() => {
 
                         <!-- dump query -->
                         <DumpQuery
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="w-full"
                             v-if="props.payload.type === `query`"
                             :payload="payload"
                         />
 
-                        <DumpContains :payload="payload" />
+                        <DumpContains
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
+                            :payload="payload" />
 
-                        <DumpIsJson :payload="payload" />
+                        <DumpIsJson
+                            :id="`dump-content-${props.payload.sf_dump_id}`"
+                            :payload="payload" />
                     </div>
                 </div>
             </details>

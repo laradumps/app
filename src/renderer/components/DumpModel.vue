@@ -17,7 +17,7 @@ onMounted(() => {
 <template>
     <div class="space-y-3">
         <span
-            class="pb-1 font-normal font-sans text-base-content"
+            class="pb-1 sf-dump-key text-base-content"
             v-text="props.payload.model?.className"
         ></span>
         <div v-html="props.payload.model?.attributes[0]"></div>
