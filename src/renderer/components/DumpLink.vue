@@ -14,9 +14,11 @@ onMounted(() => {
     const separator = props.ideHandler.separator;
     const wsl_config = props.ideHandler.wsl_config;
 
-    const relativePath = realPath?.replace(workdir, "");
+    const relativePath = realPath?.replace(workdir, "").replace(projectPath, "");
 
-    const linkPath = projectPath + separator + relativePath;
+    const linkPath = projectPath + relativePath;
+
+    console.log(linkPath)
 
     if (realPath != null) {
         if (IDEHandler.value == "vscode://vscode-remote/{wsl_config}{filepath}:{line}") {
