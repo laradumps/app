@@ -18,7 +18,7 @@ onMounted(() => {
 
     const linkPath = projectPath + relativePath;
 
-    console.log(linkPath)
+    console.log(linkPath);
 
     if (realPath != null) {
         if (IDEHandler.value == "vscode://vscode-remote/{wsl_config}{filepath}:{line}") {

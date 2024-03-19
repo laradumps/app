@@ -75,23 +75,23 @@ const color = computed(() => {
 
     switch (color) {
         case "red":
-            border = "border-l-error";
+            border = "!border-l-error";
             break;
         case "warning":
         case "orange":
-            border = "border-l-warning";
+            border = "!border-l-warning";
             break;
         case "green":
-            border = "border-l-success";
+            border = "!border-l-success";
             break;
         case "blue":
-            border = "border-l-info";
+            border = "!border-l-info";
             break;
         case "gray":
-            border = "border-l-neutral";
+            border = "!border-l-neutral";
             break;
         case "black":
-            border = "border-black";
+            border = "!border-black";
             break;
         default:
             props.payload.color;

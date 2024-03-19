@@ -39,6 +39,26 @@ if (isDev) {
 
 storage.setDataPath(os.tmpdir());
 
+const AutoLaunch = require("auto-launch");
+
+const autoLauncher = new AutoLaunch({ name: "LaraDumps" });
+
+ipcMain.on("main-menu:set-auto-launch", (event: Electron.IpcMainEvent, arg): void => {
+    arg.value === "disabled" ? autoLauncher.disable() : autoLauncher.enable();
+});
+
+autoLauncher
+    .isEnabled()
+    .then(function (isEnabled: boolean) {
+        if (isEnabled) {
+            return;
+        }
+        autoLauncher.enable();
+    })
+    .catch(function (err: any) {
+        console.error("autoLauncher", err);
+    });
+
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
     if (!Object.prototype.hasOwnProperty.call(arg.content, "meta")) {
         return;
@@ -463,9 +483,5 @@ ipcMain.on("native-theme", () => {
 });
 
 nativeTheme.on("updated", () => {
-    if (nativeTheme.shouldUseDarkColors) {
-        mainWindow.webContents.send("app:theme-dark");
-    } else {
-        mainWindow.webContents.send("app:theme-light");
-    }
+    nativeTheme.shouldUseDarkColors ? mainWindow.webContents.send("app:theme-dark") : mainWindow.webContents.send("app:theme-light");
 });

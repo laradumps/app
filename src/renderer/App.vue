@@ -68,6 +68,10 @@ window.ipcRenderer.on("changeIDE", (event, args) => {
     IDEHandler.setValue(args.value);
 });
 
+window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
+    window.ipcRenderer.send("main-menu:set-auto-launch", { value: args.value });
+});
+
 window.ipcRenderer.on("settings:set-language", (event, args) => {
     localeStore.set(args.value);
     i18n.locale.value = args.value;
@@ -226,8 +230,8 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     });
 
     if (interval.value == null) {
-        if(content.type === "queries") {
-            interval.value = setInterval( () => {
+        if (content.type === "queries") {
+            interval.value = setInterval(() => {
                 setTimeout(() => toggleScreen("screen 1"), 50);
                 setTimeout(() => toggleScreen(content.screen.screen_name), 100);
             }, 700);
@@ -639,13 +643,17 @@ onMounted(() => {
                             </div>
 
                             <div :class="{ 'flex border-t border-base-content/20 mt-2 pl-3': screenStore.screen === 'Queries' }">
-                                <div class="pt-2"
-                                     v-if="screenStore.screen === 'Queries'">
+                                <div
+                                    class="pt-2"
+                                    v-if="screenStore.screen === 'Queries'"
+                                >
                                     <QueriesControl />
                                 </div>
 
-                                <div class="w-full"
-                                     v-show="timeStore.selected === '' && screenStore.screen === 'Queries'">
+                                <div
+                                    class="w-full"
+                                    v-show="timeStore.selected === '' && screenStore.screen === 'Queries'"
+                                >
                                     <span class="font-normal tracking-wide text-[0.65rem] uppercase ml-3"> Select a request on the left side </span>
                                 </div>
 

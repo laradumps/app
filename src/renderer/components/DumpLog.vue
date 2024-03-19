@@ -18,7 +18,7 @@ onMounted(() => {
         id="log"
         class="space-y-3"
     >
-        <div class="text-base-content rounded-t-sm">
+        <div class="text-base-content text-xs rounded-t-sm">
             {{ props.payload.log_application.message }}
         </div>
 

@@ -9,6 +9,10 @@ interface ThemeSelected {
     value: string;
 }
 
+interface AutoLaunch {
+    value: string;
+}
+
 ipcMain.on("main-menu:set-ide-handler-selected", (event, args) => {
     storage.set(`IDEHandler`, args, (error: Error | null): void => {
         if (error) {
@@ -27,9 +31,19 @@ ipcMain.on("main-menu:set-theme-selected", (event, args) => {
     });
 });
 
+ipcMain.on("main-menu:set-auto-launch", (event, args) => {
+    storage.set(`AutoLaunch`, args, (error: Error | null): void => {
+        if (error) {
+            console.error("Error setting storage:", error);
+            return;
+        }
+    });
+});
+
 async function getMenuTemplate(mainWindow: BrowserWindow) {
     let IDEHandlerSelected: IDEHandlerSelected;
     let ThemeSelected: ThemeSelected;
+    let AutoLaunch: AutoLaunch;
 
     try {
         IDEHandlerSelected = await new Promise((resolve, reject) => {
@@ -59,8 +73,24 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
             });
         });
     } catch (error) {
-        console.error("Error getting IDEHandler from storage:", error);
+        console.error("Error getting ThemeSelected from storage:", error);
         ThemeSelected = { value: "" };
+    }
+
+    try {
+        AutoLaunch = await new Promise((resolve, reject) => {
+            storage.get(`AutoLaunch`, (error, data: Object) => {
+                if (error) {
+                    console.error("Error getting storage:", error);
+                    reject(error);
+                } else {
+                    resolve(data);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Error getting AutoLaunch from storage:", error);
+        AutoLaunch = { value: "" };
     }
 
     const createIDEItem = (label: string, value: string) => ({
@@ -79,6 +109,15 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
         },
         type: "radio",
         checked: ThemeSelected.value === value
+    });
+
+    const createAutoLaunchItem = (label: string, value: string) => ({
+        label,
+        click: () => {
+            mainWindow.webContents.send("changeAutoLaunch", { value });
+        },
+        type: "radio",
+        checked: AutoLaunch.value === value
     });
 
     const menuTemplate = [
@@ -206,6 +245,10 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                             type: "radio"
                         }
                     ]
+                },
+                {
+                    label: "Auto Launch",
+                    submenu: [createAutoLaunchItem("Enabled", "enabled"), createAutoLaunchItem("Disabled", "disabled")]
                 },
                 {
                     label: "Shortcuts",
