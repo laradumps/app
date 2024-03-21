@@ -21,7 +21,7 @@ onMounted(() => {
     console.log(linkPath);
 
     if (realPath != null) {
-        if (IDEHandler.value == "vscode://vscode-remote/{wsl_config}{filepath}:{line}") {
+        if (IDEHandler.value.includes('wsl_config')) {
             if (wsl_config != undefined) {
                 link.value = IDEHandler.value.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 

@@ -247,7 +247,7 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                     ]
                 },
                 {
-                    label: "Auto Launch",
+                    label: "Auto-Launch",
                     submenu: [createAutoLaunchItem("Enabled", "enabled"), createAutoLaunchItem("Disabled", "disabled")]
                 },
                 {
@@ -302,8 +302,10 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
             label: "IDE",
             submenu: [
                 createIDEItem("PHPStorm", "phpstorm://open?file={filepath}&line={line}"),
+                createIDEItem("PHPStorm WSL", "phpstorm://open?file={wsl_config}{filepath}&line={line}"),
                 createIDEItem("VS Code", "vscode://file/{filepath}:{line}"),
                 createIDEItem("VS Code Remote", "vscode://vscode-remote/{wsl_config}{filepath}:{line}"),
+                createIDEItem("VS Code Insiders", "vscode-insiders://file/{filepath}:{line}"),
                 createIDEItem("Sublime", "subl://open?url=file://{filepath}&line={line}"),
                 createIDEItem("Atom", "atom://core/open/file?filename={filepath}&line={line}")
             ]
