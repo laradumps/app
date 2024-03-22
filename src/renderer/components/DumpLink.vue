@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, onMounted, ref } from "vue";
+import { computed, defineProps, onMounted, ref, watch } from "vue";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import IdeHandle from "@/types/IdeHandle";
 
@@ -7,40 +7,35 @@ const IDEHandler = useIDEHandlerStore();
 
 const link = ref();
 
-onMounted(() => {
+const generateLink = (ide: string) => {
     const projectPath = props.ideHandler.project_path;
     const realPath = props.ideHandler.real_path;
     const workdir = props.ideHandler.workdir;
-    const separator = props.ideHandler.separator;
     const wsl_config = props.ideHandler.wsl_config;
 
     const relativePath = realPath?.replace(workdir, "").replace(projectPath, "");
 
     const linkPath = projectPath + relativePath;
 
-    console.log(linkPath);
-
     if (realPath != null) {
-        if (IDEHandler.value.includes('wsl_config')) {
+        if (IDEHandler.value.includes("wsl_config")) {
             if (wsl_config != undefined) {
-                link.value = IDEHandler.value.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
+                link.value = ide.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 
                 return;
             }
 
-            link.value = IDEHandler.value.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
+            link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 
             return;
         }
 
-        link.value = IDEHandler.value.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
+        link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
     }
+}
 
-    window.ipcRenderer.on("changeIDE", (event, args) => {
-        let ide = args.value;
-
-        link.value = ide.replace("{filepath}", realPath).replace("{line}", props.ideHandler.line);
-    });
+onMounted(() => {
+    generateLink(IDEHandler.value)
 });
 
 const label = computed(() => {
@@ -58,6 +53,12 @@ const label = computed(() => {
 const props = defineProps<{
     ideHandler: IdeHandle;
 }>();
+
+watch(IDEHandler, (value) => {
+    const ide = value.value
+
+    generateLink(ide)
+})
 </script>
 
 <template>
@@ -65,10 +66,10 @@ const props = defineProps<{
         :href="link"
         :title="label"
         :class="{ 'cursor-pointer': link }"
-        class="flex items-center group"
+        class="flex items-center group cursor-pointer"
     >
-        <div class="break-all tracking-wider hover:opacity-75">
+        <span class="break-all tracking-wider hover:opacity-75">
             <span>{{ label }}</span>
-        </div>
+        </span>
     </a>
 </template>

@@ -25,6 +25,8 @@ onMounted(async () => {
     window.ipcRenderer.send("environment::get");
 
     window.ipcRenderer.on("app-setting:project-added", () => {
+        window.ipcRenderer.send("environment::get");
+
         const jsConfetti = new JSConfetti();
 
         jsConfetti.addConfetti();

@@ -52,9 +52,7 @@ const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const IDEHandler = useIDEHandlerStore();
 
-const i18n = useI18n({
-    useScope: "global"
-});
+const { locale } = useI18n({ useScope: "global" });
 
 const localeStore = useI18nStore();
 
@@ -66,6 +64,7 @@ window.ipcRenderer.on("changeTheme", (event, args) => {
 window.ipcRenderer.on("changeIDE", (event, args) => {
     window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: args.value });
     IDEHandler.setValue(args.value);
+
 });
 
 window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
@@ -74,8 +73,8 @@ window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
 
 window.ipcRenderer.on("settings:set-language", (event, args) => {
     localeStore.set(args.value);
-    i18n.locale.value = args.value;
-    location.reload();
+    locale.value = localeStore.value;
+    location.reload()
 });
 
 window.ipcRenderer.on("settings:check-for-updates", (event, args) => {
@@ -304,6 +303,7 @@ function registerDefaultLocalShortcuts() {
 }
 
 onBeforeMount(() => {
+    locale.value = localeStore.value;
     localStorage.updateAvailable = "false";
 });
 
@@ -648,13 +648,6 @@ onMounted(() => {
                                     v-if="screenStore.screen === 'Queries'"
                                 >
                                     <QueriesControl />
-                                </div>
-
-                                <div
-                                    class="w-full"
-                                    v-show="timeStore.selected === '' && screenStore.screen === 'Queries'"
-                                >
-                                    <span class="font-normal tracking-wide text-[0.65rem] uppercase ml-3"> Select a request on the left side </span>
                                 </div>
 
                                 <div

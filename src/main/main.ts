@@ -31,12 +31,6 @@ let isQuiting: boolean;
 
 const minPackageVersion = "2.0.0";
 
-if (isDev) {
-    contextMenu({
-        showInspectElement: true
-    });
-}
-
 storage.setDataPath(os.tmpdir());
 
 const AutoLaunch = require("auto-launch");

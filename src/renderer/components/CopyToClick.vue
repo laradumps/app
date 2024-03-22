@@ -16,7 +16,6 @@ const copyDump = () => {
 </script>
 <template>
     <div
-        :title="$t('click_to_copy')"
         @click="copyDump"
         class="cursor-pointer transition-all"
     >

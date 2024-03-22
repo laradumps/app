@@ -28,13 +28,6 @@ const tips = ref([
     </div>`,
     `<div>
         <div class="space-y-3 text-base-content">
-            <div class="font-semibold text-base">${i18n.t("doc.add_project_here")}</div>
-            <li>${i18n.t("doc.run_in_php_project")}: <code class="bg-base-300 p-1 rounded">vendor/bin/laradumps init</code></li>
-            <li>${i18n.t("doc.finish_setting_env_vars")}</li>
-        </div>
-    </div>`,
-    `<div>
-        <div class="space-y-3 text-base-content">
             <div class="font-semibold text-base">${i18n.t("doc.install_laradumps_globally")}</div>
             <li>
                 <code class="bg-base-300 p-1 rounded">composer global require laradumps/global-laradumps</code>
