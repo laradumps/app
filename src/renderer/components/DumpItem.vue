@@ -165,9 +165,7 @@ const color = computed(() => {
                                     class="right-0 absolute opacity-0"
                                     v-bind:class="{ 'opacity-100': openOptions }"
                                 >
-                                    <ul
-                                        class="flex items-center p-2 gap-3 shadow bg-base-100 rounded-box w-auto"
-                                    >
+                                    <ul class="flex items-center p-2 gap-3 shadow bg-base-100 rounded-box w-auto">
                                         <li
                                             :title="$t('click_to_copy')"
                                             class="p-1"

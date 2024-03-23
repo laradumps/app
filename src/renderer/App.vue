@@ -64,7 +64,6 @@ window.ipcRenderer.on("changeTheme", (event, args) => {
 window.ipcRenderer.on("changeIDE", (event, args) => {
     window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: args.value });
     IDEHandler.setValue(args.value);
-
 });
 
 window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
@@ -74,7 +73,7 @@ window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
 window.ipcRenderer.on("settings:set-language", (event, args) => {
     localeStore.set(args.value);
     locale.value = localeStore.value;
-    location.reload()
+    location.reload();
 });
 
 window.ipcRenderer.on("settings:check-for-updates", (event, args) => {
@@ -582,6 +581,7 @@ onMounted(() => {
                     v-if="!settingStore.setting"
                     v-model:in-saved-dumps-window="inSavedDumpsWindow"
                     v-model:payload-count="payload.length"
+                    v-model:has-color="hasColor"
                     @clear-all="clearAll($event)"
                 />
 

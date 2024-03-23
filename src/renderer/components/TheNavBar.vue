@@ -5,8 +5,13 @@ import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
 import { useSettingStore } from "@/store/setting";
 import GlobalSearch from "@/components/GlobalSearch.vue";
 import TheNavBarListening from "@/components/TheNavBarListening.vue";
+import HeaderGlobalFilter from "@/components/HeaderGlobalFilter.vue";
 
 defineProps({
+    hasColor: {
+        type: Boolean,
+        required: true
+    },
     payloadCount: {
         type: Number,
         default: 0
@@ -41,6 +46,8 @@ const clear = () => {
         </nav>
 
         <div class="flex gap-4 items-center">
+            <HeaderGlobalFilter v-bind:has-color="hasColor" />
+
             <!-- global search -->
             <GlobalSearch />
 

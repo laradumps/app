@@ -32,10 +32,10 @@ const generateLink = (ide: string) => {
 
         link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
     }
-}
+};
 
 onMounted(() => {
-    generateLink(IDEHandler.value)
+    generateLink(IDEHandler.value);
 });
 
 const label = computed(() => {
@@ -55,10 +55,10 @@ const props = defineProps<{
 }>();
 
 watch(IDEHandler, (value) => {
-    const ide = value.value
+    const ide = value.value;
 
-    generateLink(ide)
-})
+    generateLink(ide);
+});
 </script>
 
 <template>
