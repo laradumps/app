@@ -64,8 +64,8 @@ module.exports = {
                 laravel: {
                     primary: "#FF2D20",
                     secondary: "#ff8400",
-                    neutral: "#3d4451",
-                    "base-100": "#18181a"
+                    neutral: "#18181a",
+                    "base-100": "#000000"
                 }
             }
         ]

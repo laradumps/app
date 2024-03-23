@@ -107,7 +107,7 @@ const color = computed(() => {
                     'collapse-open': open,
                     'collapse-close': open
                 }"
-                class="collapse bg-base-200"
+                class="collapse bg-base-200 bg-laravel"
             >
                 <div class="!cursor-default collapse-title gap-2 text-base-content opacity-70 justify-between items-center font-light flex text-[11px]">
                     <ul

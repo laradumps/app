@@ -63,3 +63,7 @@ table {
 .menu li a {
     @apply px-1.5 text-[0.65rem];
 }
+
+[data-theme="laravel"] .bg-laravel {
+    @apply bg-neutral
+}

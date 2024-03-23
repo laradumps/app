@@ -242,10 +242,10 @@
   dependencies:
     "@tanstack/vue-virtual" "^3.0.0-beta.60"
 
-"@heroicons/vue@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.npmjs.org/@heroicons/vue/-/vue-2.1.1.tgz"
-  integrity sha512-Yi5nh/89L193ALgHyJUQUdNLsKXPrrE3yj5yiR8WAlo7nZyXGxGauQcEAmBsa2XJGMhBMuEdoOiuZ8wEwTBxVQ==
+"@heroicons/vue@^2.1.3":
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/@heroicons/vue/-/vue-2.1.3.tgz#7553aea937bf23013b44ab3787ce181a45188356"
+  integrity sha512-CP4ipIwFbV4NEn8ULUCN110wkV0wZq6dsViDL3HwgIh+jn5yQGlRm6QaRN+Mv+o+UsUBbRDei3Je/q0NZHf5Gg==
 
 "@highlightjs/vue-plugin@^2.1.0":
   version "2.1.0"
@@ -1967,10 +1967,10 @@ electron@*:
     "@types/node" "^20.9.0"
     extract-zip "^2.0.1"
 
-electron@^30.0.0-beta.1:
-  version "30.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-30.0.0-beta.1.tgz#77e45799389c14b3cf70f77288f5578d6ecc8d60"
-  integrity sha512-SfuIaCDMLbmwLhJNJ+kPdVZW0QkTUjk8+MueMOR3IL24MhOYPq4aiLv8CA6TnZkBwUbv1M11tRkY4BlzemYIsA==
+electron@^30.0.0-beta.2:
+  version "30.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-30.0.0-beta.2.tgz#1856cf6efe67fb645b1b47e54f85092e6bbc8b8d"
+  integrity sha512-jTBM8RJotaroZLGuWbp/lWWysSbXG/8YSNF5rXwtM1Q3r//IfhA4EFnQC4VgTAaADyFPIXyQgoIRYjukElcPlQ==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^20.9.0"
@@ -5364,10 +5364,10 @@ verror@^1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
-vite@5.2.2:
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-5.2.2.tgz#b98f8de352d22e21d99508274ddd053ef82bf238"
-  integrity sha512-FWZbz0oSdLq5snUI0b6sULbz58iXFXdvkZfZWR/F0ZJuKTSPO7v72QPXt6KqYeMFb0yytNp6kZosxJ96Nr/wDQ==
+vite@5.2.4:
+  version "5.2.4"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-5.2.4.tgz#cd4065f8ae2164bcd4fe04570066351fc5c62f72"
+  integrity sha512-vjFghvHWidBTinu5TCymJk/lRHlR5ljqB83yugr0HA1xspUPdOZHqbqDLnZ8f9/jINrtFHTCYYyIUi+o+Q5iyg==
   dependencies:
     esbuild "^0.20.1"
     postcss "^8.4.36"
