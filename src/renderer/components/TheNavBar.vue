@@ -5,7 +5,7 @@ import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
 import { useSettingStore } from "@/store/setting";
 import GlobalSearch from "@/components/GlobalSearch.vue";
 import TheNavBarListening from "@/components/TheNavBarListening.vue";
-import HeaderGlobalFilter from "@/components/HeaderGlobalFilter.vue";
+import HeaderGlobalFilter from "@/components/HeaderColorsFilter.vue";
 
 defineProps({
     hasColor: {
