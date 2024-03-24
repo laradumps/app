@@ -34,6 +34,33 @@ const tips = ref([
             </li>
             <li>${i18n.t("doc.run")} <code class="bg-base-300 p-1 rounded">global-laradumps install</code></li>
         </div>
+    </div>`,
+    `<div>
+        <div class="space-y-3 text-base-content">
+            <div class="font-semibold text-base">${i18n.t("doc.select_your_preferred_theme")}</div>
+            <li>
+                <code class="bg-base-300 p-1 rounded">Menu -> Theme</code>
+            </li>
+            <li><code class="bg-base-300 p-1 rounded">light, dark, dracula, dim, laravel ...</code></li>
+        </div>
+    </div>`,
+    `<div>
+        <div class="space-y-3 text-base-content">
+            <div class="font-semibold text-base">${i18n.t("doc.change_your_ide_at_runtime")}</div>
+            <li>
+                <code class="bg-base-300 p-1 rounded">Menu -> IDE</code>
+            </li>
+            <li><code class="bg-base-300 p-1 rounded">PHPStorm, vs code, vs code remove ...</code></li>
+        </div>
+    </div>`,
+    `<div>
+        <div class="space-y-3 text-base-content">
+            <div class="font-semibold text-base">${i18n.t("doc.install_laravel")}</div>
+            <li>
+                <code class="bg-base-300 p-1 rounded">composer require laradumps/laradumps ^3.0 --dev</code>
+            </li>
+            <li>${i18n.t("doc.run")} <code class="bg-base-300 p-1 rounded">php artisan ds:init $(pwd)</code></li>
+        </div>
     </div>`
 ]);
 

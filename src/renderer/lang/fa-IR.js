@@ -9,15 +9,12 @@ export default {
         customize_shortcuts: "سفارشی‌سازی میانبرها در تنظیمات > میانبرها",
         available: "در دسترس",
         shortcuts_list: "پاک کردن همه، حالت تاریک، همیشه در بالا",
-        add_project_here: "پروژه خود را در اینجا اضافه کنید",
-        run_in_php_project: "در پروژه PHP خود، اجرا کنید",
-        finish_setting_env_vars: "به برنامه برگردید و تنظیم متغیرهای محیطی را تکمیل کنید",
         install_laradumps_globally: "نصب لارادامپس به صورت سراسری",
         run: "اجرا",
         run_global_laradumps_install: "اجرای دستور نصب لارادامپس به صورت سراسری",
-        update_laradumps_environments: "به‌روزرسانی محیط‌های لارادامپس در تنظیمات",
-        choose_project: "پروژه خود را انتخاب کنید",
-        update_keys: "به‌روزرسانی کلیدها"
+        select_your_preferred_theme: "Select your preferred theme",
+        change_your_ide_at_runtime: "Change your IDE at runtime",
+        install_laravel: "Install on Laravel"
     },
     footer: {
         support_laradumps: "حمایت از لارادامپس",

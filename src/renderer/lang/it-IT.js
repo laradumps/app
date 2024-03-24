@@ -9,15 +9,12 @@ export default {
         customize_shortcuts: "Personalizza le tue scorciatoie in Impostazioni > Scorciatoie",
         available: "Disponibile",
         shortcuts_list: "Cancella tutto, Dark mode, Sempre in evidenza",
-        add_project_here: "Aggiungi qui il tuo progetto",
-        run_in_php_project: "Nel tuo progetto PHP, esegui",
-        finish_setting_env_vars: "Torna all'app e completa l'impostazione delle variabili di ambiente",
         install_laradumps_globally: "Installa LaraDumps globalmente",
         run: "Esegui",
         run_global_laradumps_install: "Esegui l'installazione global-laradumps",
-        update_laradumps_environments: "Aggiorna l'ambiente di LaraDumps in Impostazioni",
-        choose_project: "Scegli il tuo progetto",
-        update_keys: "Aggiorna le chiavi"
+        select_your_preferred_theme: "Select your preferred theme",
+        change_your_ide_at_runtime: "Change your IDE at runtime",
+        install_laravel: "Install on Laravel"
     },
     footer: {
         support_laradumps: "Supporta LaraDumps",

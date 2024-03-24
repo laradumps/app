@@ -9,15 +9,12 @@ export default {
         customize_shortcuts: "在设置 > 快捷键中自定义你的快捷键",
         available: "可用",
         shortcuts_list: "清除全部、深色模式、始终置顶",
-        add_project_here: "在此处添加你的项目",
-        run_in_php_project: "在你的PHP项目中运行",
-        finish_setting_env_vars: "回到应用程序并完成环境变量设置",
         install_laradumps_globally: "全局安装LaraDumps",
         run: "运行",
         run_global_laradumps_install: "运行全局LaraDumps安装",
-        update_laradumps_environments: "在设置中更新LaraDumps环境",
-        choose_project: "选择你的项目",
-        update_keys: "更新密钥"
+        select_your_preferred_theme: "Select your preferred theme",
+        change_your_ide_at_runtime: "Change your IDE at runtime",
+        install_laravel: "Install on Laravel"
     },
     footer: {
         support_laradumps: "支持LaraDumps",

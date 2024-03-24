@@ -9,15 +9,12 @@ export default {
         customize_shortcuts: "Personalize seus atalhos em Configurações > Atalhos",
         available: "Disponíveis",
         shortcuts_list: "Limpar tudo, Modo escuro, Sempre no topo",
-        add_project_here: "Adicione seu Projeto aqui",
-        run_in_php_project: "No seu Projeto PHP, execute",
-        finish_setting_env_vars: "Volte para o aplicativo e conclua a configuração das variáveis de ambiente",
         install_laradumps_globally: "Instale o LaraDumps globalmente",
         run: "run",
         run_global_laradumps_install: "Execute global-laradumps install",
-        update_laradumps_environments: "Atualize os ambientes do LaraDumps em Configurações",
-        choose_project: "Escolha seu Projeto",
-        update_keys: "Atualize as chaves"
+        select_your_preferred_theme: "Select your preferred theme",
+        change_your_ide_at_runtime: "Change your IDE at runtime",
+        install_laravel: "Install on Laravel"
     },
     footer: {
         support_laradumps: "Dê uma estrela",

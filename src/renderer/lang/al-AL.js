@@ -9,15 +9,12 @@ export default {
         customize_shortcuts: "Përshtat shkurtesat tuaja në Cilësimet > Shkurtesat",
         available: "E disponueshme",
         shortcuts_list: "Pastro të gjitha, modalitet i errët, lart në çdo kohë",
-        add_project_here: "Shto projektin këtu",
-        run_in_php_project: "Ekzekuto në projektin tuaj PHP",
-        finish_setting_env_vars: "Kthehuni në aplikacionin tuaj dhe përfundoni konfigurimin e variablave të mjedisit",
         install_laradumps_globally: "Instalo LaraDumps globalisht",
         run: "Ekzekuto",
         run_global_laradumps_install: "Ekzekuto instalimin global të LaraDumps",
-        update_laradumps_environments: "Përditëso mjediset e LaraDumps në Cilësimet",
-        choose_project: "Zgjidh projektin tënd",
-        update_keys: "Përditëso çelësat"
+        select_your_preferred_theme: "Select your preferred theme",
+        change_your_ide_at_runtime: "Change your IDE at runtime",
+        install_laravel: "Install on Laravel"
     },
     footer: {
         support_laradumps: "Mbështet LaraDumps",

@@ -8,16 +8,13 @@ export default {
         global_shortcuts: "Global shortcuts",
         customize_shortcuts: "Customize your shortcuts in Settings > Shortcuts",
         available: "Available",
-        shortcuts_list: "Clear All, Dark Mode, Always on top",
-        add_project_here: "Add your Project here",
-        run_in_php_project: "In your PHP Project, run",
-        finish_setting_env_vars: "Go back to the app and finish setting environment variables",
+        shortcuts_list: "Clear All, Always on top",
         install_laradumps_globally: "Install LaraDumps globally",
         run: "run",
         run_global_laradumps_install: "Run global-laradumps install",
-        update_laradumps_environments: "Update LaraDumps environments in Settings",
-        choose_project: "Choose your Project",
-        update_keys: "Update the keys"
+        select_your_preferred_theme: "Select your preferred theme",
+        change_your_ide_at_runtime: "Change your IDE at runtime",
+        install_laravel: "Install on Laravel"
     },
     footer: {
         support_laradumps: "Support LaraDumps",

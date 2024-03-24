@@ -9,15 +9,12 @@ export default {
         customize_shortcuts: "Kustomisasi pintasan Anda di Pengaturan > Shortcuts",
         available: "Tersedia",
         shortcuts_list: "Bersihkan Semua, Mode Gelap, Selalu di atas",
-        add_project_here: "Tambahkan Proyek Anda di sini",
-        run_in_php_project: "Di Proyek PHP Anda, jalankan",
-        finish_setting_env_vars: "Kembali ke aplikasi dan selesaikan pengaturan environment variables",
         install_laradumps_globally: "Instalasi LaraDumps secara global",
         run: "jalankan",
         run_global_laradumps_install: "jalankan global-laradumps install",
-        update_laradumps_environments: "Perbaharui LaraDumps environments di Pengaturan",
-        choose_project: "Pilih Proyek Anda",
-        update_keys: "Perbaharui kunci"
+        select_your_preferred_theme: "Select your preferred theme",
+        change_your_ide_at_runtime: "Change your IDE at runtime",
+        install_laravel: "Install on Laravel"
     },
     footer: {
         support_laradumps: "Dukung LaraDumps",
