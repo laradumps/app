@@ -653,7 +653,8 @@ onMounted(() => {
                                 <div
                                     class="mb-[60px] w-full"
                                     :class="{
-                                        'flex flex-col-reverse': reorderStore.reverse
+                                        'flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries',
+                                        'flex' : screenStore.screen !== 'Queries'
                                     }"
                                     v-if="payload.length > 0 && !settingStore.setting"
                                 >

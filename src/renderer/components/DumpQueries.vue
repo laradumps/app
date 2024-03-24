@@ -53,7 +53,7 @@ const formatSql = computed(() => {
             v-if="formatted"
             class="flex relative group select-none"
         >
-            <code class='language-sql !leading-4 text-base-content !text-xs' v-html="formatSql"></code>
+            <code class='language-sql !leading-4 text-base-content !text-xs formatted' v-html="formatSql"></code>
         </pre>
 
         <div v-if="!formatted">
@@ -111,10 +111,19 @@ const formatSql = computed(() => {
 </template>
 
 <style>
+code {
+    @apply !font-light tracking-wider
+}
 .hljs-keyword {
-    @apply !text-primary;
+    @apply !text-base-content;
 }
 .hljs-string {
+    @apply !text-base-content;
+}
+.formatted .hljs-keyword {
+    @apply !text-primary;
+}
+.formatted .hljs-string {
     @apply !text-secondary;
 }
 </style>
