@@ -50,7 +50,7 @@ const tips = ref([
             <li>
                 <code class="bg-base-300 p-1 rounded">Menu -> IDE</code>
             </li>
-            <li><code class="bg-base-300 p-1 rounded">PHPStorm, vs code, vs code remove ...</code></li>
+            <li><code class="bg-base-300 p-1 rounded">PHPStorm, vs code, vs code remote ...</code></li>
         </div>
     </div>`,
     `<div>

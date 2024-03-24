@@ -42,8 +42,10 @@ const isOrange = computed(() => ({
 </script>
 
 <template>
-    <div class="space-x-2 flex justify-end items-center"
-         v-if="screenStore.screen !== 'Queries' && hasColor">
+    <div
+        class="space-x-2 flex justify-end items-center"
+        v-if="screenStore.screen !== 'Queries' && hasColor"
+    >
         <div class="h-full grid gap-2 grid-cols-3 tiny:grid-cols-6 opacity-75">
             <button
                 :class="isDark"

@@ -4,17 +4,20 @@
         v-for="(screen, index) in screens"
         :key="screen"
     >
-        <button
+        <div
+            class="tabs"
+            @click="$emit('toggleScreen', screen.screen_name)"
             :class="{
                 'ml-1': index > 0,
-                'active !btn-primary': screen.screen_name === screenStore.screen && screens.length > 1,
-                'transition-all ease-in duration-100 !btn-primary': screen.screen_name === screenStore.screen && index > 0
+                'tabs-bordered': screen.screen_name === screenStore.screen && screens.length > 1
             }"
-            class="btn btn-neutral uppercase tracking-wider !text-[9px] !flex rounded-none"
-            @click="$emit('toggleScreen', screen.screen_name)"
         >
-            <span v-text="screen.screen_name"></span>
-        </button>
+            <input
+                type="radio"
+                class="tab uppercase font-normal tracking-wider text-[0.65rem]"
+                :aria-label="screen.screen_name"
+            />
+        </div>
     </div>
 </template>
 
@@ -38,7 +41,7 @@ const props = defineProps({
 });
 </script>
 <style scoped>
-.active {
-    @apply border-2;
+.tab {
+    @apply px-3;
 }
 </style>

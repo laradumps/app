@@ -112,7 +112,7 @@ const formatSql = computed(() => {
 
 <style>
 code {
-    @apply !font-light tracking-wider
+    @apply !font-light tracking-wider;
 }
 .hljs-keyword {
     @apply !text-base-content;
