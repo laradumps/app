@@ -45,7 +45,7 @@ const clear = () => {
             </a>
         </nav>
 
-        <div class="flex gap-4 items-center">
+        <div class="flex gap-1 items-center">
             <HeaderGlobalFilter v-bind:has-color="hasColor" />
 
             <!-- global search -->

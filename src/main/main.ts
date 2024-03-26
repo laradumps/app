@@ -29,7 +29,7 @@ let savedDumpWindow: BrowserWindow;
 let tray: Electron.Tray;
 let isQuiting: boolean;
 
-const minPackageVersion = "2.0.0";
+const minPackageVersion = "2000";
 
 storage.setDataPath(os.tmpdir());
 
@@ -60,6 +60,7 @@ ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
 
     const packageVersion: string = arg.content.meta.laradumps_version.replaceAll(".", "");
 
+    console.log(packageVersion);
     if (packageVersion === "000") {
         event.sender.send(arg.type, arg);
     }

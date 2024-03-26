@@ -112,17 +112,17 @@ const setActiveProject = () => {
         <div
             tabindex="0"
             role="button"
-            class="m-1"
+            class="p-2"
         >
             <SignalSlashIcon
                 v-if="selectedProject.length === 0"
-                class="w-5 text-error hover:text-primary"
+                class="w-4 text-error hover:text-primary"
             />
 
             <SignalIcon
                 v-else
                 :class="{ 'animate-pulse text-primary': newProject }"
-                class="w-5 text-success hover:text-primary"
+                class="w-4 text-success hover:text-primary"
             />
         </div>
         <ul
@@ -157,7 +157,7 @@ const setActiveProject = () => {
                     :key="env.value"
                     v-for="env in environments"
                 >
-                    <label class="label !justify-start !text-left">
+                    <label class="label !justify-start !text-left mt-0.5" :class="{'bg-base-200' : env.selected}">
                         <input
                             type="checkbox"
                             :name="`env-` + env.id"
@@ -165,7 +165,7 @@ const setActiveProject = () => {
                             class="toggle toggle-xs toggle-primary"
                             @change="save"
                         />
-                        <span class="text-[9px] tracking-wide font-light uppercase">{{ env.value.replaceAll("_", " ") }}</span>
+                        <span class="text-[10px] tracking-wider font-bold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
                     </label>
                 </li>
             </div>

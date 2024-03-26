@@ -19,6 +19,7 @@ import { Payload } from "@/types/Payload";
 import DumpMail from "@/components/DumpMail.vue";
 import CopyToClick from "@/components/CopyToClick.vue";
 import { MinusIcon, PlusIcon } from "@heroicons/vue/16/solid";
+import DumpDump from "@/components/DumpDump.vue";
 
 const timeStore = useTimeStore();
 
@@ -107,9 +108,10 @@ const color = computed(() => {
                     'collapse-open': open,
                     'collapse-close': open
                 }"
+                @dblclick="open = !open"
                 class="collapse bg-base-200 bg-laravel"
             >
-                <div class="!cursor-default collapse-title gap-2 text-base-content opacity-70 justify-between items-center font-light flex text-[11px]">
+                <div class="select-none !cursor-default collapse-title gap-2 text-base-content opacity-70 justify-between items-center font-light flex text-[11px]">
                     <ul
                         class="flex gap-6"
                         v-bind:style="props.payload.ide_handle ? 'list-style-type: disc;' : ''"
@@ -159,7 +161,7 @@ const color = computed(() => {
                         <div class="gap-4 flex absolute right-0 z-100">
                             <div
                                 v-if="!['queries', 'table_v2'].includes(props.payload.type)"
-                                class="transition-all items-center text-base-content"
+                                class="transition-all -mt-2 items-center text-base-content"
                             >
                                 <div
                                     class="right-0 absolute opacity-0"
@@ -187,13 +189,12 @@ const color = computed(() => {
                                 </div>
                             </div>
                         </div>
-                        <div
-                            v-if="props.payload.type === 'dump'"
+                        <DumpDump
                             :id="`dump-content-${props.payload.sf_dump_id}`"
-                            v-show="props.payload.dump?.dump !== ''"
                             class="text-base-content break-all"
-                            v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"
-                        ></div>
+                            v-if="props.payload.type === `dump`"
+                            :payload="payload"
+                        />
 
                         <DumpModel
                             :id="`dump-content-${props.payload.sf_dump_id}`"

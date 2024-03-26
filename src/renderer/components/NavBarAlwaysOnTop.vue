@@ -28,8 +28,9 @@ const toggleAlwaysOnTop = () => {
         :class="{
             '!text-primary': isAlwaysOnTop
         }"
+        class="p-2"
         @click="toggleAlwaysOnTop()"
     >
-        <IconPin class="w-3 cursor-pointer text-content hover:opacity-75" />
+        <IconPin class="w-3.5 cursor-pointer text-content hover:opacity-75" />
     </button>
 </template>

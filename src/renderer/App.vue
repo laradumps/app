@@ -42,6 +42,7 @@ const screens = ref([]);
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
 const applicationPath = ref("");
+const packageShouldUpdated = ref(false);
 
 const screenStore = useScreenStore();
 const appearanceStore = useAppearanceStore();
@@ -369,7 +370,7 @@ onMounted(() => {
 
     window.ipcRenderer.on("app:theme-light", () => {
         if (appearanceStore.value === "auto") {
-            appearanceStore.setTheme("dim");
+            appearanceStore.setTheme("light");
         }
     });
 
@@ -418,10 +419,6 @@ onMounted(() => {
                 globalPayload.color = content.color;
                 return payload;
             });
-    });
-
-    window.ipcRenderer.on("ipc:package-down", (event, arg) => {
-        console.log(arg);
     });
 
     window.ipcRenderer.on("table", (event, { content }) => {
@@ -474,6 +471,19 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("screen", (event, { content }) => dispatch("screen", event, content));
+
+    window.ipcRenderer.on("cols", (event, { content }) => {
+        const filterPayload: Payload = payload.value.filter((payload) => payload.id === content.id)[0];
+
+        let originalContent = filterPayload.dump?.original_content;
+
+        payload.value
+            .filter((globalPayload: Payload) => globalPayload.id === content.id)
+            .map((globalPayload: Payload) => {
+                globalPayload.cols = content.cols;
+                return payload;
+            });
+    });
 
     window.ipcRenderer.on("json_validate", (event, { content }) => {
         let toValidate;
@@ -577,6 +587,8 @@ onMounted(() => {
             class="absolute w-full h-full min-h-full"
         >
             <div>
+                <ThePackageUpdateInfo />
+
                 <TheNavBar
                     v-if="!settingStore.setting"
                     v-model:in-saved-dumps-window="inSavedDumpsWindow"

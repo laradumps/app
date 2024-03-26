@@ -74,7 +74,7 @@ export default {
     package_update_info: {
         lara_dumps_package_update_available: "LaraDumps Package Update Available!",
         hey_dev: "Hey dev!",
-        there_is_a_new_release_of_lara_dumps_laravel_package: "There is a new release of LaraDumps Laravel Package.",
+        there_is_a_new_release_of_lara_dumps_laravel_package: "There is a new release of LaraDumps Package.",
         consider_upgrading_to_enjoy_the_benefits_of_new_features_bug_fixes_and_improvements: "Consider upgrading to enjoy the benefits of new features, bug fixes and improvements.",
         to_upgrade_lara_dumps_in_your_project_run: "To upgrade LaraDumps in your project, run:",
         installed_version: "Installed version:",

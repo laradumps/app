@@ -7,7 +7,13 @@ const props = defineProps<{
     payload: Payload;
 }>();
 
-const value = computed(() => JSON.parse(props.payload.json?.string ?? ""));
+const value = computed(() => {
+    if (typeof props.payload.json?.string == "object") {
+        return props.payload.json?.string;
+    }
+
+    return JSON.parse(props.payload.json?.string ?? "");
+});
 </script>
 
 <style>

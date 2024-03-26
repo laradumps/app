@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { defineProps, nextTick, onMounted, ref } from "vue";
 import { Payload } from "@/types/Payload";
+import VueJsonPretty from "vue-json-pretty";
+import { createApp, defineComponent } from "vue";
 
 const props = defineProps<{
     payload: Payload;
@@ -14,7 +16,9 @@ onMounted(() => {
 
     nextTick(() => {
         tableV2.elements.forEach((el) => {
-            window.Sfdump(el);
+            try {
+                window.Sfdump(el);
+            } catch (e) {}
         });
     });
 });
@@ -54,7 +58,22 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
 
             td.innerHTML = preAttributes.outerHTML;
         } else {
-            td.innerHTML = val[0];
+            if (typeof val[0] === "object") {
+                const container = document.createElement("div");
+                const VueJsonPrettyComponent = defineComponent(VueJsonPretty);
+                const propsData = {
+                    showIcon: true,
+                    showLength: true,
+                    showLine: false,
+                    data: val[0]
+                };
+                const vueInstance = createApp(VueJsonPrettyComponent, propsData);
+                const mountedComponent = vueInstance.mount(container);
+                td.appendChild(container);
+                elements.push(mountedComponent);
+            } else {
+                td.innerHTML = val[0];
+            }
         }
 
         tr.appendChild(td);
