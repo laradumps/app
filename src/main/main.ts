@@ -60,7 +60,6 @@ ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
 
     const packageVersion: string = arg.content.meta.laradumps_version.replaceAll(".", "");
 
-    console.log(packageVersion);
     if (packageVersion === "000") {
         event.sender.send(arg.type, arg);
     }
