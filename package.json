@@ -71,7 +71,7 @@
         "@vitejs/plugin-vue": "5.0.4",
         "@vue/compiler-sfc": "3.4.21",
         "daisyui": "^4.9.0",
-        "electron": "^30.0.0-beta.3",
+        "electron": "^30.0.0-beta.2",
         "electron-builder": "24.13.3",
         "esbuild": "0.20.2",
         "eslint": "^8.57.0",

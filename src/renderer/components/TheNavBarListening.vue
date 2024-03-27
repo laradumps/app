@@ -22,8 +22,6 @@ const environments = ref<Environment[]>([]);
 onMounted(async () => {
     projects.value = [];
 
-    window.ipcRenderer.send("environment::get");
-
     window.ipcRenderer.on("app-setting:project-added", () => {
         window.ipcRenderer.send("environment::get");
 

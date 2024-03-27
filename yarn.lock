@@ -1987,10 +1987,10 @@ electron@*:
     "@types/node" "^20.9.0"
     extract-zip "^2.0.1"
 
-electron@^30.0.0-beta.3:
-  version "30.0.0-beta.2"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-30.0.0-beta.2.tgz#1856cf6efe67fb645b1b47e54f85092e6bbc8b8d"
-  integrity sha512-jTBM8RJotaroZLGuWbp/lWWysSbXG/8YSNF5rXwtM1Q3r//IfhA4EFnQC4VgTAaADyFPIXyQgoIRYjukElcPlQ==
+electron@^30.0.0-beta.2:
+  version "30.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-30.0.0-beta.3.tgz#9560ac91a75294e3262a49895e4c925f783fabb0"
+  integrity sha512-4nPjlajJGlnASovW2EYrPlVRJE33w1PZR+J7W+LVoWboIaQS5TtFG3Eug27dtXFBAeSU3QVAWjEHQdtV3CtUkA==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^20.9.0"

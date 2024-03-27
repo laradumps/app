@@ -575,6 +575,8 @@ onMounted(() => {
             return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
         }
     });
+
+    window.ipcRenderer.send("environment::get");
 });
 </script>
 <template>
