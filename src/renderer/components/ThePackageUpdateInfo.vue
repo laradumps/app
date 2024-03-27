@@ -41,7 +41,7 @@ function formatVersion(version: string) {
                         <span class="p-1.5 bg-base-200 text-md rounded mr-1 cursor-pointer leading-normal">
                             <button
                                 :title="$t('click_to_copy')"
-                                @click="$clipboard('composer require laradumps/laradumps ^3.0 -W', 'copyComposerIcon')"
+                                @click="$clipboard('composer require laradumps/laradumps ^3.0 --dev -W', 'copyComposerIcon')"
                             >
                                 <div class="flex justify-between gap-2">
                                     <span>composer require laradumps/laradumps ^3.0 --dev -W</span>
