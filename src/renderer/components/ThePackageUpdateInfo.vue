@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ClipboardIcon } from "@heroicons/vue/24/outline";
 import { ref } from "vue";
 
@@ -10,7 +10,7 @@ window.ipcRenderer.on("ipc:package-down", (event, arg) => {
     setTimeout(() => modal.value.showModal(), 0)
 });
 
-function formatVersion(version: string) {
+function formatVersion(version) {
     if (typeof version == "undefined") {
         return;
     }
@@ -71,14 +71,14 @@ function formatVersion(version: string) {
                     </div>
                     <div class="mt-5">
                         <p>
-                            {{ $t("package_update_info.installed_version") }}
+                            LaraDumps Core: {{ $t("package_update_info.installed_version") }}
                             <span
                                 class="font-semibold"
                                 v-text="formatVersion(updateInfo.packageVersion)"
                             ></span>
                         </p>
                         <p>
-                            {{ $t("package_update_info.minimum_required_version") }}
+                            LaraDumps Core: {{ $t("package_update_info.minimum_required_version") }}
                             <span
                                 class="font-semibold"
                                 v-text="formatVersion(updateInfo.minPackageVersion)"
