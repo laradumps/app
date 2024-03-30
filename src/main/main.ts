@@ -207,6 +207,8 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             win.webContents.openDevTools();
         }
+
+        win.webContents.openDevTools();
     });
 
     return win;
