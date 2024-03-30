@@ -8,7 +8,6 @@ import os from "os";
 import * as url from "url";
 import fs from "fs";
 
-import contextMenu from "electron-context-menu";
 import storage from "electron-json-storage";
 
 import { initSavedDumps } from "./window/saved-dumps";
@@ -22,6 +21,7 @@ import { createMenu } from "./main-menu";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
+const AutoLaunch = require("auto-launch");
 
 let mainWindow: BrowserWindow;
 let coffeeWindow: BrowserWindow;
@@ -33,25 +33,25 @@ const minPackageVersion = "2000";
 
 storage.setDataPath(os.tmpdir());
 
-const AutoLaunch = require("auto-launch");
+if (!isDev) {
+    const autoLauncher = new AutoLaunch({ name: "LaraDumps" });
 
-const autoLauncher = new AutoLaunch({ name: "LaraDumps" });
-
-ipcMain.on("main-menu:set-auto-launch", (event: Electron.IpcMainEvent, arg): void => {
-    arg.value === "disabled" ? autoLauncher.disable() : autoLauncher.enable();
-});
-
-autoLauncher
-    .isEnabled()
-    .then(function (isEnabled: boolean) {
-        if (isEnabled) {
-            return;
-        }
-        autoLauncher.enable();
-    })
-    .catch(function (err: any) {
-        console.error("autoLauncher", err);
+    ipcMain.on("main-menu:set-auto-launch", (event: Electron.IpcMainEvent, arg): void => {
+        arg.value === "disabled" ? autoLauncher.disable() : autoLauncher.enable();
     });
+
+    autoLauncher
+        .isEnabled()
+        .then(function (isEnabled: boolean) {
+            if (isEnabled) {
+                return;
+            }
+            autoLauncher.enable();
+        })
+        .catch(function (err: any) {
+            console.error("autoLauncher", err);
+        });
+}
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
     if (!Object.prototype.hasOwnProperty.call(arg.content, "meta")) {
@@ -109,7 +109,9 @@ function createWindow(): BrowserWindow {
 
     if (isDev) {
         win.loadURL(`http://localhost:4999`);
-    } else {
+    }
+
+    if (!isDev) {
         win.loadURL(
             url.format({
                 pathname: join(__dirname, "app", "index.html"),
