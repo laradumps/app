@@ -64,6 +64,8 @@ onMounted(() => {
     window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
     window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
 
+    window.ipcRenderer.send("environment::get");
+
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
 
     window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
@@ -247,7 +249,7 @@ onMounted(() => {
             .filter((globalPayload: Payload) => globalPayload.id === content.id)
             .map((globalPayload: Payload) => {
                 globalPayload.validate_json = true;
-                globalPayload.is_json = (typeof toValidate != undefined) ? Helper.isJson(toValidate) : false;
+                globalPayload.is_json = typeof toValidate != undefined ? Helper.isJson(toValidate) : false;
                 return payload;
             });
     });
@@ -321,8 +323,6 @@ onMounted(() => {
             return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
         }
     });
-
-    window.ipcRenderer.send("environment::get");
 });
 
 window.ipcRenderer.on("changeTheme", (event, args) => {
@@ -659,7 +659,6 @@ function registerDefaultLocalShortcuts() {
                                     class="mb-[60px] w-full"
                                     :class="{
                                         'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries',
-                                        flex: screenStore.screen !== 'Queries'
                                     }"
                                     v-if="payload.length > 0 && !settingStore.setting"
                                 >

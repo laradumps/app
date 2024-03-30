@@ -108,10 +108,13 @@ const color = computed(() => {
                     'collapse-open': open,
                     'collapse-close': open
                 }"
-                @dblclick="open = !open"
                 class="collapse bg-base-200 bg-laravel"
             >
-                <div class="select-none !cursor-default collapse-title gap-2 text-base-content opacity-70 justify-between items-center font-light flex text-[11px]">
+                <div
+                    @dblclick="open = !open"
+                    title="Double click to collapse"
+                    class="select-none hover:opacity-75 !cursor-default collapse-title gap-2 text-base-content opacity-70 justify-between items-center font-light flex text-[11px]"
+                >
                     <ul
                         class="flex gap-6"
                         v-bind:style="props.payload.ide_handle ? 'list-style-type: disc;' : ''"
