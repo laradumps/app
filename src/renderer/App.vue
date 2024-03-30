@@ -21,28 +21,12 @@ import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
 import AutoUpdater from "@/components/AutoUpdater.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
-import { usePrivacy } from "@/store/privacy";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import QueriesControl from "@/components/QueriesControl.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
-
-const defaultScreen = ref({
-    screen_name: "screen 1",
-    raise_in: 0
-});
-
-const appVersion = ref("");
-const localShortcutList = ref([]);
-
-const payload = ref([]);
-const screens = ref([]);
-const dumpsBag = ref([]);
-const inSavedDumpsWindow = ref(false);
-const applicationPath = ref("");
-const packageShouldUpdated = ref(false);
 
 const screenStore = useScreenStore();
 const appearanceStore = useAppearanceStore();
@@ -52,10 +36,294 @@ const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const IDEHandler = useIDEHandlerStore();
-
 const { locale } = useI18n({ useScope: "global" });
-
 const localeStore = useI18nStore();
+
+const defaultScreen = ref({
+    screen_name: "screen 1",
+    raise_in: 0
+});
+const appVersion = ref("");
+const localShortcutList = ref([]);
+
+const payload = ref([]);
+const screens = ref([]);
+const dumpsBag = ref([]);
+const inSavedDumpsWindow = ref(false);
+const applicationPath = ref("");
+
+onBeforeMount(() => {
+    locale.value = localeStore.value;
+    localStorage.updateAvailable = "false";
+});
+
+onMounted(() => {
+    IDEHandler.setValue(localStorage.IDEHandler);
+    appearanceStore.setTheme(localStorage.theme);
+
+    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
+    window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
+
+    setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
+
+    window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
+        if (arg === 0) {
+            registerDefaultLocalShortcuts();
+        }
+    });
+
+    window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
+
+    window.ipcRenderer.send("main:os-temp-dir");
+
+    window.ipcRenderer.on("app:os-temp-dir", (event, value) => getZoomLevel(value));
+
+    window.ipcRenderer.send("main:get-app-version");
+
+    window.ipcRenderer.on("main:app-version", (event, arg) => setTimeout(() => (appVersion.value = `v${arg.version}`), 100));
+
+    window.ipcRenderer.on("main:update-available", (event, arg) => {
+        console.log(arg);
+    });
+
+    addScreen(defaultScreen.value);
+
+    window.ipcRenderer.on("app:load-all-saved-dumps", async (event, args) => {
+        inSavedDumpsWindow.value = true;
+        clearAll();
+
+        await loadAllSavedPayload();
+    });
+
+    window.ipcRenderer.on("app:render-all-saved-dumps", (event, content) => {
+        try {
+            const payload = JSON.parse(content);
+            dispatch(payload.type, event, payload);
+        } catch (e) {
+            console.log(e);
+        }
+    });
+
+    window.ipcRenderer.on("clear", () => clearAll());
+
+    window.ipcRenderer.on("app:local-shortcut-execute::clearAll", () => clearAll());
+
+    if (appearanceStore.value === "auto") {
+        window.ipcRenderer.send("native-theme", appearanceStore.value);
+    }
+
+    window.ipcRenderer.on("app:theme-dark", () => {
+        if (appearanceStore.value === "auto") {
+            appearanceStore.setTheme("dim");
+        }
+    });
+
+    window.ipcRenderer.on("app:theme-light", () => {
+        if (appearanceStore.value === "auto") {
+            appearanceStore.setTheme("light");
+        }
+    });
+
+    window.ipcRenderer.on("app::toggle-reorder", () => reorderStore.toggle());
+    window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
+    window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
+
+    window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
+        localShortcutList.value = arg;
+    });
+
+    window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));
+
+    window.ipcRenderer.on("mailable", (event, { content }) => dispatch("mailable", event, content));
+
+    window.ipcRenderer.on("table_v2", (event, { content }) => dispatch("table_v2", event, content));
+
+    window.ipcRenderer.on("mail", (event, { content }) => {
+        const filterPayload: boolean =
+            payload.value.filter((payload: Payload) => {
+                if (payload.hasOwnProperty("mail")) {
+                    return payload.mail.messageId == content.mail.messageId;
+                }
+
+                return false;
+            }).length > 0;
+
+        if (!filterPayload) {
+            dispatch("mail", event, content);
+        }
+    });
+
+    window.ipcRenderer.on("label", (event, { content }) => {
+        payload.value
+            .filter((globalPayload) => globalPayload.id === content.id)
+            .map((globalPayload) => {
+                globalPayload.label = content.label.label;
+                return payload;
+            });
+    });
+
+    window.ipcRenderer.on("color", (event, { content }) => {
+        payload.value
+            .filter((globalPayload: Payload) => globalPayload.id === content.id)
+            .map((globalPayload: Payload) => {
+                globalPayload.color = content.color;
+                return payload;
+            });
+    });
+
+    window.ipcRenderer.on("table", (event, { content }) => {
+        payload.value = payload.value.filter((payload: Payload) => {
+            if (payload.type === "table") {
+                return payload.type === "table";
+            }
+            return true;
+        });
+
+        dispatch("table", event, content);
+    });
+
+    window.ipcRenderer.on("http-client", (event, { content }) => dispatch("http-client", event, content));
+
+    window.ipcRenderer.on("model", (event, { content }) => dispatch("model", event, content));
+
+    window.ipcRenderer.on("log_application", (event, { content }) => {
+        let color;
+        switch (content.log_application.level) {
+            case "error":
+            case "critical":
+            case "alert":
+            case "emergency":
+                color = "red";
+                break;
+            case "warning":
+                color = "orange";
+                break;
+            case "notice":
+                color = "green";
+                break;
+            case "info":
+                color = "blue";
+                break;
+            case "debug":
+                color = "gray";
+                break;
+            default:
+        }
+
+        content.color = color;
+        content.label = content.log_application.level;
+
+        dispatch("log_application", event, content);
+    });
+
+    window.ipcRenderer.on("color", (event, { content }) => {
+        payload.value.filter((globalPayload: Payload) => globalPayload.id === content.id).map((globalPayload: Payload) => (globalPayload.color = content.color.color));
+    });
+
+    window.ipcRenderer.on("screen", (event, { content }) => dispatch("screen", event, content));
+
+    window.ipcRenderer.on("cols", (event, { content }) => {
+        payload.value
+            .filter((globalPayload: Payload) => globalPayload.id === content.id)
+            .map((globalPayload: Payload) => {
+                globalPayload.cols = content.cols;
+                return payload;
+            });
+    });
+
+    window.ipcRenderer.on("json_validate", (event, { content }) => {
+        let toValidate: string | undefined;
+        const filterPayload: Payload = payload.value.filter((payload) => payload.id === content.id)[0];
+
+        if (filterPayload.hasOwnProperty("dump")) {
+            toValidate = filterPayload.dump?.original_content;
+        }
+
+        if (filterPayload.hasOwnProperty("json")) {
+            toValidate = filterPayload.json?.original_content;
+        }
+
+        payload.value
+            .filter((globalPayload: Payload) => globalPayload.id === content.id)
+            .map((globalPayload: Payload) => {
+                globalPayload.validate_json = true;
+                globalPayload.is_json = (typeof toValidate != undefined) ? Helper.isJson(toValidate) : false;
+                return payload;
+            });
+    });
+
+    window.ipcRenderer.on("validate", (event, { content }) => {
+        let textContent;
+        const filterPayload = payload.value.filter((globalPayload: Payload) => globalPayload.id === content.id)[0];
+
+        if (filterPayload.hasOwnProperty("json")) {
+            textContent = filterPayload.json.original_content;
+        }
+
+        if (filterPayload.hasOwnProperty("dump")) {
+            textContent = filterPayload.dump.original_content;
+        }
+
+        const strContains = Helper.strContains(textContent, content.validate.content, {
+            is_case_sensitive: content.validate.is_case_sensitive,
+            is_whole_word: content.validate.is_whole_word
+        });
+
+        payload.value
+            .filter((globalPayload: Payload) => globalPayload.id === content.id)
+            .map((globalPayload: Payload) => {
+                globalPayload.str_contains = strContains;
+                return payload;
+            });
+    });
+
+    window.ipcRenderer.on("json", (event, { content }) => dispatch("screen", event, content));
+
+    window.ipcRenderer.on("queries", (event, { content }) => dispatch("queries", event, content));
+
+    window.ipcRenderer.on("query", (event, { content }) => dispatch("query", event, content));
+
+    window.ipcRenderer.on("coffee", (event, arg) => window.ipcRenderer.send("main:grab-a-coffee", arg));
+
+    window.ipcRenderer.on("time_track", (event, { content }) => {
+        const exist = payload.value.filter((globalPayload: Payload) => globalPayload.label === content.time_track.label);
+
+        if (exist.length === 0) {
+            dispatch("time-track", event, content);
+
+            return;
+        }
+
+        const _end = moment.unix(content.time_track.end_time);
+        const _start = moment.unix(exist[0].time_track.time);
+        const duration = moment.duration(_start.diff(_end));
+        const elapsedTime = humanizeDuration(duration.asMilliseconds());
+
+        payload.value.filter((globalPayload) => globalPayload.label === content.time_track.label).map((globalPayload) => (globalPayload.time_track.elapsed_time = elapsedTime));
+    });
+
+    window.ipcRenderer.on("coffee", (event, arg) => {
+        window.ipcRenderer.send("coffee:grab-a-coffee", arg);
+    });
+
+    //* * Convert shortcuts to Electron format **/
+    Object.defineProperty(String.prototype, "beautifyShortcut", {
+        value() {
+            if (process.platform === "darwin") {
+                return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
+            }
+            return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
+        }
+    });
+
+    Object.defineProperty(String.prototype, "toElectronFormat", {
+        value() {
+            return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
+        }
+    });
+
+    window.ipcRenderer.send("environment::get");
+});
 
 window.ipcRenderer.on("changeTheme", (event, args) => {
     window.ipcRenderer.send("main-menu:set-theme-selected", { value: args.value });
@@ -252,7 +520,7 @@ const loadAllSavedPayload = (): void => {
  * Sets the zoom level of the application window and handles zooming using the mousewheel event.
  * @param {number} value - The initial zoom factor.
  */
-const getZoomLevel = (value): void => {
+const getZoomLevel = (value: number): void => {
     let zoomFactor = value;
 
     window.webFrame.setZoomFactor(zoomFactor);
@@ -301,283 +569,6 @@ function registerDefaultLocalShortcuts() {
     };
     window.ipcRenderer.send("local-shortcut:set", shortcutClearAllObject);
 }
-
-onBeforeMount(() => {
-    locale.value = localeStore.value;
-    localStorage.updateAvailable = "false";
-});
-
-onMounted(() => {
-    IDEHandler.setValue(localStorage.IDEHandler);
-    appearanceStore.setTheme(localStorage.theme);
-
-    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
-    window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
-
-    setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
-
-    window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
-        if (arg === 0) {
-            registerDefaultLocalShortcuts();
-        }
-    });
-
-    window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
-
-    window.ipcRenderer.send("main:os-temp-dir");
-
-    window.ipcRenderer.on("app:os-temp-dir", (event, value) => getZoomLevel(value));
-
-    window.ipcRenderer.send("main:get-app-version");
-
-    window.ipcRenderer.on("main:app-version", (event, arg) => setTimeout(() => (appVersion.value = `v${arg.version}`), 100));
-
-    window.ipcRenderer.on("main:update-available", (event, arg) => {
-        console.log(arg);
-    });
-
-    addScreen(defaultScreen.value);
-
-    window.ipcRenderer.on("app:load-all-saved-dumps", async (event, args) => {
-        inSavedDumpsWindow.value = true;
-        clearAll();
-
-        await loadAllSavedPayload();
-    });
-
-    window.ipcRenderer.on("app:render-all-saved-dumps", (event, content) => {
-        try {
-            const payload = JSON.parse(content);
-            dispatch(payload.type, event, payload);
-        } catch (e) {
-            console.log(e);
-        }
-    });
-
-    window.ipcRenderer.on("clear", () => clearAll());
-
-    window.ipcRenderer.on("app:local-shortcut-execute::clearAll", () => clearAll());
-
-    if (appearanceStore.value === "auto") {
-        window.ipcRenderer.send("native-theme", appearanceStore.value);
-    }
-
-    window.ipcRenderer.on("app:theme-dark", () => {
-        if (appearanceStore.value === "auto") {
-            appearanceStore.setTheme("dim");
-        }
-    });
-
-    window.ipcRenderer.on("app:theme-light", () => {
-        if (appearanceStore.value === "auto") {
-            appearanceStore.setTheme("light");
-        }
-    });
-
-    window.ipcRenderer.on("app::toggle-reorder", () => reorderStore.toggle());
-    window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
-    window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
-
-    window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
-        localShortcutList.value = arg;
-    });
-
-    window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));
-
-    window.ipcRenderer.on("mailable", (event, { content }) => dispatch("mailable", event, content));
-
-    window.ipcRenderer.on("table_v2", (event, { content }) => dispatch("table_v2", event, content));
-
-    window.ipcRenderer.on("mail", (event, { content }) => {
-        const filterPayload: boolean =
-            payload.value.filter((payload: Payload) => {
-                if (payload.hasOwnProperty("mail")) {
-                    return payload.mail.messageId == content.mail.messageId;
-                }
-
-                return false;
-            }).length > 0;
-
-        if (!filterPayload) {
-            dispatch("mail", event, content);
-        }
-    });
-
-    window.ipcRenderer.on("label", (event, { content }) => {
-        payload.value
-            .filter((globalPayload) => globalPayload.id === content.id)
-            .map((globalPayload) => {
-                globalPayload.label = content.label.label;
-                return payload;
-            });
-    });
-
-    window.ipcRenderer.on("color", (event, { content }) => {
-        payload.value
-            .filter((globalPayload: Payload) => globalPayload.id === content.id)
-            .map((globalPayload: Payload) => {
-                globalPayload.color = content.color;
-                return payload;
-            });
-    });
-
-    window.ipcRenderer.on("table", (event, { content }) => {
-        payload.value = payload.value.filter((payload: Payload) => {
-            if (payload.type === "table") {
-                return payload.type === "table";
-            }
-            return true;
-        });
-
-        dispatch("table", event, content);
-    });
-
-    window.ipcRenderer.on("http-client", (event, { content }) => dispatch("http-client", event, content));
-
-    window.ipcRenderer.on("model", (event, { content }) => dispatch("model", event, content));
-
-    window.ipcRenderer.on("log_application", (event, { content }) => {
-        let color;
-        switch (content.log_application.level) {
-            case "error":
-            case "critical":
-            case "alert":
-            case "emergency":
-                color = "red";
-                break;
-            case "warning":
-                color = "orange";
-                break;
-            case "notice":
-                color = "green";
-                break;
-            case "info":
-                color = "blue";
-                break;
-            case "debug":
-                color = "gray";
-                break;
-            default:
-        }
-
-        content.color = color;
-        content.label = content.log_application.level;
-
-        dispatch("log_application", event, content);
-    });
-
-    window.ipcRenderer.on("color", (event, { content }) => {
-        payload.value.filter((globalPayload: Payload) => globalPayload.id === content.id).map((globalPayload: Payload) => (globalPayload.color = content.color.color));
-    });
-
-    window.ipcRenderer.on("screen", (event, { content }) => dispatch("screen", event, content));
-
-    window.ipcRenderer.on("cols", (event, { content }) => {
-        const filterPayload: Payload = payload.value.filter((payload) => payload.id === content.id)[0];
-
-        let originalContent = filterPayload.dump?.original_content;
-
-        payload.value
-            .filter((globalPayload: Payload) => globalPayload.id === content.id)
-            .map((globalPayload: Payload) => {
-                globalPayload.cols = content.cols;
-                return payload;
-            });
-    });
-
-    window.ipcRenderer.on("json_validate", (event, { content }) => {
-        let toValidate;
-        const filterPayload: Payload = payload.value.filter((payload) => payload.id === content.id)[0];
-
-        if (filterPayload.hasOwnProperty("dump")) {
-            toValidate = filterPayload.dump?.original_content;
-        }
-
-        if (filterPayload.hasOwnProperty("json")) {
-            toValidate = filterPayload.json?.original_content;
-        }
-
-        payload.value
-            .filter((globalPayload: Payload) => globalPayload.id === content.id)
-            .map((globalPayload: Payload) => {
-                globalPayload.validate_json = true;
-                globalPayload.is_json = Helper.isJson(toValidate);
-                return payload;
-            });
-    });
-
-    window.ipcRenderer.on("validate", (event, { content }) => {
-        let textContent;
-        const filterPayload = payload.value.filter((globalPayload: Payload) => globalPayload.id === content.id)[0];
-
-        if (filterPayload.hasOwnProperty("json")) {
-            textContent = filterPayload.json.original_content;
-        }
-
-        if (filterPayload.hasOwnProperty("dump")) {
-            textContent = filterPayload.dump.original_content;
-        }
-
-        const strContains = Helper.strContains(textContent, content.validate.content, {
-            is_case_sensitive: content.validate.is_case_sensitive,
-            is_whole_word: content.validate.is_whole_word
-        });
-
-        payload.value
-            .filter((globalPayload: Payload) => globalPayload.id === content.id)
-            .map((globalPayload: Payload) => {
-                globalPayload.str_contains = strContains;
-                return payload;
-            });
-    });
-
-    window.ipcRenderer.on("json", (event, { content }) => dispatch("screen", event, content));
-
-    window.ipcRenderer.on("queries", (event, { content }) => dispatch("queries", event, content));
-
-    window.ipcRenderer.on("query", (event, { content }) => dispatch("query", event, content));
-
-    window.ipcRenderer.on("coffee", (event, arg) => window.ipcRenderer.send("main:grab-a-coffee", arg));
-
-    window.ipcRenderer.on("time_track", (event, { content }) => {
-        const exist = payload.value.filter((globalPayload: Payload) => globalPayload.label === content.time_track.label);
-
-        if (exist.length === 0) {
-            dispatch("time-track", event, content);
-
-            return;
-        }
-
-        const _end = moment.unix(content.time_track.end_time);
-        const _start = moment.unix(exist[0].time_track.time);
-        const duration = moment.duration(_start.diff(_end));
-        const elapsedTime = humanizeDuration(duration.asMilliseconds());
-
-        payload.value.filter((globalPayload) => globalPayload.label === content.time_track.label).map((globalPayload) => (globalPayload.time_track.elapsed_time = elapsedTime));
-    });
-
-    window.ipcRenderer.on("coffee", (event, arg) => {
-        window.ipcRenderer.send("coffee:grab-a-coffee", arg);
-    });
-
-    //* * Convert shortcuts to Electron format **/
-    Object.defineProperty(String.prototype, "beautifyShortcut", {
-        value() {
-            if (process.platform === "darwin") {
-                return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
-            }
-            return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
-        }
-    });
-
-    Object.defineProperty(String.prototype, "toElectronFormat", {
-        value() {
-            return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
-        }
-    });
-
-    window.ipcRenderer.send("environment::get");
-});
 </script>
 <template>
     <div
@@ -667,7 +658,7 @@ onMounted(() => {
                                 <div
                                     class="mb-[60px] w-full"
                                     :class="{
-                                        'flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries',
+                                        'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries',
                                         flex: screenStore.screen !== 'Queries'
                                     }"
                                     v-if="payload.length > 0 && !settingStore.setting"

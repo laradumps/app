@@ -1,6 +1,12 @@
-const isJson = (str: string): boolean => {
+const isJson = (str: string | undefined): boolean => {
+    if (typeof str === undefined) {
+        return false;
+    }
+
     try {
-        JSON.parse(str);
+        if (str != null) {
+            JSON.parse(str);
+        }
     } catch (e) {
         return false;
     }

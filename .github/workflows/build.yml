@@ -13,7 +13,7 @@ jobs:
 
         steps:
             - name: Check out Git repository
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             - name: Install Node.js and Yarn
               uses: actions/setup-node@v4
@@ -37,20 +37,20 @@ jobs:
               run: |
                   sudo snap install snapcraft --classic
 
-            - name: Build Linux
+            - name: 🐧 Build Linux
               if: matrix.os == 'ubuntu-latest'
               run: npm run release-linux
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
                   SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
-            - name: Build Win
+            - name: 💻 Build Windows
               if: matrix.os == 'windows-latest'
               run: npm run release-win
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-            - name: Build Mac
+            - name:  Build Mac
               if: matrix.os == 'macos-latest'
               run: npm run release-mac
               env:
