@@ -155,7 +155,10 @@ const setActiveProject = () => {
                     :key="env.value"
                     v-for="env in environments"
                 >
-                    <label class="label !justify-start !text-left mt-0.5" :class="{'bg-base-200' : env.selected}">
+                    <label
+                        class="label !justify-start !text-left mt-0.5"
+                        :class="{ 'bg-base-200': env.selected }"
+                    >
                         <input
                             type="checkbox"
                             :name="`env-` + env.id"

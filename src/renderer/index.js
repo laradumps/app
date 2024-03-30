@@ -16,9 +16,6 @@ import itIT from "@/lang/it-IT";
 import zhCN from "@/lang/zh-CN";
 import idID from "@/lang/id-ID";
 import alAL from "@/lang/al-AL";
-import VueDiff from "vue-diff";
-
-import "vue-diff/dist/index.css";
 
 import clipboard from "@/plugins/clipboard";
 
@@ -54,7 +51,6 @@ app.use(hljsVuePlugin);
 app.use(pinia);
 app.use(i18n);
 app.use(clipboard);
-app.use(VueDiff);
 
 app.mount("#app");
 
