@@ -95,5 +95,12 @@ export default {
         cancel: "Batal"
     },
     yes: "Ya",
-    no: "Tidak"
+    no: "Tidak",
+    app_update_info: {
+        update_available: 'Update Available',
+        not_now: 'Not now',
+        install: 'Install',
+        version: 'Version',
+        release_date: 'Release Date'
+    }
 };
