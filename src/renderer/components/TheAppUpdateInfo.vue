@@ -112,10 +112,14 @@ window.ipcRenderer.on("autoUpdater:download-complete", (event, args: CompletedIn
 </template>
 <style>
 #releaseNotes h2 {
-    @apply text-lg font-semibold leading-tight;
+    font-size: 1.125rem !important;
+    line-height: 1.75rem !important;
+    font-weight: 600 !important;
 }
 
-#releaseNotes ol, #releaseNotes ul, #releaseNotes menu {
-    @apply list-disc pl-9;
+#releaseNotes ol, ul, menu {
+    list-style: disc !important;
+    margin-left: 36px !important;;
+    padding: 4px;
 }
 </style>
