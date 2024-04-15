@@ -95,5 +95,12 @@ export default {
         cancel: "取消"
     },
     yes: "是",
-    no: "否"
+    no: "否",
+    app_update_info: {
+        update_available: 'Update Available',
+        not_now: 'Not now',
+        install: 'Install',
+        version: 'Version',
+        release_date: 'Release Date'
+    }
 };

@@ -97,7 +97,7 @@ function formatVersion(version) {
                 </p>
                 <div class="modal-action">
                     <form method="dialog">
-                        <button class="btn">Ok</button>
+                        <button class="btn btn-primary">Ok</button>
                     </form>
                 </div>
             </div>

@@ -19,11 +19,11 @@ import TheNavBar from "@/components/TheNavBar.vue";
 import AppSetting from "@/components/AppSetting.vue";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
-import AutoUpdater from "@/components/AutoUpdater.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import QueriesControl from "@/components/QueriesControl.vue";
+import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -582,6 +582,8 @@ function registerDefaultLocalShortcuts() {
             <div>
                 <ThePackageUpdateInfo />
 
+                <TheAppUpdateInfo />
+
                 <TheNavBar
                     v-if="!settingStore.setting"
                     v-model:in-saved-dumps-window="inSavedDumpsWindow"
@@ -606,8 +608,6 @@ function registerDefaultLocalShortcuts() {
                         >
                             <AppSetting :local-shortcut-list="localShortcutList" />
                         </div>
-
-                        <AutoUpdater />
 
                         <!-- screen buttons -->
                         <div
@@ -658,7 +658,7 @@ function registerDefaultLocalShortcuts() {
                                 <div
                                     class="mb-[60px] w-full"
                                     :class="{
-                                        'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries',
+                                        'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
                                     }"
                                     v-if="payload.length > 0 && !settingStore.setting"
                                 >

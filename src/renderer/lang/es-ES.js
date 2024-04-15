@@ -97,5 +97,12 @@ export default {
         cancel: "Cancelar"
     },
     yes: "Sí",
-    no: "No"
+    no: "No",
+    app_update_info: {
+        update_available: 'Update Available',
+        not_now: 'Not now',
+        install: 'Install',
+        version: 'Version',
+        release_date: 'Release Date'
+    }
 };
