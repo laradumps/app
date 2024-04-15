@@ -117,7 +117,7 @@ window.ipcRenderer.on("autoUpdater:download-complete", (event, args: CompletedIn
     font-weight: 600 !important;
 }
 
-#releaseNotes ol, ul, menu {
+#releaseNotes ul {
     list-style: disc !important;
     margin-left: 36px !important;;
     padding: 4px;
