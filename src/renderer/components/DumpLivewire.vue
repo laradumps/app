@@ -11,7 +11,7 @@ const selected = ref({});
 const sfDumps = ref([])
 
 const select = (value: string) => {
-    selected.value = props.livewireRequests.filter((req) => req.request_id === value)[0];
+    selected.value = props.livewireRequests.filter((request) => request.livewire.content.request === value)[0];
 
     nextTick(() => {
         const sfDumpsErrorsId: string = selected.value.livewire.content.errors[1]
@@ -40,10 +40,12 @@ onUnmounted(() => {
         class="flex px-3 gap-3 h-fit divide-x divide-base-300"
     >
         <ul class="menu w-40 p-0 [&_li>*]:rounded-none [&_li>*]:py-0 text-lg">
-            <li v-for="request in props.livewireRequests.slice().reverse()">
+            <li :key="request.livewire.content.request"
+                :id="request.livewire.content.request"
+                :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': request.livewire.content.request == selected.livewire.content.request }"
+                v-for="request in props.livewireRequests.slice().reverse()">
                 <a
-                    :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': request.request_id == selected?.request_id }"
-                    @click="select(request.request_id)"
+                    @click="select(request.livewire.content.request)"
                     ><{{ request.livewire.content.name }}></a
                 >
             </li>
@@ -126,7 +128,7 @@ onUnmounted(() => {
                 >
                     <DumpQuery
                         v-for="query in selected.livewire.content.queries"
-                        class="w-full border-b py-3"
+                        class="w-full border-b mb-3 pb-3"
                         :query="query"
                     />
                 </div>
