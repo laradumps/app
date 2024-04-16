@@ -565,6 +565,7 @@ const clearAll = (): void => {
     screenStore.activeScreen("screen 1");
     globalSearchStore.clear();
     colorStore.clear();
+    livewireRequests.value = []
 };
 
 function registerDefaultLocalShortcuts() {
