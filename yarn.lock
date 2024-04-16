@@ -1563,10 +1563,10 @@ culori@^3:
   resolved "https://registry.npmjs.org/culori/-/culori-3.3.0.tgz"
   integrity sha512-pHJg+jbuFsCjz9iclQBqyL3B2HLCBF71BwVNujUYEvCeQMvV97R59MNK3R2+jgJ3a1fcZgI9B3vYgz8lzr/BFQ==
 
-daisyui@^4.9.0:
-  version "4.9.0"
-  resolved "https://registry.npmjs.org/daisyui/-/daisyui-4.9.0.tgz"
-  integrity sha512-9JsDx4E+30kPxThE+6yEwQokqg1957uwTx/skP2RE98fG6Ten6U+S9YXeQg1a3CI958aF5aOb0oEA+KZFfrZUA==
+daisyui@^4.10.2:
+  version "4.10.2"
+  resolved "https://registry.npmjs.org/daisyui/-/daisyui-4.10.2.tgz"
+  integrity sha512-eCWS1W/JPyxW9IvlgW5m0R6rp9ZhRsBTW37rvEUthckkjsV04u8XipV519OoccSA46ixhSJa3q7XLI1WUFtRCA==
   dependencies:
     css-selector-tokenizer "^0.8"
     culori "^3"
@@ -1864,10 +1864,10 @@ electron-window-state@^5.0.3:
     jsonfile "^4.0.0"
     mkdirp "^0.5.1"
 
-electron@*, electron@^30.0.0-beta.8:
-  version "30.0.0-beta.8"
-  resolved "https://registry.npmjs.org/electron/-/electron-30.0.0-beta.8.tgz"
-  integrity sha512-G2IMMxUVJopiskD5G5iCQh71u1Emp+Q7nS1bWRU/9sK8bKwW1qtyBb3qoq0X9bd7y0LuKUb79AOr3Ix+J6EKaQ==
+electron@*, electron@^30.0.0:
+  version "30.0.0"
+  resolved "https://registry.npmjs.org/electron/-/electron-30.0.0.tgz"
+  integrity sha512-GRwKphq/TUhSlb44OwSckXKl50f5OR/pm9MvF3rBLyqcxwfu7L11xejrZ0hDea1eKyCkzGd4B+cIqaQiDguPEA==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^20.9.0"
