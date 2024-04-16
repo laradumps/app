@@ -42,7 +42,7 @@ onUnmounted(() => {
         <ul class="menu w-40 p-0 [&_li>*]:rounded-none [&_li>*]:py-0 text-lg">
             <li :key="request.livewire.content.request"
                 :id="request.livewire.content.request"
-                :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': request.livewire.content.request == selected.livewire.content.request }"
+                :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': false }"
                 v-for="request in props.livewireRequests.slice().reverse()">
                 <a
                     @click="select(request.livewire.content.request)"
@@ -102,6 +102,7 @@ onUnmounted(() => {
                 </div>
 
                 <input
+                    v-if="selected.livewire.content.errors.length > 0"
                     type="radio"
                     name="livewire_tab"
                     role="tab"
@@ -116,6 +117,7 @@ onUnmounted(() => {
                 </div>
 
                 <input
+                    v-if="selected.livewire.content.queries.length > 0"
                     type="radio"
                     name="livewire_tab"
                     role="tab"
@@ -131,6 +133,21 @@ onUnmounted(() => {
                         class="w-full border-b mb-3 pb-3"
                         :query="query"
                     />
+                </div>
+
+                <input
+                    v-if="selected.livewire.content.events.length > 0"
+                    type="radio"
+                    name="livewire_tab"
+                    role="tab"
+                    class="tab uppercase font-normal tracking-wider text-[0.65rem]"
+                    aria-label="Events"
+                />
+                <div
+                    role="tabpanel"
+                    class="tab-content bg-base-100 border-base-300 rounded-box p-3"
+                >
+                    {{ selected.livewire.content.events[0] }}
                 </div>
             </div>
         </div>
