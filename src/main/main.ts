@@ -124,7 +124,7 @@ function createWindow(): BrowserWindow {
         autoUpdater.autoDownload = false;
 
         autoUpdater.on("update-available", async (updateInfo: UpdateInfo): Promise<void> => {
-            globalUpdateInfo = updateInfo
+            globalUpdateInfo = updateInfo;
             mainWindow.webContents.send("update-available", updateInfo);
         });
 

@@ -35,7 +35,7 @@ onUpdated(() => {
 
 <template>
     <div>
-        <ul class="menu bg-base-200 w-40 p-0 [&_li>*]:rounded-none">
+        <ul class="menu w-40 p-0 [&_li>*]:rounded-none [&_li>*]:py-0 text-lg">
             <li
                 v-for="(item, index) in allRequests"
                 class="text-[0.65rem]"

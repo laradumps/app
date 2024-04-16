@@ -25,6 +25,7 @@ import DumpScreens from "@/components/DumpScreens.vue";
 import QueriesControl from "@/components/QueriesControl.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
+import SvgLivewire from "@/components/Svg/SvgLivewire.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -52,7 +53,7 @@ const screens = ref([]);
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
 const applicationPath = ref("");
-const livewireRequests = ref([])
+const livewireRequests = ref([]);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
@@ -137,8 +138,8 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("livewire", (event, { content }) => {
-        livewireRequests.value.push(content)
-        dispatch("livewire", event, content)
+        livewireRequests.value.push(content);
+        dispatch("livewire", event, content);
     });
 
     window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));
@@ -686,12 +687,9 @@ function registerDefaultLocalShortcuts() {
                                         class="pt-2"
                                         v-if="screenStore.screen === 'Livewire'"
                                     >
-                                        <DumpLivewire
-                                            v-model:livewire-requests="livewireRequests"
-                                        />
+                                        <DumpLivewire v-model:livewire-requests="livewireRequests" />
                                     </div>
                                 </div>
-
                             </div>
 
                             <div

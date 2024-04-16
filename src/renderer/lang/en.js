@@ -97,10 +97,10 @@ export default {
     yes: "Yes",
     no: "No",
     app_update_info: {
-        update_available: 'Update Available',
-        not_now: 'Not now',
-        install: 'Install',
-        version: 'Version',
-        release_date: 'Release Date'
+        update_available: "Update Available",
+        not_now: "Not now",
+        install: "Install",
+        version: "Version",
+        release_date: "Release Date"
     }
 };
