@@ -2,6 +2,7 @@
 import { defineProps, nextTick, onMounted, onUnmounted, ref } from "vue";
 import SvgLivewire from "@/components/Svg/SvgLivewire.vue";
 import DumpQuery from "@/components/DumpQuery.vue";
+import VueJsonPretty from "vue-json-pretty";
 
 const props = defineProps<{
     livewireRequests: [];
@@ -42,7 +43,7 @@ onUnmounted(() => {
         <ul class="menu w-40 p-0 [&_li>*]:rounded-none [&_li>*]:py-0 text-lg">
             <li :key="request.livewire.content.request"
                 :id="request.livewire.content.request"
-                :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': false }"
+                :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': request.livewire.content.request == selected.livewire.content.request }"
                 v-for="request in props.livewireRequests.slice().reverse()">
                 <a
                     @click="select(request.livewire.content.request)"
@@ -147,7 +148,19 @@ onUnmounted(() => {
                     role="tabpanel"
                     class="tab-content bg-base-100 border-base-300 rounded-box p-3"
                 >
-                    {{ selected.livewire.content.events[0] }}
+                    <div class="py-2" v-for="event in selected.livewire.content.events">
+                        <div class="font-semibold uppercase tracking-wider text-[0.65rem]">{{ event.name }}</div>
+
+                        <div class="p-3 bg-base-200/30 rounded-sm">
+                            <VueJsonPretty
+                                :show-icon="true"
+                                :show-lenght="true"
+                                :show-line="false"
+                                :data="event.params"
+                            />
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
