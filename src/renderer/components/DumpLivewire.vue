@@ -14,19 +14,19 @@ const updating = ref(false);
 
 const select = (value: string) => {
     nextTick(() => {
-        selected.value = props.livewireRequests.filter((request) => request.livewire.content.request === value)[0];
+        selected.value = props.livewireRequests.filter((request) => request.livewire.request === value)[0];
 
         updating.value = true;
 
-        const sfDumpsErrorsId: string = selected.value.livewire.content.errors[1]
-        const sfDumpsPropertiesId: string  = selected.value.livewire.content.properties[1]
+        const sfDumpsErrorsId: string = selected.value.livewire.errors[1]
+        const sfDumpsPropertiesId: string  = selected.value.livewire.properties[1]
 
-        if (!sfDumps.value.includes(sfDumpsErrorsId) && selected.value.livewire.content?.errors.length > 0) {
+        if (!sfDumps.value.includes(sfDumpsErrorsId) && selected.value.livewire.errors.length > 0) {
             sfDumps.value.push(sfDumpsErrorsId)
             window.Sfdump(`sf-dump-${sfDumpsErrorsId}`);
         }
 
-        if (!sfDumps.value.includes(sfDumpsPropertiesId) && selected.value.livewire.content?.properties.length > 0) {
+        if (!sfDumps.value.includes(sfDumpsPropertiesId) && selected.value.livewire.properties.length > 0) {
             sfDumps.value.push(sfDumpsPropertiesId)
             window.Sfdump(`sf-dump-${sfDumpsPropertiesId}`);
         }
@@ -50,13 +50,13 @@ onUnmounted(() => {
         class="flex px-3 gap-3 h-fit divide-x divide-base-300"
     >
         <ul class="menu w-40 p-0 [&_li>*]:rounded-none [&_li>*]:py-0 text-lg">
-            <li :key="request.livewire.content.request"
-                :id="request.livewire.content.request"
-                :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': request?.livewire?.content.request == selected?.livewire?.content.request }"
+            <li :key="request.livewire.request"
+                :id="request.livewire.request"
+                :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': request?.livewire?.request == selected?.livewire?.request }"
                 v-for="request in livewireRequests.slice().reverse()">
                 <a
-                    @click="select(request.livewire.content.request)"
-                    ><{{ request.livewire.content.name }}></a
+                    @click="select(request.livewire.request)"
+                    ><{{ request.livewire.name }}></a
                 >
             </li>
 
@@ -84,7 +84,7 @@ onUnmounted(() => {
                 >
                     <div class="overflow-x-auto flex flex-col gap-3 w-full py-3">
                         <div
-                            v-for="profile in selected?.livewire.content.profile"
+                            v-for="profile in selected?.livewire.profile"
                             :class="[profile.classes]"
                             class="border-l-4 flex justify-between rounded p-2 px-3"
                         >
@@ -108,11 +108,11 @@ onUnmounted(() => {
                     role="tabpanel"
                     class="tab-content bg-base-100 border-base-300 rounded-box p-3"
                 >
-                    <div v-html="selected.livewire.content.properties[0]"></div>
+                    <div v-html="selected.livewire.properties[0]"></div>
                 </div>
 
                 <input
-                    v-if="selected.livewire.content.errors.length > 0"
+                    v-if="selected.livewire.errors.length > 0"
                     type="radio"
                     name="livewire_tab"
                     role="tab"
@@ -123,11 +123,11 @@ onUnmounted(() => {
                     role="tabpanel"
                     class="tab-content bg-base-100 border-base-300 rounded-box p-3"
                 >
-                    <div v-html="selected.livewire.content.errors[0]"></div>
+                    <div v-html="selected.livewire.errors[0]"></div>
                 </div>
 
                 <input
-                    v-if="selected.livewire.content.queries.length > 0"
+                    v-if="selected.livewire.queries.length > 0"
                     type="radio"
                     name="livewire_tab"
                     role="tab"
@@ -139,14 +139,14 @@ onUnmounted(() => {
                     class="tab-content bg-base-100 border-base-300 rounded-box p-3"
                 >
                     <DumpQuery
-                        v-for="query in selected.livewire.content.queries"
+                        v-for="query in selected.livewire.queries"
                         class="w-full border-b mb-3 pb-3"
                         :query="query"
                     />
                 </div>
 
                 <input
-                    v-if="selected.livewire.content.events.length > 0"
+                    v-if="selected.livewire.events.length > 0"
                     type="radio"
                     name="livewire_tab"
                     role="tab"
@@ -157,7 +157,7 @@ onUnmounted(() => {
                     role="tabpanel"
                     class="tab-content bg-base-100 border-base-300 rounded-box p-3"
                 >
-                    <div class="py-2" v-for="event in selected.livewire.content.events">
+                    <div class="py-2" v-for="event in selected.livewire.events">
                         <div class="font-semibold uppercase tracking-wider text-[0.65rem]">{{ event.name }}</div>
 
                         <div class="p-3 bg-base-200/30 rounded-sm">
