@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineProps, nextTick, onMounted, onUnmounted, onUpdated, ref } from "vue";
 import SvgLivewire from "@/components/Svg/SvgLivewire.vue";
 import DumpQuery from "@/components/DumpQuery.vue";
 import VueJsonPretty from "vue-json-pretty";
@@ -10,11 +10,14 @@ const props = defineProps<{
 
 const selected = ref({});
 const sfDumps = ref([])
+const updating = ref(false);
 
 const select = (value: string) => {
-    selected.value = props.livewireRequests.filter((request) => request.livewire.content.request === value)[0];
-
     nextTick(() => {
+        selected.value = props.livewireRequests.filter((request) => request.livewire.content.request === value)[0];
+
+        updating.value = true;
+
         const sfDumpsErrorsId: string = selected.value.livewire.content.errors[1]
         const sfDumpsPropertiesId: string  = selected.value.livewire.content.properties[1]
 
@@ -30,6 +33,12 @@ const select = (value: string) => {
     });
 };
 
+onMounted(() => {
+    if (!updating.value) {
+        selected.value = props.livewireRequests.slice().reverse()[0] ?? [];
+    }
+});
+
 onUnmounted(() => {
     sfDumps.value = []
 })
@@ -43,8 +52,8 @@ onUnmounted(() => {
         <ul class="menu w-40 p-0 [&_li>*]:rounded-none [&_li>*]:py-0 text-lg">
             <li :key="request.livewire.content.request"
                 :id="request.livewire.content.request"
-                :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': request.livewire.content.request == selected.livewire.content.request }"
-                v-for="request in props.livewireRequests.slice().reverse()">
+                :class="{ 'font-semibold hover:bg-primary bg-primary text-primary-content': request?.livewire?.content.request == selected?.livewire?.content.request }"
+                v-for="request in livewireRequests.slice().reverse()">
                 <a
                     @click="select(request.livewire.content.request)"
                     ><{{ request.livewire.content.name }}></a
@@ -57,7 +66,7 @@ onUnmounted(() => {
         <div class="w-full h-full px-3">
 
             <div
-                v-if="selected.livewire"
+                v-if="selected?.livewire"
                 role="tablist"
                 class="tabs tabs-lifted w-full"
             >
