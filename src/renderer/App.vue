@@ -24,6 +24,7 @@ import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import QueriesControl from "@/components/QueriesControl.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
+import DumpLivewire from "@/components/DumpLivewire.vue";
 
 markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
@@ -51,6 +52,7 @@ const screens = ref([]);
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
 const applicationPath = ref("");
+const livewireRequests = ref([])
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
@@ -132,6 +134,11 @@ onMounted(() => {
 
     window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
         localShortcutList.value = arg;
+    });
+
+    window.ipcRenderer.on("livewire", (event, { content }) => {
+        livewireRequests.value.push(content)
+        dispatch("livewire", event, content)
     });
 
     window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));
@@ -497,7 +504,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     });
 
     if (interval.value == null) {
-        if (content.type === "queries") {
+        if (content.type === "queries" || content.type === "livewire") {
             interval.value = setInterval(() => {
                 setTimeout(() => toggleScreen("screen 1"), 50);
                 setTimeout(() => toggleScreen(content.screen.screen_name), 100);
@@ -670,11 +677,21 @@ function registerDefaultLocalShortcuts() {
                                     >
                                         <DumpItem
                                             :in-saved-dumps-window="inSavedDumpsWindow"
-                                            v-show="screenStore.screen === 'Queries' ? payload.request_id === timeStore.selected : true"
+                                            v-show="screenStore.screen === 'Queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'Livewire'"
                                             :payload="payload"
                                         />
                                     </div>
+
+                                    <div
+                                        class="pt-2"
+                                        v-if="screenStore.screen === 'Livewire'"
+                                    >
+                                        <DumpLivewire
+                                            v-model:livewire-requests="livewireRequests"
+                                        />
+                                    </div>
                                 </div>
+
                             </div>
 
                             <div

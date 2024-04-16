@@ -11,12 +11,6 @@ body {
     padding-bottom: 3rem;
 }
 
-table {
-    text-indent: 0;
-    border-color: inherit;
-    border-collapse: inherit;
-}
-
 ::-webkit-scrollbar {
     width: 11px;
     height: 11px;

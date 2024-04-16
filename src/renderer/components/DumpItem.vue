@@ -20,6 +20,7 @@ import DumpMail from "@/components/DumpMail.vue";
 import CopyToClick from "@/components/CopyToClick.vue";
 import { MinusIcon, PlusIcon } from "@heroicons/vue/16/solid";
 import DumpDump from "@/components/DumpDump.vue";
+import DumpLivewire from "@/components/DumpLivewire.vue";
 
 const timeStore = useTimeStore();
 
@@ -192,6 +193,7 @@ const color = computed(() => {
                                 </div>
                             </div>
                         </div>
+
                         <DumpDump
                             :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="text-base-content break-all"
