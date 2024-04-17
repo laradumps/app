@@ -12,6 +12,7 @@ import en from "@/lang/en";
 import ptBR from "@/lang/pt-BR";
 import esES from "@/lang/es-ES";
 import faIR from "@/lang/fa-IR";
+import arAR from "@/lang/ar-AR";
 import itIT from "@/lang/it-IT";
 import zhCN from "@/lang/zh-CN";
 import idID from "@/lang/id-ID";
@@ -38,6 +39,7 @@ const i18n = createI18n({
         pt_BR: ptBR,
         es_ES: esES,
         fa_IR: faIR,
+        ar_AR: arAR,
         it_IT: itIT,
         zh_CN: zhCN,
         id_ID: idID,
