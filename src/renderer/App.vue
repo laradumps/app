@@ -508,7 +508,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         if (content.type === "queries" || content.type === "livewire") {
             interval.value = setInterval(() => {
                 setTimeout(() => toggleScreen("screen 1"), 50);
-                setTimeout(() => toggleScreen(content.screen.screen_name), 100);
+                setTimeout(() => toggleScreen(content.screen.screen_name), 50);
             }, 700);
         } else {
             setTimeout(() => toggleScreen(content.screen.screen_name), 50);
@@ -565,7 +565,7 @@ const clearAll = (): void => {
     screenStore.activeScreen("screen 1");
     globalSearchStore.clear();
     colorStore.clear();
-    livewireRequests.value = []
+    livewireRequests.value = [];
 };
 
 function registerDefaultLocalShortcuts() {

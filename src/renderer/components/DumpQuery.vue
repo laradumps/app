@@ -1,3 +1,44 @@
+<script setup lang="ts">
+import { computed, defineProps, ref } from "vue";
+import { format } from "sql-formatter";
+import { BarsArrowDownIcon, BarsArrowUpIcon } from "@heroicons/vue/20/solid";
+import { ClipboardIcon } from "@heroicons/vue/24/outline";
+
+import hljs from "highlight.js/lib/core";
+import sql from "highlight.js/lib/languages/sql";
+hljs.registerLanguage("sql", sql);
+
+const formatted = ref(false);
+const copied = ref(false);
+
+const showCopiedBadge = () => {
+    copied.value = true;
+    setTimeout(() => (copied.value = false), 2000);
+};
+
+const toggleFormatted = () => {
+    formatted.value = !formatted.value;
+};
+
+const props = defineProps<{
+    query: Object;
+}>();
+
+const formatSql = computed(() => {
+    const sql = props?.query.query;
+
+    if (sql != null) {
+        let formattedSql = formatted.value
+            ? format(sql, {
+                  indent: "    "
+              })
+            : sql;
+
+        return hljs.highlight(formattedSql, { language: "sql" }).value;
+    }
+});
+</script>
+
 <template>
     <div class="space-y-2 select-none">
         <div class="flex group justify-between items-center">
@@ -28,9 +69,7 @@
             <code class='language-sql !leading-4 text-base-content !text-xs formatted' v-html="formatSql"></code>
         </pre>
 
-        <div
-            v-if="!formatted"
-        >
+        <div v-if="!formatted">
             <code
                 class="widgets-sql !text-xs select-none"
                 v-html="formatSql"
@@ -39,47 +78,6 @@
     </div>
 </template>
 
-<script setup lang="ts">
-import { computed, defineProps, ref } from "vue";
-import { format } from "sql-formatter";
-import { BarsArrowDownIcon, BarsArrowUpIcon } from "@heroicons/vue/20/solid";
-import { ClipboardIcon } from "@heroicons/vue/24/outline";
-
-import hljs from "highlight.js/lib/core";
-import sql from "highlight.js/lib/languages/sql";
-hljs.registerLanguage("sql", sql);
-
-const formatted = ref(false);
-const copied = ref(false);
-
-const showCopiedBadge = () => {
-    copied.value = true;
-    setTimeout(() => (copied.value = false), 2000);
-};
-
-const toggleFormatted = () => {
-    formatted.value = !formatted.value;
-};
-
-const props = defineProps<{
-    query: Object;
-}>();
-
-const formatSql = computed(() => {
-    const sql = props?.query.query;
-
-    console.log(sql)
-    if (sql != null) {
-        let formattedSql = formatted.value
-            ? format(sql, {
-                  indent: "    "
-              })
-            : sql;
-
-        return hljs.highlight(formattedSql, { language: "sql" }).value;
-    }
-});
-</script>
 <style>
 code {
     @apply !font-light tracking-wider;

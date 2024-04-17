@@ -1,8 +1,10 @@
 const colors = require("tailwindcss/colors");
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 module.exports = {
     content: ["./src/renderer/*.vue", "./src/renderer/components/*.vue", "./src/renderer/views/*.vue"],
     darkMode: "class",
-    safelist: ["bg-black", "w-[1rem]", "h-[1rem]", "w-20", "gap-2", "border-accent", "border-primary", "border-secondary"],
+    safelist: ["bg-black", "w-[1rem]", "h-[1rem]", "w-20", "gap-2", "border-accent", "border-primary", "border-secondary", "border-neutral"],
     theme: {
         listStyleType: {
             none: "none",
@@ -18,7 +20,8 @@ module.exports = {
             300: "300"
         },
         screens: {
-            tiny: "340px"
+            xs: "475px",
+            ...defaultTheme.screens
         },
         extend: {
             colors: {

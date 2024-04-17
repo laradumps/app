@@ -8,7 +8,8 @@ const allRequests = computed(() => {
     let requests = timeStore.groups.map((group, index) => ({
         index: index + 1,
         id: group,
-        label: timeStore.getTime(group) + " - " + timeStore.getTotal(group).toFixed(2) + " ms"
+        hour: timeStore.getTime(group),
+        time: timeStore.getTotal(group).toFixed(2)
     }));
 
     requests.sort((a, b) => b.index - a.index);
@@ -35,15 +36,24 @@ onUpdated(() => {
 
 <template>
     <div>
-        <ul class="menu w-40 p-0 [&_li>*]:rounded-none [&_li>*]:py-0 text-lg">
+        <ul class="menu overflow-auto block w-52 p-0 [&_li>*]:rounded-none [&_li>*]:py-1 [&_li>*]:px-1">
             <li
                 v-for="(item, index) in allRequests"
-                class="text-[0.65rem]"
-                :class="{ 'font-semibold bg-primary text-primary-content': item.id === selected }"
+                class="text-base-content/80 hover:text-base-content"
+                :class="{ 'font-semibold bg-neutral !text-neutral-content': item.id === selected }"
                 @click="select(item)"
                 :key="index"
             >
-                <a v-text="item.label"></a>
+                <div class="flex justify-between">
+                    <a
+                        class="!text-xs !leading-6"
+                        v-text="item.hour"
+                    ></a>
+                    <a
+                        class="!text-xs !leading-6"
+                        v-text="item.time + ' ms'"
+                    ></a>
+                </div>
             </li>
         </ul>
     </div>
