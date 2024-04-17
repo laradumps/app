@@ -40,7 +40,7 @@ onUpdated(() => {
             <li
                 v-for="(item, index) in allRequests"
                 class="text-base-content/80 hover:text-base-content"
-                :class="{ 'font-semibold bg-neutral !text-neutral-content': item.id === selected }"
+                :class="{ 'font-semibold bg-base-300/40 !text-primary': item.id === selected }"
                 @click="select(item)"
                 :key="index"
             >

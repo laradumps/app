@@ -156,6 +156,11 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-2.0.2.tgz"
   integrity sha512-6EwiSjwWYP7pTckG6I5eyFANjPhmPjUX9JRLUSfNPC7FX7zK9gyZAfUEaECL6ALTpGX5AjnBq3C9XmVWPitNpw==
 
+"@interactjs/types@^1.10.27":
+  version "1.10.27"
+  resolved "https://registry.npmjs.org/@interactjs/types/-/types-1.10.27.tgz"
+  integrity sha512-BUdv0cvs4H5ODuwft2Xp4eL8Vmi3LcihK42z0Ft/FbVJZoRioBsxH+LlsBdK4tAie7PqlKGy+1oyOncu1nQ6eA==
+
 "@intlify/core-base@9.4.1":
   version "9.4.1"
   resolved "https://registry.npmjs.org/@intlify/core-base/-/core-base-9.4.1.tgz"

@@ -62,6 +62,7 @@
         "which": "^4.0.0"
     },
     "devDependencies": {
+        "@interactjs/types": "^1.10.27",
         "@types/electron": "^1.6.10",
         "@types/electron-json-storage": "^4.5.4",
         "@types/which": "^3.0.3",
