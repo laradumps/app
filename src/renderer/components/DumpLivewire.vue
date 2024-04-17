@@ -21,23 +21,23 @@ const select = (value: string) => {
         const sfDumpsErrorsId: string = selected.value.livewire.errors[1];
         const sfDumpsPropertiesId: string = selected.value.livewire.properties[1];
 
-        let sfDump
+        let sfDump;
 
         setTimeout(() => {
-            sfDump = document.getElementById(`sf-dump-${sfDumpsErrorsId}`)
+            sfDump = document.getElementById(`sf-dump-${sfDumpsErrorsId}`);
 
-            if (!sfDump?.hasAttribute('has-dump-js') && selected.value.livewire.errors.length > 0) {
+            if (!sfDump?.hasAttribute("has-dump-js") && selected.value.livewire.errors.length > 0) {
                 window.Sfdump(`sf-dump-${sfDumpsErrorsId}`);
-                sfDump?.setAttribute('has-dump-js', 'true')
+                sfDump?.setAttribute("has-dump-js", "true");
             }
 
-            sfDump = document.getElementById(`sf-dump-${sfDumpsPropertiesId}`)
+            sfDump = document.getElementById(`sf-dump-${sfDumpsPropertiesId}`);
 
-            if (!sfDump?.hasAttribute('has-dump-js') && selected.value.livewire.properties.length > 0) {
+            if (!sfDump?.hasAttribute("has-dump-js") && selected.value.livewire.properties.length > 0) {
                 window.Sfdump(`sf-dump-${sfDumpsPropertiesId}`);
-                sfDump?.setAttribute('has-dump-js', 'true')
+                sfDump?.setAttribute("has-dump-js", "true");
             }
-        }, 50)
+        }, 50);
     });
 };
 
