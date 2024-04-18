@@ -9,7 +9,6 @@ const props = defineProps<{
 }>();
 
 const selected = ref({});
-const sfDumps = ref([]);
 const updating = ref(false);
 
 const select = (value: string) => {
@@ -45,10 +44,6 @@ onMounted(() => {
     if (!updating.value) {
         selected.value = props.livewireRequests.slice().reverse()[0] ?? [];
     }
-});
-
-onUnmounted(() => {
-    sfDumps.value = [];
 });
 </script>
 
