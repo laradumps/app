@@ -1,22 +1,36 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineProps, nextTick, onMounted, ref } from "vue";
 import SvgLivewire from "@/components/Svg/SvgLivewire.vue";
 import DumpQuery from "@/components/DumpQuery.vue";
 import VueJsonPretty from "vue-json-pretty";
 
+interface Livewire {
+    name: string;
+    size: string;
+    request: string;
+    errors: Array<any>;
+    properties: Array<any>;
+    profile: Array<any>;
+    queries: Array<any>;
+    events: Array<any>;
+}
+
+interface LivewireRequest {
+    livewire: Livewire;
+}
+
 const props = defineProps<{
-    livewireRequests: [];
+    livewireRequests: LivewireRequest[];
 }>();
 
-const selected = ref({});
+const selected = ref<LivewireRequest | null>(null);
 const updating = ref(false);
 const menuOpen = ref(true);
 const focus = ref();
-const graphicContainer = ref(null);
 
 const select = (value: string) => {
     nextTick(() => {
-        selected.value = props.livewireRequests.filter((request) => request.livewire.request === value)[0];
+        selected.value = props.livewireRequests.filter((request: LivewireRequest) => request.livewire.request === value)[0];
 
         updating.value = true;
 
@@ -58,13 +72,9 @@ const totalDuration = computed(() => {
     return duration;
 });
 
-const itemPercentage = (item) => {
-    return (item.duration / totalDuration.value) * 100;
-};
+const itemPercentage = (item: { duration: number }) => (item.duration / totalDuration.value) * 100;
 
-const focusItem = (item) => {
-    focus.value = item.method;
-};
+const focusItem = (item: { method: string }) => focus.value = item.method;
 
 onMounted(() => {
     if (!updating.value) {
@@ -163,10 +173,7 @@ onMounted(() => {
                     class="tab-content bg-base-100 tracking-wider text-[0.70rem]"
                 >
                     <div class="overflow-x-auto flex flex-col gap-3 w-full py-3">
-                        <div
-                            class="progress-container"
-                            ref="graphicContainer"
-                        >
+                        <div class="progress-container">
                             <div
                                 v-for="(profile, index) in selected?.livewire.profile"
                                 :key="index"
@@ -280,10 +287,6 @@ onMounted(() => {
     display: flex;
     align-items: center;
     height: 30px;
-}
-
-.progress-item {
-    height: 100%;
 }
 
 .progress-bar {
