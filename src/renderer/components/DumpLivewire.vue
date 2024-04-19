@@ -12,7 +12,7 @@ const selected = ref({});
 const updating = ref(false);
 const menuOpen = ref(true);
 const focus = ref();
-const container = ref(null);
+const graphicContainer = ref(null);
 
 const select = (value: string) => {
     nextTick(() => {
@@ -43,20 +43,19 @@ const select = (value: string) => {
     });
 };
 
-const profile = computed(() => selected.value?.livewire.profile);
+const totalDuration = computed(() => {
+    if (!selected.value || !selected.value.livewire || !selected.value.livewire.profile) return 0;
 
-const totalDuration = computed(() => profile.value.reduce((acc, curr) => acc + curr.duration, 0));
+    const profile = selected.value.livewire.profile;
+    let duration = 0;
 
-const sortedProfile = computed(() => {
-    if (container.value) {
-        const sorted = profile.value.slice().sort((a, b) => b.duration - a.duration);
-        const containerWidth = container.value.offsetWidth;
-
-        return sorted.map((item) => {
-            const width = (item.duration / totalDuration.value) * containerWidth;
-            return { ...item, width };
-        });
+    for (const method in profile) {
+        if (profile.hasOwnProperty(method) && profile[method] && profile[method].duration !== undefined && typeof profile[method].duration === "number" && !isNaN(profile[method].duration)) {
+            duration += profile[method].duration;
+        }
     }
+
+    return duration;
 });
 
 const itemPercentage = (item) => {
@@ -64,19 +63,12 @@ const itemPercentage = (item) => {
 };
 
 const focusItem = (item) => {
-    focus.value = item.method
-}
+    focus.value = item.method;
+};
 
 onMounted(() => {
     if (!updating.value) {
         selected.value = props.livewireRequests.slice().reverse()[0] ?? [];
-    }
-
-    if (container.value) {
-        const containerWidth = container.value.offsetWidth;
-        sortedProfile.value.forEach((item) => {
-            item.width = (item.duration / totalDuration.value) * containerWidth;
-        });
     }
 });
 </script>
@@ -173,27 +165,28 @@ onMounted(() => {
                     <div class="overflow-x-auto flex flex-col gap-3 w-full py-3">
                         <div
                             class="progress-container"
-                            ref="container"
+                            ref="graphicContainer"
                         >
                             <div
-                                v-for="(profile, index) in sortedProfile"
+                                v-for="(profile, index) in selected?.livewire.profile"
                                 :key="index"
-                                :class="[profile.graphic_classes, { 'h-[32px] !opacity-100 shadow-lg' : focus === profile.method }]"
+                                :class="[profile?.graphic_classes, { 'h-[32px] !opacity-100 shadow-lg': focus === profile?.method }]"
                                 class="progress-bar cursor-pointer opacity-60"
                                 @mouseover="focusItem(profile)"
                                 @mouseleave="focus = ''"
-                                :style="{ width: itemPercentage(profile) + '%' }"
-                                :title="itemPercentage(profile).toFixed(1) + '%'"></div>
+                                :style="{ width: profile && typeof profile.duration === 'number' && !isNaN(profile.duration) ? itemPercentage(profile) + '%' : '0%' }"
+                                :title="profile && typeof profile.duration === 'number' && !isNaN(profile.duration) ? itemPercentage(profile).toFixed(1) + '%' : '0%'"
+                            ></div>
                         </div>
 
                         <div
                             v-for="profile in selected?.livewire.profile"
                             @mouseover="focusItem(profile)"
                             @mouseleave="focus = ''"
-                            :class="[profile.classes, { 'bg-base-300 shadow-lg' : focus === profile.method }]"
+                            :class="[profile.classes, { 'bg-base-300 shadow-lg': focus === profile.method }, { hidden: !profile.hasOwnProperty('method') }]"
                             class="border-l-4 cursor-pointer border items-center border-y-primary/10 hover:bg-base-200 hover:text-base-content flex justify-between rounded p-2 px-3"
                         >
-                            <div class="font-semibold text-xs capitalize">{{ profile.method }}</div>
+                            <div class="font-semibold text-xs">{{ profile.method }}</div>
                             <div>
                                 <span class="text-2xl">{{ profile.duration }}</span
                                 >ms
@@ -207,7 +200,7 @@ onMounted(() => {
                     name="livewire_tab"
                     role="tab"
                     class="tab uppercase font-normal tracking-wider text-[0.65rem]"
-                    aria-label="State"
+                    aria-label="Properties"
                 />
                 <div
                     role="tabpanel"
@@ -296,6 +289,6 @@ onMounted(() => {
 .progress-bar {
     height: 100%;
     margin: 2px !important;
-    border-radius: 2px
+    border-radius: 2px;
 }
 </style>
