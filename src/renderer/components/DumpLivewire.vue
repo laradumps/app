@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineProps, nextTick, onMounted, onUnmounted, ref } from "vue";
 import SvgLivewire from "@/components/Svg/SvgLivewire.vue";
 import DumpQuery from "@/components/DumpQuery.vue";
 import VueJsonPretty from "vue-json-pretty";
@@ -10,6 +10,9 @@ const props = defineProps<{
 
 const selected = ref({});
 const updating = ref(false);
+const menuOpen = ref(true);
+const focus = ref();
+const container = ref(null);
 
 const select = (value: string) => {
     nextTick(() => {
@@ -40,9 +43,40 @@ const select = (value: string) => {
     });
 };
 
+const profile = computed(() => selected.value?.livewire.profile);
+
+const totalDuration = computed(() => profile.value.reduce((acc, curr) => acc + curr.duration, 0));
+
+const sortedProfile = computed(() => {
+    if (container.value) {
+        const sorted = profile.value.slice().sort((a, b) => b.duration - a.duration);
+        const containerWidth = container.value.offsetWidth;
+
+        return sorted.map((item) => {
+            const width = (item.duration / totalDuration.value) * containerWidth;
+            return { ...item, width };
+        });
+    }
+});
+
+const itemPercentage = (item) => {
+    return (item.duration / totalDuration.value) * 100;
+};
+
+const focusItem = (item) => {
+    focus.value = item.method
+}
+
 onMounted(() => {
     if (!updating.value) {
         selected.value = props.livewireRequests.slice().reverse()[0] ?? [];
+    }
+
+    if (container.value) {
+        const containerWidth = container.value.offsetWidth;
+        sortedProfile.value.forEach((item) => {
+            item.width = (item.duration / totalDuration.value) * containerWidth;
+        });
     }
 });
 </script>
@@ -53,7 +87,29 @@ onMounted(() => {
         class="flex"
     >
         <!-- Listing -->
-        <ul class="menu overflow-auto h-[calc(100vh-9rem)] border-b border-r border-base-200 block !px-3 !py-0 min-w-56 max-w-72 [&_li>*]:rounded-none [&_li>*]:py-1 [&_li>*]:!text-[0.70rem]">
+        <ul
+            v-show="menuOpen"
+            class="transition-all menu group relative overflow-auto h-[calc(100vh-9rem)] border-r border-base-200 block !px-3 !py-0 min-w-56 max-w-72 [&_li>*]:rounded-none [&_li>*]:py-1 [&_li>*]:!text-[0.70rem]"
+        >
+            <div
+                @click="menuOpen = false"
+                class="transition-all fixed hover:text-secondary cursor-pointer left-[212px] bottom-4 z-100"
+            >
+                <svg
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-6 h-6"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                </svg>
+            </div>
+
             <li
                 :key="request.livewire.request"
                 :id="request.livewire.request"
@@ -72,11 +128,31 @@ onMounted(() => {
                 </a>
             </li>
 
-            <SvgLivewire class="fixed w-24 bottom-0" />
+            <SvgLivewire class="fixed w-20 bottom-0" />
         </ul>
 
         <!-- Details -->
         <div class="w-full px-3">
+            <div
+                v-show="!menuOpen"
+                @click="menuOpen = true"
+                class="transition-all fixed hover:text-secondary cursor-pointer left-2 bottom-4 z-100"
+            >
+                <svg
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-6 h-6"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                </svg>
+            </div>
+
             <div
                 v-if="selected?.livewire"
                 role="tablist"
@@ -96,13 +172,30 @@ onMounted(() => {
                 >
                     <div class="overflow-x-auto flex flex-col gap-3 w-full py-3">
                         <div
-                            v-for="profile in selected?.livewire.profile"
-                            :class="[profile.classes]"
-                            class="border-l-4 border border- border-y-primary/10 hover:bg-base-200 hover:text-base-content flex justify-between rounded p-2 px-3"
+                            class="progress-container"
+                            ref="container"
                         >
-                            <div class="font-semibold capitalize">{{ profile.method }}</div>
+                            <div
+                                v-for="(profile, index) in sortedProfile"
+                                :key="index"
+                                :class="[profile.graphic_classes, { 'h-[32px] !opacity-100 shadow-lg' : focus === profile.method }]"
+                                class="progress-bar cursor-pointer opacity-60"
+                                @mouseover="focusItem(profile)"
+                                @mouseleave="focus = ''"
+                                :style="{ width: itemPercentage(profile) + '%' }"
+                                :title="itemPercentage(profile).toFixed(1) + '%'"></div>
+                        </div>
+
+                        <div
+                            v-for="profile in selected?.livewire.profile"
+                            @mouseover="focusItem(profile)"
+                            @mouseleave="focus = ''"
+                            :class="[profile.classes, { 'bg-base-300 shadow-lg' : focus === profile.method }]"
+                            class="border-l-4 cursor-pointer border items-center border-y-primary/10 hover:bg-base-200 hover:text-base-content flex justify-between rounded p-2 px-3"
+                        >
+                            <div class="font-semibold text-xs capitalize">{{ profile.method }}</div>
                             <div>
-                                <span class="text-lg">{{ profile.duration }}</span
+                                <span class="text-2xl">{{ profile.duration }}</span
                                 >ms
                             </div>
                         </div>
@@ -189,3 +282,20 @@ onMounted(() => {
         </div>
     </div>
 </template>
+<style>
+.progress-container {
+    display: flex;
+    align-items: center;
+    height: 30px;
+}
+
+.progress-item {
+    height: 100%;
+}
+
+.progress-bar {
+    height: 100%;
+    margin: 2px !important;
+    border-radius: 2px
+}
+</style>

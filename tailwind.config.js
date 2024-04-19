@@ -4,7 +4,7 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 module.exports = {
     content: ["./src/renderer/*.vue", "./src/renderer/components/*.vue", "./src/renderer/views/*.vue"],
     darkMode: "class",
-    safelist: ["bg-black", "w-[1rem]", "h-[1rem]", "w-20", "gap-2", "border-accent", "border-primary", "border-secondary", "border-neutral"],
+    safelist: ["bg-black", "w-[1rem]", "h-[1rem]", "w-20", "gap-2", "bg-green-500", "bg-blue-500", "bg-orange-500", "bg-violet-500", "bg-red-500", "border-blue-500", "border-orange-500", "border-green-500", "border-violet-500", "border-red-500"],
     theme: {
         listStyleType: {
             none: "none",

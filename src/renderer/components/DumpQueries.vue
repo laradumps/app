@@ -48,7 +48,10 @@ const formatSql = computed(() => {
 </script>
 
 <template>
-    <div class="rounded-sm">
+    <div
+        id="dump-queries"
+        class="rounded-sm"
+    >
         <pre
             v-if="formatted"
             class="flex relative group select-none"
@@ -111,19 +114,16 @@ const formatSql = computed(() => {
 </template>
 
 <style>
-code {
-    @apply !font-light tracking-wider;
+#dump-queries code * {
+    @apply !font-light !text-base-content tracking-wider;
 }
-.hljs-keyword {
-    @apply !text-base-content;
-}
-.hljs-string {
-    @apply !text-base-content;
-}
-.formatted .hljs-keyword {
+#dump-queries .formatted {
     @apply !text-primary;
 }
-.formatted .hljs-string {
+#dump-queries .formatted .hljs-keyword {
+    @apply !text-secondary;
+}
+#dump-queries .formatted .hljs-string {
     @apply !text-secondary;
 }
 </style>

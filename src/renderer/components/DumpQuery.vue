@@ -40,7 +40,10 @@ const formatSql = computed(() => {
 </script>
 
 <template>
-    <div class="space-y-2 select-none">
+    <div
+        id="dump-query"
+        class="space-y-2 select-none"
+    >
         <div class="flex group justify-between items-center">
             <div class="flex gap-3.5 items-center">
                 <div
@@ -66,12 +69,12 @@ const formatSql = computed(() => {
             v-if="formatted"
             class="flex relative group select-none"
         >
-            <code class='language-sql !leading-4 text-base-content !text-xs formatted' v-html="formatSql"></code>
+            <code class='!leading-4 !text-xs formatted' v-html="formatSql"></code>
         </pre>
 
         <div v-if="!formatted">
             <code
-                class="widgets-sql !text-xs select-none"
+                class="!text-xs select-none"
                 v-html="formatSql"
             ></code>
         </div>
@@ -79,19 +82,16 @@ const formatSql = computed(() => {
 </template>
 
 <style>
-code {
-    @apply !font-light tracking-wider;
+#dump-query code * {
+    @apply !font-light !text-base-content tracking-wider;
 }
-.hljs-keyword {
-    @apply !text-base-content;
-}
-.hljs-string {
-    @apply !text-base-content;
-}
-.formatted .hljs-keyword {
+#dump-query .formatted {
     @apply !text-primary;
 }
-.formatted .hljs-string {
+#dump-query .formatted .hljs-keyword {
+    @apply !text-secondary;
+}
+#dump-query .formatted .hljs-string {
     @apply !text-secondary;
 }
 </style>
