@@ -9,19 +9,19 @@ const updateInfo = ref({});
 const modal = ref(null);
 const progress = ref(0);
 const loading = ref(false);
-const downloading = ref(false)
+const downloading = ref(false);
 
 const install = () => {
-    downloading.value = true
+    downloading.value = true;
     window.ipcRenderer.send("main:download-update");
 };
 
 const progressPercentage = computed(() => Math.round(progress.value * 100));
 
 window.ipcRenderer.on("update-available", (event, arg) => {
-    modal.value.showModal()
+    modal.value.showModal();
     updateInfo.value = arg;
-    console.log(arg)
+    console.log(arg);
 });
 
 window.ipcRenderer.on("autoUpdater:update-info", (event, args: UpdateInfo) => {
@@ -61,22 +61,25 @@ window.ipcRenderer.on("autoUpdater:download-complete", (event, args: CompletedIn
             class="modal"
         >
             <div class="modal-box w-11/12 max-w-5xl">
-                <div class="font-bold text-lg text-center">✨ {{ $t('app_update_info.update_available') }}</div>
+                <div class="font-bold text-lg text-center">✨ {{ $t("app_update_info.update_available") }}</div>
                 <div class="mt-2 space-y-3">
                     <div class="card card-side bg-neutral shadow-xl">
                         <div class="select-none space-y-3 card-body text-neutral-content/80">
                             <div class="flex justify-between">
                                 <div>
-                                    <h2 class="card-title">{{ $t('app_update_info.version') }}</h2>
+                                    <h2 class="card-title">{{ $t("app_update_info.version") }}</h2>
                                     <p>{{ updateInfo.version }}</p>
                                 </div>
                                 <div>
-                                    <h2 class="card-title">{{ $t('app_update_info.release_date') }}</h2>
+                                    <h2 class="card-title">{{ $t("app_update_info.release_date") }}</h2>
                                     <p>{{ moment(updateInfo.releaseDate).format("MMM Do YY") }}</p>
                                 </div>
                             </div>
 
-                            <div id="releaseNotes" v-html="updateInfo.releaseNotes"></div>
+                            <div
+                                id="releaseNotes"
+                                v-html="updateInfo.releaseNotes"
+                            ></div>
                         </div>
                     </div>
 
@@ -94,7 +97,7 @@ window.ipcRenderer.on("autoUpdater:download-complete", (event, args: CompletedIn
                             class="btn btn-secondary"
                             :disabled="downloading"
                         >
-                            {{ $t('app_update_info.not_now')}}
+                            {{ $t("app_update_info.not_now") }}
                         </button>
                     </form>
                     <button
@@ -103,7 +106,7 @@ window.ipcRenderer.on("autoUpdater:download-complete", (event, args: CompletedIn
                         @click="install"
                     >
                         <IconDownload class="w-5" />
-                        {{ $t('app_update_info.install') }}
+                        {{ $t("app_update_info.install") }}
                     </button>
                 </div>
             </div>
@@ -119,7 +122,7 @@ window.ipcRenderer.on("autoUpdater:download-complete", (event, args: CompletedIn
 
 #releaseNotes ul {
     list-style: disc !important;
-    margin-left: 36px !important;;
+    margin-left: 36px !important;
     padding: 4px;
 }
 </style>

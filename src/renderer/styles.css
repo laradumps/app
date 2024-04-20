@@ -11,12 +11,6 @@ body {
     padding-bottom: 3rem;
 }
 
-table {
-    text-indent: 0;
-    border-color: inherit;
-    border-collapse: inherit;
-}
-
 ::-webkit-scrollbar {
     width: 11px;
     height: 11px;
@@ -65,4 +59,26 @@ table {
 
 [data-theme="laravel"] .bg-laravel {
     @apply bg-neutral;
+}
+
+/** sql formatter **/
+.hljs-title.class_,
+.hljs-class .hljs-title,
+.hljs-type,
+.hljs-built_in,
+.hljs-params {
+    @apply !text-primary;
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id,
+.hljs-variable {
+    @apply !text-secondary;
 }
