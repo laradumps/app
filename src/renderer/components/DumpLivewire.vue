@@ -79,6 +79,7 @@ const focusItem = (item: { method: string }) => focus.value = item.method;
 onMounted(() => {
     if (!updating.value) {
         selected.value = props.livewireRequests.slice().reverse()[0] ?? [];
+        select(props.livewireRequests.slice().reverse()[0].livewire.request)
     }
 });
 </script>
