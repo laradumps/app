@@ -180,6 +180,16 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                             type: "radio"
                         },
                         {
+                            label: "عربي (AR)",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "ar_AR",
+                                    label: "عربي (AR)"
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
                             label: "Italiano (IT)",
                             click: async (): Promise<void> => {
                                 mainWindow.webContents.send("settings:set-language", {
