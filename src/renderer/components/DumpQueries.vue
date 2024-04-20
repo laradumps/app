@@ -49,8 +49,7 @@ const formatSql = computed(() => {
 
 <template>
     <div
-        id="dump-queries"
-        class="rounded-sm"
+        class="rounded-sm dump-queries"
     >
         <pre
             v-if="formatted"
@@ -114,16 +113,20 @@ const formatSql = computed(() => {
 </template>
 
 <style>
-#dump-queries code * {
+.dump-queries code * {
     @apply !font-light !text-base-content tracking-wider;
 }
-#dump-queries .formatted {
+.dump-queries .formatted {
     @apply !text-primary;
 }
-#dump-queries .formatted .hljs-keyword {
+.dump-queries .formatted .hljs-keyword {
     @apply !text-secondary;
 }
-#dump-queries .formatted .hljs-string {
+.dump-queries .formatted .hljs-string {
     @apply !text-secondary;
 }
+code .hljs-number {
+    @apply !font-light !text-base-content tracking-wider;
+}
+
 </style>
