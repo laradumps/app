@@ -305,7 +305,9 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                 createThemeItem("Retro", "retro"),
                 createThemeItem("Halloween", "halloween"),
                 createThemeItem("Cyberpunk", "cyberpunk"),
-                createThemeItem("Laravel", "laravel")
+                createThemeItem("Laravel", "laravel"),
+                createThemeItem("Lemonade", "lemonade"),
+                createThemeItem("Winter", "winter")
             ]
         },
         {

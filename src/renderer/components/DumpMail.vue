@@ -61,7 +61,7 @@ onMounted(() => {
                 <div class="flex justify-center mt-3 my-2">
                     <button
                         @click.prevent="createNewWindow()"
-                        class="btn btn-primary !h-[38px] !px-4"
+                        class="btn btn-primary text-primary-content !h-[38px] !px-4"
                     >
                         View Content
                         <ArrowTopRightOnSquareIcon class="w-5" />
