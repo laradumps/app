@@ -109,7 +109,7 @@ const color = computed(() => {
                     'collapse-open': open,
                     'collapse-close': open
                 }"
-                class="collapse bg-base-200 bg-laravel"
+                class="collapse bg-base-200/70 bg-laravel"
             >
                 <div
                     @dblclick="open = !open"

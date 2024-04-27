@@ -17,27 +17,27 @@ defineProps({
 });
 
 const isDark = computed(() => ({
-    "border-white": selectedColors.colors.includes("black")
+    "bg-black": selectedColors.colors.includes("black")
 }));
 
 const isRed = computed(() => ({
-    "border-white": selectedColors.colors.includes("red")
+    "bg-red-500": selectedColors.colors.includes("red")
 }));
 
 const isGray = computed(() => ({
-    "border-white": selectedColors.colors.includes("gray")
+    "bg-gray-500": selectedColors.colors.includes("gray")
 }));
 
 const isBlue = computed(() => ({
-    "border-white": selectedColors.colors.includes("blue")
+    "bg-blue-500": selectedColors.colors.includes("blue")
 }));
 
 const isGreen = computed(() => ({
-    "border-white": selectedColors.colors.includes("green")
+    "bg-green-500": selectedColors.colors.includes("green")
 }));
 
 const isOrange = computed(() => ({
-    "border-white": selectedColors.colors.includes("orange")
+    "bg-orange-500": selectedColors.colors.includes("orange")
 }));
 </script>
 
@@ -46,13 +46,13 @@ const isOrange = computed(() => ({
         class="space-x-2 flex justify-end items-center"
         v-if="screenStore.screen !== 'Queries' && hasColor"
     >
-        <div class="h-full grid gap-2 grid-cols-3 tiny:grid-cols-6 opacity-75">
+        <div class="h-full flex gap-2">
             <button
                 :class="isDark"
                 @click="selectedColors.add('black')"
                 value="black"
                 type="button"
-                class="badge badge-xs bg-[black] border-gray-800"
+                class="badge badge-xs border-black"
             ></button>
 
             <button
@@ -60,35 +60,35 @@ const isOrange = computed(() => ({
                 @click="selectedColors.add('red')"
                 value="red"
                 type="button"
-                class="badge badge-xs bg-[#ff0000]"
+                class="badge badge-xs border-[#ff0000]"
             ></button>
 
             <button
                 :class="isOrange"
                 @click="selectedColors.add('orange')"
                 type="button"
-                class="badge badge-xs bg-[orange]"
+                class="badge badge-xs border-[orange]"
             ></button>
 
             <button
                 :class="isBlue"
                 @click="selectedColors.add('blue')"
                 type="button"
-                class="badge badge-xs bg-[blue]"
+                class="badge badge-xs border-[blue]"
             ></button>
 
             <button
                 :class="isGreen"
                 @click="selectedColors.add('green')"
                 type="button"
-                class="badge badge-xs bg-[green]"
+                class="badge badge-xs border-[green]"
             ></button>
 
             <button
                 :class="isGray"
                 @click="selectedColors.add('gray')"
                 type="button"
-                class="badge badge-xs bg-[gray]"
+                class="badge badge-xs border-[gray]"
             ></button>
         </div>
     </div>
