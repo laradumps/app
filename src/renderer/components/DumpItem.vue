@@ -278,7 +278,7 @@ const color = computed(() => {
                         <!-- dump query -->
                         <DumpQuery
                             :id="`dump-content-${props.payload.sf_dump_id}`"
-                            class="w-full"
+
                             v-if="props.payload.type === `query`"
                             :query="payload.query"
                         />
