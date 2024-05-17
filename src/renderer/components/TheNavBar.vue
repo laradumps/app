@@ -49,7 +49,7 @@ const clear = () => {
             <HeaderGlobalFilter v-bind:has-color="hasColor" />
 
             <!-- global search -->
-            <GlobalSearch />
+            <GlobalSearch v-if="payloadCount > 0" />
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />
