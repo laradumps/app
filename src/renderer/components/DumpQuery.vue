@@ -90,9 +90,6 @@ onMounted(() => {
 code * {
     @apply !font-light !text-base-content tracking-wider;
 }
-.formatted {
-    @apply !text-primary;
-}
 .hljs-keyword {
     @apply !text-secondary;
 }

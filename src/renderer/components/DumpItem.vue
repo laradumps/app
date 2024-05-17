@@ -155,7 +155,7 @@ const color = computed(() => {
                     v-on:click.right="openOptions = true"
                     v-on:click="openOptions = false"
                 >
-                    <div class="relative">
+                    <div class="relative w-[calc(100vw-70px)] overflow-auto">
                         <!-- variable type -->
                         <div
                             v-if="props.payload.dump?.variable_type !== undefined"
@@ -168,7 +168,7 @@ const color = computed(() => {
                                 class="transition-all -mt-2 items-center text-base-content"
                             >
                                 <div
-                                    class="right-0 absolute"
+                                    class="right-0 absolute top-0"
                                     v-bind:class="{
                                         'opacity-100': openOptions,
                                         'opacity-0' : !['query'].includes(props.payload.type)

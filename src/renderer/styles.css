@@ -60,25 +60,3 @@ body {
 [data-theme="laravel"] .bg-laravel {
     @apply bg-neutral;
 }
-
-/** sql formatter **/
-.hljs-title.class_,
-.hljs-class .hljs-title,
-.hljs-type,
-.hljs-built_in,
-.hljs-params {
-    @apply !text-primary;
-}
-
-.hljs-attr,
-.hljs-attribute,
-.hljs-literal,
-.hljs-meta,
-.hljs-number,
-.hljs-operator,
-.hljs-selector-attr,
-.hljs-selector-class,
-.hljs-selector-id,
-.hljs-variable {
-    @apply !text-secondary;
-}

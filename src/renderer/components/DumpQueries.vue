@@ -10,7 +10,7 @@ import sql from "highlight.js/lib/languages/sql";
 import CopyToClick from "@/components/CopyToClick.vue";
 hljs.registerLanguage("sql", sql);
 
-const formatted = ref(false);
+const formatted = ref(true);
 const copied = ref(false);
 
 const timeStore = useTimeStore();
@@ -55,7 +55,7 @@ const formatSql = computed(() => {
             v-if="formatted"
             class="flex relative group select-none"
         >
-            <code class='language-sql !leading-4 text-base-content !text-xs formatted' v-html="formatSql"></code>
+            <code class='language-sql !leading-[1.2rem] text-base-content !text-xs' v-html="formatSql"></code>
         </pre>
 
         <div v-if="!formatted">
@@ -67,7 +67,7 @@ const formatSql = computed(() => {
 
         <div class="group items-center mt-1">
             <div class="flex items-center select-none">
-                <div class="w-full">
+                <div class="w-full" v-if="props.payload.screen.screen_name != 'Slow Queries'">
                     <div
                         v-show="percentage <= 100"
                         :title="percentage + `%`"
@@ -81,7 +81,7 @@ const formatSql = computed(() => {
                     ></div>
                 </div>
 
-                <div class="flex justify-end gap-3 items-center opacity-70 absolute -top-8 right-0">
+                <div class="flex justify-end gap-3 items-center absolute top-0 right-0">
                     <div
                         class="cursor-pointer opacity-0 group-hover:opacity-100"
                         @click="toggleFormatted"
@@ -105,7 +105,7 @@ const formatSql = computed(() => {
                         class="text-base-content opacity-0 group-hover:opacity-100"
                     />
 
-                    <span class="font-semibold text-sm text-base-content"> {{ props.payload.queries.time }} <span class="font-normal text-xs">ms</span></span>
+                    <span class="font-semibold text-sm text-primary"> {{ props.payload.queries.time }} <span class="font-normal text-xs">ms</span></span>
                 </div>
             </div>
         </div>
@@ -113,20 +113,48 @@ const formatSql = computed(() => {
 </template>
 
 <style>
-.dump-queries code * {
+code * {
     @apply !font-light !text-base-content tracking-wider;
 }
-.dump-queries .formatted {
-    @apply !text-primary;
-}
-.dump-queries .formatted .hljs-keyword {
+.hljs-keyword {
     @apply !text-secondary;
 }
-.dump-queries .formatted .hljs-string {
+.hljs-string {
     @apply !text-secondary;
-}
-code .hljs-number {
-    @apply !font-light !text-base-content tracking-wider;
 }
 
+.hljs-number, .hljs-operator {
+    @apply !text-accent;
+}
+
+[data-theme="retro"] .hljs-keyword {
+    @apply !text-accent;
+}
+[data-theme="retro"] .hljs-string {
+    @apply !text-accent;
+}
+
+[data-theme="halloween"] .hljs-keyword {
+    @apply !text-primary;
+}
+[data-theme="halloween"] .hljs-string {
+    @apply !text-primary;
+}
+
+[data-theme="cyberpunk"] .hljs-keyword {
+    @apply !text-primary;
+}
+[data-theme="cyberpunk"] .hljs-string {
+    @apply !text-primary;
+}
+
+[data-theme="lemonade"] .hljs-keyword {
+    @apply !text-primary;
+}
+[data-theme="lemonade"] .hljs-string {
+    @apply !text-primary;
+}
+[data-theme="lemonade"] .hljs-number, .hljs-operator {
+    @apply !text-secondary !font-semibold;
+}
 </style>
