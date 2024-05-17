@@ -21,11 +21,11 @@ const copyDump = () => {
     >
         <CheckIcon
             v-if="showCheck"
-            class="w-5 h-5 text-success"
+            class="w-4 h-4 text-success"
         />
         <ClipboardIcon
             v-if="!showCheck"
-            class="w-4 h-4"
+            class="w-4 h-4 hover:opacity-75"
             id="saveIcon"
         />
     </div>

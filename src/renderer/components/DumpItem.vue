@@ -168,8 +168,11 @@ const color = computed(() => {
                                 class="transition-all -mt-2 items-center text-base-content"
                             >
                                 <div
-                                    class="right-0 absolute opacity-0"
-                                    v-bind:class="{ 'opacity-100': openOptions }"
+                                    class="right-0 absolute"
+                                    v-bind:class="{
+                                        'opacity-100': openOptions,
+                                        'opacity-0' : !['query'].includes(props.payload.type)
+                                     }"
                                 >
                                     <ul class="flex items-center p-2 gap-3 shadow bg-base-100 rounded-box w-auto">
                                         <li
@@ -187,7 +190,7 @@ const color = computed(() => {
                                             @click="saveDump"
                                             v-if="!inSavedDumpsWindow"
                                         >
-                                            <a><IconSave class="cursor-pointer w-3 h-3" /> </a>
+                                            <a><IconSave class="cursor-pointer w-3 h-3 hover:opacity-75" /> </a>
                                         </li>
                                     </ul>
                                 </div>
