@@ -20,7 +20,7 @@
 }
 
 .dstable table tbody tr td:first-child {
-    @apply text-primary pl-0 !rounded-none;
+    @apply text-primary !rounded-none;
 }
 
 .dstable table tbody td {

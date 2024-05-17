@@ -155,7 +155,7 @@ const color = computed(() => {
                     v-on:click.right="openOptions = true"
                     v-on:click="openOptions = false"
                 >
-                    <div class="relative w-[calc(100vw-70px)] overflow-auto">
+                    <div class="relative" :class="{ 'overflow-auto w-[calc(100vw-70px)]' : ['queries', 'table', 'table_v2'].includes(props.payload.type)}">
                         <!-- variable type -->
                         <div
                             v-if="props.payload.dump?.variable_type !== undefined"

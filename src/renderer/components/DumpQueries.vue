@@ -82,7 +82,7 @@ const formatSql = computed(() => {
                     ></div>
                 </div>
 
-                <div class="flex justify-end gap-3 items-center absolute top-0 right-1">
+                <div class="flex justify-end gap-3 items-center absolute top-0 right-0">
                     <div
                         class="cursor-pointer opacity-0 group-hover:opacity-100"
                         @click="toggleFormatted"

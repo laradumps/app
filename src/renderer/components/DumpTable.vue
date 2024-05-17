@@ -45,7 +45,6 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
 
         fields.forEach((field) => {
             const td = document.createElement("td");
-            td.setAttribute("style", "word-break: break-all;");
             td.appendChild(document.createTextNode(object[field]));
             tr.appendChild(td);
         });
@@ -95,7 +94,7 @@ const searchableTable = (search, id) => {
                 </div>
 
                 <div
-                    class="overflow-x-auto rounded-lg max-h-[412px]"
+                    class="overflow-x-auto dstable mt-2 rounded-lg max-h-[412px]"
                     v-html="table"
                 ></div>
             </div>
