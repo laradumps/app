@@ -6,7 +6,6 @@ import { ClipboardIcon } from "@heroicons/vue/24/outline";
 
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
-import CopyToClick from "@/components/CopyToClick.vue";
 hljs.registerLanguage("sql", sql);
 
 const formatted = ref(false);
@@ -40,8 +39,8 @@ const formatSql = computed(() => {
 });
 
 onMounted(() => {
-    formatted.value = props.query.sql != ''
-})
+    formatted.value = props.query.sql != "";
+});
 </script>
 
 <template>
@@ -49,8 +48,11 @@ onMounted(() => {
         id="dump-query"
         class="space-y-2 w-full"
     >
-        <div v-show="query.time" class="flex group justify-between items-center">
-            <div  class="flex gap-3.5 items-center">
+        <div
+            v-show="query.time"
+            class="flex group justify-between items-center"
+        >
+            <div class="flex gap-3.5 items-center">
                 <div
                     class="cursor-pointer"
                     @click="toggleFormatted"

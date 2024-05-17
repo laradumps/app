@@ -171,8 +171,8 @@ const color = computed(() => {
                                     class="right-0 absolute top-0"
                                     v-bind:class="{
                                         'opacity-100': openOptions,
-                                        'opacity-0' : !['query'].includes(props.payload.type)
-                                     }"
+                                        'opacity-0': !['query'].includes(props.payload.type)
+                                    }"
                                 >
                                     <ul class="flex items-center p-2 gap-3 shadow bg-base-100 rounded-box w-auto">
                                         <li
@@ -281,7 +281,6 @@ const color = computed(() => {
                         <!-- dump query -->
                         <DumpQuery
                             :id="`dump-content-${props.payload.sf_dump_id}`"
-
                             v-if="props.payload.type === `query`"
                             :query="payload.query"
                         />

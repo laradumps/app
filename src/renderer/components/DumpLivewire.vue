@@ -74,12 +74,12 @@ const totalDuration = computed(() => {
 
 const itemPercentage = (item: { duration: number }) => (item.duration / totalDuration.value) * 100;
 
-const focusItem = (item: { method: string }) => focus.value = item.method;
+const focusItem = (item: { method: string }) => (focus.value = item.method);
 
 onMounted(() => {
     if (!updating.value) {
         selected.value = props.livewireRequests.slice().reverse()[0] ?? [];
-        select(props.livewireRequests.slice().reverse()[0].livewire.request)
+        select(props.livewireRequests.slice().reverse()[0].livewire.request);
     }
 });
 </script>
