@@ -48,9 +48,7 @@ const formatSql = computed(() => {
 </script>
 
 <template>
-    <div
-        class="rounded-sm dump-queries"
-    >
+    <div class="rounded-sm dump-queries w-[calc(100vw-180px)]">
         <pre
             v-if="formatted"
             class="flex relative group select-none"
@@ -67,7 +65,10 @@ const formatSql = computed(() => {
 
         <div class="group items-center mt-1">
             <div class="flex items-center select-none">
-                <div class="w-full" v-if="props.payload.screen.screen_name != 'Slow Queries'">
+                <div
+                    class="w-full"
+                    v-if="props.payload.screen.screen_name != 'Slow Queries'"
+                >
                     <div
                         v-show="percentage <= 100"
                         :title="percentage + `%`"
@@ -81,7 +82,7 @@ const formatSql = computed(() => {
                     ></div>
                 </div>
 
-                <div class="flex justify-end gap-3 items-center absolute top-0 right-0">
+                <div class="flex justify-end gap-3 items-center absolute top-0 right-1">
                     <div
                         class="cursor-pointer opacity-0 group-hover:opacity-100"
                         @click="toggleFormatted"
@@ -123,7 +124,8 @@ code * {
     @apply !text-secondary;
 }
 
-.hljs-number, .hljs-operator {
+.hljs-number,
+.hljs-operator {
     @apply !text-accent;
 }
 
@@ -154,7 +156,8 @@ code * {
 [data-theme="lemonade"] .hljs-string {
     @apply !text-primary;
 }
-[data-theme="lemonade"] .hljs-number, .hljs-operator {
+[data-theme="lemonade"] .hljs-number,
+.hljs-operator {
     @apply !text-secondary !font-semibold;
 }
 </style>

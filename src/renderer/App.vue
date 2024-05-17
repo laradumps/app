@@ -656,14 +656,7 @@ function registerDefaultLocalShortcuts() {
                                 />
                             </div>
 
-                            <div :class="{ 'flex border-t border-base-content/20 mt-2 pl-3': screenStore.screen === 'Queries' }">
-                                <div
-                                    class="pt-2"
-                                    v-if="screenStore.screen === 'Queries'"
-                                >
-                                    <QueriesControl />
-                                </div>
-
+                            <div :class="{ 'flex border-t border-base-content/20 mt-2': screenStore.screen === 'Queries' }">
                                 <div
                                     class="mb-[60px] w-full"
                                     :class="{

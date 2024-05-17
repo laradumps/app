@@ -97,10 +97,10 @@ export default {
     yes: "نعم",
     no: "لا",
     app_update_info: {
-        update_available: 'هناك تحديث جديد متاح للتثبيت',
-        not_now: 'ليس الآن',
-        install: 'ثبت',
-        version: 'النسخة',
-        release_date: 'تاريخ الإصدار'
+        update_available: "هناك تحديث جديد متاح للتثبيت",
+        not_now: "ليس الآن",
+        install: "ثبت",
+        version: "النسخة",
+        release_date: "تاريخ الإصدار"
     }
 };

@@ -11,11 +11,11 @@
                 class="w-[100px] dark:!bg-base-600 !text-xs"
                 v-model:data="queryOrder"
             />
-            <!--            <SelectMenu-->
-            <!--                @selected="timeStore.setSelectedRequest($event.id)"-->
-            <!--                class="w-[190px] !text-xs"-->
-            <!--                v-model:data="allRequests"-->
-            <!--            />-->
+            <SelectMenu
+                @selected="timeStore.setSelectedRequest($event.id)"
+                class="w-[210px] !text-xs"
+                v-model:data="allRequests"
+            />
         </div>
     </div>
 </template>
@@ -24,8 +24,6 @@
 import { useTimeStore } from "@/store/time";
 import SelectMenu from "@/components/SelectMenu.vue";
 import { computed, onMounted, onUpdated, ref, watch } from "vue";
-
-const totalPayload = ref(0);
 
 const timeStore = useTimeStore();
 
@@ -68,7 +66,7 @@ const allRequests = computed(() => {
     let requests = timeStore.groups.map((group, index) => ({
         index: index + 1,
         id: group,
-        label: "#" + (index + 1) + " - " + timeStore.getTotal(group).toFixed(2) + "ms (" + timeStore.getTime(group) + ")"
+        label: (index + 1) + " - " + timeStore.getTime(group) + " - " + timeStore.getTotal(group).toFixed(2) + "ms"
     }));
 
     requests.sort((a, b) => b.index - a.index);
