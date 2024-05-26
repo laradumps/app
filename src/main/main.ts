@@ -59,21 +59,6 @@ ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
         return;
     }
 
-    const packageVersion: string = arg.content.meta.laradumps_version.replaceAll(".", "");
-
-    if (packageVersion === "000") {
-        event.sender.send(arg.type, arg);
-    }
-
-    if (!isNaN(Number(packageVersion)) && parseInt(packageVersion) < parseInt(minPackageVersion.replaceAll(".", ""))) {
-        event.sender.send("ipc:package-down", {
-            packageVersion,
-            minPackageVersion
-        });
-
-        return;
-    }
-
     event.sender.send(arg.type, arg);
 });
 
