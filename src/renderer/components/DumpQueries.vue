@@ -48,12 +48,12 @@ const formatSql = computed(() => {
 </script>
 
 <template>
-    <div class="rounded-sm dump-queries w-[calc(100vw-180px)]">
+    <div class="rounded-sm dump-queries !w-[calc(100vw-180px)] overflow-auto">
         <pre
             v-if="formatted"
-            class="flex relative group select-none"
+            class="flex relative group select-none w-auto"
         >
-            <code class='language-sql !leading-[1.2rem] text-base-content !text-xs' v-html="formatSql"></code>
+            <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formatSql"></code>
         </pre>
 
         <div v-if="!formatted">
