@@ -38,18 +38,6 @@ if (!isDev) {
     ipcMain.on("main-menu:set-auto-launch", (event: Electron.IpcMainEvent, arg): void => {
         arg.value === "disabled" ? autoLauncher.disable() : autoLauncher.enable();
     });
-
-    autoLauncher
-        .isEnabled()
-        .then(function (isEnabled: boolean) {
-            if (isEnabled) {
-                return;
-            }
-            autoLauncher.enable();
-        })
-        .catch(function (err: any) {
-            console.error("autoLauncher", err);
-        });
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
