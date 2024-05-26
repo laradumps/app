@@ -30,8 +30,6 @@ let tray: Electron.Tray;
 let isQuiting: boolean;
 let globalUpdateInfo: UpdateInfo;
 
-const minPackageVersion = "2000";
-
 storage.setDataPath(os.tmpdir());
 
 if (!isDev) {

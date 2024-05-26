@@ -71,16 +71,6 @@ export default {
     invalid_json_format: "无效的JSON格式",
     valid_json_format: "有效的JSON格式",
     will_ignore_all_new_messages_until: "将忽略所有新消息直到",
-    package_update_info: {
-        lara_dumps_package_update_available: "LaraDumps包有可用更新！",
-        hey_dev: "嘿开发者！",
-        there_is_a_new_release_of_lara_dumps_laravel_package: "有新版本的LaraDumps Laravel包。",
-        consider_upgrading_to_enjoy_the_benefits_of_new_features_bug_fixes_and_improvements: "考虑升级以享受新功能、错误修复和改进的好处。",
-        to_upgrade_lara_dumps_in_your_project_run: "要升级项目中的LaraDumps，请运行：",
-        installed_version: "已安装版本：",
-        minimum_required_version: "最低所需版本：",
-        for_more_information_visit: "获取更多信息，请访问："
-    },
     installer: {
         laradumps_settings: "LaraDumps设置",
         php_project_name: "PHP项目名称",

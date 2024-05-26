@@ -71,17 +71,6 @@ export default {
     invalid_json_format: "فرمت JSON نامعتبر است",
     valid_json_format: "فرمت JSON معتبر است",
     will_ignore_all_new_messages_until: "تا زمان مشخصی، تمام پیام‌های جدید را نادیده خواهد گرفت",
-    package_update_info: {
-        lara_dumps_package_update_available: "به‌روزرسانی بسته لارادامپس در دسترس است!",
-        hey_dev: "سلام توسعه‌دهنده!",
-        there_is_a_new_release_of_lara_dumps_laravel_package: "یک نسخه جدید از بسته لارادامپس موجود است.",
-        consider_upgrading_to_enjoy_the_benefits_of_new_features_bug_fixes_and_improvements:
-            "لطفاً برای بهره‌برداری از ویژگی‌ها، رفع اشکالات و بهبودهای جدید، در نظر داشته باشید به نسخه جدید ارتقا دهید.",
-        to_upgrade_lara_dumps_in_your_project_run: "برای ارتقا دادن لارادامپس در پروژه خود، دستور زیر را اجرا کنید:",
-        installed_version: "نسخه نصب شده:",
-        minimum_required_version: "حداقل نسخه مورد نیاز:",
-        for_more_information_visit: "برای کسب اطلاعات بیشتر، به وب‌گاه زیر مراجعه کنید:"
-    },
     installer: {
         laradumps_settings: "تنظیمات لارادامپس",
         php_project_name: "نام پروژه PHP",

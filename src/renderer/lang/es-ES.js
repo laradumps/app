@@ -71,17 +71,6 @@ export default {
     invalid_json_format: "Formato JSON no válido",
     valid_json_format: "Formato JSON válido",
     will_ignore_all_new_messages_until: "ignorará todos los nuevos mensajes hasta",
-    package_update_info: {
-        lara_dumps_package_update_available: "¡Actualización del paquete LaraDumps disponible!",
-        hey_dev: "¡Hola desarrollador!",
-        there_is_a_new_release_of_lara_dumps_laravel_package: "Hay una nueva versión del paquete LaraDumps",
-        consider_upgrading_to_enjoy_the_benefits_of_new_features_bug_fixes_and_improvements:
-            "Actualiza para disfrutar de los beneficios de las nuevas características, correcciones de errores y mejoras.",
-        to_upgrade_lara_dumps_in_your_project_run: "Para actualizar LaraDumps en tu proyecto, ejecuta",
-        installed_version: "Versión instalada:",
-        minimum_required_version: "Versión mínima requerida:",
-        for_more_information_visit: "Para más información visita:"
-    },
     installer: {
         laradumps_settings: "Configuración de LaraDumps",
         php_project_name: "Nombre del proyecto PHP",
