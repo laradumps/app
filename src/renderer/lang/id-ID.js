@@ -71,16 +71,6 @@ export default {
     invalid_json_format: "Format JSON tidak Valid",
     valid_json_format: "Format JSON Valid",
     will_ignore_all_new_messages_until: "akan mengabaikan semua pesan baru hingga",
-    package_update_info: {
-        lara_dumps_package_update_available: "LaraDumps Package Pembaruan Tersedia!",
-        hey_dev: "Hai dev!",
-        there_is_a_new_release_of_lara_dumps_laravel_package: "Ada rilis baru dari Paket LaraDumps.",
-        consider_upgrading_to_enjoy_the_benefits_of_new_features_bug_fixes_and_improvements: "Pertimbangkan untuk memperbarui untuk menikmati manfaat dari fitur baru, perbaikan bug, dan peningkatan.",
-        to_upgrade_lara_dumps_in_your_project_run: "Untuk memperbarui LaraDumps di proyek Anda, jalankan:",
-        installed_version: "Versi yang terinstal:",
-        minimum_required_version: "Versi yang terinstal:",
-        for_more_information_visit: "Untuk informasi lebih lanjut, kunjungi:"
-    },
     installer: {
         laradumps_settings: "Pengaturan LaraDumps",
         php_project_name: "Nama Proyek PHP",

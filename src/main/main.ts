@@ -30,8 +30,6 @@ let tray: Electron.Tray;
 let isQuiting: boolean;
 let globalUpdateInfo: UpdateInfo;
 
-const minPackageVersion = "2000";
-
 storage.setDataPath(os.tmpdir());
 
 if (!isDev) {
@@ -56,21 +54,6 @@ if (!isDev) {
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
     if (!Object.prototype.hasOwnProperty.call(arg.content, "meta")) {
-        return;
-    }
-
-    const packageVersion: string = arg.content.meta.laradumps_version.replaceAll(".", "");
-
-    if (packageVersion === "000") {
-        event.sender.send(arg.type, arg);
-    }
-
-    if (!isNaN(Number(packageVersion)) && parseInt(packageVersion) < parseInt(minPackageVersion.replaceAll(".", ""))) {
-        event.sender.send("ipc:package-down", {
-            packageVersion,
-            minPackageVersion
-        });
-
         return;
     }
 

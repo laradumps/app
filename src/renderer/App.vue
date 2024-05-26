@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref } from "vue";
-import ThePackageUpdateInfo from "@/components/ThePackageUpdateInfo.vue";
 import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
 import { useScreenStore } from "@/store/screen";
 import { useAppearanceStore } from "@/store/appearance";
@@ -22,12 +21,9 @@ import WelcomePage from "@/components/WelcomePage.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
-import QueriesControl from "@/components/QueriesControl.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
-import SvgLivewire from "@/components/Svg/SvgLivewire.vue";
 
-markRaw(ThePackageUpdateInfo);
 markRaw(TheUpdateModalInfo);
 
 const screenStore = useScreenStore();
@@ -589,8 +585,6 @@ function registerDefaultLocalShortcuts() {
             class="absolute w-full h-full min-h-full"
         >
             <div>
-                <ThePackageUpdateInfo />
-
                 <TheAppUpdateInfo />
 
                 <TheNavBar
