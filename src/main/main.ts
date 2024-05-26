@@ -95,8 +95,24 @@ function createWindow(): BrowserWindow {
         autoUpdater.autoDownload = false;
 
         autoUpdater.on("update-available", async (updateInfo: UpdateInfo): Promise<void> => {
-            globalUpdateInfo = updateInfo;
-            mainWindow.webContents.send("update-available", updateInfo);
+            setTimeout(async (): Promise<void> => {
+                if (process.platform === "darwin") {
+                    globalUpdateInfo = updateInfo;
+                    mainWindow.webContents.send("update-available", updateInfo);
+                } else {
+                    const result = await dialog.showMessageBox({
+                        type: "info",
+                        title: "LaraDumps update available!",
+                        message: "There are updates available for LaraDumps App. Would you like to update it now?",
+                        buttons: ["Yes", "No"]
+                    });
+
+                    if (result.response === 0) {
+                        mainWindow.webContents.send("update-info", updateInfo);
+                        await autoUpdater.downloadUpdate();
+                    }
+                }
+            }, 2000);
         });
 
         autoUpdater.on("update-downloaded", async (): Promise<void> => {
