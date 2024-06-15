@@ -25,13 +25,14 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
     const thead = document.createElement("thead");
     const thr = document.createElement("tr");
 
-    thr.setAttribute("class", "text-xs uppercase");
+    thr.setAttribute("class", "text-xs");
     table.setAttribute("id", `table-${payloadId}`);
     table.setAttribute("class", "table text-base-content");
 
     fieldTitles.forEach((fieldTitle) => {
         const th = document.createElement("th");
         th.appendChild(document.createTextNode(fieldTitle));
+        th.setAttribute('class', '!lowercase')
         thr.appendChild(th);
     });
     thead.appendChild(thr);
@@ -46,6 +47,7 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
         fields.forEach((field) => {
             const td = document.createElement("td");
             td.appendChild(document.createTextNode(object[field]));
+            td.setAttribute('class', 'whitespace-nowrap')
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -81,8 +83,8 @@ const searchableTable = (search, id) => {
     <div class="space-y-2 rounded-sm pr-2">
         <div>
             <div>
-                <div class="flex justify-start">
-                    <label class="flex justify-end input input-bordered input-sm items-e gap-2 max-w-[200px]">
+                <div class="flex justify-end mt-1">
+                    <label class="flex !justify-end input input-bordered input-sm gap-2 max-w-[300px]">
                         <input
                             v-model="search"
                             type="text"

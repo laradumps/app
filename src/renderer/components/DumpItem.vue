@@ -164,7 +164,7 @@ const color = computed(() => {
                         ></div>
                         <div class="gap-4 flex absolute right-0 z-100">
                             <div
-                                v-if="!['queries', 'table_v2'].includes(props.payload.type)"
+                                v-if="!['queries', 'table', 'table_v2'].includes(props.payload.type)"
                                 class="transition-all -mt-2 items-center text-base-content"
                             >
                                 <div
