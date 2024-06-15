@@ -13,13 +13,14 @@ body {
 
 ::-webkit-scrollbar {
     width: 11px;
-    height: 11px;
+    height: 14px;
 }
 
 ::-webkit-scrollbar-thumb {
     background-color: rgb(203, 206, 210);
     border: 3px solid transparent;
     background-clip: content-box;
+    border-radius: 8px
 }
 
 ::-webkit-scrollbar-track {

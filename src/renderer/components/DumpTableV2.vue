@@ -89,7 +89,7 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
 </script>
 
 <template>
-    <div class="dstable">
+    <div class="dstable dstable-v2">
         <div v-html="table"></div>
     </div>
 </template>

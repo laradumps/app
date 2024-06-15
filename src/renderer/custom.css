@@ -19,10 +19,10 @@
     @apply border-b bg-base-100 text-base-content;
 }
 
-.dstable table tbody tr td:first-child {
-    @apply text-primary !rounded-none;
+.dstable-v2 table tbody tr td:first-child {
+    @apply text-secondary !rounded-none;
 }
 
 .dstable table tbody td {
-    @apply py-2 px-4 text-left rounded-lg;
+    @apply py-2 px-4 text-left rounded-sm;
 }
