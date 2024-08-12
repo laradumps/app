@@ -92,5 +92,7 @@ export default {
         install: "Install",
         version: "Version",
         release_date: "Release Date"
-    }
+    },
+    pause: "Pause",
+    is_paused: "LaraDumps is paused."
 };

@@ -32,7 +32,7 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
     fieldTitles.forEach((fieldTitle) => {
         const th = document.createElement("th");
         th.appendChild(document.createTextNode(fieldTitle));
-        th.setAttribute('class', '!lowercase')
+        th.setAttribute("class", "!lowercase");
         thr.appendChild(th);
     });
     thead.appendChild(thr);
@@ -47,7 +47,7 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
         fields.forEach((field) => {
             const td = document.createElement("td");
             td.appendChild(document.createTextNode(object[field]));
-            td.setAttribute('class', 'whitespace-nowrap')
+            td.setAttribute("class", "whitespace-nowrap");
             tr.appendChild(td);
         });
         tbody.appendChild(tr);

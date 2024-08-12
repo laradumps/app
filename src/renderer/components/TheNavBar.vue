@@ -6,6 +6,7 @@ import { useSettingStore } from "@/store/setting";
 import GlobalSearch from "@/components/GlobalSearch.vue";
 import TheNavBarListening from "@/components/TheNavBarListening.vue";
 import HeaderGlobalFilter from "@/components/HeaderColorsFilter.vue";
+import NavBarPause from "@/components/NavBarPause.vue";
 
 defineProps({
     hasColor: {
@@ -45,11 +46,14 @@ const clear = () => {
             </a>
         </nav>
 
-        <div class="flex gap-1 items-center">
+        <div class="flex gap-2 items-center mt-0.5">
             <HeaderGlobalFilter v-bind:has-color="hasColor" />
 
             <!-- global search -->
             <GlobalSearch v-if="payloadCount > 0" />
+
+            <!-- pause -->
+            <NavBarPause />
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />
