@@ -125,7 +125,7 @@ const setActiveProject = () => {
         </div>
         <ul
             tabindex="0"
-            class="dropdown-content z-200 menu p-2 bg-base-200 border shadow-lg rounded-box w-60 mt-[35px] !right-0"
+            class="dropdown-content z-200 menu p-2 bg-base-200 border border-base-content/10 shadow-lg rounded-box w-60 mt-[35px] !right-0"
         >
             <select
                 v-model="selectedProject"
