@@ -66,7 +66,7 @@ const allRequests = computed(() => {
     let requests = timeStore.groups.map((group, index) => ({
         index: index + 1,
         id: group,
-        label: (index + 1) + " - " + timeStore.getTime(group) + " - " + timeStore.getTotal(group).toFixed(2) + "ms"
+        label: index + 1 + " - " + timeStore.getTime(group) + " - " + timeStore.getTotal(group).toFixed(2) + "ms"
     }));
 
     requests.sort((a, b) => b.index - a.index);

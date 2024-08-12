@@ -50,7 +50,7 @@ const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
 const applicationPath = ref("");
 const livewireRequests = ref([]);
-
+const isPaused = ref(false);
 onBeforeMount(() => {
     locale.value = localeStore.value;
     localStorage.updateAvailable = "false";
@@ -66,6 +66,10 @@ onMounted(() => {
     window.ipcRenderer.send("environment::get");
 
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
+
+    window.ipcRenderer.on("app:pause-dumps", (event, arg) => {
+        isPaused.value = arg;
+    });
 
     window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
         if (arg === 0) {
@@ -466,6 +470,10 @@ type EventType = "label" | "color" | "screen" | "dump";
 const interval = ref(null);
 
 const dispatch = (type: string, event: EventType, content: any): void => {
+    if (isPaused.value) {
+        return;
+    }
+
     if (applicationPath.value != content.application_path) {
         window.ipcRenderer.send("environment::check", {
             applicationPath: content.application_path
@@ -594,6 +602,13 @@ function registerDefaultLocalShortcuts() {
                     v-model:has-color="hasColor"
                     @clear-all="clearAll($event)"
                 />
+
+                <div
+                    v-if="isPaused"
+                    class="bg-warning tracking-wider text-center uppercase text-warning-content text-xs py-1 my-1"
+                >
+                    {{ $t("is_paused") }}
+                </div>
 
                 <!-- content -->
                 <div class="flex overflow-hidden flex-col flex-1 right-0 absolute left-0 h-fill-available">

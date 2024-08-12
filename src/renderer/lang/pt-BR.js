@@ -89,5 +89,7 @@ export default {
         install: "Instalar",
         version: "Versão",
         release_date: "Lançamento"
-    }
+    },
+    pause: "Pausar",
+    is_paused: "LaraDumps está em pausa."
 };

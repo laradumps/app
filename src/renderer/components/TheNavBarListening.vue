@@ -120,12 +120,12 @@ const setActiveProject = () => {
             <SignalIcon
                 v-else
                 :class="{ 'animate-pulse text-primary': newProject }"
-                class="w-4 text-success hover:text-primary"
+                class="w-4 text-base-content hover:text-primary"
             />
         </div>
         <ul
             tabindex="0"
-            class="dropdown-content z-200 menu p-2 bg-base-100 shadow-lg rounded-box w-52 mt-[35px] !right-0"
+            class="dropdown-content z-200 menu p-2 bg-base-200 border shadow-lg rounded-box w-60 mt-[35px] !right-0"
         >
             <select
                 v-model="selectedProject"

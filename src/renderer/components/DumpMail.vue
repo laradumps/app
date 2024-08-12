@@ -16,20 +16,20 @@ interface Attachment {
 }
 
 const mimeTypeMap: { [key: string]: string } = {
-    'pdf': 'application/pdf',
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png',
-    'gif': 'image/gif',
-    'txt': 'text/plain',
-    'html': 'text/html',
+    pdf: "application/pdf",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    txt: "text/plain",
+    html: "text/html"
 };
 
 const getMimeTypeFromFilename = (filename: string | null): string => {
-    if (!filename) return 'application/octet-stream';
+    if (!filename) return "application/octet-stream";
 
-    const extension = filename.split('.').pop()?.toLowerCase() || '';
-    return mimeTypeMap[extension] || 'application/octet-stream';
+    const extension = filename.split(".").pop()?.toLowerCase() || "";
+    return mimeTypeMap[extension] || "application/octet-stream";
 };
 
 const openInBrowser = (attachment: Attachment) => {
@@ -53,7 +53,7 @@ const openInBrowser = (attachment: Attachment) => {
 
         const url = URL.createObjectURL(blob);
 
-        window.open(url, '_blank');
+        window.open(url, "_blank");
 
         setTimeout(() => URL.revokeObjectURL(url), 100);
     }
@@ -65,7 +65,6 @@ const createNewWindow = () => {
         url: `http://localhost:9191/${filePath.value}.html`
     });
 };
-
 
 onMounted(() => {
     filePath.value = Math.random().toString(36).slice(2, 7);

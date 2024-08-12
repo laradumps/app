@@ -442,3 +442,7 @@ ipcMain.on("native-theme", () => {
 nativeTheme.on("updated", () => {
     nativeTheme.shouldUseDarkColors ? mainWindow.webContents.send("app:theme-dark") : mainWindow.webContents.send("app:theme-light");
 });
+
+ipcMain.on("main:pause-dumps", (event, args) => {
+    mainWindow.webContents.send("app:pause-dumps", args);
+});
