@@ -65,7 +65,7 @@ onMounted(() => {
     }
 });
 
-const color = computed(() => {
+const borderColor = computed(() => {
     let border;
     let color;
 
@@ -99,13 +99,49 @@ const color = computed(() => {
 
     return border;
 });
+
+const bgColor = computed(() => {
+    let bg;
+    let color;
+
+    if (typeof props.payload.color !== "undefined") {
+        color = props.payload.color;
+    }
+
+    switch (color) {
+        case "red":
+            bg = "!bg-error/10";
+            break;
+        case "warning":
+        case "orange":
+            bg = "!bg-warning/10";
+            break;
+        case "green":
+            bg = "!bg-success/10";
+            break;
+        case "blue":
+            bg = "!bg-info/10";
+            break;
+        case "gray":
+            bg = "!bg-neutral/10";
+            break;
+        case "black":
+            bg = "!bg-black/10";
+            break;
+        default:
+            props.payload.color;
+    }
+
+    return bg;
+});
 </script>
 <template>
     <div class="group text-sm pt-2">
         <div class="px-3 w-full">
             <div
                 :class="{
-                    [`!border-l-4 ` + color]: typeof color !== 'undefined',
+                    [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
+                    [`!bg-` + bgColor]: typeof bgColor !== 'undefined',
                     'collapse-open': open,
                     'collapse-close': open
                 }"

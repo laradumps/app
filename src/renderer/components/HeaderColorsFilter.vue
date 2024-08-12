@@ -21,23 +21,23 @@ const isDark = computed(() => ({
 }));
 
 const isRed = computed(() => ({
-    "bg-red-500": selectedColors.colors.includes("red")
+    "bg-red-500": selectedColors.colors.includes("error")
 }));
 
 const isGray = computed(() => ({
-    "bg-gray-500": selectedColors.colors.includes("gray")
+    "bg-gray-500": selectedColors.colors.includes("neutral")
 }));
 
 const isBlue = computed(() => ({
-    "bg-blue-500": selectedColors.colors.includes("blue")
+    "bg-blue-500": selectedColors.colors.includes("info")
 }));
 
 const isGreen = computed(() => ({
-    "bg-green-500": selectedColors.colors.includes("green")
+    "bg-green-500": selectedColors.colors.includes("success")
 }));
 
 const isOrange = computed(() => ({
-    "bg-orange-500": selectedColors.colors.includes("orange")
+    "bg-orange-500": selectedColors.colors.includes("warning")
 }));
 </script>
 
@@ -46,7 +46,7 @@ const isOrange = computed(() => ({
         class="space-x-2 flex justify-end items-center"
         v-if="screenStore.screen !== 'Queries' && hasColor"
     >
-        <div class="h-full flex gap-2">
+        <div class="h-full flex gap-2 px-2">
             <button
                 :class="isDark"
                 @click="selectedColors.add('black')"
@@ -57,38 +57,38 @@ const isOrange = computed(() => ({
 
             <button
                 :class="isRed"
-                @click="selectedColors.add('red')"
+                @click="selectedColors.add('error')"
                 value="red"
                 type="button"
-                class="badge badge-xs border-[#ff0000]"
+                class="badge badge-xs border-error"
             ></button>
 
             <button
                 :class="isOrange"
-                @click="selectedColors.add('orange')"
+                @click="selectedColors.add('warning')"
                 type="button"
-                class="badge badge-xs border-[orange]"
+                class="badge badge-xs border-warning"
             ></button>
 
             <button
                 :class="isBlue"
-                @click="selectedColors.add('blue')"
+                @click="selectedColors.add('info')"
                 type="button"
-                class="badge badge-xs border-[blue]"
+                class="badge badge-xs border-info"
             ></button>
 
             <button
                 :class="isGreen"
-                @click="selectedColors.add('green')"
+                @click="selectedColors.add('success')"
                 type="button"
-                class="badge badge-xs border-[green]"
+                class="badge badge-xs border-success"
             ></button>
 
             <button
                 :class="isGray"
-                @click="selectedColors.add('gray')"
+                @click="selectedColors.add('neutral')"
                 type="button"
-                class="badge badge-xs border-[gray]"
+                class="badge badge-xs border-neutral"
             ></button>
         </div>
     </div>
