@@ -1,4 +1,4 @@
-import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, globalShortcut } from "electron";
+import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell } from "electron";
 import windowStateKeeper from "electron-window-state";
 import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import { download } from "electron-dl";
@@ -31,6 +31,8 @@ let isQuiting: boolean;
 let globalUpdateInfo: UpdateInfo;
 
 storage.setDataPath(os.tmpdir());
+
+const electronLocalShortcut = require("electron-localshortcut");
 
 if (!isDev) {
     const autoLauncher = new AutoLaunch({ name: "LaraDumps" });
@@ -132,11 +134,7 @@ function createWindow(): BrowserWindow {
         });
     }
 
-    app.on("will-quit", (): void => {
-        globalShortcut.unregisterAll();
-    });
-
-    globalShortcut.register("CommandOrControl+Shift+X", (): void => {
+    electronLocalShortcut.register("CommandOrControl+Shift+X", (): void => {
         mainWindow.reload();
 
         mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
@@ -258,11 +256,6 @@ app.on("activate", (): void => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
-});
-
-app.on("will-quit", () => {
-    globalShortcut.unregister("CommandOrControl+Shift+X");
-    globalShortcut.unregisterAll();
 });
 
 app.on("browser-window-focus", (): void => {
