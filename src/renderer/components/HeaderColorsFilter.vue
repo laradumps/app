@@ -21,23 +21,23 @@ const isDark = computed(() => ({
 }));
 
 const isRed = computed(() => ({
-    "bg-red-500": selectedColors.colors.includes("error")
+    "bg-error": selectedColors.colors.includes("red")
 }));
 
 const isGray = computed(() => ({
-    "bg-gray-500": selectedColors.colors.includes("neutral")
+    "bg-gray-500": selectedColors.colors.includes("gray")
 }));
 
 const isBlue = computed(() => ({
-    "bg-blue-500": selectedColors.colors.includes("info")
+    "bg-info": selectedColors.colors.includes("blue")
 }));
 
 const isGreen = computed(() => ({
-    "bg-green-500": selectedColors.colors.includes("success")
+    "bg-success": selectedColors.colors.includes("green")
 }));
 
 const isOrange = computed(() => ({
-    "bg-orange-500": selectedColors.colors.includes("warning")
+    "bg-warning": selectedColors.colors.includes("orange")
 }));
 </script>
 
@@ -57,7 +57,7 @@ const isOrange = computed(() => ({
 
             <button
                 :class="isRed"
-                @click="selectedColors.add('error')"
+                @click="selectedColors.add('red')"
                 value="red"
                 type="button"
                 class="badge badge-xs border-error"
@@ -65,30 +65,30 @@ const isOrange = computed(() => ({
 
             <button
                 :class="isOrange"
-                @click="selectedColors.add('warning')"
+                @click="selectedColors.add('orange')"
                 type="button"
                 class="badge badge-xs border-warning"
             ></button>
 
             <button
                 :class="isBlue"
-                @click="selectedColors.add('info')"
+                @click="selectedColors.add('blue')"
                 type="button"
                 class="badge badge-xs border-info"
             ></button>
 
             <button
                 :class="isGreen"
-                @click="selectedColors.add('success')"
+                @click="selectedColors.add('green')"
                 type="button"
                 class="badge badge-xs border-success"
             ></button>
 
             <button
                 :class="isGray"
-                @click="selectedColors.add('neutral')"
+                @click="selectedColors.add('gray')"
                 type="button"
-                class="badge badge-xs border-neutral"
+                class="badge badge-xs border-gray-400"
             ></button>
         </div>
     </div>
