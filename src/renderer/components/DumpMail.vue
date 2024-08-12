@@ -9,8 +9,54 @@ const props = defineProps<{
     payload: Payload;
 }>();
 
-const openInBrowser = (path: string) => {
-    window.ipcRenderer.send("main:openLink", "file:///" + path);
+interface Attachment {
+    path: string | null;
+    filename: string | null;
+    body: string | null;
+}
+
+const mimeTypeMap: { [key: string]: string } = {
+    'pdf': 'application/pdf',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'txt': 'text/plain',
+    'html': 'text/html',
+};
+
+const getMimeTypeFromFilename = (filename: string | null): string => {
+    if (!filename) return 'application/octet-stream';
+
+    const extension = filename.split('.').pop()?.toLowerCase() || '';
+    return mimeTypeMap[extension] || 'application/octet-stream';
+};
+
+const openInBrowser = (attachment: Attachment) => {
+    if (attachment.path) {
+        window.ipcRenderer.send("main:openLink", "file:///" + attachment.path);
+
+        return;
+    }
+
+    if (attachment.body && attachment.filename) {
+        const bin = atob(attachment.body);
+
+        const byteArray = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) {
+            byteArray[i] = bin.charCodeAt(i);
+        }
+
+        const mimeType = getMimeTypeFromFilename(attachment.filename);
+
+        const blob = new Blob([byteArray], { type: mimeType });
+
+        const url = URL.createObjectURL(blob);
+
+        window.open(url, '_blank');
+
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    }
 };
 
 const createNewWindow = () => {
@@ -19,6 +65,7 @@ const createNewWindow = () => {
         url: `http://localhost:9191/${filePath.value}.html`
     });
 };
+
 
 onMounted(() => {
     filePath.value = Math.random().toString(36).slice(2, 7);
@@ -87,7 +134,7 @@ onMounted(() => {
                         class="btn btn-primary flex gap-2 items-center"
                         v-for="attachment in props.payload.mail.attachments"
                         :key="attachment"
-                        @click.prevent="openInBrowser(attachment.path)"
+                        @click.prevent="openInBrowser(attachment)"
                     >
                         <CloudArrowDownIcon class="w-4 h-4" />
                         {{ attachment.filename }}
