@@ -174,13 +174,6 @@ app.whenReady().then(async (): Promise<void> => {
 
     // @ts-ignore
     mainWindow.on("close", function (event: Event): void {
-        if (isMac && !isQuiting) {
-            event.preventDefault();
-            mainWindow.minimize();
-
-            return;
-        }
-
         mainWindow.webContents.send("server:close", {});
     });
 
