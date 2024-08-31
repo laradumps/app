@@ -8,7 +8,7 @@
 }
 
 .dstable table thead th {
-    @apply py-2 px-4 text-left text-primary uppercase text-xs leading-normal;
+    @apply py-2 px-4  text-left text-primary uppercase text-xs leading-normal;
 }
 
 .dstable table tbody {
@@ -16,13 +16,13 @@
 }
 
 .dstable table tbody tr {
-    @apply border-b bg-base-100 text-base-content;
+    @apply border-[1px] border-base-content/10 bg-base-100 text-base-content;
 }
 
 .dstable-v2 table tbody tr td:first-child {
-    @apply text-secondary !rounded-none;
+    @apply border-[1px] border-neutral-content/10 text-neutral-content;
 }
 
 .dstable table tbody td {
-    @apply py-2 px-4 text-left rounded-sm;
+    @apply py-2 px-4 text-left;
 }
