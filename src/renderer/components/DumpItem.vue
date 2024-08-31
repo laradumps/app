@@ -21,6 +21,7 @@ import CopyToClick from "@/components/CopyToClick.vue";
 import { MinusIcon, PlusIcon } from "@heroicons/vue/16/solid";
 import DumpDump from "@/components/DumpDump.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
+import IconTrash from "@/components/Icons/IconTrash.vue";
 
 const timeStore = useTimeStore();
 
@@ -207,13 +208,13 @@ const bgColor = computed(() => {
                                 class="transition-all -mt-2 items-center text-base-content"
                             >
                                 <div
-                                    class="right-0 absolute top-0"
+                                    class="right-0 absolute -top-4"
                                     v-bind:class="{
                                         'opacity-100': openOptions,
                                         'opacity-0': !['query'].includes(props.payload.type)
                                     }"
                                 >
-                                    <ul class="flex items-center p-2 gap-3 shadow bg-base-100 rounded-box w-auto">
+                                    <ul class="flex items-center p-2 gap-3 shadow bg-base-300 rounded-box w-auto">
                                         <li
                                             :title="$t('click_to_copy')"
                                             class="p-1"
@@ -230,6 +231,15 @@ const bgColor = computed(() => {
                                             v-if="!inSavedDumpsWindow"
                                         >
                                             <a><IconSave class="cursor-pointer w-3 h-3 hover:opacity-75" /> </a>
+                                        </li>
+
+                                        <li
+                                            :title="$t('menu.remove')"
+                                            class="p-1"
+                                            @click="removeSaveDump"
+                                            v-if="inSavedDumpsWindow"
+                                        >
+                                            <a><IconTrash class="cursor-pointer size-4 hover:opacity-75" /> </a>
                                         </li>
                                     </ul>
                                 </div>

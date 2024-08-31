@@ -91,5 +91,6 @@ export default {
         release_date: "Lançamento"
     },
     pause: "Pausar",
-    is_paused: "LaraDumps está em pausa."
+    is_paused: "LaraDumps está em pausa.",
+    remove: "Remover"
 };
