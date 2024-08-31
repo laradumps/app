@@ -7,6 +7,13 @@ const isPaused = ref(false);
 
 onMounted(() => {});
 
+defineProps({
+    isSavedDumpsWindow: {
+        type: Boolean,
+        required: false
+    },
+});
+
 const togglePause = () => {
     isPaused.value = !isPaused.value;
 
@@ -16,6 +23,7 @@ const togglePause = () => {
 
 <template>
     <button
+        v-if="!isSavedDumpsWindow"
         :title="$t('pause')"
         :class="{
             '!text-primary': isPaused

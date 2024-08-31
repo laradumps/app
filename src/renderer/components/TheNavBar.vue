@@ -53,7 +53,7 @@ const clear = () => {
             <GlobalSearch v-if="payloadCount > 0" />
 
             <!-- pause -->
-            <NavBarPause />
+            <NavBarPause v-bind:is-saved-dumps-window="inSavedDumpsWindow" />
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />

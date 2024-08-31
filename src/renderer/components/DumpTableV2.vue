@@ -56,7 +56,7 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
             preAttributes.setAttribute("data-indent-pad", "  ");
             preAttributes.innerHTML = val[0];
 
-            td.setAttribute("style", "word-break: break-word;")
+            td.setAttribute("style", "word-break: break-word;");
             td.innerHTML = preAttributes.outerHTML;
         } else {
             if (typeof val[0] === "object") {
@@ -71,11 +71,11 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
                 const vueInstance = createApp(VueJsonPrettyComponent, propsData);
                 const mountedComponent = vueInstance.mount(container);
 
-                td.setAttribute("style", "word-break: break-word;")
+                td.setAttribute("style", "word-break: break-word;");
                 td.appendChild(container);
                 elements.push(mountedComponent);
             } else {
-                td.setAttribute("style", "word-break: break-word;")
+                td.setAttribute("style", "word-break: break-word;");
                 td.innerText = val[0];
             }
         }
