@@ -142,7 +142,7 @@ const bgColor = computed(() => {
             <div
                 :class="{
                     [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
-                    [`!bg-` + bgColor]: typeof bgColor !== 'undefined',
+                    [bgColor]: typeof bgColor !== 'undefined',
                     'collapse-open': open,
                     'collapse-close': open
                 }"
