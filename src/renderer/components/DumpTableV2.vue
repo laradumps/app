@@ -47,8 +47,8 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
 
         const td = document.createElement("td");
 
-        if (val[0] != null && val[1] != null) {
-            if (typeof val[0] === "object") {
+        if (typeof val === "object") {
+            if (typeof val[0] === "object" && typeof val[1] === "object") {
                 const container = document.createElement("div");
                 const VueJsonPrettyComponent = defineComponent(VueJsonPretty);
                 const propsData = {
@@ -76,7 +76,7 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
             }
         } else {
             td.setAttribute("style", "word-break: break-word;");
-            td.innerText = val[0];
+            td.innerText = val;
         }
 
         tr.appendChild(td);
