@@ -28,7 +28,6 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
     const div = document.createElement("div");
     const table = document.createElement("table");
 
-    // div.setAttribute("class", "overflow-x-auto rounded-lg");
     table.setAttribute("id", `table-${payloadId}`);
     table.setAttribute("class", "table w-full");
 
@@ -48,17 +47,7 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
 
         const td = document.createElement("td");
 
-        if (["Headers", "Body", "Cookies", "Data"].includes(key)) {
-            elements.push(`sf-dump-${val[1]}`);
-            const preAttributes = document.createElement("pre");
-            preAttributes.setAttribute("class", "sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line");
-            preAttributes.setAttribute("id", `sf-dump-${val[1]}`);
-            preAttributes.setAttribute("data-indent-pad", "  ");
-            preAttributes.innerHTML = val[0];
-
-            td.setAttribute("style", "word-break: break-word;");
-            td.innerHTML = preAttributes.outerHTML;
-        } else {
+        if (val[0] != null && val[1] != null) {
             if (typeof val[0] === "object") {
                 const container = document.createElement("div");
                 const VueJsonPrettyComponent = defineComponent(VueJsonPretty);
@@ -75,9 +64,19 @@ const createTableV2 = (values: string[] | undefined, payloadId: string, headerSt
                 td.appendChild(container);
                 elements.push(mountedComponent);
             } else {
+                elements.push(`sf-dump-${val[1]}`);
+                const preAttributes = document.createElement("pre");
+                preAttributes.setAttribute("class", "sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line");
+                preAttributes.setAttribute("id", `sf-dump-${val[1]}`);
+                preAttributes.setAttribute("data-indent-pad", "  ");
+                preAttributes.innerHTML = val[0];
+
                 td.setAttribute("style", "word-break: break-word;");
-                td.innerText = val[0];
+                td.innerHTML = preAttributes.outerHTML;
             }
+        } else {
+            td.setAttribute("style", "word-break: break-word;");
+            td.innerText = val[0];
         }
 
         tr.appendChild(td);
