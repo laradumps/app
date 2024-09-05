@@ -125,13 +125,12 @@ const setActiveProject = () => {
         </div>
         <ul
             tabindex="0"
-            style="height: calc(100vh);"
-            class="dropdown-content z-200 menu p-2 bg-base-200 border border-base-content/20 shadow-lg rounded-box w-auto mt-[35px] !right-0"
+            class="dropdown-content overflow-y-auto z-200 menu p-2 bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto mt-[35px] !right-0"
         >
             <select
                 v-model="selectedProject"
                 @change="setActiveProject()"
-                class="mb-3 select select-bordered select-xs w-full h-[1.85rem] font-semibold max-w-xs"
+                class="mb-3 select select-bordered select-xs bg-neutral text-neutral-content w-full h-[1.85rem] font-semibold max-w-xs"
             >
                 <option value="">Select a project</option>
 
@@ -157,24 +156,24 @@ const setActiveProject = () => {
                     v-for="env in environments"
                 >
                     <label
-                        class="label !justify-start !text-left p-1.5"
+                        class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5"
                         :class="{ 'bg-base-200': env.selected }"
                     >
                         <input
                             type="checkbox"
                             :name="`env-` + env.id"
                             v-model="env.selected"
-                            class="toggle toggle-xs toggle-primary"
+                            class="toggle toggle-xs toggle-accent"
                             @change="save"
                         />
-                        <span class="text-[10px] whitespace-nowrap tracking-wider font-bold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
+                        <span class="text-[10px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
                     </label>
                 </li>
             </div>
 
             <div v-if="environments.length > 0">
                 <button
-                    class="btn btn-danger btn-warning mt-6 w-[100px] text-[10px]"
+                    class="btn btn-error mt-6 w-[100px] text-[10px]"
                     @click="removeEnvironment"
                 >
                     Remove Project
