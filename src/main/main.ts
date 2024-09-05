@@ -14,10 +14,8 @@ import {
 import windowStateKeeper from "electron-window-state";
 import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import { download } from "electron-dl";
-import JSConfetti from "js-confetti";
 
 import path, { join, resolve } from "path";
-import os from "os";
 import * as url from "url";
 import fs from "fs";
 

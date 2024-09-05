@@ -129,7 +129,7 @@ const setActiveProject = () => {
         </div>
         <ul
             tabindex="0"
-            class="dropdown-content overflow-y-auto z-200 menu p-2 bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto mt-[35px] !right-0"
+            class="dropdown-content min-w-40 overflow-y-auto z-200 menu p-2 bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto mt-[35px] !right-0"
         >
             <select
                 v-model="selectedProject"
@@ -154,7 +154,7 @@ const setActiveProject = () => {
                 No laradumps.yaml found in this project
             </div>
 
-            <div class="overflow-auto" style="height: calc(100vh - 10rem)">
+            <div class="overflow-auto" :style="{'height: calc(100vh - 11rem)' : environments.length > 0}">
                 <li
                     :key="env.value"
                     v-for="env in environments"
