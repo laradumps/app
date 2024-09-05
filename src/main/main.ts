@@ -9,6 +9,10 @@ import fs from "fs";
 
 import storage from "electron-json-storage";
 
+import Store from 'electron-store';
+
+const store = new Store();
+
 import { initSavedDumps } from "./window/saved-dumps";
 import { initCoffeeWindow } from "./window/coffee";
 
@@ -439,11 +443,6 @@ ipcMain.on("main:pause-dumps", (event, args) => {
     mainWindow.webContents.send("app:pause-dumps", args);
 });
 
-interface EnvironmentStorage {
-    project: string;
-    path: any;
-}
-
 interface DataStructure {
     app: {
         primary_host: string;
@@ -466,70 +465,43 @@ interface DataStructure {
 }
 
 ipcMain.on("environment::get", async () => {
-    const environments = await new Promise((resolve, reject) => {
-        storage.get(`environments`, (error, data: Object) => {
-            if (error) {
-                console.error("Error getting storage:", error);
-                reject(error);
-            } else {
-                resolve(data);
-            }
-        });
-    });
-
-    mainWindow.webContents.send("app-setting:set-environment", environments);
+    try {
+        const environments = store.get('environments', {});
+        mainWindow.webContents.send("app-setting:set-environment", environments);
+    } catch (error) {
+        console.error("Error getting storage:", error);
+    }
 });
 
-ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath: string }): void => {
-    let path = value.applicationPath;
+ipcMain.on("environment::check", (event, value) => {
+    let applicationPath = value.applicationPath;
 
-    if (path == "") {
+    if (!applicationPath) {
         new Notification({
             title: "LaraDumps Info",
             body: 'The file: "laradumps.yaml" is not found in the project root'
         }).show();
-
         return;
     }
 
-    if (path == undefined) {
-        return;
+    if (applicationPath.endsWith("/")) {
+        applicationPath = applicationPath.slice(0, -1);
     }
 
-    if (path.endsWith("/")) {
-        path = path.slice(0, -1);
+    const project = path.basename(applicationPath);
+
+    try {
+        const environments = store.get('environments', {});
+        if (!environments[project]) {
+            environments[project] = applicationPath;
+            store.set('environments', environments);
+            mainWindow.webContents.send("app-setting:project-added");
+        }
+        ipcMain.emit("environment::get");
+        setTimeout(() => mainWindow.webContents.send("app-setting:set-active", environments[project]), 200);
+    } catch (error) {
+        console.error("Error updating environments in storage:", error);
     }
-
-    const project = path.split("/").pop();
-
-    const addOrUpdateProjectInStorage = (): void => {
-        storage.get("environments", (error: Error | null, data: any) => {
-            if (error) {
-                console.error("Error getting environments from storage:", error);
-                return;
-            }
-
-            const environments = data || {};
-
-            if (!environments[project]) {
-                environments[project] = path;
-
-                storage.set("environments", environments, (error: Error | null): void => {
-                    if (error) {
-                        console.error("Error saving project to environments in storage:", error);
-                        return;
-                    }
-
-                    mainWindow.webContents.send("app-setting:project-added");
-                });
-            }
-
-            ipcMain.emit("environment::get");
-            setTimeout(() => mainWindow.webContents.send("app-setting:set-active", environments[project]), 200);
-        });
-    };
-
-    addOrUpdateProjectInStorage();
 });
 
 ipcMain.on("main:setting-get-environments", (event: IpcMainEvent, value: string): void => {
@@ -557,36 +529,28 @@ ipcMain.on("main:setting-get-environments", (event: IpcMainEvent, value: string)
     }
 });
 
-ipcMain.on("main:setting-remove-environments", (event: IpcMainEvent, value: string): void => {
-    let path = value;
+ipcMain.on("main:setting-remove-environments", (event, value) => {
+    let applicationPath = value;
 
-    if (path.endsWith("/")) {
-        path = path.slice(0, -1);
+    if (applicationPath.endsWith("/")) {
+        applicationPath = applicationPath.slice(0, -1);
     }
 
-    const project = path.split("/").pop();
+    const project = path.basename(applicationPath);
 
-    storage.get("environments", (error: Error | null, environments: any) => {
-        if (error) {
-            console.error("Error retrieving storage:", error);
-            return;
-        }
-
+    try {
+        const environments = store.get('environments', {});
         if (!environments || !environments[project]) {
             console.error(`Project "${project}" not found in environments.`);
             return;
         }
 
         delete environments[project];
-
-        storage.set("environments", environments, (error: Error | null) => {
-            if (error) {
-                console.error("Error updating storage:", error);
-            } else {
-                ipcMain.emit("environment::get");
-            }
-        });
-    });
+        store.set('environments', environments);
+        ipcMain.emit("environment::get");
+    } catch (error) {
+        console.error("Error updating storage:", error);
+    }
 });
 
 ipcMain.on("main:settings-update-environment", (event: Electron.IpcMainEvent, value): void => {
