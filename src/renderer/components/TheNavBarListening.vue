@@ -41,9 +41,7 @@ onMounted(async () => {
     });
 
     window.ipcRenderer.on("app-setting:set-environment", (event, value: object) => {
-
-        console.log(value)
-        const projectsArray = Object.keys(value).map(key => ({ project: key, path: value[key] }));
+        const projectsArray = Object.keys(value).map((key) => ({ project: key, path: value[key] }));
 
         projects.value = projectsArray;
 
@@ -154,7 +152,10 @@ const setActiveProject = () => {
                 No laradumps.yaml found in this project
             </div>
 
-            <div class="overflow-auto" :style="{'height: calc(100vh - 11rem)' : environments.length > 0}">
+            <div
+                class="overflow-auto"
+                style="height: calc(100vh - 11rem)"
+            >
                 <li
                     :key="env.value"
                     v-for="env in environments"

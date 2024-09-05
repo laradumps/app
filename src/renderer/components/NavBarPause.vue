@@ -11,7 +11,7 @@ defineProps({
     isSavedDumpsWindow: {
         type: Boolean,
         required: false
-    },
+    }
 });
 
 const togglePause = () => {

@@ -1,16 +1,4 @@
-import {
-    app,
-    Tray,
-    nativeTheme,
-    nativeImage,
-    BrowserWindow,
-    Menu,
-    BrowserWindowConstructorOptions,
-    dialog,
-    ipcMain,
-    shell,
-    IpcMainEvent, Notification
-} from "electron";
+import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, IpcMainEvent, Notification } from "electron";
 import windowStateKeeper from "electron-window-state";
 import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import { download } from "electron-dl";
@@ -199,9 +187,9 @@ app.whenReady().then(async (): Promise<void> => {
 
     configureLocalShortcut(mainWindow);
 
-    const userDataPath = app.getPath('userData');
+    const userDataPath = app.getPath("userData");
 
-    storage.setDataPath(path.join(userDataPath, 'storage'));
+    storage.setDataPath(path.join(userDataPath, "storage"));
 
     if (isMac) {
         const iconPath: string = path.join(app.getAppPath(), "src/img/icon@2x.png");
@@ -451,7 +439,6 @@ ipcMain.on("main:pause-dumps", (event, args) => {
     mainWindow.webContents.send("app:pause-dumps", args);
 });
 
-
 interface EnvironmentStorage {
     project: string;
     path: any;
@@ -488,7 +475,7 @@ ipcMain.on("environment::get", async () => {
                 resolve(data);
             }
         });
-    })
+    });
 
     mainWindow.webContents.send("app-setting:set-environment", environments);
 });
@@ -516,7 +503,7 @@ ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath:
     const project = path.split("/").pop();
 
     const addOrUpdateProjectInStorage = (): void => {
-        storage.get('environments', (error: Error | null, data: any) => {
+        storage.get("environments", (error: Error | null, data: any) => {
             if (error) {
                 console.error("Error getting environments from storage:", error);
                 return;
@@ -527,7 +514,7 @@ ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath:
             if (!environments[project]) {
                 environments[project] = path;
 
-                storage.set('environments', environments, (error: Error | null): void => {
+                storage.set("environments", environments, (error: Error | null): void => {
                     if (error) {
                         console.error("Error saving project to environments in storage:", error);
                         return;
@@ -542,7 +529,7 @@ ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath:
         });
     };
 
-    addOrUpdateProjectInStorage()
+    addOrUpdateProjectInStorage();
 });
 
 ipcMain.on("main:setting-get-environments", (event: IpcMainEvent, value: string): void => {
@@ -579,7 +566,7 @@ ipcMain.on("main:setting-remove-environments", (event: IpcMainEvent, value: stri
 
     const project = path.split("/").pop();
 
-    storage.get('environments', (error: Error | null, environments: any) => {
+    storage.get("environments", (error: Error | null, environments: any) => {
         if (error) {
             console.error("Error retrieving storage:", error);
             return;
@@ -592,7 +579,7 @@ ipcMain.on("main:setting-remove-environments", (event: IpcMainEvent, value: stri
 
         delete environments[project];
 
-        storage.set('environments', environments, (error: Error | null) => {
+        storage.set("environments", environments, (error: Error | null) => {
             if (error) {
                 console.error("Error updating storage:", error);
             } else {
