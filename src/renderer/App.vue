@@ -65,8 +65,6 @@ onMounted(() => {
 
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
 
-    nextTick(() => window.ipcRenderer.send("environment::get"))
-
     window.ipcRenderer.on("app:pause-dumps", (event, arg) => {
         isPaused.value = arg;
     });

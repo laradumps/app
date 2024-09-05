@@ -20,6 +20,11 @@ const projects = ref<Project[]>([]);
 const environments = ref<Environment[]>([]);
 
 onMounted(async () => {
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => window.ipcRenderer.send("environment::get"), 500)
+    });
+
     projects.value = [];
 
     window.ipcRenderer.on("app-setting:project-added", () => {
@@ -145,7 +150,7 @@ const setActiveProject = () => {
 
             <div
                 v-if="environments.length === 0"
-                class="text-[10px]"
+                class="text-[10px] text-neutral-content"
             >
                 No laradumps.yaml found in this project
             </div>
