@@ -51,6 +51,7 @@ const inSavedDumpsWindow = ref(false);
 const applicationPath = ref("");
 const livewireRequests = ref([]);
 const isPaused = ref(false);
+
 onBeforeMount(() => {
     locale.value = localeStore.value;
     localStorage.updateAvailable = "false";
@@ -329,6 +330,8 @@ onMounted(() => {
             return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
         }
     });
+
+    window.ipcRenderer.send("environment::get");
 });
 
 window.ipcRenderer.on("changeTheme", (event, args) => {

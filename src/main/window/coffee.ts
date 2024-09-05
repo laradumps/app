@@ -55,8 +55,6 @@ const initCoffeeWindow = () => {
 ipcMain.on("coffee:grab-a-coffee", (event: Electron.IpcMainEvent, arg): void => {
     coffeeWindow.webContents.send("coffee:show-coffee-quote", arg);
 
-    storage.setDataPath(os.tmpdir());
-
     storage.keys((error, keys: string[]): void => {
         if (error) throw error;
 

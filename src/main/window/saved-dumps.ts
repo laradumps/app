@@ -59,7 +59,6 @@ ipcMain.on("saved-dumps:show", (event: Electron.IpcMainEvent, arg: any) => {
 });
 
 ipcMain.on("saved-dumps:load", () => {
-    storage.setDataPath(os.tmpdir());
     let data;
 
     storage.keys(async (error, keys: string[]) => {
@@ -74,7 +73,6 @@ ipcMain.on("saved-dumps:load", () => {
 });
 
 ipcMain.on("saved-dumps:remove", (event, arg) => {
-    storage.setDataPath(os.tmpdir());
     storage.remove(arg, (error) => {
         if (error) throw error;
     });
@@ -83,7 +81,6 @@ ipcMain.on("saved-dumps:remove", (event, arg) => {
 ipcMain.on("main:save-dumps", (event, arg) => {
     const payloadId = JSON.parse(arg).id;
 
-    storage.setDataPath(os.tmpdir());
     storage.set(payloadId, arg, (error) => {
         if (error) throw error;
     });

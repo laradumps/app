@@ -42,8 +42,6 @@ let tray: Electron.Tray;
 let isQuiting: boolean;
 let globalUpdateInfo: UpdateInfo;
 
-storage.setDataPath(os.tmpdir());
-
 const electronLocalShortcut = require("electron-localshortcut");
 
 if (!isDev) {
@@ -478,38 +476,19 @@ interface DataStructure {
     };
 }
 
-
 ipcMain.on("environment::get", async () => {
-    const all = (): Promise<EnvironmentStorage[]> => {
-        return new Promise((resolve, reject) => {
-            storage.keys((error: Error | null, keys: string[]) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-
-                const projects: EnvironmentStorage[] = [];
-
-                for (const key of keys) {
-                    if (key.startsWith("environment_")) {
-                        const project = key.replace("environment_", "");
-                        const path = storage.getSync(key);
-                        const existingProjectIndex = projects.findIndex((p) => p.project === project);
-                        if (existingProjectIndex === -1) {
-                            projects.push({ project, path });
-                        } else {
-                            projects[existingProjectIndex].path = path;
-                        }
-                    }
-                }
-
-                resolve(projects);
-            });
+    const environments = await new Promise((resolve, reject) => {
+        storage.get(`environments`, (error, data: Object) => {
+            if (error) {
+                console.error("Error getting storage:", error);
+                reject(error);
+            } else {
+                resolve(data);
+            }
         });
-    };
+    })
 
-    const environmentStorages = await all();
-    mainWindow.webContents.send("app-setting:set-environment", environmentStorages);
+    mainWindow.webContents.send("app-setting:set-environment", environments);
 });
 
 ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath: string }): void => {
@@ -534,47 +513,34 @@ ipcMain.on("environment::check", (event: IpcMainEvent, value: { applicationPath:
 
     const project = path.split("/").pop();
 
-    // Check if the storage key 'environment_' + project exists
-    storage.has(`environment_${project}`, (error: Error | null, hasKey: boolean): void => {
-        if (error) {
-            console.error("Error checking storage:", error);
-            return;
-        }
+    const addOrUpdateProjectInStorage = (): void => {
+        storage.get('environments', (error: Error | null, data: any) => {
+            if (error) {
+                console.error("Error getting environments from storage:", error);
+                return;
+            }
 
-        // If the key doesn't exist, add it with the corresponding value
-        if (!hasKey) {
-            storage.set(`environment_${project}`, path, (error: Error | null): void => {
-                if (error) {
-                    console.error("Error setting storage:", error);
-                    return;
-                }
+            const environments = data || {};
 
-                mainWindow.webContents.send("app-setting:project-added");
+            if (!environments[project]) {
+                environments[project] = path;
 
-                console.log(`Added environment_${project} to storage with value: ${path}`);
-            });
-        } else {
-            console.log(`environment_${project} already exists in storage.`);
-        }
-
-        const storageEnvironment = (): Promise<object> => {
-            return new Promise((resolve) => {
-                storage.get(`environment_${project}`, (error: Error | null, data: any) => {
+                storage.set('environments', environments, (error: Error | null): void => {
                     if (error) {
-                        console.error("Error getting storage:", error);
-                        resolve({});
+                        console.error("Error saving project to environments in storage:", error);
                         return;
                     }
-                    resolve(data);
-                });
-            });
-        };
 
-        storageEnvironment().then(async (storageEnvironment: Object): Promise<void> => {
+                    mainWindow.webContents.send("app-setting:project-added");
+                });
+            }
+
             ipcMain.emit("environment::get");
-            setTimeout(() => mainWindow.webContents.send("app-setting:set-active", storageEnvironment), 200);
+            setTimeout(() => mainWindow.webContents.send("app-setting:set-active", environments[project]), 200);
         });
-    });
+    };
+
+    addOrUpdateProjectInStorage()
 });
 
 ipcMain.on("main:setting-get-environments", (event: IpcMainEvent, value: string): void => {
@@ -611,11 +577,26 @@ ipcMain.on("main:setting-remove-environments", (event: IpcMainEvent, value: stri
 
     const project = path.split("/").pop();
 
-    storage.remove(`environment_${project}`, (error: Error | null) => {
+    storage.get('environments', (error: Error | null, environments: any) => {
         if (error) {
-            console.error("Error removing storage:", error);
+            console.error("Error retrieving storage:", error);
+            return;
         }
-        ipcMain.emit("environment::get");
+
+        if (!environments || !environments[project]) {
+            console.error(`Project "${project}" not found in environments.`);
+            return;
+        }
+
+        delete environments[project];
+
+        storage.set('environments', environments, (error: Error | null) => {
+            if (error) {
+                console.error("Error updating storage:", error);
+            } else {
+                ipcMain.emit("environment::get");
+            }
+        });
     });
 });
 

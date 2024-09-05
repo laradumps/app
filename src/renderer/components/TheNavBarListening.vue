@@ -20,11 +20,6 @@ const projects = ref<Project[]>([]);
 const environments = ref<Environment[]>([]);
 
 onMounted(async () => {
-
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => window.ipcRenderer.send("environment::get"), 500)
-    });
-
     projects.value = [];
 
     window.ipcRenderer.on("app-setting:project-added", () => {
@@ -45,11 +40,15 @@ onMounted(async () => {
         }
     });
 
-    window.ipcRenderer.on("app-setting:set-environment", (event, value: Project[]) => {
-        projects.value = value;
+    window.ipcRenderer.on("app-setting:set-environment", (event, value: object) => {
 
-        if (value.length > 0) {
-            selectedProject.value = value[0].path;
+        console.log(value)
+        const projectsArray = Object.keys(value).map(key => ({ project: key, path: value[key] }));
+
+        projects.value = projectsArray;
+
+        if (projectsArray.length > 0) {
+            selectedProject.value = projectsArray[0].path;
             setActiveProject();
         }
     });
@@ -155,7 +154,7 @@ const setActiveProject = () => {
                 No laradumps.yaml found in this project
             </div>
 
-            <div class="overflow-auto">
+            <div class="overflow-auto" style="height: calc(100vh - 10rem)">
                 <li
                     :key="env.value"
                     v-for="env in environments"
@@ -178,7 +177,7 @@ const setActiveProject = () => {
 
             <div v-if="environments.length > 0">
                 <button
-                    class="btn btn-error mt-6 w-[100px] text-[10px]"
+                    class="btn btn-warning text-warning-content mt-6 w-[100px] text-[10px]"
                     @click="removeEnvironment"
                 >
                     Remove Project

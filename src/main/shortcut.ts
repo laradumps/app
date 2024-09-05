@@ -15,8 +15,6 @@ interface ShortcutData {
  * @param mainWindow - The BrowserWindow instance.
  */
 const registerLocalShortCutForClearAll = (mainWindow: BrowserWindow): void => {
-    storage.setDataPath(os.tmpdir());
-
     // @ts-ignore
     storage.get("ds_shortcut_clearAll", (error, data: ShortcutData): void => {
         if (error) {
@@ -45,8 +43,6 @@ const registerLocalShortCutForClearAll = (mainWindow: BrowserWindow): void => {
  * @param mainWindow - The BrowserWindow instance.
  */
 const registerLocalShortCutForAlwaysOnTop = (mainWindow: BrowserWindow): void => {
-    storage.setDataPath(os.tmpdir());
-
     // @ts-ignore
     storage.get("ds_shortcut_alwaysOnTop", (error, data: ShortcutData): void => {
         // eslint-disable-next-line no-console
@@ -69,8 +65,6 @@ const registerLocalShortCutForAlwaysOnTop = (mainWindow: BrowserWindow): void =>
  * @param mainWindow - The BrowserWindow instance.
  */
 const registerLocalShortCutForSearch = (mainWindow: BrowserWindow): void => {
-    storage.setDataPath(os.tmpdir());
-
     // @ts-ignore
     storage.get("ds_shortcut_globalSearch", (error, data: ShortcutData): void => {
         // eslint-disable-next-line no-console
@@ -140,8 +134,6 @@ function configureLocalShortcut(mainWindow: BrowserWindow): void {
      * Event listener for the "will-quit" event of the app.
      * Unregisters all global shortcuts when the app is about to quit.
      */
-
-    storage.setDataPath(os.tmpdir());
 
     ipcMain.on("local-shortcut:registerAll", () => {
         console.log("local-shortcut:registerAll");
