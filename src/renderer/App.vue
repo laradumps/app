@@ -63,9 +63,9 @@ onMounted(() => {
     window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
     window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
 
-    window.ipcRenderer.send("environment::get");
-
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
+
+    nextTick(() => window.ipcRenderer.send("environment::get"))
 
     window.ipcRenderer.on("app:pause-dumps", (event, arg) => {
         isPaused.value = arg;
