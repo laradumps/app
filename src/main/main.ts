@@ -199,6 +199,10 @@ app.whenReady().then(async (): Promise<void> => {
 
     configureLocalShortcut(mainWindow);
 
+    const userDataPath = app.getPath('userData');
+
+    storage.setDataPath(path.join(userDataPath, 'storage'));
+
     if (isMac) {
         const iconPath: string = path.join(app.getAppPath(), "src/img/icon@2x.png");
         let trayIcon: Electron.NativeImage = nativeImage.createFromPath(iconPath);
