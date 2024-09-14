@@ -8,7 +8,7 @@ import DumpLog from "@/components/DumpLog.vue";
 import DumpModel from "@/components/DumpModel.vue";
 import DumpTable from "@/components/DumpTable.vue";
 import DumpHTML from "@/components/DumpHTML.vue";
-import IconSave from "@/components/Icons/IconSave.vue";
+import SaveDump from "@/components/SaveDump.vue";
 import DumpTimeTrack from "@/components/DumpTimeTrack.vue";
 import DumpContains from "@/components/DumpContains.vue";
 import DumpMailable from "@/components/DumpMailable.vue";
@@ -18,9 +18,7 @@ import DumpQuery from "@/components/DumpQuery.vue";
 import { Payload } from "@/types/Payload";
 import DumpMail from "@/components/DumpMail.vue";
 import CopyToClick from "@/components/CopyToClick.vue";
-import { MinusIcon, PlusIcon } from "@heroicons/vue/16/solid";
 import DumpDump from "@/components/DumpDump.vue";
-import DumpLivewire from "@/components/DumpLivewire.vue";
 import IconTrash from "@/components/Icons/IconTrash.vue";
 
 const timeStore = useTimeStore();
@@ -146,16 +144,16 @@ const bgColor = computed(() => {
                     'collapse-open': open,
                     'collapse-close': open
                 }"
-                class="collapse bg-base-200/70 bg-laravel"
+                class="collapse bg-base-200/70 bg-laravel border border-base-content/5"
             >
                 <div
                     @dblclick="open = !open"
                     title="Double click to collapse"
-                    class="select-none hover:opacity-75 !cursor-default collapse-title gap-2 text-base-content opacity-70 justify-between items-center font-light flex text-[11px]"
+                    class="select-none !cursor-default collapse-title gap-2 text-base-content justify-between items-center font-light flex text-[12px]"
                 >
                     <ul
-                        class="flex gap-6"
-                        v-bind:style="props.payload.ide_handle ? 'list-style-type: disc;' : ''"
+                        class="flex gap-6 whitespace-nowrap"
+                        v-bind:style="props.payload.ide_handle.line ? 'list-style-type: disc;' : ''"
                     >
                         <li class="list-none">
                             {{ props.payload.date_time }}
@@ -164,27 +162,57 @@ const bgColor = computed(() => {
                             <DumpLink :ide-handler="props.payload.ide_handle" />
                         </li>
                     </ul>
-                    <div class="flex justify-center items-center">
+                    <div class="group flex justify-center items-center gap-2">
+                        <!-- variable type -->
+                        <div
+                            v-if="props.payload.dump?.variable_type !== undefined"
+                            class="text-[0.70rem]"
+                            v-text="`(${props.payload.dump.variable_type})`"
+                        ></div>
+
+                        <div
+                            :title="$t('click_to_copy')"
+                            class="hidden group-hover:block p-1"
+                            @click="copyDump"
+                        >
+                            <CopyToClick />
+                        </div>
+                        <div
+                            :title="$t('menu.saved_dumps')"
+                            class="hidden group-hover:block p-1"
+                            @click="saveDump"
+                            v-if="!inSavedDumpsWindow"
+                        >
+                            <SaveDump />
+                        </div>
+                        <div
+                            :title="$t('menu.remove')"
+                            class="hidden group-hover:block p-1"
+                            @click="removeSaveDump"
+                            v-if="inSavedDumpsWindow"
+                        >
+                            <IconTrash class="cursor-pointer size-4 hover:opacity-75" />
+                        </div>
                         <div
                             v-if="props.payload.type !== `queries`"
-                            class="text-primary uppercase text-[10px] font-semibold tracking-wider mr-3"
+                            class="badge text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto"
                         >
                             {{ props.payload.label ?? props.payload.type }}
                         </div>
-                        <button
-                            class="py-2"
-                            v-show="!open"
-                            v-on:click="open = true"
-                        >
-                            <PlusIcon class="w-4" />
-                        </button>
-                        <button
-                            class="py-2"
-                            v-show="open"
-                            v-on:click="open = false"
-                        >
-                            <MinusIcon class="w-4" />
-                        </button>
+                        <div class="-mr-2 text-base-content/70 p-2">
+                            <button
+                                v-show="!open"
+                                v-on:click="open = true"
+                            >
+                                <span>▶</span>
+                            </button>
+                            <button
+                                v-show="open"
+                                v-on:click="open = false"
+                            >
+                                <span>▼</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div
@@ -196,56 +224,6 @@ const bgColor = computed(() => {
                         class="relative"
                         :class="{ 'overflow-auto w-[calc(100vw-70px)]': ['queries', 'table', 'table_v2'].includes(props.payload.type) }"
                     >
-                        <!-- variable type -->
-                        <div
-                            v-if="props.payload.dump?.variable_type !== undefined"
-                            class="text-[0.70rem] opacity-70"
-                            v-text="`(${props.payload.dump.variable_type})`"
-                        ></div>
-                        <div class="gap-4 flex absolute right-0 z-100">
-                            <div
-                                v-if="!['queries', 'table', 'table_v2'].includes(props.payload.type)"
-                                class="transition-all -mt-2 items-center text-base-content"
-                            >
-                                <div
-                                    class="right-0 absolute -top-4"
-                                    v-bind:class="{
-                                        'opacity-100': openOptions,
-                                        'opacity-0': !['query'].includes(props.payload.type)
-                                    }"
-                                >
-                                    <ul class="flex items-center p-2 gap-3 shadow bg-base-300 rounded-box w-auto">
-                                        <li
-                                            :title="$t('click_to_copy')"
-                                            class="p-1"
-                                            @click="copyDump"
-                                        >
-                                            <a>
-                                                <CopyToClick />
-                                            </a>
-                                        </li>
-                                        <li
-                                            :title="$t('menu.saved_dumps')"
-                                            class="p-1"
-                                            @click="saveDump"
-                                            v-if="!inSavedDumpsWindow"
-                                        >
-                                            <a><IconSave class="cursor-pointer w-3 h-3 hover:opacity-75" /> </a>
-                                        </li>
-
-                                        <li
-                                            :title="$t('menu.remove')"
-                                            class="p-1"
-                                            @click="removeSaveDump"
-                                            v-if="inSavedDumpsWindow"
-                                        >
-                                            <a><IconTrash class="cursor-pointer size-4 hover:opacity-75" /> </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
                         <DumpDump
                             :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="text-base-content break-all"

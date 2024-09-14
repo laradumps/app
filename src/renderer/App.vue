@@ -10,7 +10,7 @@ import { useTimeStore } from "@/store/time";
 import { useGlobalSearchStore } from "@/store/global-search";
 import { useI18n } from "vue-i18n";
 import { useColorStore } from "@/store/colors";
-import { Payload, ScreenPayload } from "@/types/Payload";
+import { Payload } from "@/types/Payload";
 import * as Helper from "@/helpers";
 import moment from "moment/moment";
 import humanizeDuration from "humanize-duration";
@@ -23,6 +23,8 @@ import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
+import IndividualScreenWindow from "@/components/IndividualScreenWindow.vue";
+import { usePayloadStore } from "@/store/payload";
 
 markRaw(TheUpdateModalInfo);
 
@@ -34,20 +36,28 @@ const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const IDEHandler = useIDEHandlerStore();
+const payloadStore = usePayloadStore();
+
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
 
 const defaultScreen = ref({
     screen_name: "screen 1",
-    raise_in: 0
+    raise_in: 0,
+    visible: true,
+    pinned: false
 });
 const appVersion = ref("");
 const localShortcutList = ref([]);
 
 const payload = ref([]);
-const screens = ref([]);
+
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
+
+const inScreenWindow = ref("");
+const payloadScreen = ref([]);
+
 const applicationPath = ref("");
 const livewireRequests = ref([]);
 const isPaused = ref(false);
@@ -64,7 +74,7 @@ onMounted(() => {
     window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
     window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
 
-    setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
+    setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
 
     window.ipcRenderer.on("app:pause-dumps", (event, arg) => {
         isPaused.value = arg;
@@ -97,6 +107,17 @@ onMounted(() => {
         clearAll();
 
         await loadAllSavedPayload();
+    });
+
+    window.ipcRenderer.on("app:screen-window-enable", async (event, args) => {
+        inScreenWindow.value = args.screen;
+        payloadScreen.value = args.payload;
+
+        setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
+    });
+
+    window.ipcRenderer.on("app:screen-window-update", async (event, args) => {
+        payloadScreen.value = args.payload;
     });
 
     window.ipcRenderer.on("app:render-all-saved-dumps", (event, content) => {
@@ -339,6 +360,10 @@ window.ipcRenderer.on("changeTheme", (event, args) => {
     appearanceStore.setTheme(args.value);
 });
 
+window.addEventListener("update-payload", (event) => {
+    console.log(payloadStore.get(inScreenWindow.value));
+});
+
 window.ipcRenderer.on("changeIDE", (event, args) => {
     window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: args.value });
     IDEHandler.setValue(args.value);
@@ -416,11 +441,9 @@ const dumpsBagFiltered = computed(() => {
  * @param {Object} param - The screen object to be added.
  */
 const addScreen = (param) => {
-    const screenExists = screens.value.filter((screen: ScreenPayload) => screen.screen_name === param.screen_name).length > 0;
+    param.visible = true;
 
-    if (!screenExists) {
-        screens.value.push(param);
-    }
+    screenStore.add(param);
 };
 
 /**
@@ -438,14 +461,21 @@ const maximizeApp = (autoInvokeApp: string | boolean): void => {
  * @param {string} value - The name of the screen to be toggled.
  */
 const toggleScreen = async (value: string): Promise<void> => {
+    console.log(value);
+
+    if (screenStore.get(value) && !screenStore.get(value).visible) {
+        return;
+    }
+
     clearInterval(interval.value);
+
     interval.value = null;
 
     screenStore.activeScreen(value);
 
     dumpsBag.value = payload.value.filter((payload) => payload.type !== "screen" && payload.screen.screen_name === value);
 
-    nextTick(() =>
+    await nextTick(() =>
         document.getElementById("top").scrollIntoView({
             behavior: "smooth"
         })
@@ -455,7 +485,7 @@ const toggleScreen = async (value: string): Promise<void> => {
         setTimeout(() => {
             const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
             if (lastPayload) timeStore.selected = lastPayload.request_id;
-        }, 800);
+        }, 600);
     }
 };
 
@@ -494,7 +524,16 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     } else {
         content.screen = defaultScreen.value;
         payload.value.push(content);
+
+        payloadStore.add(content);
     }
+
+    const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
+
+    window.ipcRenderer.send("send-screen-window-update", {
+        screen: content.screen.screen_name,
+        payload: serializablePayload
+    });
 
     screenName = content.screen.screen_name;
     if (!["Logs", "Queries"].includes(screenName)) {
@@ -508,6 +547,11 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             dump.date_time = moment().format("hh:mm:ss a");
         }
     });
+
+    console.log(content.screen);
+    if (content.screen.new_window) {
+        console.log("asdasd");
+    }
 
     if (interval.value == null) {
         if (content.type === "queries" || content.type === "livewire") {
@@ -564,13 +608,13 @@ const getZoomLevel = (value: number): void => {
 const clearAll = (): void => {
     dumpsBag.value = [];
     payload.value = [];
-    screens.value = [];
-    screens.value.push(defaultScreen.value);
     timeStore.clear();
     screenStore.activeScreen("screen 1");
     globalSearchStore.clear();
     colorStore.clear();
     livewireRequests.value = [];
+    payloadStore.clearAll();
+    screenStore.clearAll();
 };
 
 function registerDefaultLocalShortcuts() {
@@ -588,9 +632,18 @@ function registerDefaultLocalShortcuts() {
     <div
         v-cloak
         id="app"
+        :data-theme="appearanceStore.value"
+        :class="{ absolute: !inScreenWindow }"
+        class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
     >
+        <IndividualScreenWindow
+            v-if="inScreenWindow"
+            :dumps-bag="payloadScreen"
+            v-model:screen="inScreenWindow"
+        />
+
         <div
-            :data-theme="appearanceStore.value"
+            v-else
             class="absolute w-full h-full min-h-full"
         >
             <div>
@@ -630,15 +683,14 @@ function registerDefaultLocalShortcuts() {
 
                         <!-- screen buttons -->
                         <div
-                            v-if="screens.length > 1 && !settingStore.setting"
+                            v-if="screenStore.screens.length > 1 && !settingStore.setting"
                             class="flex"
                         >
-                            <div class="py-1 flex-1 px-3">
+                            <div class="flex-1 px-3">
                                 <div class="flex items-center justify-between overflow-x-auto">
                                     <div class="flex">
                                         <DumpScreens
                                             @toggleScreen="toggleScreen"
-                                            v-model:screens="screens"
                                             v-model:payload="payload"
                                         />
                                     </div>
@@ -666,10 +718,11 @@ function registerDefaultLocalShortcuts() {
                                 />
                             </div>
 
-                            <div :class="{ 'flex border-t border-base-content/20 mt-2': screenStore.screen === 'Queries' }">
+                            <div :class="{ flex: screenStore.screen === 'Queries' }">
                                 <div
-                                    class="mb-[60px] w-full"
+                                    class="mb-[40px] w-full"
                                     :class="{
+                                        '-mt-2': screenStore.screen !== 'Queries',
                                         'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
                                     }"
                                     v-if="payload.length > 0 && !settingStore.setting"
@@ -677,7 +730,7 @@ function registerDefaultLocalShortcuts() {
                                     <div
                                         class="w-full"
                                         :id="payload.id"
-                                        v-for="payload in dumpsBagFiltered"
+                                        v-for="(payload, index) in dumpsBagFiltered"
                                         :key="payload.sf_dump_id"
                                     >
                                         <DumpItem

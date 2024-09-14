@@ -82,6 +82,8 @@ export interface LogApplicationPayload {
 export interface ScreenPayload {
     screen_name: string;
     raise_in: number;
+    pinned: boolean;
+    visible: boolean;
 }
 
 export interface Meta {

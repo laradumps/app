@@ -2,7 +2,6 @@
 import { computed, defineProps, onMounted, ref } from "vue";
 import { format } from "sql-formatter";
 import { BarsArrowDownIcon, BarsArrowUpIcon } from "@heroicons/vue/20/solid";
-import { ClipboardIcon } from "@heroicons/vue/24/outline";
 
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
@@ -10,11 +9,6 @@ hljs.registerLanguage("sql", sql);
 
 const formatted = ref(false);
 const copied = ref(false);
-
-const showCopiedBadge = () => {
-    copied.value = true;
-    setTimeout(() => (copied.value = false), 2000);
-};
 
 const toggleFormatted = () => {
     formatted.value = !formatted.value;
@@ -37,6 +31,8 @@ const formatSql = computed(() => {
         return hljs.highlight(formattedSql, { language: "sql" }).value;
     }
 });
+
+const unformattedSql = computed(() => props.payload.queries?.sql);
 
 onMounted(() => {
     formatted.value = props.query.sql != "";
@@ -79,12 +75,11 @@ onMounted(() => {
             <code class='!leading-5 !text-xs' v-html="formatSql"></code>
         </pre>
 
-        <div v-if="!formatted">
-            <code
-                class="!text-xs"
-                v-html="formatSql"
-            ></code>
-        </div>
+        <code
+            v-if="!formatted"
+            class="!text-xs"
+            v-html="unformattedSql"
+        ></code>
     </div>
 </template>
 

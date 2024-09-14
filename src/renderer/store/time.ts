@@ -33,6 +33,9 @@ export const useTimeStore = defineStore("timeStore", {
 
             return this.requests[requestId].time;
         },
+        get(requestId: never) {
+            return this.requests[requestId];
+        },
         getSelectedRequest() {
             if (typeof this.requests[this.selected] === "undefined") {
                 return 0;

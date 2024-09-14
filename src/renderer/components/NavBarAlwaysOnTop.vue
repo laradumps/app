@@ -4,10 +4,18 @@ import IconPin from "@/components/Icons/IconPin.vue";
 
 const isAlwaysOnTop = ref(false);
 
-onMounted(() => {
-    window.ipcRenderer.send("main:is-always-on-top");
+const props = defineProps({
+    window: {
+        type: String,
+        required: false,
+        default: "main"
+    }
+});
 
-    window.ipcRenderer.on("main:is-always-on-top", (event, arg) => {
+onMounted(() => {
+    window.ipcRenderer.send(props.window + ":is-always-on-top");
+
+    window.ipcRenderer.on(props.window + ":is-always-on-top", (event, arg) => {
         isAlwaysOnTop.value = arg.is_always_on_top;
     });
 
@@ -15,10 +23,11 @@ onMounted(() => {
         toggleAlwaysOnTop();
     });
 });
+
 const toggleAlwaysOnTop = () => {
     isAlwaysOnTop.value = !isAlwaysOnTop.value;
 
-    window.ipcRenderer.send("main:toggle-always-on-top", isAlwaysOnTop.value);
+    window.ipcRenderer.send(props.window + ":toggle-always-on-top", isAlwaysOnTop.value);
 };
 </script>
 

@@ -9,7 +9,7 @@ import fs from "fs";
 
 import storage from "electron-json-storage";
 
-import Store from 'electron-store';
+import Store from "electron-store";
 
 const store = new Store();
 
@@ -20,6 +20,7 @@ import { configureLocalShortcut, registerShortcuts } from "./shortcut";
 
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
+import { createScreenWindow } from "./window/screen";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
@@ -154,12 +155,55 @@ function createWindow(): BrowserWindow {
     return win;
 }
 
+const windowsMap = new Map();
+
+function sendScreenWindowUpdate(screen, payload) {
+    const screenWindow = windowsMap.get(screen);
+    if (screenWindow && screenWindow.webContents) {
+        screenWindow.webContents.send("app:screen-window-update", {
+            payload: payload
+        });
+    }
+}
+
+ipcMain.on("send-screen-window-update", (event, args) => {
+    const payload = args.payload;
+
+    sendScreenWindowUpdate(args.screen, payload);
+});
+
+ipcMain.on("screen-window:show", (event, arg) => {
+    const screenWindow = createScreenWindow(mainWindow, arg.screen);
+
+    const { x, y } = arg.position;
+    screenWindow.setPosition(x, y);
+
+    screenWindow.show();
+
+    if (isDev) {
+        screenWindow.webContents.openDevTools();
+    }
+
+    windowsMap.set(arg.screen, screenWindow);
+
+    screenWindow.webContents.once("did-finish-load", () => {
+        screenWindow.webContents.send("app:screen-window-enable", {
+            screen: arg.screen,
+            payload: arg.payload
+        });
+    });
+
+    screenWindow.on("closed", () => {
+        windowsMap.delete(arg.screen);
+    });
+});
+
 app.whenReady().then(async (): Promise<void> => {
     mainWindow = createWindow();
     coffeeWindow = initCoffeeWindow();
     savedDumpWindow = initSavedDumps();
 
-    createMenu(mainWindow);
+    createMenu(mainWindow, windowsMap);
 
     mainWindow.on("minimize", (event: Event): void => {
         event.preventDefault();
@@ -466,7 +510,7 @@ interface DataStructure {
 
 ipcMain.on("environment::get", async () => {
     try {
-        const environments = store.get('environments', {});
+        const environments = store.get("environments", {});
         mainWindow.webContents.send("app-setting:set-environment", environments);
     } catch (error) {
         console.error("Error getting storage:", error);
@@ -491,10 +535,10 @@ ipcMain.on("environment::check", (event, value) => {
     const project = path.basename(applicationPath);
 
     try {
-        const environments = store.get('environments', {});
+        const environments = store.get("environments", {});
         if (!environments[project]) {
             environments[project] = applicationPath;
-            store.set('environments', environments);
+            store.set("environments", environments);
             mainWindow.webContents.send("app-setting:project-added");
         }
         ipcMain.emit("environment::get");
@@ -539,14 +583,14 @@ ipcMain.on("main:setting-remove-environments", (event, value) => {
     const project = path.basename(applicationPath);
 
     try {
-        const environments = store.get('environments', {});
+        const environments = store.get("environments", {});
         if (!environments || !environments[project]) {
             console.error(`Project "${project}" not found in environments.`);
             return;
         }
 
         delete environments[project];
-        store.set('environments', environments);
+        store.set("environments", environments);
         ipcMain.emit("environment::get");
     } catch (error) {
         console.error("Error updating storage:", error);
