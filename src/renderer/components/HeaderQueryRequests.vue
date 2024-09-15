@@ -3,7 +3,12 @@
         v-if="timeStore.groups.length > 0"
         class="flex py-0.5 h-auto justify-between items-center gap-2 text-base-content"
     >
-        <span class="font-normal text-[11px] select-none ml-1">{{ totalFiltered }} of {{ total }} queries</span>
+        <div class="flex gap-3 items-center">
+            <span class="font-normal text-[11px] select-none ml-1">{{ totalFiltered }} of {{ total }} queries</span>
+
+            <span v-show="totalDuplicatedFiltered > 0"
+                  class="badge whitespace-nowrap uppercase text-[10px] bg-warning font-semibold text-warning-content"> {{ totalDuplicatedFiltered }} duplicated </span>
+        </div>
 
         <div class="flex gap-2 text-sm items-center">
             <SelectMenu
@@ -15,7 +20,7 @@
             <SelectMenu
                 v-if="allRequests.length > 0"
                 @selected="timeStore.setSelectedRequest($event.id)"
-                class="w-[210px] !text-xs"
+                class="w-[240px] !text-xs"
                 v-model:data="allRequests"
             />
         </div>
@@ -33,8 +38,6 @@ const requests = timeStore.requests;
 const groups = timeStore.groups;
 const selected = ref();
 
-const allRequests = ref([]);
-
 const props = defineProps({
     total: {
         type: Number,
@@ -44,6 +47,10 @@ const props = defineProps({
         type: Object
     },
     totalFiltered: {
+        type: Number,
+        default: 0
+    },
+    totalDuplicatedFiltered: {
         type: Number,
         default: 0
     }
@@ -66,32 +73,15 @@ const queryOrder = computed(() => {
     ];
 });
 
-watch(
-    timeStore.groups,
-    (newGroups) => {
-        allRequests.value = newGroups
-            .map((group, index) => ({
-                index: index + 1,
-                id: group,
-                label: `${index + 1} - ${timeStore.getTime(group)} - ${timeStore.getTotal(group).toFixed(2)}ms`
-            }))
-            .sort((a, b) => b.index - a.index);
-        //
-        // if (allRequests.value.length > 0) {
-        //     const requestId = allRequests.value[allRequests.value.length - 1].id
-        //
-        //     timeStore.selected = requestId
-        //     console.log('selected',timeStore.selected)
-        // }
-    },
-    { immediate: true }
-);
-//
-// watch(
-//     timeStore.requests,
-//     (request) => {
-//        console.log(request)
-//     },
-//     { immediate: true }
-// );
+const allRequests = computed(() => {
+    let requests = timeStore.groups.map((group, index) => ({
+        index: index + 1,
+        id: group,
+        label: "#" + (index + 1) + " - " + timeStore.getTime(group) + " - " + timeStore.getTotal(group).toFixed(2) + "ms"
+    }));
+
+    requests.sort((a, b) => b.index - a.index);
+
+    return requests;
+});
 </script>

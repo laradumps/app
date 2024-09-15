@@ -23,7 +23,7 @@ import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
-import IndividualScreenWindow from "@/components/IndividualScreenWindow.vue";
+import ScreenWindow from "@/components/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
 
 markRaw(TheUpdateModalInfo);
@@ -61,6 +61,8 @@ const payloadScreen = ref([]);
 const applicationPath = ref("");
 const livewireRequests = ref([]);
 const isPaused = ref(false);
+
+const allRequests = ref([])
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
@@ -416,6 +418,13 @@ const dumpsBagFiltered = computed(() => {
         };
     };
 
+    const duplicatedSQLs = new Set();
+    dumpsBag.value.forEach(dump => {
+        if (dump?.queries?.duplicated && dump?.queries?.sql) {
+            duplicatedSQLs.add(dump.queries.sql);
+        }
+    });
+
     const sort = reverseTimeOrder(timeStore.order);
 
     return dumpsBag.value
@@ -432,6 +441,18 @@ const dumpsBagFiltered = computed(() => {
             }
 
             return true;
+        })
+        .map((dump) => {
+            if (duplicatedSQLs.has(dump?.queries?.sql)) {
+                dump.queries.duplicated = true;
+            }
+
+            if (dump.type === "queries") {
+                const { time } = dump.queries;
+                timeStore.increment(dump.request_id, dump.id, time);
+            }
+
+            return dump;
         })
         .sort(sort());
 });
@@ -461,8 +482,6 @@ const maximizeApp = (autoInvokeApp: string | boolean): void => {
  * @param {string} value - The name of the screen to be toggled.
  */
 const toggleScreen = async (value: string): Promise<void> => {
-    console.log(value);
-
     if (screenStore.get(value) && !screenStore.get(value).visible) {
         return;
     }
@@ -528,13 +547,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         payloadStore.add(content);
     }
 
-    const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
-
-    window.ipcRenderer.send("send-screen-window-update", {
-        screen: content.screen.screen_name,
-        payload: serializablePayload
-    });
-
     screenName = content.screen.screen_name;
     if (!["Logs", "Queries"].includes(screenName)) {
         const autoInvokeApp = typeof content.meta === "object" ? content.meta.auto_invoke_app : true;
@@ -548,11 +560,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         }
     });
 
-    console.log(content.screen);
-    if (content.screen.new_window) {
-        console.log("asdasd");
-    }
-
     if (interval.value == null) {
         if (content.type === "queries" || content.type === "livewire") {
             interval.value = setInterval(() => {
@@ -563,6 +570,15 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             setTimeout(() => toggleScreen(content.screen.screen_name), 50);
         }
     }
+
+    const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
+
+    window.ipcRenderer.send("send-screen-window-update", {
+        screen: content.screen.screen_name,
+        payload: serializablePayload
+    });
+
+    //const blob = new Blob();
 };
 
 /**
@@ -627,6 +643,10 @@ function registerDefaultLocalShortcuts() {
     };
     window.ipcRenderer.send("local-shortcut:set", shortcutClearAllObject);
 }
+
+const duplicatedQueriesCount = computed(() => {
+    return dumpsBagFiltered.value.filter((payload: Payload) => payload.request_id === timeStore.selected && payload.queries.duplicated).length;
+});
 </script>
 <template>
     <div
@@ -636,7 +656,7 @@ function registerDefaultLocalShortcuts() {
         :class="{ absolute: !inScreenWindow }"
         class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
     >
-        <IndividualScreenWindow
+        <ScreenWindow
             v-if="inScreenWindow"
             :dumps-bag="payloadScreen"
             v-model:screen="inScreenWindow"
@@ -713,7 +733,9 @@ function registerDefaultLocalShortcuts() {
                             >
                                 <HeaderQueryRequests
                                     :payload="payload"
+                                    :all-requests="allRequests"
                                     :total="dumpsBagFiltered.length"
+                                    :total-duplicated-filtered="duplicatedQueriesCount"
                                     :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
                                 />
                             </div>

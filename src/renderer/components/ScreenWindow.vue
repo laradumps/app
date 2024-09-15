@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onUpdated, nextTick, computed } from "vue";
+import { defineProps, onUpdated, nextTick, computed, watch, ref, reactive, onMounted } from "vue";
 import DumpItem from "@/components/DumpItem.vue";
 import { Payload } from "@/types/Payload";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
@@ -46,8 +46,36 @@ const dumpsBagFiltered = computed(() => {
 
     const sort = reverseTimeOrder(timeStore.order);
 
+    props.dumpsBag.map((dump) => {
+        if (dump.type === "queries") {
+            const { time } = dump.queries;
+            timeStore.increment(dump.request_id, dump.id, time);
+        }
+
+        return dump;
+    })
+
     return props.dumpsBag.sort(sort());
 });
+
+const duplicatedQueriesCount = computed(() => {
+    return dumpsBagFiltered.value.filter((payload: Payload) => payload.request_id === timeStore.selected && payload.queries.duplicated).length;
+});
+
+watch(timeStore.groups, () => {
+    if (props.screen === "Queries") {
+        setTimeout(() => {
+            const lastRequest = Object.values(timeStore.requests)[Object.values(timeStore.requests).length - 1];
+
+            timeStore.selected = lastRequest.requestId
+
+            console.log({
+                last: lastRequest.requestId,
+                selected: timeStore.selected
+            })
+        }, 600);
+    }
+})
 </script>
 
 <template>
@@ -63,19 +91,20 @@ const dumpsBagFiltered = computed(() => {
         </div>
 
         <div
-            class="p-1 px-3"
+            class="mt-1 px-3"
             v-if="screen === 'Queries'"
         >
             <HeaderQueryRequests
                 :payload="dumpsBag"
                 :total="dumpsBagFiltered.length"
+                :total-duplicated-filtered="duplicatedQueriesCount"
                 :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
             />
         </div>
 
         <div
             class="flex flex-col overflow-auto h-[calc(100vh-1rem)]"
-            :class="{ 'flex border-t border-base-content/20 mt-2': screen === 'Queries' }"
+            :class="{ flex: screen === 'Queries' }"
         >
             <div id="top"></div>
 

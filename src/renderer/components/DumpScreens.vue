@@ -5,7 +5,7 @@
             v-for="(screen, index) in screenStore.allVisible()"
             :key="screen.screen_name"
             :class="{ dragging: isDraggingIndex === index }"
-            draggable="true"
+            v-bind:draggable="screen.screen_name !== 'screen 1'"
             @dragstart="onDragStart(index)"
             @dragover.prevent
             @drop="onDrop(index)"
@@ -30,7 +30,7 @@
 
         <div
             v-if="showTooltip"
-            class="flex gap-2 border border-neutral/30 bg-neutral-content text-neutral py-1 px-1.5 rounded text-xs fixed right-2 top-2"
+            class="flex gap-2 border border-neutral/30 bg-neutral text-neutral-content text-neutral py-1 px-1.5 rounded text-xs fixed right-2 top-2"
         >
             <IconExternalLink class="size-4" />
             <span>Drag and drop to open in new window</span>
@@ -66,7 +66,12 @@ const onDragStart = (index) => {
 
 const onDrop = (index) => {
     if (isDraggingIndex.value !== null) {
-        const draggedScreen = props.screens[isDraggingIndex.value];
+        const draggedScreen = props.screens ? props.screens[isDraggingIndex.value] : false;
+
+        if (!draggedScreen) {
+            return;
+        }
+
         props.screens.splice(isDraggingIndex.value, 1);
         props.screens.splice(index, 0, draggedScreen);
         isDraggingIndex.value = null;
@@ -84,6 +89,8 @@ const onDragEnd = (event, screen) => {
 };
 
 const openScreenWindow = (screen, mouseX, mouseY) => {
+    if (screen === 'screen 1') return;
+
     screenStore.toggleVisible(screen);
 
     const serializablePayload = JSON.parse(JSON.stringify(payloadStore.get(screen)));
@@ -109,6 +116,8 @@ const openScreenWindow = (screen, mouseX, mouseY) => {
 };
 
 window.ipcRenderer.on("screen-window:closed", (event, args) => {
+    screenStore.toggleVisible(args.screen);
+
     setTimeout(() => {
         let screen1;
         if (args.screen === "screen 1") {
@@ -117,8 +126,6 @@ window.ipcRenderer.on("screen-window:closed", (event, args) => {
         } else {
             emit("toggleScreen", "screen 1");
         }
-
-        screenStore.toggleVisible(args.screen);
     }, 200);
 });
 </script>

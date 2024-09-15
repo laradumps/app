@@ -1,4 +1,4 @@
-export default interface IdeHandle {
+export interface IdeHandle {
     workdir: string;
     project_path: string;
     real_path: string;

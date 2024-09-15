@@ -5,6 +5,7 @@ export interface QueriesPayload {
     database: string;
     time: string;
     sql: string;
+    duplicated: boolean;
 }
 
 export interface QueryPayload {

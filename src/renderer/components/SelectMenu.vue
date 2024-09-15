@@ -1,9 +1,10 @@
 <script setup>
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
-import { nextTick, onMounted, ref, watch } from "vue";
+import { nextTick, onMounted, onUpdated, ref, watch } from "vue";
 
 const selected = ref(null);
+const fromEmit = ref(false);
 const emit = defineEmits(["selected"]);
 
 const props = defineProps({
@@ -21,11 +22,20 @@ const props = defineProps({
 });
 
 watch(selected, (value) => {
+    fromEmit.value = true
     emit("selected", value);
+    setTimeout(() => fromEmit.value = false, 200)
 });
 
 onMounted(() => {
+    fromEmit.value = false
     selected.value = props.data[props.defaultValue] ?? props.data[0];
+});
+
+onUpdated(() => {
+    if (!fromEmit.value) {
+        selected.value = props.data[props.defaultValue] ?? props.data[0];
+    }
 });
 </script>
 

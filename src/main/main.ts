@@ -302,6 +302,12 @@ app.on("browser-window-focus", (): void => {
     registerShortcuts(mainWindow);
 });
 
+ipcMain.on("main:get-memory-usage", () => {
+    const memoryUsage = process.memoryUsage();
+
+    mainWindow.webContents.send("app:memory-usage", memoryUsage);
+})
+
 ipcMain.on("main:get-ide-handler", (): void => {
     const jsonFilePath = path.join(app.getAppPath(), "./src/renderer/ide-handle-support.json");
 

@@ -57,11 +57,6 @@ onMounted(() => {
             }
         }
     }
-
-    if (props.payload.type === "queries") {
-        const { time } = props.payload.queries;
-        timeStore.increment(props.payload.request_id, props.payload.id, time);
-    }
 });
 
 const borderColor = computed(() => {
@@ -142,7 +137,8 @@ const bgColor = computed(() => {
                     [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
                     [bgColor]: typeof bgColor !== 'undefined',
                     'collapse-open': open,
-                    'collapse-close': open
+                    'collapse-close': open,
+                    'bg-warning/10' : payload?.queries?.duplicated ?? false
                 }"
                 class="collapse bg-base-200/70 bg-laravel border border-base-content/5"
             >
@@ -153,7 +149,7 @@ const bgColor = computed(() => {
                 >
                     <ul
                         class="flex gap-6 whitespace-nowrap"
-                        v-bind:style="props.payload.ide_handle.line ? 'list-style-type: disc;' : ''"
+                        v-bind:style="props.payload.ide_handle ? 'list-style-type: disc;' : ''"
                     >
                         <li class="list-none">
                             {{ props.payload.date_time }}

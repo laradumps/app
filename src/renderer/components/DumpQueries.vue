@@ -44,9 +44,9 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
 
 <template>
     <div class="rounded-sm dump-queries overflow-auto">
-        <div class="flex gap-3 items-center mb-3">
-            <div class="badge bg-primary">
-                <span class="font-semibold text-sm text-primary-content"> {{ props.payload.queries.time }} <span class="font-normal text-xs">ms</span></span>
+        <div class="flex justify-between gap-3 items-center mb-3">
+            <div class="flex items-center gap-3">
+                <span class="text-base font-semibold text-base-content"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
             </div>
             <div
                 class="cursor-pointer"

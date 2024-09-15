@@ -12,7 +12,7 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
         height: 660,
         show: false,
         resizable: true,
-        alwaysOnTop: false,
+        alwaysOnTop: true,
         webPreferences: {
             spellcheck: true,
             nodeIntegration: true,
@@ -48,11 +48,15 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
     });
 
     ipcMain.on("screen-window:toggle-always-on-top", (event, arg) => {
-        setTimeout(() => window.setAlwaysOnTop(arg), 200);
+        if(!window.isDestroyed()) {
+            setTimeout(() => window.setAlwaysOnTop(arg), 200);
+        }
     });
 
     ipcMain.on("screen-window:is-always-on-top", (): void => {
-        window.webContents.send("screen-window:is-always-on-top", { is_always_on_top: window.isAlwaysOnTop() });
+        if(!window.isDestroyed()) {
+            window.webContents.send("screen-window:is-always-on-top", { is_always_on_top: window.isAlwaysOnTop() });
+        }
     });
 
     return window;
