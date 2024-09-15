@@ -7,16 +7,13 @@ import { Payload } from "@/types/Payload";
 
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
+import { useFormattedQueriesStore } from "@/store/formatted-queries";
 hljs.registerLanguage("sql", sql);
 
-const formatted = ref(false);
-const copied = ref(false);
-
 const timeStore = useTimeStore();
+const formattedQueriesStore = useFormattedQueriesStore();
 
-const toggleFormatted = () => {
-    formatted.value = !formatted.value;
-};
+const copied = ref(false);
 
 const props = defineProps<{
     payload: Payload;
@@ -29,7 +26,7 @@ const formatSql = computed(() => {
     const sql = props.payload.queries?.sql;
 
     if (sql != null) {
-        let formattedSql = formatted.value
+        let formattedSql = formattedQueriesStore.formatted
             ? format(sql, {
                   indent: "    "
               })
@@ -48,31 +45,17 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
             <div class="flex items-center gap-3">
                 <span class="text-base font-semibold text-base-content"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
             </div>
-            <div
-                class="cursor-pointer"
-                @click="toggleFormatted"
-                :title="$t('toggle_format')"
-            >
-                <BarsArrowDownIcon
-                    class="w-[1.1rem] h-[1.1rem] text-base-content"
-                    v-show="!formatted"
-                />
-                <BarsArrowUpIcon
-                    class="w-[1.1rem] h-[1.1rem] text-base-content"
-                    v-show="formatted"
-                />
-            </div>
         </div>
 
         <pre
-            v-if="formatted"
+            v-if="formattedQueriesStore.formatted"
             class="flex relative group select-none w-auto"
         >
             <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formatSql"></code>
         </pre>
 
         <code
-            v-if="!formatted"
+            v-if="!formattedQueriesStore.formatted"
             class="text-base-content rounded !text-xs select-none"
             v-html="unformattedSql"
         ></code>
