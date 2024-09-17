@@ -1,9 +1,9 @@
 <template>
     <div
         v-if="timeStore.groups.length > 0"
-        class="flex py-0.5 h-auto justify-between items-center gap-2 text-base-content"
+        class="absolute bg-base-100 pb-2 px-3 z-300 flex w-full h-auto justify-between items-center gap-2 text-base-content"
     >
-        <div class="flex ml-1">
+        <div class="flex">
             <div class="flex flex-col">
                 <span class="text-primary text-base whitespace-nowrap">{{ timeStore.get(timeStore.selected)?.total.toFixed(2) }} ms</span>
                 <span class="text-[11px] uppercase">time</span>
@@ -39,14 +39,14 @@
 
             <SelectMenu
                 @selected="timeStore.setOrder($event.id)"
-                class="w-[94px] dark:!bg-base-600 !text-xs"
+                class="dark:!bg-base-600 !text-xs"
                 v-model:data="queryOrder"
             />
 
             <SelectMenu
                 v-if="allRequests.length > 0"
                 @selected="timeStore.setSelectedRequest($event.id)"
-                class="w-[160px] !text-xs"
+                class="!text-xs"
                 v-model:data="allRequests"
             />
         </div>

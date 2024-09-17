@@ -111,6 +111,7 @@ watch(timeStore.groups, () => {
             <div
                 class="w-full mt-1"
                 :class="{
+                    'mt-12' : screen == 'Queries',
                     'flex flex-col-reverse': reorderStore.reverse && screen !== 'Queries'
                 }"
             >

@@ -752,7 +752,6 @@ const duplicatedQueriesCount = computed(() => {
                             <div id="top"></div>
 
                             <div
-                                class="px-3"
                                 v-if="screenStore.screen === 'Queries'"
                             >
                                 <HeaderQueryRequests
