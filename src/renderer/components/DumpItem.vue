@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, defineProps, nextTick, onMounted, ref } from "vue";
-import { useTimeStore } from "@/store/time";
 import DumpLink from "@/components/DumpLink.vue";
 import DumpQueries from "@/components/DumpQueries.vue";
 import DumpJson from "@/components/DumpJson.vue";
@@ -20,8 +19,6 @@ import DumpMail from "@/components/DumpMail.vue";
 import CopyToClick from "@/components/CopyToClick.vue";
 import DumpDump from "@/components/DumpDump.vue";
 import IconTrash from "@/components/Icons/IconTrash.vue";
-
-const timeStore = useTimeStore();
 
 const saveDump = () => window.ipcRenderer.send("main:save-dumps", JSON.stringify(props.payload));
 
@@ -138,7 +135,7 @@ const bgColor = computed(() => {
                     [bgColor]: typeof bgColor !== 'undefined',
                     'collapse-open': open,
                     'collapse-close': open,
-                    'bg-warning/10' : payload?.queries?.duplicated ?? false
+                    'bg-warning/20' : payload?.queries?.duplicated ?? false
                 }"
                 class="collapse bg-base-200/70 bg-laravel border border-base-content/5"
             >

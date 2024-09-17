@@ -7,8 +7,8 @@ export const useReorder = defineStore("reorder", {
         };
     },
     actions: {
-        toggle() {
-            this.reverse = !this.reverse;
-        }
+        set(value: String) {
+            this.reverse = value === 'top';
+        },
     }
 });

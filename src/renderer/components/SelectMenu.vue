@@ -46,7 +46,7 @@ onUpdated(() => {
     >
         <div class="relative">
             <ListboxButton
-                class="relative w-full h-[34px] cursor-default rounded-md border border-base-300 py-1.5 pl-3 pr-10 text-left shadow-sm focus:border-base-700 focus:outline-none focus:ring-1 focus:ring-base-500 sm:text-sm"
+                class="relative w-full h-[34px] text-center cursor-default rounded-md border border-base-300 py-1.5 pl-3 pr-10 shadow-sm focus:border-base-700 focus:outline-none focus:ring-1 focus:ring-base-500 sm:text-sm"
             >
                 <span class="block truncate text-xs text-base-content" v-html="selected?.label"></span>
                 <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">

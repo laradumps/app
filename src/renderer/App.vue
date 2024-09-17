@@ -25,6 +25,7 @@ import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
 import ScreenWindow from "@/components/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
+import { useScrollDirection } from "@/store/scroll-direction";
 
 markRaw(TheUpdateModalInfo);
 
@@ -37,6 +38,7 @@ const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const IDEHandler = useIDEHandlerStore();
 const payloadStore = usePayloadStore();
+const scrollDirection = useScrollDirection();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
@@ -151,8 +153,17 @@ onMounted(() => {
         }
     });
 
-    window.ipcRenderer.on("app::toggle-reorder", () => reorderStore.toggle());
+    window.ipcRenderer.on("app::scroll-direction", (event, args) => {
+        reorderStore.set(args.value)
+        scrollDirection.set(args.value)
+
+        document.getElementById(args.value).scrollIntoView({
+            behavior: "smooth"
+        })
+    });
+
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
+
     window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
 
     window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
@@ -495,9 +506,17 @@ const toggleScreen = async (value: string): Promise<void> => {
     dumpsBag.value = payload.value.filter((payload) => payload.type !== "screen" && payload.screen.screen_name === value);
 
     await nextTick(() =>
-        document.getElementById("top").scrollIntoView({
-            behavior: "smooth"
-        })
+        {
+            if (scrollDirection.isTop()) {
+                document.getElementById("top").scrollIntoView({
+                    behavior: "smooth"
+                })
+            } else {
+                document.getElementById("bottom").scrollIntoView({
+                    behavior: "smooth"
+                })
+            }
+        }
     );
 
     if (screenStore.screen === "Queries") {
@@ -577,8 +596,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         screen: content.screen.screen_name,
         payload: serializablePayload
     });
-
-    //const blob = new Blob();
 };
 
 /**
@@ -631,6 +648,13 @@ const clearAll = (): void => {
     livewireRequests.value = [];
     payloadStore.clearAll();
     screenStore.clearAll();
+
+    screenStore.add({
+        screen_name: 'screen 1',
+        visible: true,
+        pinned: false,
+        raise_in: 0
+    })
 };
 
 function registerDefaultLocalShortcuts() {
@@ -768,8 +792,11 @@ const duplicatedQueriesCount = computed(() => {
                                     >
                                         <DumpLivewire v-model:livewire-requests="livewireRequests" />
                                     </div>
+
                                 </div>
                             </div>
+
+                            <div id="bottom"></div>
 
                             <div
                                 class="w-full h-full -mt-6"
@@ -778,6 +805,7 @@ const duplicatedQueriesCount = computed(() => {
                                 <WelcomePage :local-shortcut-list="localShortcutList" />
                             </div>
                         </div>
+
                     </main>
                 </div>
             </div>

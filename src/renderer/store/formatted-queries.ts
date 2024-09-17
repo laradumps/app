@@ -9,7 +9,6 @@ export const useFormattedQueriesStore = defineStore("formattedQueries", {
     actions: {
         toggle() {
             this.formatted = !this.formatted;
-            console.log(this.formatted)
         }
     }
 });

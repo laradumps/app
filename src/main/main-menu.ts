@@ -286,13 +286,29 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
             label: "Options",
             submenu: [
                 {
-                    label: "Reorder",
-                    click: async (): Promise<void> => {
-                        mainWindow.webContents.send("app::toggle-reorder");
-                        windowsMap.forEach((window: BrowserWindow) => {
-                            window.webContents.send("app::toggle-reorder", { value });
-                        });
-                    }
+                    label: "Scroll Direction",
+                    submenu: [
+                        {
+                            label: "Top",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("app::scroll-direction", { value: 'top'});
+                                windowsMap.forEach((window: BrowserWindow) => {
+                                    window.webContents.send("app::scroll-direction", { value: 'top'});
+                                });
+                            },
+                            type: "radio"
+                        },
+                        {
+                            label: "Bottom",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("app::scroll-direction", { value: 'bottom'});
+                                windowsMap.forEach((window: BrowserWindow) => {
+                                    window.webContents.send("app::scroll-direction", { value: 'bottom'});
+                                });
+                            },
+                            type: "radio"
+                        },
+                    ]
                 },
                 {
                     label: "Saved Dumps",

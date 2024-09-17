@@ -3,14 +3,25 @@
         v-if="timeStore.groups.length > 0"
         class="flex py-0.5 h-auto justify-between items-center gap-2 text-base-content"
     >
-        <div class="flex gap-2 ml-1 text-[11px] items-center">
-            <div class="flex items-center gap-2 whitespace-nowrap font-normal uppercase">
-                <span class="text-primary text-lg">{{ totalFiltered }}</span>
-                queries
+        <div class="flex ml-1">
+            <div class="flex flex-col">
+                <span class="text-primary text-base whitespace-nowrap">{{ timeStore.get(timeStore.selected)?.total.toFixed(2) }} ms</span>
+                <span class="text-[11px] uppercase">time</span>
             </div>
 
-            <span v-show="totalDuplicatedFiltered > 0"
-                  class="badge whitespace-nowrap uppercase text-[11px] bg-warning text-warning-content"> {{ totalDuplicatedFiltered }} duplicated </span>
+            <div class="divider divider-horizontal !mx-2"></div>
+
+            <div class="flex flex-col">
+                <span class="text-primary text-base">{{ totalFiltered }}</span>
+                <span class="text-[11px] uppercase">queries</span>
+            </div>
+
+            <div v-show="totalDuplicatedFiltered > 0" class="divider divider-horizontal !mx-2"></div>
+
+            <div v-show="totalDuplicatedFiltered > 0" class="flex flex-col">
+                <span class="text-primary text-base">{{ totalDuplicatedFiltered }}</span>
+                <span class="text-[11px] uppercase">duplicated</span>
+            </div>
         </div>
 
         <div class="flex gap-2 text-sm items-center">
@@ -20,7 +31,7 @@
                 <input
                     type="checkbox"
                     v-model="formattedQueriesStore.formatted"
-                    class="toggle toggle-xs toggle-accent"
+                    class="toggle toggle-xs toggle-primary"
                     @click="formattedQueriesStore.toggle()"
                 />
                 <span class="text-xs whitespace-nowrap font-normal uppercase">Prettify</span>

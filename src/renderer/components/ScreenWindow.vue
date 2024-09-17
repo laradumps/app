@@ -91,7 +91,7 @@ watch(timeStore.groups, () => {
         </div>
 
         <div
-            class="mt-1 px-3"
+            class="py-1 px-3"
             v-if="screen === 'Queries'"
         >
             <HeaderQueryRequests
