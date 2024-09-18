@@ -291,9 +291,9 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
                         {
                             label: "Top",
                             click: async (): Promise<void> => {
-                                mainWindow.webContents.send("app::scroll-direction", { value: 'top'});
+                                mainWindow.webContents.send("app::scroll-direction", { value: "top" });
                                 windowsMap.forEach((window: BrowserWindow) => {
-                                    window.webContents.send("app::scroll-direction", { value: 'top'});
+                                    window.webContents.send("app::scroll-direction", { value: "top" });
                                 });
                             },
                             type: "radio"
@@ -301,13 +301,13 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
                         {
                             label: "Bottom",
                             click: async (): Promise<void> => {
-                                mainWindow.webContents.send("app::scroll-direction", { value: 'bottom'});
+                                mainWindow.webContents.send("app::scroll-direction", { value: "bottom" });
                                 windowsMap.forEach((window: BrowserWindow) => {
-                                    window.webContents.send("app::scroll-direction", { value: 'bottom'});
+                                    window.webContents.send("app::scroll-direction", { value: "bottom" });
                                 });
                             },
                             type: "radio"
-                        },
+                        }
                     ]
                 },
                 {

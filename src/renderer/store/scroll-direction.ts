@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 export const useScrollDirection = defineStore("scrollDirection", {
     state: () => {
         return {
-            position: 'top' // bottom
+            position: "top" // bottom
         };
     },
     actions: {
@@ -11,10 +11,10 @@ export const useScrollDirection = defineStore("scrollDirection", {
             this.position = value;
         },
         isTop() {
-            return this.position === 'top'
+            return this.position === "top";
         },
         isBottom() {
-            return this.position === 'bottom'
+            return this.position === "bottom";
         }
     }
 });

@@ -89,7 +89,7 @@ const onDragEnd = (event, screen) => {
 };
 
 const openScreenWindow = (screen, mouseX, mouseY) => {
-    if (screen === 'screen 1') return;
+    if (screen === "screen 1") return;
 
     screenStore.toggleVisible(screen);
 

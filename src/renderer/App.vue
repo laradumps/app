@@ -26,6 +26,7 @@ import DumpLivewire from "@/components/DumpLivewire.vue";
 import ScreenWindow from "@/components/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
 import { useScrollDirection } from "@/store/scroll-direction";
+import { useQueryDuplicated } from "@/store/query-duplicated";
 
 markRaw(TheUpdateModalInfo);
 
@@ -64,7 +65,7 @@ const applicationPath = ref("");
 const livewireRequests = ref([]);
 const isPaused = ref(false);
 
-const allRequests = ref([])
+const allRequests = ref([]);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
@@ -154,12 +155,12 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("app::scroll-direction", (event, args) => {
-        reorderStore.set(args.value)
-        scrollDirection.set(args.value)
+        reorderStore.set(args.value);
+        scrollDirection.set(args.value);
 
         document.getElementById(args.value).scrollIntoView({
             behavior: "smooth"
-        })
+        });
     });
 
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
@@ -348,22 +349,22 @@ onMounted(() => {
     window.ipcRenderer.on("coffee", (event, arg) => {
         window.ipcRenderer.send("coffee:grab-a-coffee", arg);
     });
-
-    //* * Convert shortcuts to Electron format **/
-    Object.defineProperty(String.prototype, "beautifyShortcut", {
-        value() {
-            if (process.platform === "darwin") {
-                return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
-            }
-            return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
-        }
-    });
-
-    Object.defineProperty(String.prototype, "toElectronFormat", {
-        value() {
-            return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
-        }
-    });
+    //
+    // //* * Convert shortcuts to Electron format **/
+    // Object.defineProperty(String.prototype, "beautifyShortcut", {
+    //     value() {
+    //         if (process.platform === "darwin") {
+    //             return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
+    //         }
+    //         return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
+    //     }
+    // });
+    //
+    // Object.defineProperty(String.prototype, "toElectronFormat", {
+    //     value() {
+    //         return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
+    //     }
+    // });
 
     window.ipcRenderer.send("environment::get");
 });
@@ -418,7 +419,7 @@ const dumpsBagFiltered = computed(() => {
      * @param {boolean} reversed - Indicates whether the sorting order is reversed.
      * @returns {Function} A comparison function for sorting payloads.
      */
-    const reverseTimeOrder = (reversed: boolean) => {
+    const reverseTimeOrder = (reversed) => {
         return function () {
             reversed = !reversed;
             return function (a, b) {
@@ -429,40 +430,43 @@ const dumpsBagFiltered = computed(() => {
         };
     };
 
-    const duplicatedSQLs = new Set();
-    dumpsBag.value.forEach(dump => {
-        if (dump?.queries?.duplicated && dump?.queries?.sql) {
-            duplicatedSQLs.add(dump.queries.sql);
-        }
+    const sort = reverseTimeOrder(timeStore.order);
+    const queryDuplicatedStore = useQueryDuplicated();
+
+    const dumps = dumpsBag.value;
+
+    dumps.filter((dump) => dump.type === "queries").forEach((dump: Payload) => {
+        const sql = dump.queries.sql;
+
+        const isDuplicate = dumps.filter((d: Payload) => d.type === "queries" && d.request_id === dump.request_id && d.queries.sql === sql);
+
+        queryDuplicatedStore.add(
+            dump.request_id,
+            sql,
+            isDuplicate.length > 1,
+            isDuplicate.length
+        );
     });
 
-    const sort = reverseTimeOrder(timeStore.order);
 
-    return dumpsBag.value
+    return dumps
         .filter(
             (dump) =>
                 JSON.stringify(dump[dump.type] ?? "")
-                    .toString()
-                    ?.toLowerCase()
+                    .toLowerCase()
                     .includes(globalSearchStore.search.toLowerCase()) || dump.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
         )
         .filter((dump) => {
             if (colorStore.colors.length > 0) {
                 return colorStore.colors.includes(dump.color);
             }
-
             return true;
         })
         .map((dump) => {
-            if (duplicatedSQLs.has(dump?.queries?.sql)) {
-                dump.queries.duplicated = true;
-            }
-
             if (dump.type === "queries") {
                 const { time } = dump.queries;
                 timeStore.increment(dump.request_id, dump.id, time);
             }
-
             return dump;
         })
         .sort(sort());
@@ -505,19 +509,17 @@ const toggleScreen = async (value: string): Promise<void> => {
 
     dumpsBag.value = payload.value.filter((payload) => payload.type !== "screen" && payload.screen.screen_name === value);
 
-    await nextTick(() =>
-        {
-            if (scrollDirection.isTop()) {
-                document.getElementById("top").scrollIntoView({
-                    behavior: "smooth"
-                })
-            } else {
-                document.getElementById("bottom").scrollIntoView({
-                    behavior: "smooth"
-                })
-            }
+    await nextTick(() => {
+        if (scrollDirection.isTop()) {
+            document.getElementById("top").scrollIntoView({
+                behavior: "smooth"
+            });
+        } else {
+            document.getElementById("bottom").scrollIntoView({
+                behavior: "smooth"
+            });
         }
-    );
+    });
 
     if (screenStore.screen === "Queries") {
         setTimeout(() => {
@@ -650,11 +652,11 @@ const clearAll = (): void => {
     screenStore.clearAll();
 
     screenStore.add({
-        screen_name: 'screen 1',
+        screen_name: "screen 1",
         visible: true,
         pinned: false,
         raise_in: 0
-    })
+    });
 };
 
 function registerDefaultLocalShortcuts() {
@@ -667,10 +669,6 @@ function registerDefaultLocalShortcuts() {
     };
     window.ipcRenderer.send("local-shortcut:set", shortcutClearAllObject);
 }
-
-const duplicatedQueriesCount = computed(() => {
-    return dumpsBagFiltered.value.filter((payload: Payload) => payload.request_id === timeStore.selected && payload.queries.duplicated).length;
-});
 </script>
 <template>
     <div
@@ -751,14 +749,11 @@ const duplicatedQueriesCount = computed(() => {
                         >
                             <div id="top"></div>
 
-                            <div
-                                v-if="screenStore.screen === 'Queries'"
-                            >
+                            <div v-if="screenStore.screen === 'Queries'">
                                 <HeaderQueryRequests
                                     :payload="payload"
                                     :all-requests="allRequests"
                                     :total="dumpsBagFiltered.length"
-                                    :total-duplicated-filtered="duplicatedQueriesCount"
                                     :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
                                 />
                             </div>
@@ -767,6 +762,7 @@ const duplicatedQueriesCount = computed(() => {
                                 <div
                                     class="mb-[40px] w-full"
                                     :class="{
+                                        'mt-12': screenStore.screen === 'Queries',
                                         '-mt-2': screenStore.screen !== 'Queries',
                                         'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
                                     }"
@@ -791,7 +787,6 @@ const duplicatedQueriesCount = computed(() => {
                                     >
                                         <DumpLivewire v-model:livewire-requests="livewireRequests" />
                                     </div>
-
                                 </div>
                             </div>
 
@@ -804,7 +799,6 @@ const duplicatedQueriesCount = computed(() => {
                                 <WelcomePage :local-shortcut-list="localShortcutList" />
                             </div>
                         </div>
-
                     </main>
                 </div>
             </div>

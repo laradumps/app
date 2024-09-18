@@ -1,7 +1,7 @@
 <template>
     <div
         v-if="timeStore.groups.length > 0"
-        class="absolute bg-base-100 pb-2 px-3 z-300 flex w-full h-auto justify-between items-center gap-2 text-base-content"
+        class="absolute bg-base-100 pb-2 px-3 z-100 flex w-full h-auto justify-between items-center gap-2 text-base-content"
     >
         <div class="flex">
             <div class="flex flex-col">
@@ -16,18 +16,22 @@
                 <span class="text-[11px] uppercase">queries</span>
             </div>
 
-            <div v-show="totalDuplicatedFiltered > 0" class="divider divider-horizontal !mx-2"></div>
+            <div
+                v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
+                class="divider divider-horizontal !mx-2"
+            ></div>
 
-            <div v-show="totalDuplicatedFiltered > 0" class="flex flex-col">
-                <span class="text-primary text-base">{{ totalDuplicatedFiltered }}</span>
+            <div
+                v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
+                class="flex flex-col"
+            >
+                <span class="text-primary text-base">{{ duplicatesStore.totalByRequestId(timeStore.selected) }}</span>
                 <span class="text-[11px] uppercase">duplicated</span>
             </div>
         </div>
 
         <div class="flex gap-2 text-sm items-center">
-            <label
-                class="label gap-2 !justify-start !text-left p-1.5"
-            >
+            <label class="label gap-2 !justify-start !text-left p-1.5">
                 <input
                     type="checkbox"
                     v-model="formattedQueriesStore.formatted"
@@ -58,9 +62,11 @@ import { useTimeStore } from "@/store/time";
 import SelectMenu from "@/components/SelectMenu.vue";
 import { computed, ref } from "vue";
 import { useFormattedQueriesStore } from "@/store/formatted-queries";
+import { useQueryDuplicated } from "@/store/query-duplicated";
 
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
+const duplicatesStore = useQueryDuplicated();
 
 const requests = timeStore.requests;
 const groups = timeStore.groups;
@@ -78,10 +84,6 @@ const props = defineProps({
         type: Number,
         default: 0
     },
-    totalDuplicatedFiltered: {
-        type: Number,
-        default: 0
-    }
 });
 
 const queryOrder = computed(() => {

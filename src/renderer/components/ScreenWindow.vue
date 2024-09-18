@@ -53,7 +53,7 @@ const dumpsBagFiltered = computed(() => {
         }
 
         return dump;
-    })
+    });
 
     return props.dumpsBag.sort(sort());
 });
@@ -67,15 +67,15 @@ watch(timeStore.groups, () => {
         setTimeout(() => {
             const lastRequest = Object.values(timeStore.requests)[Object.values(timeStore.requests).length - 1];
 
-            timeStore.selected = lastRequest.requestId
+            timeStore.selected = lastRequest.requestId;
 
             console.log({
                 last: lastRequest.requestId,
                 selected: timeStore.selected
-            })
+            });
         }, 600);
     }
-})
+});
 </script>
 
 <template>
@@ -111,7 +111,7 @@ watch(timeStore.groups, () => {
             <div
                 class="w-full mt-1"
                 :class="{
-                    'mt-12' : screen == 'Queries',
+                    'mt-12': screen == 'Queries',
                     'flex flex-col-reverse': reorderStore.reverse && screen !== 'Queries'
                 }"
             >

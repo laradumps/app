@@ -49,14 +49,14 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
 
         <pre
             v-if="formattedQueriesStore.formatted"
-            class="flex relative group select-none w-auto"
+            class="flex relative group select-none w-auto overflow-hidden whitespace-pre-wrap"
         >
             <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formatSql"></code>
         </pre>
 
         <code
             v-if="!formattedQueriesStore.formatted"
-            class="text-base-content rounded !text-xs select-none"
+            class="text-base-content rounded !text-xs select-none break-all"
             v-html="unformattedSql"
         ></code>
 

@@ -48,13 +48,13 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
     });
 
     ipcMain.on("screen-window:toggle-always-on-top", (event, arg) => {
-        if(!window.isDestroyed()) {
+        if (!window.isDestroyed()) {
             setTimeout(() => window.setAlwaysOnTop(arg), 200);
         }
     });
 
     ipcMain.on("screen-window:is-always-on-top", (): void => {
-        if(!window.isDestroyed()) {
+        if (!window.isDestroyed()) {
             window.webContents.send("screen-window:is-always-on-top", { is_always_on_top: window.isAlwaysOnTop() });
         }
     });
