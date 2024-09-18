@@ -752,6 +752,7 @@ function registerDefaultLocalShortcuts() {
 
                         <div
                             :class="{
+                                'mt-12': screenStore.screen === 'Queries',
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
                             }"
@@ -761,6 +762,7 @@ function registerDefaultLocalShortcuts() {
 
                             <div v-if="screenStore.screen === 'Queries'">
                                 <HeaderQueryRequests
+                                    :in-screen-window="inScreenWindow ? 'true' : 'false'"
                                     :payload="payload"
                                     :all-requests="allRequests"
                                     :total="dumpsBagFiltered.length"
@@ -768,11 +770,13 @@ function registerDefaultLocalShortcuts() {
                                 />
                             </div>
 
-                            <div :class="{ flex: screenStore.screen === 'Queries' }">
+                            <div :class="{
+                                flex: screenStore.screen === 'Queries' }"
+                            >
                                 <div
                                     class="mb-[40px] w-full"
                                     :class="{
-                                        'mt-12': screenStore.screen === 'Queries',
+
                                         '-mt-2': screenStore.screen !== 'Queries',
                                         'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
                                     }"

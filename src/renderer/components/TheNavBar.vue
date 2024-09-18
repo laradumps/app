@@ -34,9 +34,12 @@ const clear = () => {
 
 <template>
     <div class="flex justify-between items-center px-3 py-1 bg-base text-center z-100">
-        <div class="ml-8 h-auto w-full nav-bar">&nbsp;</div>
+        <div class="ml-8 w-full select-none nav-bar">&nbsp;</div>
 
         <div class="flex gap-2 items-center mt-0.5">
+
+            <HeaderGlobalFilter v-bind:has-color="hasColor" />
+
             <!-- clear -->
             <a
                 v-show="payloadCount > 0 && !inSavedDumpsWindow && !settingStore.setting"
@@ -46,8 +49,6 @@ const clear = () => {
             >
                 <TrashIcon class="w-4 text-base hover:opacity-75" />
             </a>
-
-            <HeaderGlobalFilter v-bind:has-color="hasColor" />
 
             <!-- pause -->
             <NavBarPause v-bind:is-saved-dumps-window="inSavedDumpsWindow" />

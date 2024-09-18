@@ -68,11 +68,6 @@ watch(timeStore.groups, () => {
             const lastRequest = Object.values(timeStore.requests)[Object.values(timeStore.requests).length - 1];
 
             timeStore.selected = lastRequest.requestId;
-
-            console.log({
-                last: lastRequest.requestId,
-                selected: timeStore.selected
-            });
         }, 600);
     }
 });
@@ -83,6 +78,8 @@ watch(timeStore.groups, () => {
         <div id="top"></div>
 
         <div class="flex justify-end items-center bg-base text-center z-100">
+            <div class="ml-12 select-none w-full nav-bar">&nbsp;</div>
+
             <!-- always on top -->
             <NavBarAlwaysOnTop
                 window="screen-window"
@@ -91,7 +88,6 @@ watch(timeStore.groups, () => {
         </div>
 
         <div
-            class="py-1 px-3"
             v-if="screen === 'Queries'"
         >
             <HeaderQueryRequests
@@ -103,8 +99,8 @@ watch(timeStore.groups, () => {
         </div>
 
         <div
-            class="flex flex-col overflow-auto h-[calc(100vh-1rem)]"
-            :class="{ flex: screen === 'Queries' }"
+            class="flex mt-2 flex-col overflow-auto h-[calc(100vh-1rem)]"
+            :class="{ 'flex mt-3': screen === 'Queries' }"
         >
             <div id="top"></div>
 

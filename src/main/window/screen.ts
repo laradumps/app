@@ -13,6 +13,7 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
         show: false,
         resizable: true,
         alwaysOnTop: true,
+        titleBarStyle: 'hidden',
         webPreferences: {
             spellcheck: true,
             nodeIntegration: true,

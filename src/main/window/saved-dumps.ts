@@ -15,6 +15,7 @@ const createWindow = () => {
         show: false,
         resizable: true,
         alwaysOnTop: true,
+        titleBarStyle: 'hidden',
         webPreferences: {
             spellcheck: true,
             nodeIntegration: true,

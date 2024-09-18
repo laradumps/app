@@ -169,7 +169,7 @@ const isDuplicated = (sql) => {
                         <!-- variable type -->
                         <div
                             v-show="props.payload.dump?.variable_type !== undefined"
-                            class="text-[0.70rem]"
+                            class="text-[0.70rem] opacity-70"
                             v-text="`(${props.payload.dump?.variable_type})`"
                         ></div>
 

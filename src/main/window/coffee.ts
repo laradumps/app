@@ -14,6 +14,7 @@ function createWindow(): BrowserWindow {
         height: 500,
         center: true,
         resizable: false,
+        titleBarStyle: 'hidden',
         frame: false,
         transparent: false,
         alwaysOnTop: true,
