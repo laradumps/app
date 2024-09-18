@@ -15,7 +15,7 @@ const createWindow = () => {
         show: false,
         resizable: true,
         alwaysOnTop: true,
-        titleBarStyle: 'hidden',
+        titleBarStyle: isMac ? 'hidden' : 'default',
         webPreferences: {
             spellcheck: true,
             nodeIntegration: true,

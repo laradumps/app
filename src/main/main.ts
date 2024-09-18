@@ -62,7 +62,7 @@ function createWindow(): BrowserWindow {
         fullscreenable: false,
         width: isDev ? 1080 : 650,
         height: 640,
-        titleBarStyle: 'hidden',
+        titleBarStyle: isMac ? 'hidden' : 'default',
         titleBarOverlay: true,
         resizable: true,
         alwaysOnTop: false,

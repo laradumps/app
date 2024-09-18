@@ -1,7 +1,6 @@
 import { BrowserWindow, ipcMain, BrowserWindowConstructorOptions } from "electron";
 import { join, resolve } from "path";
 import { format } from "url";
-import os from "os";
 import storage from "electron-json-storage";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
@@ -14,7 +13,7 @@ function createWindow(): BrowserWindow {
         height: 500,
         center: true,
         resizable: false,
-        titleBarStyle: 'hidden',
+        titleBarStyle: isMac ? 'hidden' : 'default',
         frame: false,
         transparent: false,
         alwaysOnTop: true,
