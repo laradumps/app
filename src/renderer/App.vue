@@ -76,14 +76,13 @@ onMounted(() => {
     IDEHandler.setValue(localStorage.IDEHandler);
     appearanceStore.setTheme(localStorage.theme);
 
-    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
-    window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
+    setDefaultCheckForUpdates();
 
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
 
-    window.ipcRenderer.on("app:pause-dumps", (event, arg) => {
-        isPaused.value = arg;
-    });
+    addScreen(defaultScreen.value);
+
+    window.ipcRenderer.on("app:pause-dumps", (event, arg) => (isPaused.value = arg));
 
     window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
         if (arg === 0) {
@@ -105,9 +104,7 @@ onMounted(() => {
         console.log(arg);
     });
 
-    addScreen(defaultScreen.value);
-
-    window.ipcRenderer.on("app:load-all-saved-dumps", async (event, args) => {
+    window.ipcRenderer.on("app:load-all-saved-dumps", async () => {
         inSavedDumpsWindow.value = true;
         clearAll();
 
@@ -171,6 +168,35 @@ onMounted(() => {
         localShortcutList.value = arg;
     });
 
+    dumpListeners();
+    mainMenuListeners();
+
+    //* * Convert shortcuts to Electron format **/
+    Object.defineProperty(String.prototype, "beautifyShortcut", {
+        value() {
+            if (process.platform === "darwin") {
+                return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
+            }
+            return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
+        }
+    });
+
+    Object.defineProperty(String.prototype, "toElectronFormat", {
+        value() {
+            return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
+        }
+    });
+
+    window.ipcRenderer.send("environment::get");
+});
+
+const setDefaultCheckForUpdates = () => {
+    if (typeof localStorage.autoUpdate === "undefined") {
+        localStorage.autoUpdate = "automatic";
+    }
+};
+
+const dumpListeners = () => {
     window.ipcRenderer.on("livewire", (event, { content }) => {
         livewireRequests.value.push(content);
         dispatch("livewire", event, content);
@@ -349,56 +375,41 @@ onMounted(() => {
     window.ipcRenderer.on("coffee", (event, arg) => {
         window.ipcRenderer.send("coffee:grab-a-coffee", arg);
     });
-    //
-    // //* * Convert shortcuts to Electron format **/
-    // Object.defineProperty(String.prototype, "beautifyShortcut", {
-    //     value() {
-    //         if (process.platform === "darwin") {
-    //             return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
-    //         }
-    //         return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
-    //     }
-    // });
-    //
-    // Object.defineProperty(String.prototype, "toElectronFormat", {
-    //     value() {
-    //         return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
-    //     }
-    // });
+};
 
-    window.ipcRenderer.send("environment::get");
-});
+const mainMenuListeners = () => {
+    // set
+    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
+    window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
 
-window.ipcRenderer.on("changeTheme", (event, args) => {
-    window.ipcRenderer.send("main-menu:set-theme-selected", { value: args.value });
-    appearanceStore.setTheme(args.value);
-});
+    // get
+    window.ipcRenderer.on("changeTheme", (event, args) => {
+        window.ipcRenderer.send("main-menu:set-theme-selected", { value: args.value });
+        appearanceStore.setTheme(args.value);
+    });
 
-window.addEventListener("update-payload", (event) => {
-    console.log(payloadStore.get(inScreenWindow.value));
-});
+    window.ipcRenderer.on("changeIDE", (event, args) => {
+        window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: args.value });
+        IDEHandler.setValue(args.value);
+    });
 
-window.ipcRenderer.on("changeIDE", (event, args) => {
-    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: args.value });
-    IDEHandler.setValue(args.value);
-});
+    window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
+        window.ipcRenderer.send("main-menu:set-auto-launch", { value: args.value });
+    });
 
-window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
-    window.ipcRenderer.send("main-menu:set-auto-launch", { value: args.value });
-});
-
-window.ipcRenderer.on("settings:set-language", (event, args) => {
-    localeStore.set(args.value);
-    locale.value = localeStore.value;
-    location.reload();
-});
+    window.ipcRenderer.on("settings:set-language", (event, args) => {
+        localeStore.set(args.value);
+        locale.value = localeStore.value;
+        location.reload();
+    });
+};
 
 window.ipcRenderer.on("settings:check-for-updates", (event, args) => {
     localStorage.autoUpdate = args.value;
 });
 
-window.ipcRenderer.on("debug", (event, args) => {
-    console.log(event, args);
+window.addEventListener("update-payload", (event) => {
+    console.log(payloadStore.get(inScreenWindow.value));
 });
 
 /**
@@ -435,19 +446,15 @@ const dumpsBagFiltered = computed(() => {
 
     const dumps = dumpsBag.value;
 
-    dumps.filter((dump) => dump.type === "queries").forEach((dump: Payload) => {
-        const sql = dump.queries.sql;
+    dumps
+        .filter((dump) => dump.type === "queries")
+        .forEach((dump: Payload) => {
+            const sql = dump.queries.sql;
 
-        const isDuplicate = dumps.filter((d: Payload) => d.type === "queries" && d.request_id === dump.request_id && d.queries.sql === sql);
+            const isDuplicate = dumps.filter((d: Payload) => d.type === "queries" && d.request_id === dump.request_id && d.queries.sql === sql);
 
-        queryDuplicatedStore.add(
-            dump.request_id,
-            sql,
-            isDuplicate.length > 1,
-            isDuplicate.length
-        );
-    });
-
+            queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
+        });
 
     return dumps
         .filter(
@@ -555,8 +562,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     content.rendered = false;
     settingStore.setting = false;
 
-    let screenName = "screen 1";
-
     if (content.type === "screen") {
         payload.value.filter((dump: Payload) => dump.id === content.id).map((dump: Payload) => (dump.screen = content.screen));
 
@@ -568,7 +573,8 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         payloadStore.add(content);
     }
 
-    screenName = content.screen.screen_name;
+    let screenName = content.screen.screen_name ?? "screen 1";
+
     if (!["Logs", "Queries"].includes(screenName)) {
         const autoInvokeApp = typeof content.meta === "object" ? content.meta.auto_invoke_app : true;
 
@@ -641,16 +647,20 @@ const getZoomLevel = (value: number): void => {
  * Clears all data and resets the application to its initial state.
  */
 const clearAll = (): void => {
+    // context
     dumpsBag.value = [];
     payload.value = [];
+    livewireRequests.value = [];
+
+    // store
     timeStore.clear();
-    screenStore.activeScreen("screen 1");
     globalSearchStore.clear();
     colorStore.clear();
-    livewireRequests.value = [];
     payloadStore.clearAll();
-    screenStore.clearAll();
 
+    // screenStore
+    screenStore.clearAll();
+    screenStore.activeScreen("screen 1");
     screenStore.add({
         screen_name: "screen 1",
         visible: true,

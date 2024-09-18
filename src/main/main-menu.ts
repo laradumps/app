@@ -151,7 +151,8 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
                                     label: "English"
                                 });
                             },
-                            type: "radio"
+                            type: "radio",
+                            checked: true
                         },
                         {
                             label: "Português (BR)",
@@ -246,7 +247,8 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
                                     label: "Automatic"
                                 });
                             },
-                            type: "radio"
+                            type: "radio",
+                            checked: true
                         },
                         {
                             label: "Manual",
@@ -296,7 +298,8 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
                                     window.webContents.send("app::scroll-direction", { value: "top" });
                                 });
                             },
-                            type: "radio"
+                            type: "radio",
+                            checked: true
                         },
                         {
                             label: "Bottom",

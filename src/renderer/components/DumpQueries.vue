@@ -2,7 +2,6 @@
 import { computed, defineProps, ref } from "vue";
 import { format } from "sql-formatter";
 import { useTimeStore } from "@/store/time";
-import { BarsArrowDownIcon, BarsArrowUpIcon } from "@heroicons/vue/20/solid";
 import { Payload } from "@/types/Payload";
 
 import hljs from "highlight.js/lib/core";

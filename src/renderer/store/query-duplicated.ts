@@ -29,7 +29,7 @@ export const useQueryDuplicated = defineStore("queryDuplicated", {
 
             const total = this.duplicatesInfo
                 .filter((info) => info.request_id === request_id && info.has_duplicated)
-                .map(info => info.occurrences)
+                .map((info) => info.occurrences)
                 .reduce((acc, occurrences) => acc + occurrences, 0);
 
             this.cache[request_id] = total;

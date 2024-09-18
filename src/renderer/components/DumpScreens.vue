@@ -5,7 +5,7 @@
             v-for="(screen, index) in screenStore.allVisible()"
             :key="screen.screen_name"
             :class="{ dragging: isDraggingIndex === index }"
-            v-bind:draggable="screen.screen_name !== 'screen 1'"
+            v-bind:draggable="!['screen 1', 'Livewire'].includes(screen.screen_name)"
             @dragstart="onDragStart(index)"
             @dragover.prevent
             @drop="onDrop(index)"

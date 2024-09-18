@@ -32,7 +32,7 @@ const formatSql = computed(() => {
     }
 });
 
-const unformattedSql = computed(() => props.payload.queries?.sql);
+const unformattedSql = computed(() => props.query?.sql);
 
 onMounted(() => {
     formatted.value = props.query.sql != "";
@@ -65,7 +65,7 @@ onMounted(() => {
                 </div>
             </div>
 
-            <span class="font-semibold text-sm text-base-content"> {{ query.time }} <span class="font-normal text-xs">ms</span></span>
+            <span class="font-semibold text-base text-base-content"> {{ query.time }} <span class="font-normal text-xs">ms</span></span>
         </div>
 
         <pre

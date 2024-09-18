@@ -83,7 +83,7 @@ const props = defineProps({
     totalFiltered: {
         type: Number,
         default: 0
-    },
+    }
 });
 
 const queryOrder = computed(() => {
