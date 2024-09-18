@@ -62,6 +62,8 @@ function createWindow(): BrowserWindow {
         fullscreenable: false,
         width: isDev ? 1080 : 650,
         height: 640,
+        titleBarStyle: 'hidden',
+        titleBarOverlay: true,
         resizable: true,
         alwaysOnTop: false,
         center: true,

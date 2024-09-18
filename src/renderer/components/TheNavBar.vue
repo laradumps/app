@@ -34,7 +34,9 @@ const clear = () => {
 
 <template>
     <div class="flex justify-between items-center px-3 py-1 bg-base text-center z-100">
-        <nav class="flex">
+        <div class="ml-8 h-auto w-full nav-bar">&nbsp;</div>
+
+        <div class="flex gap-2 items-center mt-0.5">
             <!-- clear -->
             <a
                 v-show="payloadCount > 0 && !inSavedDumpsWindow && !settingStore.setting"
@@ -44,16 +46,14 @@ const clear = () => {
             >
                 <TrashIcon class="w-4 text-base hover:opacity-75" />
             </a>
-        </nav>
 
-        <div class="flex gap-2 items-center mt-0.5">
             <HeaderGlobalFilter v-bind:has-color="hasColor" />
-
-            <!-- global search -->
-            <GlobalSearch v-if="payloadCount > 0" />
 
             <!-- pause -->
             <NavBarPause v-bind:is-saved-dumps-window="inSavedDumpsWindow" />
+
+            <!-- global search -->
+            <GlobalSearch v-if="payloadCount > 0" />
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />

@@ -10,7 +10,9 @@ body {
     margin: 0;
     padding-bottom: 3rem;
 }
-
+.nav-bar {
+    -webkit-app-region: drag;
+}
 ::-webkit-scrollbar {
     width: 11px;
     height: 14px;
