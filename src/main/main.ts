@@ -62,8 +62,6 @@ function createWindow(): BrowserWindow {
         fullscreenable: false,
         width: isDev ? 1080 : 650,
         height: 640,
-        titleBarStyle: isMac ? 'hidden' : 'default',
-        titleBarOverlay: true,
         resizable: true,
         alwaysOnTop: false,
         center: true,
@@ -78,6 +76,10 @@ function createWindow(): BrowserWindow {
 
     if (process.platform === "linux" && !isDev) {
         browserWindowOptions.icon = resolve(__dirname, "icon.png");
+    }
+
+    if (isMac) {
+        browserWindowOptions.titleBarStyle = 'hidden';
     }
 
     const win: BrowserWindow = new BrowserWindow(browserWindowOptions);

@@ -4,6 +4,7 @@ import { format } from "url";
 import storage from "electron-json-storage";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
+const isMac: boolean = process.platform === "darwin";
 
 let coffeeWindow: Electron.CrossProcessExports.BrowserWindow;
 
@@ -13,7 +14,6 @@ function createWindow(): BrowserWindow {
         height: 500,
         center: true,
         resizable: false,
-        titleBarStyle: isMac ? 'hidden' : 'default',
         frame: false,
         transparent: false,
         alwaysOnTop: true,
@@ -26,6 +26,10 @@ function createWindow(): BrowserWindow {
 
     if ((process.platform === "linux" && !isDev) || isDev) {
         coffeeWindowOptions.icon = resolve(__dirname, "icon.png");
+    }
+
+    if (isMac) {
+        coffeeWindowOptions.titleBarStyle = 'hidden';
     }
 
     const coffeeWindow: BrowserWindow = new BrowserWindow(coffeeWindowOptions);

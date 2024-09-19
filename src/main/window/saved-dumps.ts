@@ -4,6 +4,7 @@ import { format } from "url";
 import storage from "electron-json-storage";
 
 const isDev = process.env.NODE_ENV === "development";
+const isMac: boolean = process.platform === "darwin";
 
 let savedDumps: any;
 let savedDumpsWindowOptions: BrowserWindowConstructorOptions;
@@ -15,7 +16,6 @@ const createWindow = () => {
         show: false,
         resizable: true,
         alwaysOnTop: true,
-        titleBarStyle: isMac ? 'hidden' : 'default',
         webPreferences: {
             spellcheck: true,
             nodeIntegration: true,
@@ -26,6 +26,10 @@ const createWindow = () => {
 
     if ((process.platform === "linux" && !isDev) || isDev) {
         savedDumpsWindowOptions.icon = resolve(__dirname, "icon.png");
+    }
+
+    if (isMac) {
+        savedDumpsWindowOptions.titleBarStyle = 'hidden';
     }
 
     const savedDumpsWindow = new BrowserWindow(savedDumpsWindowOptions);

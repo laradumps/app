@@ -3,6 +3,7 @@ import { join, resolve } from "path";
 import { format } from "url";
 
 const isDev = process.env.NODE_ENV === "development";
+const isMac: boolean = process.platform === "darwin";
 
 let screenWindowOptions: BrowserWindowConstructorOptions;
 
@@ -24,6 +25,10 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
 
     if ((process.platform === "linux" && !isDev) || isDev) {
         screenWindowOptions.icon = resolve(__dirname, "icon.png");
+    }
+
+    if (isMac) {
+        screenWindowOptions.titleBarStyle = 'hidden';
     }
 
     const window = new BrowserWindow(screenWindowOptions);
