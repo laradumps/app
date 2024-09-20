@@ -207,7 +207,7 @@ app.whenReady().then(async (): Promise<void> => {
     coffeeWindow = initCoffeeWindow();
     savedDumpWindow = initSavedDumps();
 
-    createMenu(mainWindow, windowsMap);
+    await createMenu(mainWindow, windowsMap);
 
     mainWindow.on("minimize", (event: Event): void => {
         event.preventDefault();
