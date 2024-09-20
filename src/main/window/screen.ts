@@ -14,7 +14,7 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
         show: false,
         resizable: true,
         alwaysOnTop: true,
-        titleBarStyle: isMac ? 'hidden' : 'default',
+        titleBarStyle: isMac ? "hidden" : "default",
         webPreferences: {
             spellcheck: true,
             nodeIntegration: true,
@@ -28,7 +28,7 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
     }
 
     if (isMac) {
-        screenWindowOptions.titleBarStyle = 'hidden';
+        screenWindowOptions.titleBarStyle = "hidden";
     }
 
     const window = new BrowserWindow(screenWindowOptions);

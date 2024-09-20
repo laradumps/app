@@ -45,6 +45,14 @@ export const useScreenStore = defineStore("screen", {
                 return screen;
             });
         },
+        hidden(screenName: String) {
+            this.screens = this.screens.map((screen: ScreenPayload) => {
+                if (screen.screen_name === screenName) {
+                    return { ...screen, visible: false };
+                }
+                return screen;
+            });
+        },
         getNext(screenName: string) {
             const index = this.screens.findIndex((screen) => screen.screen_name === screenName);
             if (index === -1) return null;

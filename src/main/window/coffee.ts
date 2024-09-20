@@ -29,7 +29,7 @@ function createWindow(): BrowserWindow {
     }
 
     if (isMac) {
-        coffeeWindowOptions.titleBarStyle = 'hidden';
+        coffeeWindowOptions.titleBarStyle = "hidden";
     }
 
     const coffeeWindow: BrowserWindow = new BrowserWindow(coffeeWindowOptions);

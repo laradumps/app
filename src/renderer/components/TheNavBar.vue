@@ -37,7 +37,6 @@ const clear = () => {
         <div class="ml-8 w-full select-none nav-bar">&nbsp;</div>
 
         <div class="flex gap-2 items-center mt-0.5">
-
             <HeaderGlobalFilter v-bind:has-color="hasColor" />
 
             <!-- clear -->

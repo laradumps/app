@@ -48,7 +48,8 @@ const defaultScreen = ref({
     screen_name: "screen 1",
     raise_in: 0,
     visible: true,
-    pinned: false
+    pinned: false,
+    new_window: false
 });
 const appVersion = ref("");
 const localShortcutList = ref([]);
@@ -58,7 +59,7 @@ const payload = ref([]);
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
 
-const inScreenWindow = ref("");
+const inScreenWindow = ref(false);
 const payloadScreen = ref([]);
 
 const applicationPath = ref("");
@@ -600,10 +601,22 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
 
-    window.ipcRenderer.send("send-screen-window-update", {
-        screen: content.screen.screen_name,
-        payload: serializablePayload
-    });
+    if (content.screen.new_window) {
+        screenStore.hidden(content.screen.screen_name);
+
+        window.ipcRenderer.send("screen-window:show", {
+            screen: content.screen.screen_name,
+            payload: serializablePayload,
+            position: {}
+        });
+
+        setTimeout(() => toggleScreen(content.screen.screen_name), 200);
+    } else {
+        window.ipcRenderer.send("send-screen-window-update", {
+            screen: content.screen.screen_name,
+            payload: serializablePayload
+        });
+    }
 };
 
 /**
@@ -770,13 +783,14 @@ function registerDefaultLocalShortcuts() {
                                 />
                             </div>
 
-                            <div :class="{
-                                flex: screenStore.screen === 'Queries' }"
+                            <div
+                                :class="{
+                                    flex: screenStore.screen === 'Queries'
+                                }"
                             >
                                 <div
                                     class="mb-[40px] w-full"
                                     :class="{
-
                                         '-mt-2': screenStore.screen !== 'Queries',
                                         'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
                                     }"

@@ -29,7 +29,7 @@ const createWindow = () => {
     }
 
     if (isMac) {
-        savedDumpsWindowOptions.titleBarStyle = 'hidden';
+        savedDumpsWindowOptions.titleBarStyle = "hidden";
     }
 
     const savedDumpsWindow = new BrowserWindow(savedDumpsWindowOptions);

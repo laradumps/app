@@ -85,6 +85,7 @@ export interface ScreenPayload {
     raise_in: number;
     pinned: boolean;
     visible: boolean;
+    new_window: boolean;
 }
 
 export interface Meta {

@@ -121,7 +121,7 @@ const setActiveProject = () => {
 
             <SignalIcon
                 v-else
-                :class="{ 'animate-pulse text-primary': newProject }"
+                :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
                 class="w-4 text-base-content hover:text-primary"
             />
         </div>

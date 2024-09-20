@@ -30,26 +30,11 @@ let mainWindow: BrowserWindow;
 let coffeeWindow: BrowserWindow;
 let savedDumpWindow: BrowserWindow;
 let tray: Electron.Tray;
-let isQuiting: boolean;
 let globalUpdateInfo: UpdateInfo;
 
+const windowsMap = new Map();
+
 const electronLocalShortcut = require("electron-localshortcut");
-
-if (!isDev) {
-    const autoLauncher = new AutoLaunch({ name: "LaraDumps" });
-
-    ipcMain.on("main-menu:set-auto-launch", (event: Electron.IpcMainEvent, arg): void => {
-        arg.value === "disabled" ? autoLauncher.disable() : autoLauncher.enable();
-    });
-}
-
-ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
-    if (!Object.prototype.hasOwnProperty.call(arg.content, "meta")) {
-        return;
-    }
-
-    event.sender.send(arg.type, arg);
-});
 
 function createWindow(): BrowserWindow {
     const winState: windowStateKeeper.State = windowStateKeeper({
@@ -79,7 +64,7 @@ function createWindow(): BrowserWindow {
     }
 
     if (isMac) {
-        browserWindowOptions.titleBarStyle = 'hidden';
+        browserWindowOptions.titleBarStyle = "hidden";
     }
 
     const win: BrowserWindow = new BrowserWindow(browserWindowOptions);
@@ -159,7 +144,21 @@ function createWindow(): BrowserWindow {
     return win;
 }
 
-const windowsMap = new Map();
+if (!isDev) {
+    const autoLauncher = new AutoLaunch({ name: "LaraDumps" });
+
+    ipcMain.on("main-menu:set-auto-launch", (event: Electron.IpcMainEvent, arg): void => {
+        arg.value === "disabled" ? autoLauncher.disable() : autoLauncher.enable();
+    });
+}
+
+ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
+    if (!Object.prototype.hasOwnProperty.call(arg.content, "meta")) {
+        return;
+    }
+
+    event.sender.send(arg.type, arg);
+});
 
 function sendScreenWindowUpdate(screen, payload) {
     const screenWindow = windowsMap.get(screen);
@@ -177,12 +176,21 @@ ipcMain.on("send-screen-window-update", (event, args) => {
 });
 
 ipcMain.on("screen-window:show", (event, arg) => {
-    const screenWindow = createScreenWindow(mainWindow, arg.screen);
+    let screenWindow: BrowserWindow;
+    let screenExist = windowsMap.has(arg.screen);
 
-    const { x, y } = arg.position;
-    screenWindow.setPosition(x, y);
+    if (!screenExist) {
+        screenWindow = createScreenWindow(mainWindow, arg.screen);
+        if (arg.position.length > 0) {
+            screenWindow.setPosition(arg.position.x, arg.position.y);
+        }
+    } else {
+        screenWindow = windowsMap.get(arg.screen);
+    }
 
-    screenWindow.show();
+    if (!screenWindow.isVisible()) {
+        screenWindow.show();
+    }
 
     if (isDev) {
         screenWindow.webContents.openDevTools();
@@ -190,12 +198,16 @@ ipcMain.on("screen-window:show", (event, arg) => {
 
     windowsMap.set(arg.screen, screenWindow);
 
-    screenWindow.webContents.once("did-finish-load", () => {
+    const sendEnableMessage = () => {
         screenWindow.webContents.send("app:screen-window-enable", {
             screen: arg.screen,
             payload: arg.payload
         });
-    });
+    };
+
+    screenExist
+        ? sendEnableMessage()
+        : screenWindow.webContents.once("did-finish-load", () => sendEnableMessage())
 
     screenWindow.on("closed", () => {
         windowsMap.delete(arg.screen);
@@ -266,7 +278,6 @@ app.whenReady().then(async (): Promise<void> => {
                 label: "Exit",
                 accelerator: "Command+Q",
                 click: async (): Promise<void> => {
-                    isQuiting = true;
                     app.quit();
                 }
             }
@@ -286,10 +297,6 @@ app.whenReady().then(async (): Promise<void> => {
             tray.popUpContextMenu();
         });
     }
-});
-
-app.on("before-quit", function (): void {
-    isQuiting = true;
 });
 
 app.on("window-all-closed", (): void => {
@@ -448,10 +455,7 @@ ipcMain.on("main:download-complete", async (event, args) => {
     if (result.response === 0) {
         await shell.openPath(args);
 
-        setTimeout(() => {
-            isQuiting = true;
-            app.quit();
-        }, 1000);
+        setTimeout(() => app.quit(), 1000);
     }
 });
 
@@ -469,7 +473,6 @@ ipcMain.on("main:download-update", (): void => {
             if (fs.existsSync(downloadedFile)) {
                 await shell.openPath(downloadedFile);
 
-                isQuiting = true;
                 app.quit();
             } else {
                 mainWindow.webContents.send("autoUpdater:update-info", globalUpdateInfo);
@@ -482,15 +485,15 @@ ipcMain.on("main:download-update", (): void => {
 });
 
 ipcMain.on("native-theme", () => {
-    if (nativeTheme.shouldUseDarkColors) {
-        mainWindow.webContents.send("app:theme-dark");
-    } else {
-        mainWindow.webContents.send("app:theme-light");
-    }
+    mainWindow.webContents.send(
+        nativeTheme.shouldUseDarkColors ? "app:theme-dark" : "app:theme-light"
+    );
 });
 
 nativeTheme.on("updated", () => {
-    nativeTheme.shouldUseDarkColors ? mainWindow.webContents.send("app:theme-dark") : mainWindow.webContents.send("app:theme-light");
+    mainWindow.webContents.send(
+        nativeTheme.shouldUseDarkColors  ? "app:theme-dark" : "app:theme-light"
+    )
 });
 
 ipcMain.on("main:pause-dumps", (event, args) => {
