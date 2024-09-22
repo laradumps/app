@@ -1,10 +1,10 @@
 import { BrowserWindow, ipcMain, BrowserWindowConstructorOptions } from "electron";
 import { join, resolve } from "path";
 import { format } from "url";
-import os from "os";
 import storage from "electron-json-storage";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
+const isMac: boolean = process.platform === "darwin";
 
 let coffeeWindow: Electron.CrossProcessExports.BrowserWindow;
 
@@ -26,6 +26,10 @@ function createWindow(): BrowserWindow {
 
     if ((process.platform === "linux" && !isDev) || isDev) {
         coffeeWindowOptions.icon = resolve(__dirname, "icon.png");
+    }
+
+    if (isMac) {
+        coffeeWindowOptions.titleBarStyle = "hidden";
     }
 
     const coffeeWindow: BrowserWindow = new BrowserWindow(coffeeWindowOptions);

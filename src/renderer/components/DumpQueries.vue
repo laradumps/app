@@ -2,29 +2,17 @@
 import { computed, defineProps, ref } from "vue";
 import { format } from "sql-formatter";
 import { useTimeStore } from "@/store/time";
-import { BarsArrowDownIcon, BarsArrowUpIcon } from "@heroicons/vue/20/solid";
 import { Payload } from "@/types/Payload";
 
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
-import CopyToClick from "@/components/CopyToClick.vue";
+import { useFormattedQueriesStore } from "@/store/formatted-queries";
 hljs.registerLanguage("sql", sql);
 
-const formatted = ref(true);
-const copied = ref(false);
-
 const timeStore = useTimeStore();
+const formattedQueriesStore = useFormattedQueriesStore();
 
-const showCopiedBadge = () => {
-    copied.value = true;
-    setTimeout(() => {
-        copied.value = false;
-    }, 2000);
-};
-
-const toggleFormatted = () => {
-    formatted.value = !formatted.value;
-};
+const copied = ref(false);
 
 const props = defineProps<{
     payload: Payload;
@@ -32,11 +20,12 @@ const props = defineProps<{
 
 const total = computed(() => timeStore.requests[props.payload.request_id]?.total ?? 0);
 const percentage = computed(() => ((100 * props.payload.queries?.time) / total.value).toFixed(2));
+
 const formatSql = computed(() => {
     const sql = props.payload.queries?.sql;
 
     if (sql != null) {
-        let formattedSql = formatted.value
+        let formattedSql = formattedQueriesStore.formatted
             ? format(sql, {
                   indent: "    "
               })
@@ -45,23 +34,30 @@ const formatSql = computed(() => {
         return hljs.highlight(formattedSql, { language: "sql" }).value;
     }
 });
+
+const unformattedSql = computed(() => props.payload.queries?.sql);
 </script>
 
 <template>
-    <div class="rounded-sm dump-queries !w-[calc(100vw-180px)] overflow-auto">
+    <div class="rounded-sm dump-queries overflow-auto">
+        <div class="flex justify-between gap-3 items-center mb-3">
+            <div class="flex items-center gap-3">
+                <span class="text-base font-semibold text-base-content"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
+            </div>
+        </div>
+
         <pre
-            v-if="formatted"
-            class="flex relative group select-none w-auto"
+            v-if="formattedQueriesStore.formatted"
+            class="flex relative group select-none w-auto overflow-hidden whitespace-pre-wrap"
         >
             <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formatSql"></code>
         </pre>
 
-        <div v-if="!formatted">
-            <code
-                class="text-base-content rounded !text-xs select-none"
-                v-html="formatSql"
-            ></code>
-        </div>
+        <code
+            v-if="!formattedQueriesStore.formatted"
+            class="text-base-content rounded !text-xs select-none break-all"
+            v-html="unformattedSql"
+        ></code>
 
         <div class="group items-center mt-1">
             <div class="flex items-center select-none">
@@ -80,33 +76,6 @@ const formatSql = computed(() => {
                         }"
                         class="h-[0.2rem] mt-1 opacity-70 relative"
                     ></div>
-                </div>
-
-                <div class="flex justify-end gap-3 items-center absolute top-0 right-0">
-                    <div
-                        class="cursor-pointer opacity-0 group-hover:opacity-100"
-                        @click="toggleFormatted"
-                        :title="$t('toggle_format')"
-                    >
-                        <BarsArrowDownIcon
-                            class="w-[1.1rem] h-[1.1rem] text-base-content"
-                            v-show="!formatted"
-                        />
-                        <BarsArrowUpIcon
-                            class="w-[1.1rem] h-[1.1rem] text-base-content"
-                            v-show="formatted"
-                        />
-                    </div>
-
-                    <CopyToClick
-                        @click="
-                            $clipboard(props.payload.queries?.sql);
-                            showCopiedBadge();
-                        "
-                        class="text-base-content opacity-0 group-hover:opacity-100"
-                    />
-
-                    <span class="font-semibold text-sm text-primary"> {{ props.payload.queries.time }} <span class="font-normal text-xs">ms</span></span>
                 </div>
             </div>
         </div>

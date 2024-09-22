@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, defineProps, nextTick, onMounted, ref } from "vue";
-import { useTimeStore } from "@/store/time";
 import DumpLink from "@/components/DumpLink.vue";
 import DumpQueries from "@/components/DumpQueries.vue";
 import DumpJson from "@/components/DumpJson.vue";
@@ -8,7 +7,7 @@ import DumpLog from "@/components/DumpLog.vue";
 import DumpModel from "@/components/DumpModel.vue";
 import DumpTable from "@/components/DumpTable.vue";
 import DumpHTML from "@/components/DumpHTML.vue";
-import IconSave from "@/components/Icons/IconSave.vue";
+import SaveDump from "@/components/SaveDump.vue";
 import DumpTimeTrack from "@/components/DumpTimeTrack.vue";
 import DumpContains from "@/components/DumpContains.vue";
 import DumpMailable from "@/components/DumpMailable.vue";
@@ -18,11 +17,12 @@ import DumpQuery from "@/components/DumpQuery.vue";
 import { Payload } from "@/types/Payload";
 import DumpMail from "@/components/DumpMail.vue";
 import CopyToClick from "@/components/CopyToClick.vue";
-import { MinusIcon, PlusIcon } from "@heroicons/vue/16/solid";
 import DumpDump from "@/components/DumpDump.vue";
-import DumpLivewire from "@/components/DumpLivewire.vue";
 import IconTrash from "@/components/Icons/IconTrash.vue";
+import { useQueryDuplicated } from "@/store/query-duplicated";
+import { useTimeStore } from "@/store/time";
 
+const duplicatesStore = useQueryDuplicated();
 const timeStore = useTimeStore();
 
 const saveDump = () => window.ipcRenderer.send("main:save-dumps", JSON.stringify(props.payload));
@@ -59,82 +59,57 @@ onMounted(() => {
             }
         }
     }
-
-    if (props.payload.type === "queries") {
-        const { time } = props.payload.queries;
-        timeStore.increment(props.payload.request_id, props.payload.id, time);
-    }
 });
 
-const borderColor = computed(() => {
-    let border;
-    let color;
+const getColorClass = (colorType: string) => {
+    let borderClass = "";
+    let bgClass = "";
 
     if (typeof props.payload.color !== "undefined") {
-        color = props.payload.color;
+        switch (props.payload.color) {
+            case "red":
+                borderClass = "!border-l-error";
+                bgClass = "!bg-error/10";
+                break;
+            case "orange":
+            case "warning":
+                borderClass = "!border-l-warning";
+                bgClass = "!bg-warning/10";
+                break;
+            case "green":
+                borderClass = "!border-l-success";
+                bgClass = "!bg-success/10";
+                break;
+            case "blue":
+                borderClass = "!border-l-info";
+                bgClass = "!bg-info/10";
+                break;
+            case "gray":
+                borderClass = "!border-l-neutral";
+                bgClass = "!bg-neutral/10";
+                break;
+            case "black":
+                borderClass = "!border-black";
+                bgClass = "!bg-black/10";
+                break;
+            default:
+                borderClass = props.payload.color;
+                bgClass = props.payload.color;
+                break;
+        }
+
+        return colorType === "border" ? borderClass : bgClass;
     }
 
-    switch (color) {
-        case "red":
-            border = "!border-l-error";
-            break;
-        case "warning":
-        case "orange":
-            border = "!border-l-warning";
-            break;
-        case "green":
-            border = "!border-l-success";
-            break;
-        case "blue":
-            border = "!border-l-info";
-            break;
-        case "gray":
-            border = "!border-l-neutral";
-            break;
-        case "black":
-            border = "!border-black";
-            break;
-        default:
-            props.payload.color;
-    }
+    return props.payload.color;
+};
 
-    return border;
-});
+const borderColor = computed(() => getColorClass("border"));
+const bgColor = computed(() => getColorClass("bg"));
 
-const bgColor = computed(() => {
-    let bg;
-    let color;
-
-    if (typeof props.payload.color !== "undefined") {
-        color = props.payload.color;
-    }
-
-    switch (color) {
-        case "red":
-            bg = "!bg-error/10";
-            break;
-        case "warning":
-        case "orange":
-            bg = "!bg-warning/10";
-            break;
-        case "green":
-            bg = "!bg-success/10";
-            break;
-        case "blue":
-            bg = "!bg-info/10";
-            break;
-        case "gray":
-            bg = "!bg-neutral/10";
-            break;
-        case "black":
-            bg = "!bg-black/10";
-            break;
-        default:
-            props.payload.color;
-    }
-
-    return bg;
-});
+const isDuplicated = (sql) => {
+    return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
+};
 </script>
 <template>
     <div class="group text-sm pt-2">
@@ -146,16 +121,16 @@ const bgColor = computed(() => {
                     'collapse-open': open,
                     'collapse-close': open
                 }"
-                class="collapse bg-base-200/70 bg-laravel"
+                class="collapse bg-base-200/70 bg-laravel border border-base-content/5"
             >
                 <div
                     @dblclick="open = !open"
                     title="Double click to collapse"
-                    class="select-none hover:opacity-75 !cursor-default collapse-title gap-2 text-base-content opacity-70 justify-between items-center font-light flex text-[11px]"
+                    class="select-none !cursor-default collapse-title gap-2 text-base-content justify-between items-center font-light flex text-[12px]"
                 >
                     <ul
-                        class="flex gap-6"
-                        v-bind:style="props.payload.ide_handle ? 'list-style-type: disc;' : ''"
+                        class="flex gap-6 whitespace-nowrap"
+                        v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
                     >
                         <li class="list-none">
                             {{ props.payload.date_time }}
@@ -164,27 +139,68 @@ const bgColor = computed(() => {
                             <DumpLink :ide-handler="props.payload.ide_handle" />
                         </li>
                     </ul>
-                    <div class="flex justify-center items-center">
+                    <div class="group flex justify-center items-center gap-2">
+                        <div
+                            v-show="open"
+                            class="mr-1 group flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
+                        >
+                            <div
+                                :title="$t('click_to_copy')"
+                                @click="copyDump"
+                            >
+                                <CopyToClick />
+                            </div>
+                            <div
+                                :title="$t('menu.saved_dumps')"
+                                @click="saveDump"
+                                v-if="!inSavedDumpsWindow"
+                            >
+                                <SaveDump />
+                            </div>
+                            <div
+                                :title="$t('menu.remove')"
+                                @click="removeSaveDump"
+                                v-if="inSavedDumpsWindow"
+                            >
+                                <IconTrash class="cursor-pointer size-4" />
+                            </div>
+                        </div>
+
+                        <!-- variable type -->
+                        <div
+                            v-show="props.payload.dump?.variable_type !== undefined"
+                            class="text-[0.70rem] opacity-70"
+                            v-text="`(${props.payload.dump?.variable_type})`"
+                        ></div>
+
                         <div
                             v-if="props.payload.type !== `queries`"
-                            class="text-primary uppercase text-[10px] font-semibold tracking-wider mr-3"
+                            class="badge text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto"
                         >
                             {{ props.payload.label ?? props.payload.type }}
                         </div>
-                        <button
-                            class="py-2"
-                            v-show="!open"
-                            v-on:click="open = true"
+
+                        <div
+                            v-if="isDuplicated(payload.queries?.sql)"
+                            class="badge font-semibold badge-warning text-warning-content uppercase text-xs"
                         >
-                            <PlusIcon class="w-4" />
-                        </button>
-                        <button
-                            class="py-2"
-                            v-show="open"
-                            v-on:click="open = false"
-                        >
-                            <MinusIcon class="w-4" />
-                        </button>
+                            Duplicated
+                        </div>
+
+                        <div class="-mr-2 text-base-content/70 p-2">
+                            <button
+                                v-show="!open"
+                                v-on:click="open = true"
+                            >
+                                <span>▶</span>
+                            </button>
+                            <button
+                                v-show="open"
+                                v-on:click="open = false"
+                            >
+                                <span>▼</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div
@@ -196,56 +212,6 @@ const bgColor = computed(() => {
                         class="relative"
                         :class="{ 'overflow-auto w-[calc(100vw-70px)]': ['queries', 'table', 'table_v2'].includes(props.payload.type) }"
                     >
-                        <!-- variable type -->
-                        <div
-                            v-if="props.payload.dump?.variable_type !== undefined"
-                            class="text-[0.70rem] opacity-70"
-                            v-text="`(${props.payload.dump.variable_type})`"
-                        ></div>
-                        <div class="gap-4 flex absolute right-0 z-100">
-                            <div
-                                v-if="!['queries', 'table', 'table_v2'].includes(props.payload.type)"
-                                class="transition-all -mt-2 items-center text-base-content"
-                            >
-                                <div
-                                    class="right-0 absolute -top-4"
-                                    v-bind:class="{
-                                        'opacity-100': openOptions,
-                                        'opacity-0': !['query'].includes(props.payload.type)
-                                    }"
-                                >
-                                    <ul class="flex items-center p-2 gap-3 shadow bg-base-300 rounded-box w-auto">
-                                        <li
-                                            :title="$t('click_to_copy')"
-                                            class="p-1"
-                                            @click="copyDump"
-                                        >
-                                            <a>
-                                                <CopyToClick />
-                                            </a>
-                                        </li>
-                                        <li
-                                            :title="$t('menu.saved_dumps')"
-                                            class="p-1"
-                                            @click="saveDump"
-                                            v-if="!inSavedDumpsWindow"
-                                        >
-                                            <a><IconSave class="cursor-pointer w-3 h-3 hover:opacity-75" /> </a>
-                                        </li>
-
-                                        <li
-                                            :title="$t('menu.remove')"
-                                            class="p-1"
-                                            @click="removeSaveDump"
-                                            v-if="inSavedDumpsWindow"
-                                        >
-                                            <a><IconTrash class="cursor-pointer size-4 hover:opacity-75" /> </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
                         <DumpDump
                             :id="`dump-content-${props.payload.sf_dump_id}`"
                             class="text-base-content break-all"

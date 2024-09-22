@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps, onMounted, ref, watch } from "vue";
 import { useIDEHandlerStore } from "@/store/ide-handler";
-import IdeHandle from "@/types/IdeHandle";
+import { IdeHandle } from "@/types/IdeHandle";
 
 const IDEHandler = useIDEHandlerStore();
 
@@ -29,13 +29,12 @@ const generateLink = (ide: string) => {
 
             return;
         }
-
         link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
     }
 };
 
 onMounted(() => {
-    generateLink(IDEHandler.value);
+    generateLink(IDEHandler.value ?? "phpstorm://open?file={filepath}&line={line}");
 });
 
 const label = computed(() => {

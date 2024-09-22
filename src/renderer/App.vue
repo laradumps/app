@@ -10,7 +10,7 @@ import { useTimeStore } from "@/store/time";
 import { useGlobalSearchStore } from "@/store/global-search";
 import { useI18n } from "vue-i18n";
 import { useColorStore } from "@/store/colors";
-import { Payload, ScreenPayload } from "@/types/Payload";
+import { Payload } from "@/types/Payload";
 import * as Helper from "@/helpers";
 import moment from "moment/moment";
 import humanizeDuration from "humanize-duration";
@@ -23,6 +23,10 @@ import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
+import ScreenWindow from "@/components/ScreenWindow.vue";
+import { usePayloadStore } from "@/store/payload";
+import { useScrollDirection } from "@/store/scroll-direction";
+import { useQueryDuplicated } from "@/store/query-duplicated";
 
 markRaw(TheUpdateModalInfo);
 
@@ -34,23 +38,35 @@ const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const IDEHandler = useIDEHandlerStore();
+const payloadStore = usePayloadStore();
+const scrollDirection = useScrollDirection();
+
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
 
 const defaultScreen = ref({
     screen_name: "screen 1",
-    raise_in: 0
+    raise_in: 0,
+    visible: true,
+    pinned: false,
+    new_window: false
 });
 const appVersion = ref("");
 const localShortcutList = ref([]);
 
 const payload = ref([]);
-const screens = ref([]);
+
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
+
+const inScreenWindow = ref(false);
+const payloadScreen = ref([]);
+
 const applicationPath = ref("");
 const livewireRequests = ref([]);
 const isPaused = ref(false);
+
+const allRequests = ref([]);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
@@ -61,14 +77,13 @@ onMounted(() => {
     IDEHandler.setValue(localStorage.IDEHandler);
     appearanceStore.setTheme(localStorage.theme);
 
-    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
-    window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
+    setDefaultCheckForUpdates();
 
-    setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 300);
+    setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
 
-    window.ipcRenderer.on("app:pause-dumps", (event, arg) => {
-        isPaused.value = arg;
-    });
+    addScreen(defaultScreen.value);
+
+    window.ipcRenderer.on("app:pause-dumps", (event, arg) => (isPaused.value = arg));
 
     window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
         if (arg === 0) {
@@ -90,13 +105,22 @@ onMounted(() => {
         console.log(arg);
     });
 
-    addScreen(defaultScreen.value);
-
-    window.ipcRenderer.on("app:load-all-saved-dumps", async (event, args) => {
+    window.ipcRenderer.on("app:load-all-saved-dumps", async () => {
         inSavedDumpsWindow.value = true;
         clearAll();
 
         await loadAllSavedPayload();
+    });
+
+    window.ipcRenderer.on("app:screen-window-enable", async (event, args) => {
+        inScreenWindow.value = args.screen;
+        payloadScreen.value = args.payload;
+
+        setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
+    });
+
+    window.ipcRenderer.on("app:screen-window-update", async (event, args) => {
+        payloadScreen.value = args.payload;
     });
 
     window.ipcRenderer.on("app:render-all-saved-dumps", (event, content) => {
@@ -128,14 +152,52 @@ onMounted(() => {
         }
     });
 
-    window.ipcRenderer.on("app::toggle-reorder", () => reorderStore.toggle());
+    window.ipcRenderer.on("app::scroll-direction", (event, args) => {
+        reorderStore.set(args.value);
+        scrollDirection.set(args.value);
+
+        document.getElementById(args.value).scrollIntoView({
+            behavior: "smooth"
+        });
+    });
+
     window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
+
     window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
 
     window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
         localShortcutList.value = arg;
     });
 
+    dumpListeners();
+    mainMenuListeners();
+
+    //* * Convert shortcuts to Electron format **/
+    Object.defineProperty(String.prototype, "beautifyShortcut", {
+        value() {
+            if (process.platform === "darwin") {
+                return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
+            }
+            return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
+        }
+    });
+
+    Object.defineProperty(String.prototype, "toElectronFormat", {
+        value() {
+            return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
+        }
+    });
+
+    window.ipcRenderer.send("environment::get");
+});
+
+const setDefaultCheckForUpdates = () => {
+    if (typeof localStorage.autoUpdate === "undefined") {
+        localStorage.autoUpdate = "automatic";
+    }
+};
+
+const dumpListeners = () => {
     window.ipcRenderer.on("livewire", (event, { content }) => {
         livewireRequests.value.push(content);
         dispatch("livewire", event, content);
@@ -314,52 +376,41 @@ onMounted(() => {
     window.ipcRenderer.on("coffee", (event, arg) => {
         window.ipcRenderer.send("coffee:grab-a-coffee", arg);
     });
+};
 
-    //* * Convert shortcuts to Electron format **/
-    Object.defineProperty(String.prototype, "beautifyShortcut", {
-        value() {
-            if (process.platform === "darwin") {
-                return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
-            }
-            return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
-        }
+const mainMenuListeners = () => {
+    // set
+    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
+    window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
+
+    // get
+    window.ipcRenderer.on("changeTheme", (event, args) => {
+        window.ipcRenderer.send("main-menu:set-theme-selected", { value: args.value });
+        appearanceStore.setTheme(args.value);
     });
 
-    Object.defineProperty(String.prototype, "toElectronFormat", {
-        value() {
-            return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
-        }
+    window.ipcRenderer.on("changeIDE", (event, args) => {
+        window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: args.value });
+        IDEHandler.setValue(args.value);
     });
 
-    window.ipcRenderer.send("environment::get");
-});
+    window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
+        window.ipcRenderer.send("main-menu:set-auto-launch", { value: args.value });
+    });
 
-window.ipcRenderer.on("changeTheme", (event, args) => {
-    window.ipcRenderer.send("main-menu:set-theme-selected", { value: args.value });
-    appearanceStore.setTheme(args.value);
-});
-
-window.ipcRenderer.on("changeIDE", (event, args) => {
-    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: args.value });
-    IDEHandler.setValue(args.value);
-});
-
-window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
-    window.ipcRenderer.send("main-menu:set-auto-launch", { value: args.value });
-});
-
-window.ipcRenderer.on("settings:set-language", (event, args) => {
-    localeStore.set(args.value);
-    locale.value = localeStore.value;
-    location.reload();
-});
+    window.ipcRenderer.on("settings:set-language", (event, args) => {
+        localeStore.set(args.value);
+        locale.value = localeStore.value;
+        location.reload();
+    });
+};
 
 window.ipcRenderer.on("settings:check-for-updates", (event, args) => {
     localStorage.autoUpdate = args.value;
 });
 
-window.ipcRenderer.on("debug", (event, args) => {
-    console.log(event, args);
+window.addEventListener("update-payload", (event) => {
+    console.log(payloadStore.get(inScreenWindow.value));
 });
 
 /**
@@ -380,7 +431,7 @@ const dumpsBagFiltered = computed(() => {
      * @param {boolean} reversed - Indicates whether the sorting order is reversed.
      * @returns {Function} A comparison function for sorting payloads.
      */
-    const reverseTimeOrder = (reversed: boolean) => {
+    const reverseTimeOrder = (reversed) => {
         return function () {
             reversed = !reversed;
             return function (a, b) {
@@ -392,21 +443,39 @@ const dumpsBagFiltered = computed(() => {
     };
 
     const sort = reverseTimeOrder(timeStore.order);
+    const queryDuplicatedStore = useQueryDuplicated();
 
-    return dumpsBag.value
+    const dumps = dumpsBag.value;
+
+    dumps
+        .filter((dump) => dump.type === "queries")
+        .forEach((dump: Payload) => {
+            const sql = dump.queries.sql;
+
+            const isDuplicate = dumps.filter((d: Payload) => d.type === "queries" && d.request_id === dump.request_id && d.queries.sql === sql);
+
+            queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
+        });
+
+    return dumps
         .filter(
             (dump) =>
                 JSON.stringify(dump[dump.type] ?? "")
-                    .toString()
-                    ?.toLowerCase()
+                    .toLowerCase()
                     .includes(globalSearchStore.search.toLowerCase()) || dump.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
         )
         .filter((dump) => {
             if (colorStore.colors.length > 0) {
                 return colorStore.colors.includes(dump.color);
             }
-
             return true;
+        })
+        .map((dump) => {
+            if (dump.type === "queries") {
+                const { time } = dump.queries;
+                timeStore.increment(dump.request_id, dump.id, time);
+            }
+            return dump;
         })
         .sort(sort());
 });
@@ -416,11 +485,9 @@ const dumpsBagFiltered = computed(() => {
  * @param {Object} param - The screen object to be added.
  */
 const addScreen = (param) => {
-    const screenExists = screens.value.filter((screen: ScreenPayload) => screen.screen_name === param.screen_name).length > 0;
+    param.visible = true;
 
-    if (!screenExists) {
-        screens.value.push(param);
-    }
+    screenStore.add(param);
 };
 
 /**
@@ -438,24 +505,35 @@ const maximizeApp = (autoInvokeApp: string | boolean): void => {
  * @param {string} value - The name of the screen to be toggled.
  */
 const toggleScreen = async (value: string): Promise<void> => {
+    if (screenStore.get(value) && !screenStore.get(value).visible) {
+        return;
+    }
+
     clearInterval(interval.value);
+
     interval.value = null;
 
     screenStore.activeScreen(value);
 
     dumpsBag.value = payload.value.filter((payload) => payload.type !== "screen" && payload.screen.screen_name === value);
 
-    nextTick(() =>
-        document.getElementById("top").scrollIntoView({
-            behavior: "smooth"
-        })
-    );
+    await nextTick(() => {
+        if (scrollDirection.isTop()) {
+            document.getElementById("top").scrollIntoView({
+                behavior: "smooth"
+            });
+        } else {
+            document.getElementById("bottom").scrollIntoView({
+                behavior: "smooth"
+            });
+        }
+    });
 
     if (screenStore.screen === "Queries") {
         setTimeout(() => {
             const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
             if (lastPayload) timeStore.selected = lastPayload.request_id;
-        }, 800);
+        }, 600);
     }
 };
 
@@ -485,8 +563,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     content.rendered = false;
     settingStore.setting = false;
 
-    let screenName = "screen 1";
-
     if (content.type === "screen") {
         payload.value.filter((dump: Payload) => dump.id === content.id).map((dump: Payload) => (dump.screen = content.screen));
 
@@ -494,9 +570,12 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     } else {
         content.screen = defaultScreen.value;
         payload.value.push(content);
+
+        payloadStore.add(content);
     }
 
-    screenName = content.screen.screen_name;
+    let screenName = content.screen.screen_name ?? "screen 1";
+
     if (!["Logs", "Queries"].includes(screenName)) {
         const autoInvokeApp = typeof content.meta === "object" ? content.meta.auto_invoke_app : true;
 
@@ -518,6 +597,25 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         } else {
             setTimeout(() => toggleScreen(content.screen.screen_name), 50);
         }
+    }
+
+    const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
+
+    if (content.screen.new_window) {
+        screenStore.hidden(content.screen.screen_name);
+
+        window.ipcRenderer.send("screen-window:show", {
+            screen: content.screen.screen_name,
+            payload: serializablePayload,
+            position: {}
+        });
+
+        setTimeout(() => toggleScreen(content.screen.screen_name), 200);
+    } else {
+        window.ipcRenderer.send("send-screen-window-update", {
+            screen: content.screen.screen_name,
+            payload: serializablePayload
+        });
     }
 };
 
@@ -562,15 +660,26 @@ const getZoomLevel = (value: number): void => {
  * Clears all data and resets the application to its initial state.
  */
 const clearAll = (): void => {
+    // context
     dumpsBag.value = [];
     payload.value = [];
-    screens.value = [];
-    screens.value.push(defaultScreen.value);
+    livewireRequests.value = [];
+
+    // store
     timeStore.clear();
-    screenStore.activeScreen("screen 1");
     globalSearchStore.clear();
     colorStore.clear();
-    livewireRequests.value = [];
+    payloadStore.clearAll();
+
+    // screenStore
+    screenStore.clearAll();
+    screenStore.activeScreen("screen 1");
+    screenStore.add({
+        screen_name: "screen 1",
+        visible: true,
+        pinned: false,
+        raise_in: 0
+    });
 };
 
 function registerDefaultLocalShortcuts() {
@@ -588,9 +697,18 @@ function registerDefaultLocalShortcuts() {
     <div
         v-cloak
         id="app"
+        :data-theme="appearanceStore.value"
+        :class="{ absolute: !inScreenWindow }"
+        class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
     >
+        <ScreenWindow
+            v-if="inScreenWindow"
+            :dumps-bag="payloadScreen"
+            v-model:screen="inScreenWindow"
+        />
+
         <div
-            :data-theme="appearanceStore.value"
+            v-else
             class="absolute w-full h-full min-h-full"
         >
             <div>
@@ -630,15 +748,14 @@ function registerDefaultLocalShortcuts() {
 
                         <!-- screen buttons -->
                         <div
-                            v-if="screens.length > 1 && !settingStore.setting"
+                            v-if="screenStore.screens.length > 1 && !settingStore.setting"
                             class="flex"
                         >
-                            <div class="py-1 flex-1 px-3">
+                            <div class="flex-1 px-3">
                                 <div class="flex items-center justify-between overflow-x-auto">
                                     <div class="flex">
                                         <DumpScreens
                                             @toggleScreen="toggleScreen"
-                                            v-model:screens="screens"
                                             v-model:payload="payload"
                                         />
                                     </div>
@@ -648,6 +765,7 @@ function registerDefaultLocalShortcuts() {
 
                         <div
                             :class="{
+                                'mt-12': screenStore.screen === 'Queries',
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
                             }"
@@ -655,21 +773,25 @@ function registerDefaultLocalShortcuts() {
                         >
                             <div id="top"></div>
 
-                            <div
-                                class="px-3"
-                                v-if="screenStore.screen === 'Queries'"
-                            >
+                            <div v-if="screenStore.screen === 'Queries'">
                                 <HeaderQueryRequests
+                                    :in-screen-window="inScreenWindow ? 'true' : 'false'"
                                     :payload="payload"
+                                    :all-requests="allRequests"
                                     :total="dumpsBagFiltered.length"
                                     :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
                                 />
                             </div>
 
-                            <div :class="{ 'flex border-t border-base-content/20 mt-2': screenStore.screen === 'Queries' }">
+                            <div
+                                :class="{
+                                    flex: screenStore.screen === 'Queries'
+                                }"
+                            >
                                 <div
-                                    class="mb-[60px] w-full"
+                                    class="mb-[40px] w-full"
                                     :class="{
+                                        '-mt-2': screenStore.screen !== 'Queries',
                                         'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
                                     }"
                                     v-if="payload.length > 0 && !settingStore.setting"
@@ -677,7 +799,7 @@ function registerDefaultLocalShortcuts() {
                                     <div
                                         class="w-full"
                                         :id="payload.id"
-                                        v-for="payload in dumpsBagFiltered"
+                                        v-for="(payload, index) in dumpsBagFiltered"
                                         :key="payload.sf_dump_id"
                                     >
                                         <DumpItem
@@ -695,6 +817,8 @@ function registerDefaultLocalShortcuts() {
                                     </div>
                                 </div>
                             </div>
+
+                            <div id="bottom"></div>
 
                             <div
                                 class="w-full h-full -mt-6"

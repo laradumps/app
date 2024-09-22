@@ -40,7 +40,7 @@ ipcMain.on("main-menu:set-auto-launch", (event, args) => {
     });
 });
 
-async function getMenuTemplate(mainWindow: BrowserWindow) {
+async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
     let IDEHandlerSelected: IDEHandlerSelected;
     let ThemeSelected: ThemeSelected;
     let AutoLaunch: AutoLaunch;
@@ -106,6 +106,10 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
         label,
         click: () => {
             mainWindow.webContents.send("changeTheme", { value });
+
+            windowsMap.forEach((window: BrowserWindow) => {
+                window.webContents.send("changeTheme", { value });
+            });
         },
         type: "radio",
         checked: ThemeSelected.value === value
@@ -147,7 +151,8 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                                     label: "English"
                                 });
                             },
-                            type: "radio"
+                            type: "radio",
+                            checked: true
                         },
                         {
                             label: "Português (BR)",
@@ -242,7 +247,8 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
                                     label: "Automatic"
                                 });
                             },
-                            type: "radio"
+                            type: "radio",
+                            checked: true
                         },
                         {
                             label: "Manual",
@@ -282,10 +288,30 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
             label: "Options",
             submenu: [
                 {
-                    label: "Reorder",
-                    click: async (): Promise<void> => {
-                        mainWindow.webContents.send("app::toggle-reorder");
-                    }
+                    label: "Scroll Direction",
+                    submenu: [
+                        {
+                            label: "Top",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("app::scroll-direction", { value: "top" });
+                                windowsMap.forEach((window: BrowserWindow) => {
+                                    window.webContents.send("app::scroll-direction", { value: "top" });
+                                });
+                            },
+                            type: "radio",
+                            checked: true
+                        },
+                        {
+                            label: "Bottom",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("app::scroll-direction", { value: "bottom" });
+                                windowsMap.forEach((window: BrowserWindow) => {
+                                    window.webContents.send("app::scroll-direction", { value: "bottom" });
+                                });
+                            },
+                            type: "radio"
+                        }
+                    ]
                 },
                 {
                     label: "Saved Dumps",
@@ -379,8 +405,8 @@ async function getMenuTemplate(mainWindow: BrowserWindow) {
     return menuTemplate;
 }
 
-async function createMenu(mainWindow) {
-    const menuTemplate = await getMenuTemplate(mainWindow);
+async function createMenu(mainWindow, windowsMap) {
+    const menuTemplate = await getMenuTemplate(mainWindow, windowsMap);
 
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);

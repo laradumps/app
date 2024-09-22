@@ -2,9 +2,9 @@ import { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from "el
 import path, { join, resolve } from "path";
 import { format } from "url";
 import storage from "electron-json-storage";
-import os from "os";
 
 const isDev = process.env.NODE_ENV === "development";
+const isMac: boolean = process.platform === "darwin";
 
 let savedDumps: any;
 let savedDumpsWindowOptions: BrowserWindowConstructorOptions;
@@ -14,7 +14,7 @@ const createWindow = () => {
         width: 670,
         height: 660,
         show: false,
-        resizable: false,
+        resizable: true,
         alwaysOnTop: true,
         webPreferences: {
             spellcheck: true,
@@ -26,6 +26,10 @@ const createWindow = () => {
 
     if ((process.platform === "linux" && !isDev) || isDev) {
         savedDumpsWindowOptions.icon = resolve(__dirname, "icon.png");
+    }
+
+    if (isMac) {
+        savedDumpsWindowOptions.titleBarStyle = "hidden";
     }
 
     const savedDumpsWindow = new BrowserWindow(savedDumpsWindowOptions);

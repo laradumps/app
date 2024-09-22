@@ -1,19 +1,56 @@
 <template>
     <div
         v-if="timeStore.groups.length > 0"
-        class="flex h-[40px] justify-between items-center gap-2 text-base-content"
+        class="absolute top-[2.8rem] bg-base-100 pb-2 px-4 z-100 flex w-full h-auto justify-between items-center gap-2 text-base-content"
     >
-        <span class="font-normal text-[11px] select-none ml-1">{{ totalFiltered }} of {{ total }} queries</span>
+        <div class="flex">
+            <div class="flex flex-col">
+                <span class="text-primary text-base whitespace-nowrap">{{ timeStore.get(timeStore.selected)?.total.toFixed(2) }} ms</span>
+                <span class="text-[11px] uppercase">time</span>
+            </div>
+
+            <div class="divider divider-horizontal !mx-1.5"></div>
+
+            <div class="flex flex-col">
+                <span class="text-primary text-base">{{ totalFiltered }}</span>
+                <span class="text-[11px] uppercase">queries</span>
+            </div>
+
+            <div
+                v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
+                class="divider divider-horizontal !mx-1.5"
+            ></div>
+
+            <div
+                v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
+                class="flex flex-col"
+            >
+                <span class="text-primary text-base">{{ duplicatesStore.totalByRequestId(timeStore.selected) }}</span>
+                <span class="text-[11px] uppercase">duplicated</span>
+            </div>
+        </div>
 
         <div class="flex gap-2 text-sm items-center">
+            <label class="label gap-2 !justify-start !text-left p-1.5">
+                <input
+                    type="checkbox"
+                    v-model="formattedQueriesStore.formatted"
+                    class="toggle toggle-xs toggle-primary"
+                    @click="formattedQueriesStore.toggle()"
+                />
+                <span class="text-[11px] whitespace-nowrap font-normal uppercase">Prettify</span>
+            </label>
+
             <SelectMenu
                 @selected="timeStore.setOrder($event.id)"
-                class="w-[100px] dark:!bg-base-600 !text-xs"
+                class="dark:!bg-base-600 !text-xs"
                 v-model:data="queryOrder"
             />
+
             <SelectMenu
+                v-if="allRequests.length > 0"
                 @selected="timeStore.setSelectedRequest($event.id)"
-                class="w-[210px] !text-xs"
+                class="!text-xs"
                 v-model:data="allRequests"
             />
         </div>
@@ -23,9 +60,13 @@
 <script setup>
 import { useTimeStore } from "@/store/time";
 import SelectMenu from "@/components/SelectMenu.vue";
-import { computed, onMounted, onUpdated, ref, watch } from "vue";
+import { computed, ref } from "vue";
+import { useFormattedQueriesStore } from "@/store/formatted-queries";
+import { useQueryDuplicated } from "@/store/query-duplicated";
 
 const timeStore = useTimeStore();
+const formattedQueriesStore = useFormattedQueriesStore();
+const duplicatesStore = useQueryDuplicated();
 
 const requests = timeStore.requests;
 const groups = timeStore.groups;
@@ -42,6 +83,10 @@ const props = defineProps({
     totalFiltered: {
         type: Number,
         default: 0
+    },
+    inScreenWindow: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -66,7 +111,7 @@ const allRequests = computed(() => {
     let requests = timeStore.groups.map((group, index) => ({
         index: index + 1,
         id: group,
-        label: index + 1 + " - " + timeStore.getTime(group) + " - " + timeStore.getTotal(group).toFixed(2) + "ms"
+        label: "#" + (index + 1) + " - <b>" + timeStore.getTotal(group).toFixed(2) + "ms</b>"
     }));
 
     requests.sort((a, b) => b.index - a.index);

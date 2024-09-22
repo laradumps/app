@@ -5,6 +5,7 @@ export interface QueriesPayload {
     database: string;
     time: string;
     sql: string;
+    duplicated: boolean;
 }
 
 export interface QueryPayload {
@@ -82,6 +83,9 @@ export interface LogApplicationPayload {
 export interface ScreenPayload {
     screen_name: string;
     raise_in: number;
+    pinned: boolean;
+    visible: boolean;
+    new_window: boolean;
 }
 
 export interface Meta {
