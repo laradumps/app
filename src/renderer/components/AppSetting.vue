@@ -7,7 +7,6 @@ import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useSettingStore } from "@/store/setting";
 
 const selectedPage = ref("Shortcuts");
-const settingStore = useSettingStore();
 
 const hasUpdates = computed(() => {
     return localStorage.updateAvailable === "true";
@@ -17,10 +16,6 @@ const checkUpdates = computed(() => {
     window.ipcRenderer.send("main:check-upload");
 });
 
-const toggleSetting = () => {
-    settingStore.toggle();
-};
-
 defineProps({
     localShortcutList: {
         required: true,
@@ -29,22 +24,12 @@ defineProps({
 });
 </script>
 <template>
-    <div>
-        <div class="flex justify-between items-center px-3 py-1 bg-base-100 shadow text-center z-100">
-            <nav class="flex">
-                <a
-                    @click="toggleSetting"
-                    class="justify-center cursor-pointer text-base-500 group flex items-center p-2"
-                >
-                    <ArrowLeftIcon class="w-5 text-base hover:opacity-75" />
-                </a>
-            </nav>
+    <div class="flex flex-col">
+        <div class="flex h-[38px] justify-end items-center text-center z-100">
+            <div class="select-none w-full nav-bar text-[11px] uppercase font-medium tracking-wide">Settings</div>
         </div>
 
-        <div class="p-4">
-            <article class="prose">
-                <h4>Settings</h4>
-            </article>
+        <div class="px-4">
             <div
                 role="tablist"
                 class="tabs tabs-boxed my-4"

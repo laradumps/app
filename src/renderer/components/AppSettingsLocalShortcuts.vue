@@ -2,8 +2,10 @@
 import hotkeys from "hotkeys-js";
 import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useSettingStore } from "@/store/setting";
 
 const i18n = useI18n();
+const settingStore = useSettingStore();
 
 const editMode = ref("disabled");
 
@@ -101,6 +103,10 @@ const save = () => {
 
     editMode.value = "disabled";
 };
+
+const toggleSetting = () => {
+    settingStore.toggle();
+};
 </script>
 
 <template>
@@ -128,6 +134,14 @@ const save = () => {
         </div>
 
         <div class="flex gap-2 justify-end">
+            <button
+                @click="toggleSetting"
+                type="button"
+                class="btn btn-default"
+            >
+                {{ $t("settings.cancel") }}
+            </button>
+
             <button
                 @click="editShortcut"
                 type="button"

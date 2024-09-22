@@ -165,6 +165,8 @@ onMounted(() => {
 
     window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
 
+    window.ipcRenderer.send("local-shortcut:get")
+
     window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
         localShortcutList.value = arg;
     });

@@ -225,8 +225,7 @@ function configureLocalShortcut(mainWindow: BrowserWindow): void {
                             }
                         });
                     } else {
-                        // @ts-ignore
-                        resolve({});
+                        resolve(null);
                     }
                 });
             };
@@ -236,7 +235,9 @@ function configureLocalShortcut(mainWindow: BrowserWindow): void {
                 try {
                     shortcuts = await Promise.all(promises);
 
-                    mainWindow.webContents.send("app:local-shortcut::list", shortcuts);
+                    const filteredShortcuts = shortcuts.filter(shortcut => shortcut && Object.keys(shortcut).length > 0);
+
+                    mainWindow.webContents.send("app:local-shortcut::list", filteredShortcuts);
                 } catch (error) {
                     // eslint-disable-next-line no-console
                     console.error(error);
@@ -246,6 +247,7 @@ function configureLocalShortcut(mainWindow: BrowserWindow): void {
             retrieveShortcuts().then();
         });
     });
+
 }
 
 export { registerShortcuts, configureLocalShortcut };
