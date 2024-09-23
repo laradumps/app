@@ -38,12 +38,12 @@ onUnmounted(() => {
         <button
             tabindex="0"
             :class="{
-                '!text-primary': showInput
-            }"
-            class="p-2"
+            '!text-primary bg-base-200': showInput
+        }"
+            class="px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
             @click="toggleInputVisibility"
         >
-            <MagnifyingGlassIcon class="size-4 hover:opacity-75 cursor-pointer" />
+            <MagnifyingGlassIcon class="size-4" />
         </button>
         <div
             v-if="showInput"

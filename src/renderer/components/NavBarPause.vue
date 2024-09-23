@@ -26,18 +26,18 @@ const togglePause = () => {
         v-if="!isSavedDumpsWindow"
         :title="$t('pause')"
         :class="{
-            '!text-primary': isPaused
+            '!text-primary bg-base-200': isPaused
         }"
-        class="p-2"
+        class="px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         @click="togglePause()"
     >
         <IconPause
             v-if="!isPaused"
-            class="size-4 cursor-pointer text-content hover:opacity-75"
+            class="size-4"
         />
         <IconPlay
             v-if="isPaused"
-            class="size-4 cursor-pointer text-content hover:opacity-75"
+            class="size-4"
         />
     </button>
 </template>

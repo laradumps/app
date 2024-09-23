@@ -112,17 +112,20 @@ const setActiveProject = () => {
         <div
             tabindex="0"
             role="button"
-            class="p-2"
+            :class="{
+            '!text-primary bg-base-200': selectedProject
+        }"
+            class="px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         >
             <SignalSlashIcon
                 v-if="selectedProject.length === 0"
-                class="w-4 text-error hover:text-primary"
+                class="size-4 text-error"
             />
 
             <SignalIcon
                 v-else
                 :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
-                class="w-4 text-base-content hover:text-primary"
+                class="size-4"
             />
         </div>
         <ul

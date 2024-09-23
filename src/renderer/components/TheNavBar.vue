@@ -33,20 +33,20 @@ const clear = () => {
 </script>
 
 <template>
-    <div class="flex justify-between items-center px-3 py-1 bg-base text-center z-100">
+    <div class="flex justify-between items-center px-2 my-1.5 text-center z-100">
         <div class="ml-8 w-full select-none nav-bar">&nbsp;</div>
 
-        <div class="flex gap-2 items-center mt-0.5">
+        <div class="flex gap-1 items-center mt-0.5">
             <HeaderGlobalFilter v-bind:has-color="hasColor" />
 
             <!-- clear -->
             <a
                 v-show="payloadCount > 0 && !inSavedDumpsWindow && !settingStore.setting"
                 :title="$t('menu.clear')"
-                class="justify-center cursor-pointer text-base-500 group flex items-center p-2"
+                class="px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer transition-all duration-100 ease-in rounded-md"
                 @click="clear()"
             >
-                <TrashIcon class="w-4 text-base hover:opacity-75" />
+                <TrashIcon class="size-4" />
             </a>
 
             <!-- pause -->
@@ -59,7 +59,7 @@ const clear = () => {
             <NavBarAlwaysOnTop />
 
             <!-- listening -->
-            <TheNavBarListening />
+            <TheNavBarListening v-if="!inSavedDumpsWindow"/>
         </div>
     </div>
 </template>
