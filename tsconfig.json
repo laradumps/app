@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        // this enables stricter inference for data properties on `this`
+        "strict": true,
+        "lib": ["es6", "dom", "es2017", "es2021"],
+        "jsx": "preserve",
+        "moduleResolution": "node",
+        "types": ["node"],
+        "paths": {
+            "@/*": ["./src/renderer/*"]
+        },
+        "parser": "vue-eslint-parser",
+        "parserOptions": {
+            "parser": {
+                "ts": "@typescript-eslint/parser"
+            }
+        },
+        "allowSyntheticDefaultImports": true,
+        "typeRoots": ["src/types/**/*", "src/renderer/types/*.d.ts", "./node_modules/@types"],
+        "suppressImplicitAnyIndexErrors": true
+    }
+}

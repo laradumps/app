@@ -1,0 +1,57 @@
+name: build
+
+on:
+    workflow_dispatch:
+
+jobs:
+    release:
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            matrix:
+                os: [macos-latest, windows-latest, ubuntu-latest]
+
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v4
+
+            - name: Install Node.js and Yarn
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: "yarn"
+
+            - name: Install dependencies
+              run: yarn
+
+            - name: Bundle with webpack and esbuild
+              run: yarn run build
+
+            - name: Updater
+              run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: Install Snapcraft
+              if: matrix.os == 'ubuntu-latest'
+              run: |
+                  sudo snap install snapcraft --classic
+
+            - name: 🐧 Build Linux
+              if: matrix.os == 'ubuntu-latest'
+              run: npm run release-linux
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+                  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+
+            - name: 💻 Build Windows
+              if: matrix.os == 'windows-latest'
+              run: npm run release-win
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name:  Build Mac
+              if: matrix.os == 'macos-latest'
+              run: npm run release-mac
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
