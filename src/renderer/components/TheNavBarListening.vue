@@ -57,6 +57,7 @@ onMounted(async () => {
     });
 
     window.ipcRenderer.on("settings:env-file-contents", (event, contents: { environmentYmlList: null | object; projectName: string }) => {
+        console.log(contents.environmentYmlList)
         if (contents.environmentYmlList != null) {
             environments.value = [];
 

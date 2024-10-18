@@ -56,7 +56,6 @@ function createWindow(): BrowserWindow {
         alwaysOnTop: false,
         center: true,
         webPreferences: {
-            sandbox: false,
             contextIsolation: false,
             preload: resolve(__dirname, "preload.js"),
             nodeIntegration: true
