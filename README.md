@@ -27,7 +27,7 @@
 
 <br/>
 
-LaraDumps is a friendly app designed to boost your [Laravel](https://larvel.com/) PHP coding and debugging experience.
+LaraDumps is a friendly app designed to boost your [Laravel](https://laravel.com/) PHP coding and debugging experience.
 
 When using LaraDumps, you can see the result of your debug displayed in a standalone Desktop application.
 

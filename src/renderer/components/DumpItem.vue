@@ -261,14 +261,6 @@ const isDuplicated = (sql) => {
                             :payload="payload"
                         />
 
-                        <!--                        &lt;!&ndash; dump traceable &ndash;&gt;-->
-                        <!--                        <DumpTraceable-->
-                        <!--                            :id="`dump-traceable-${props.payload.sf_dump_id}`"-->
-                        <!--                            class="w-full"-->
-                        <!--                            v-if="props.payload.type === `traceable`"-->
-                        <!--                            :payload="payload"-->
-                        <!--                        />-->
-
                         <!-- dump table v2 -->
                         <DumpTableV2
                             :id="`dump-content-${props.payload.sf_dump_id}`"

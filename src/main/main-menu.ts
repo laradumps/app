@@ -129,10 +129,17 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
             label: "Menu",
             submenu: [
                 {
+                    label: "Version: " + app.getVersion(),
+                    enabled: false,
+                },
+                {
                     label: "About LaraDumps",
                     click: async (): Promise<void> => {
                         await shell.openExternal("https://github.com/laradumps/app");
                     }
+                },
+                {
+                    type: "separator"
                 },
                 {
                     label: "Settings",
