@@ -38,9 +38,9 @@ const clear = () => {
 };
 
 window.ipcRenderer.on("xdebug-connection-status", (event, args) => {
-    console.log(args)
-    xdebugConnected.value = args.connected
-})
+    console.log(args);
+    xdebugConnected.value = args.connected;
+});
 </script>
 
 <template>
@@ -48,7 +48,11 @@ window.ipcRenderer.on("xdebug-connection-status", (event, args) => {
         <div class="ml-8 w-full select-none movable-container h-[38px]">&nbsp;</div>
 
         <div class="flex gap-2 items-center">
-            <span v-if="xdebugConnected" class="badge badge-success text-[10px] tracking-widest font-semibold whitespace-nowrap">xdebug: connected</span>
+            <span
+                v-if="xdebugConnected"
+                class="badge badge-success text-[10px] tracking-widest font-semibold whitespace-nowrap"
+                >xdebug: connected</span
+            >
 
             <HeaderGlobalFilter v-bind:has-color="hasColor && !xdebugMode" />
 

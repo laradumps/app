@@ -14,7 +14,9 @@ export default {
         run_global_laradumps_install: "Ekzekuto instalimin global të LaraDumps",
         select_your_preferred_theme: "Select your preferred theme",
         change_your_ide_at_runtime: "Change your IDE at runtime",
-        install_laravel: "Install on Laravel"
+        install_laravel: "Install on Laravel",
+        install_php_extension: "Install PHP extension",
+        in_any_line_of_code: "in any line of code"
     },
     footer: {
         support_laradumps: "Mbështet LaraDumps",

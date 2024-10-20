@@ -130,7 +130,7 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
             submenu: [
                 {
                     label: "Version: " + app.getVersion(),
-                    enabled: false,
+                    enabled: false
                 },
                 {
                     label: "About LaraDumps",

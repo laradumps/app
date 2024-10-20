@@ -5,7 +5,7 @@ import { XDebugYml } from "@/types/XDebug";
 import { Socket } from "node:net";
 const isDev: boolean = process.env.NODE_ENV === "development";
 
-import { getBreakpoints } from './watcher';
+import { getBreakpoints } from "./watcher";
 
 class XDebugServer extends EventEmitter {
     private static instance: XDebugServer;
@@ -18,7 +18,7 @@ class XDebugServer extends EventEmitter {
 
     constructor() {
         super();
-        this.setMaxListeners(100)
+        this.setMaxListeners(100);
     }
 
     public static getInstance(): XDebugServer {
@@ -40,7 +40,7 @@ class XDebugServer extends EventEmitter {
         this.serverSocket = net.createServer((socket: Socket) => {
             this.clientSocket = socket;
             this.breakpointsSent = false;
-            this.mainWindow = mainWindow
+            this.mainWindow = mainWindow;
 
             console.log("Connected to XDebug server");
 
@@ -54,8 +54,8 @@ class XDebugServer extends EventEmitter {
                 }
 
                 if (!this.breakpointsSent) {
-                   // this.sendBreakpointsToXdebug();
-                   // this.breakpointsSent = true;
+                    // this.sendBreakpointsToXdebug();
+                    // this.breakpointsSent = true;
                 }
 
                 if (xmlData) {
@@ -112,7 +112,7 @@ class XDebugServer extends EventEmitter {
             console.log("Server closed");
             mainWindow.webContents.send("xdebug-connection-status", {
                 connected: false,
-                err: 'closed',
+                err: "closed",
                 ...args
             });
         });
@@ -181,7 +181,7 @@ class XDebugServer extends EventEmitter {
             if (err) {
                 this.mainWindow.webContents.send("send-command-error", {
                     error: err.message
-                })
+                });
                 console.error("Failed to send command:", err.message);
                 // throw new Error("Failed to send command");
             }

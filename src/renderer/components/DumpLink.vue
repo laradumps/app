@@ -32,16 +32,13 @@ const generateLink = (ide: string) => {
 
     const linkPath = projectPath + relativePath;
 
-    console.log(realPath)
+    console.log(realPath);
     if (realPath != null) {
         if (IDEHandler.value.includes("wsl_config")) {
             if (wsl_config != undefined) {
-                link.value = ide
-                    .replace("{wsl_config}", wsl_config)
-                    .replace("{filepath}", linkPath)
-                    .replace("{line}", props.ideHandler.line);
+                link.value = ide.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 
-                console.log(link.value)
+                console.log(link.value);
                 return;
             }
 

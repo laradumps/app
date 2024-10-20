@@ -10,11 +10,14 @@ export default {
         available: "Disponíveis",
         shortcuts_list: "Limpar tudo, Modo escuro, Sempre no topo",
         install_laradumps_globally: "Instale o LaraDumps globalmente",
-        run: "run",
+        run: "rode",
         run_global_laradumps_install: "Execute global-laradumps install",
-        select_your_preferred_theme: "Select your preferred theme",
-        change_your_ide_at_runtime: "Change your IDE at runtime",
-        install_laravel: "Install on Laravel"
+        select_your_preferred_theme: "Selecione seu thema preferido",
+        change_your_ide_at_runtime: "Altere a IDE em tempo de execução",
+        install_laravel: "Instalar com Laravel",
+        in_any_project_toggle: "Em qualquer projeto, alterne",
+        install_php_extension: "Instalar a extensão PHP",
+        in_any_line_of_code: "em qualquer linha de código."
     },
     footer: {
         support_laradumps: "Dê uma estrela",

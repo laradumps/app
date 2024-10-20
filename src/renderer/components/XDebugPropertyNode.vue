@@ -17,7 +17,7 @@
                 ></button>
 
                 <IconListBullet v-show="property.type === 'array'" />
-                <IconCodeBrackets v-show="!hasArrayIndexAtEnd(property.fullname) && !['object', 'array'].includes(property.type)"/>
+                <IconCodeBrackets v-show="!hasArrayIndexAtEnd(property.fullname) && !['object', 'array'].includes(property.type)" />
 
                 <div>
                     <span

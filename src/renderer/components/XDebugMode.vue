@@ -87,8 +87,8 @@ const contextGet = (id) => {
 };
 
 const proxy = () => {
-    sendCommand(`proxyinit -p 9001 -k LARADUMPS -m [0|1]`)
-}
+    sendCommand(`proxyinit -p 9001 -k LARADUMPS -m [0|1]`);
+};
 
 const continueDebug = () => {
     variableClicked.value = true;
@@ -123,7 +123,7 @@ const source = (filePath) => {
 };
 
 const handleResponse = (event, response) => {
-    console.log(response)
+    console.log(response);
     parseResponse(response);
 };
 
@@ -164,7 +164,7 @@ const handleContextGet = (responseElement) => {
 
     nextTick(() => tippy("[data-tippy-content]", { allowHTML: true, theme: "translucent", placement: "right-end" }));
 
-   // console.log("Context:", variablesNames.value);
+    // console.log("Context:", variablesNames.value);
 };
 
 const handlePropertyGet = (responseElement, evaluate) => {
@@ -251,8 +251,8 @@ const handlePropertyGet = (responseElement, evaluate) => {
     });
 
     // console.log("Properties Tree (property_get):", propertiesTree.value);
-   // console.log("Properties Tree Eval (property_get):", propertiesEvalTree.value);
-   // console.log("Properties Context Tree (property_get):", propertiesContextTree.value);
+    // console.log("Properties Tree Eval (property_get):", propertiesEvalTree.value);
+    // console.log("Properties Context Tree (property_get):", propertiesContextTree.value);
 };
 
 const handleFileContent = (messageElement) => {
@@ -274,32 +274,29 @@ const handleFileContent = (messageElement) => {
         nextTick(() => {
             fileContent.value = convertHTMLTextToArray(data);
 
-            setTimeout(
-                () => {
-                    if (document.getElementById("trace-line")) {
-                        document.getElementById("trace-line").scrollIntoView({
-                            behavior: "smooth",
-                            block: "center"
-                        })
-                    }
-                },
-                300
-            );
+            setTimeout(() => {
+                if (document.getElementById("trace-line")) {
+                    document.getElementById("trace-line").scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+                }
+            }, 300);
         });
     });
 
     ipcRenderer.on("file-read-error", (event, errorMessage) => {
-        error.value = errorMessage
-        modal_error.showModal()
+        error.value = errorMessage;
+        modal_error.showModal();
 
         console.error("Error reading file:", errorMessage);
     });
 };
 
 window.ipcRenderer.on("send-command-error", (event, args) => {
-    console.log('command err', args.error)
-    handleStop()
-})
+    console.log("command err", args.error);
+    handleStop();
+});
 
 const handleStop = () => {
     variableClicked.value = true;
@@ -344,7 +341,7 @@ const parseResponse = async (xml) => {
             const fileuri = initEvent[0].getAttribute("fileuri");
 
             if (fileuri && fileuri.includes("phpcs")) {
-                console.log('ignore phpcs')
+                console.log("ignore phpcs");
                 continue;
             }
 
@@ -464,8 +461,8 @@ const handleSelectText = () => {
 
 const disconnect = () => {
     window.ipcRenderer.send("disconnect-xdebug");
-    modal_error.close()
-}
+    modal_error.close();
+};
 
 watch(fileContent, () => {
     inStepCommand.value = false;
@@ -648,7 +645,6 @@ onBeforeUnmount(() => {
             </div>
         </div>
 
-
         <dialog
             id="modal_property_get"
             class="modal modal-middle"
@@ -659,8 +655,8 @@ onBeforeUnmount(() => {
                     v-if="selectedVariableName && propertiesEvalTree.length === 0"
                 >
                     <div class="select-none">
-                            <span class="variable-name !text-primary">{{ selectedVariableName }}</span
-                            ><span class="classname">{{ " {" + getClassnameByVariableName + "}" }}</span>
+                        <span class="variable-name !text-primary">{{ selectedVariableName }}</span
+                        ><span class="classname">{{ " {" + getClassnameByVariableName + "}" }}</span>
                     </div>
                 </div>
 
@@ -668,7 +664,10 @@ onBeforeUnmount(() => {
                     class="flex gap-3 text-sm"
                     v-if="propertiesEvalTree.length > 0"
                 >
-                    <span class="variable-name text-primary" v-text="evaluate"></span>
+                    <span
+                        class="variable-name text-primary"
+                        v-text="evaluate"
+                    ></span>
                 </div>
 
                 <div class="w-full text-xs overflow-auto -mt-1">
@@ -722,7 +721,12 @@ onBeforeUnmount(() => {
 
                 <div class="modal-action">
                     <form method="dialog">
-                        <button class="btn" @click="disconnect">Close</button>
+                        <button
+                            class="btn"
+                            @click="disconnect"
+                        >
+                            Close
+                        </button>
                     </form>
                 </div>
             </div>
@@ -751,6 +755,6 @@ onBeforeUnmount(() => {
 }
 
 [data-tippy-root] {
-    @apply break-all
+    @apply break-all;
 }
 </style>

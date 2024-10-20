@@ -57,7 +57,7 @@ onMounted(async () => {
     });
 
     window.ipcRenderer.on("settings:env-file-contents", (event, contents: { environmentYmlList: null | object; projectName: string }) => {
-        console.log(contents.environmentYmlList)
+        console.log(contents.environmentYmlList);
         if (contents.environmentYmlList != null) {
             environments.value = [];
 
@@ -115,7 +115,9 @@ const save = async (): Promise<void> => {
         project: selectedProject.value
     });
 
-    window.ipcRenderer.send("main:tray-update-context-menu", JSON.parse(JSON.stringify(environments.value)));
+    window.ipcRenderer.send("main:tray-update-context-menu", {
+        environmentYmlList: JSON.parse(JSON.stringify(environments.value))
+    });
 };
 
 const removeEnvironment = () => {
@@ -144,7 +146,7 @@ const setActiveProject = () => {
 };
 
 const connectToXdebug = () => {
-    console.log(selectedProject.value)
+    console.log(selectedProject.value);
     window.ipcRenderer.send("main:setting-get-xdebug-environments", selectedProject.value);
 };
 
@@ -153,8 +155,8 @@ const disconnectFromXdebug = () => {
 };
 
 window.ipcRenderer.on("xdebug-file-parser-error", (event, args) => {
-    console.log('error', args)
-})
+    console.log("error", args);
+});
 
 watch(xdebug, (value) => {
     if (value) {
@@ -163,11 +165,11 @@ watch(xdebug, (value) => {
     }
 
     disconnectFromXdebug();
-})
+});
 
 window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYml) => {
     xDebugStore.setCurrent(arg);
-    window.ipcRenderer.send("connect-xdebug", arg)
+    window.ipcRenderer.send("connect-xdebug", arg);
 });
 </script>
 
@@ -225,8 +227,7 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                         class="overflow-auto"
                         :style="{ 'height: calc(100vh - 11rem)': environments.length > 0 }"
                     >
-                        <li
-                        >
+                        <li>
                             <label
                                 class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5"
                                 :class="{ 'bg-base-200': false }"
@@ -237,9 +238,7 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                                     class="toggle toggle-xs toggle-accent"
                                     v-model="xdebug"
                                 />
-                                <span class="text-[10px] whitespace-nowrap font-semibold uppercase">
-                            xdebug
-                        </span>
+                                <span class="text-[10px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
                             </label>
                         </li>
 

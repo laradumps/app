@@ -21,7 +21,7 @@ import { configureLocalShortcut, registerShortcuts } from "./shortcut";
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
 import { createScreenWindow } from "./window/screen";
-import './watcher';
+import "./watcher";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
@@ -144,9 +144,11 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             win.webContents.openDevTools();
         }
+
+        win.webContents.openDevTools();
     });
 
-    win.webContents.on('did-finish-load', () => {
+    win.webContents.on("did-finish-load", () => {
         // const breakpoints = getBreakpoints();
         // console.log(breakpoints)
     });
@@ -380,7 +382,8 @@ app.whenReady().then(async (): Promise<void> => {
         });
 
         ipcMain.on("main:tray-update-context-menu", (event, args) => {
-            options = args.environmentYmlList.reduce(
+            console.log(args.environmentYmlList);
+            options = args.environmentYmlList?.reduce(
                 (acc, { value, selected }) => {
                     acc[value] = selected;
                     return acc;
@@ -704,29 +707,29 @@ ipcMain.on("main:setting-get-xdebug-environments", (event: IpcMainEvent, applica
         const parseYaml = {
             workdir: readFile.app.workdir,
             project_path: readFile.app.project_path,
-            separator: readFile.app?.separator ?? '/',
+            separator: readFile.app?.separator ?? "/",
             wsl_config: readFile.app.wsl_config,
-            client_host: readFile.xdebug?.client_host ?? '0.0.0.0',
-            client_port: readFile.xdebug?.client_port ?? 9003,
-        }
+            client_host: readFile.xdebug?.client_host ?? "0.0.0.0",
+            client_port: readFile.xdebug?.client_port ?? 9003
+        };
 
-        xdebugServer.startClient(mainWindow, parseYaml)
+        xdebugServer.startClient(mainWindow, parseYaml);
 
         mainWindow.webContents.send("settings:env-xdebug-file-contents", parseYaml);
     } catch (e) {
         console.error(e);
         const parseYaml = {
-            workdir: '',
-            project_path: '',
-            separator: '/',
-            wsl_config: '',
-            client_host: '0.0.0.0',
+            workdir: "",
+            project_path: "",
+            separator: "/",
+            wsl_config: "",
+            client_host: "0.0.0.0",
             client_port: 9003
-        }
+        };
 
-        xdebugServer.startClient(mainWindow, parseYaml)
+        xdebugServer.startClient(mainWindow, parseYaml);
 
-        mainWindow.webContents.send("settings:env-xdebug-file-contents", );
+        mainWindow.webContents.send("settings:env-xdebug-file-contents");
     }
 });
 
