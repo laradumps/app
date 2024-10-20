@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import hljs from "highlight.js/lib/core";
 import tippy from "tippy.js";
@@ -17,27 +17,26 @@ import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 
 const xDebugStore = useXDebug();
+const response = ref<string>("");
+const error = ref<string>("");
+const transactionId = ref<number>(1);
+const initialized = ref<boolean>(false);
 
-const response = ref("");
-const error = ref("");
-const transactionId = ref(1);
-const initialized = ref(false);
+const evaluate = ref<string>("");
+const fileContent = ref<string[]>([]);
+const variablesNames = ref<{ name: string, classname?: string, type?: string, value?: any }[]>([]);
+const currentLine = ref<string>("");
+const currentFileName = ref<string>("");
 
-const evaluate = ref("");
-const fileContent = ref([]);
-const variablesNames = ref([]);
-const currentLine = ref("");
-const currentFileName = ref("");
+const propertiesTree = ref<any[]>([]);
+const propertiesContextTree = ref<any[]>([]);
+const propertiesEvalTree = ref<any[]>([]);
 
-const propertiesTree = ref([]);
-const propertiesContextTree = ref([]);
-const propertiesEvalTree = ref([]);
-
-const inStepCommand = ref(false);
-const inMountEvent = ref(false);
-const variableClicked = ref(true);
-const selectedVariableName = ref("");
-const variablesInLeftMenu = ref(false);
+const inStepCommand = ref<boolean>(false);
+const inMountEvent = ref<boolean>(false);
+const variableClicked = ref<boolean>(true);
+const selectedVariableName = ref<string>("");
+const variablesInLeftMenu = ref<boolean>(false);
 
 const getClassnameByVariableName = computed(() => {
     const variable = variablesNames.value.find((variable) => variable.name === selectedVariableName.value);
@@ -123,7 +122,6 @@ const source = (filePath) => {
 };
 
 const handleResponse = (event, response) => {
-    console.log(response);
     parseResponse(response);
 };
 
@@ -338,6 +336,8 @@ const parseResponse = async (xml) => {
         const initEvent = doc.getElementsByTagName("init");
 
         if (initEvent.length > 0) {
+            initialized.value = true;
+
             const fileuri = initEvent[0].getAttribute("fileuri");
 
             if (fileuri && fileuri.includes("phpcs")) {
@@ -345,10 +345,13 @@ const parseResponse = async (xml) => {
                 continue;
             }
 
-            initialized.value = true;
+            if (fileuri && fileuri.includes("pest")) {
+                console.log("running in pest");
+            }
+
             setTimeout(async () => {
-                await continueDebug();
-            }, 200);
+                continueDebug();
+            }, 100);
         }
 
         const messageElement = doc.getElementsByTagName("xdebug:message");
@@ -360,6 +363,19 @@ const parseResponse = async (xml) => {
         const responseElement = doc.getElementsByTagName("response")[0];
 
         if (responseElement && !inStepCommand.value) {
+            const errorElement = responseElement.getElementsByTagName("error")[0];
+            if (errorElement) {
+                const errorCode = errorElement.getAttribute("code");
+                const errorMessage = errorElement.getElementsByTagName("message")[0].textContent;
+
+                if (errorCode === "4") {
+                    console.error(`Error: (${errorCode}): ${errorMessage}`);
+
+                    continue;
+                   // return;
+                }
+            }
+
             const command = responseElement.getAttribute("command");
             const status = responseElement.getAttribute("status");
 
@@ -381,10 +397,22 @@ const parseResponse = async (xml) => {
         }
 
         if (responseElement) {
-            const command = responseElement.getAttribute("command");
+            const errorElement = responseElement.getElementsByTagName("error")[0];
+            if (errorElement) {
+                const errorCode = errorElement.getAttribute("code");
+                const errorMessage = errorElement.getElementsByTagName("message")[0].textContent;
 
-            if (command === "stop") {
-                handleStop();
+                if (errorCode === "4") {
+                    console.error(`Error (${errorCode}): ${errorMessage}`);
+                    continue;
+                }
+            }
+
+            const command = responseElement.getAttribute("command");
+            const status = responseElement.getAttribute("status");
+
+            if (command === "context_get" && status === "stopping") {
+              //  handleStop();
             }
         }
     }
@@ -565,6 +593,8 @@ onBeforeUnmount(() => {
                         >
                             https://xdebug.org
                         </div>
+
+                        <button @click="disconnect" class="mt-3 btn btn-sm text-xs btn-warning">Disconnect</button>
                     </span>
                 </div>
 

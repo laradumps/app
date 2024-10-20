@@ -133,7 +133,7 @@ const sendCommand = (cmd): void => {
 
 <style scoped>
 .property-node {
-    @apply p-1.5 text-sm rounded-md whitespace-nowrap;
+    @apply p-1.5 text-sm rounded-md break-all;
 }
 
 .children {

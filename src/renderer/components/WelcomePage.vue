@@ -20,7 +20,7 @@ const props = defineProps({
             </div>
         </div>
         <div class="fixed left-[40px] bottom-10 w-auto">
-            <div class="flex gap-2 justify-end text-right">
+            <div class="flex flex-col gap-2 justify-end text-right">
                 <div v-for="shortcut in localShortcutList">
                     <span
                         v-if="shortcut.hasOwnProperty('shortcut')"
