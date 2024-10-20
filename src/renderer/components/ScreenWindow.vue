@@ -78,7 +78,7 @@ watch(timeStore.groups, () => {
         <div id="top"></div>
 
         <div class="flex justify-end items-center bg-base text-center z-100">
-            <div class="ml-12 select-none w-full nav-bar text-[11px] uppercase font-medium tracking-wide">{{ screen }}</div>
+            <div class="ml-12 select-none w-full text-[11px] uppercase font-medium tracking-wide">{{ screen }}</div>
 
             <!-- always on top -->
             <NavBarAlwaysOnTop

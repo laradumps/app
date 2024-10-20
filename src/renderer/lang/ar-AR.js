@@ -14,7 +14,10 @@ export default {
         run_global_laradumps_install: "تشغيل سكريبت laradumps-install",
         select_your_preferred_theme: "اختر الثيم المفضل لديك",
         change_your_ide_at_runtime: "قم بتغيير IDE الخاص بك أثناء التشغيل",
-        install_laravel: "تثبيت مع Laravel"
+        install_laravel: "تثبيت مع Laravel",
+        in_any_project_toggle: "In any project, toggle",
+        install_php_extension: "Install PHP extension",
+        in_any_line_of_code: "in any line of code"
     },
     footer: {
         support_laradumps: "ادعم LaraDumps",

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref } from "vue";
+import { computed, markRaw, nextTick, onBeforeMount, onMounted, onUnmounted, ref } from "vue";
 import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
 import { useScreenStore } from "@/store/screen";
 import { useAppearanceStore } from "@/store/appearance";
@@ -27,6 +27,7 @@ import ScreenWindow from "@/components/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
 import { useScrollDirection } from "@/store/scroll-direction";
 import { useQueryDuplicated } from "@/store/query-duplicated";
+import XDebugMode from "@/components/XDebugMode.vue";
 
 markRaw(TheUpdateModalInfo);
 
@@ -58,8 +59,9 @@ const payload = ref([]);
 
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
-
 const inScreenWindow = ref(false);
+const inXDebugInspectorWindow = ref(false);
+
 const payloadScreen = ref([]);
 
 const applicationPath = ref("");
@@ -67,10 +69,15 @@ const livewireRequests = ref([]);
 const isPaused = ref(false);
 
 const allRequests = ref([]);
+const xdebugMode = ref(false);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
     localStorage.updateAvailable = "false";
+});
+
+onUnmounted(() => {
+    window.ipcRenderer.send("disconnect-xdebug");
 });
 
 onMounted(() => {
@@ -89,6 +96,14 @@ onMounted(() => {
         if (arg === 0) {
             registerDefaultLocalShortcuts();
         }
+    });
+
+    window.ipcRenderer.on("xdebug-connected", (event, arg) => {
+        xdebugMode.value = true;
+    });
+
+    window.ipcRenderer.on("xdebug-disconnected", (event, arg) => {
+        xdebugMode.value = false;
     });
 
     window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
@@ -110,6 +125,10 @@ onMounted(() => {
         clearAll();
 
         await loadAllSavedPayload();
+    });
+
+    window.ipcRenderer.on("xdebug-connect-closed", (event, args) => {
+        xdebugMode.value = false;
     });
 
     window.ipcRenderer.on("app:screen-window-enable", async (event, args) => {
@@ -165,7 +184,7 @@ onMounted(() => {
 
     window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
 
-    window.ipcRenderer.send("local-shortcut:get")
+    window.ipcRenderer.send("local-shortcut:get");
 
     window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
         localShortcutList.value = arg;
@@ -210,6 +229,8 @@ const dumpListeners = () => {
     window.ipcRenderer.on("mailable", (event, { content }) => dispatch("mailable", event, content));
 
     window.ipcRenderer.on("table_v2", (event, { content }) => dispatch("table_v2", event, content));
+
+    window.ipcRenderer.on("xdebug", (event, { content }) => dispatch("xdebug", event, content));
 
     window.ipcRenderer.on("mail", (event, { content }) => {
         const filterPayload: boolean =
@@ -287,6 +308,10 @@ const dumpListeners = () => {
         content.label = content.log_application.level;
 
         dispatch("log_application", event, content);
+    });
+
+    window.ipcRenderer.on("debug", (event, args) => {
+        console.log("debug", args);
     });
 
     window.ipcRenderer.on("color", (event, { content }) => {
@@ -662,6 +687,9 @@ const getZoomLevel = (value: number): void => {
  * Clears all data and resets the application to its initial state.
  */
 const clearAll = (): void => {
+    // close all opened windows
+    window.ipcRenderer.send("main:close-all-screen-window");
+
     // context
     dumpsBag.value = [];
     payload.value = [];
@@ -700,7 +728,7 @@ function registerDefaultLocalShortcuts() {
         v-cloak
         id="app"
         :data-theme="appearanceStore.value"
-        :class="{ absolute: !inScreenWindow }"
+        :class="{ absolute: !inScreenWindow || !inXDebugInspectorWindow }"
         class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
     >
         <ScreenWindow
@@ -721,6 +749,7 @@ function registerDefaultLocalShortcuts() {
                     v-model:in-saved-dumps-window="inSavedDumpsWindow"
                     v-model:payload-count="payload.length"
                     v-model:has-color="hasColor"
+                    v-model:xdebug-mode="xdebugMode"
                     @clear-all="clearAll($event)"
                 />
 
@@ -734,12 +763,15 @@ function registerDefaultLocalShortcuts() {
                 <!-- content -->
                 <div class="flex overflow-hidden flex-col flex-1 right-0 absolute left-0 h-fill-available">
                     <!-- main -->
+
                     <main
                         :class="{
                             'overflow-auto': payload.length > 0
                         }"
                         class="flex-1 flex flex-col shrink-0 left-16 right-0 min-h-full"
                     >
+                        <XDebugMode v-if="xdebugMode" />
+
                         <!-- AppSettings -->
                         <div
                             class="overflow-auto min-h-screen pb-8"
@@ -766,6 +798,7 @@ function registerDefaultLocalShortcuts() {
                         </div>
 
                         <div
+                            v-if="!xdebugMode"
                             :class="{
                                 'mt-12': screenStore.screen === 'Queries',
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
@@ -835,3 +868,24 @@ function registerDefaultLocalShortcuts() {
         </div>
     </div>
 </template>
+<style scoped>
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.gradient-text {
+    background: linear-gradient(270deg, #ff6347, #6a5acd, #20b2aa);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient 5s ease infinite;
+}
+</style>

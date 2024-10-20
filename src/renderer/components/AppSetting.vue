@@ -26,7 +26,7 @@ defineProps({
 <template>
     <div class="flex flex-col">
         <div class="flex h-[38px] justify-end items-center text-center z-100">
-            <div class="select-none w-full nav-bar text-[11px] uppercase font-medium tracking-wide">Settings</div>
+            <div class="select-none w-full movable-container text-[11px] uppercase font-medium tracking-wide">Settings</div>
         </div>
 
         <div class="px-4">

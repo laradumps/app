@@ -20,13 +20,15 @@ const props = defineProps({
             </div>
         </div>
         <div class="fixed left-[40px] bottom-10 w-auto">
-            <div class="flex gap-2 justify-end text-right">
+            <div class="flex flex-col gap-2 justify-end text-right">
                 <div v-for="shortcut in localShortcutList">
                     <span
                         v-if="shortcut.hasOwnProperty('shortcut')"
                         :key="shortcut.alias"
                         class="font-light rounded-md p-1 px-2 text-xs"
-                        ><span class="font-normal">{{ $t(shortcut.label) }}</span>: <span class="badge-accent badge">{{ shortcut.originalValue }}</span></span>
+                        ><span class="font-normal">{{ $t(shortcut.label) }}</span
+                        >: <span class="badge-accent badge">{{ shortcut.originalValue }}</span></span
+                    >
                 </div>
             </div>
         </div>

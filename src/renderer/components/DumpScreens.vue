@@ -115,6 +115,10 @@ const openScreenWindow = (screen, mouseX, mouseY) => {
     }, 200);
 };
 
+window.ipcRenderer.on("screen-window:xdebug-closed", (event, args) => {
+    screenStore.remove("xdebug_inspector");
+});
+
 window.ipcRenderer.on("screen-window:closed", (event, args) => {
     screenStore.toggleVisible(args.screen);
 

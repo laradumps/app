@@ -26,6 +26,7 @@ window.ipcRenderer.on("update-available", (event, arg) => {
 
 window.ipcRenderer.on("autoUpdater:update-info", (event, args: UpdateInfo) => {
     localStorage.updateAvailable = "true";
+
     if (localStorage.autoUpdate === "manual_download" || localStorage.autoUpdate === undefined) {
         return;
     }
@@ -63,8 +64,8 @@ window.ipcRenderer.on("autoUpdater:download-complete", (event, args: CompletedIn
             <div class="modal-box w-11/12 max-w-5xl">
                 <div class="font-bold text-lg text-center">✨ {{ $t("app_update_info.update_available") }}</div>
                 <div class="mt-2 space-y-3">
-                    <div class="card card-side bg-neutral shadow-xl">
-                        <div class="select-none space-y-3 card-body text-neutral-content/80">
+                    <div class="card card-side">
+                        <div class="select-none space-y-3 text-neutral-content/80">
                             <div class="flex justify-between">
                                 <div>
                                     <h2 class="card-title">{{ $t("app_update_info.version") }}</h2>
@@ -78,6 +79,7 @@ window.ipcRenderer.on("autoUpdater:download-complete", (event, args: CompletedIn
 
                             <div
                                 id="releaseNotes"
+                                class="leading-6 overflow-auto h-[18rem]"
                                 v-html="updateInfo.releaseNotes"
                             ></div>
                         </div>
@@ -94,14 +96,14 @@ window.ipcRenderer.on("autoUpdater:download-complete", (event, args: CompletedIn
                 <div class="modal-action">
                     <form method="dialog">
                         <button
-                            class="btn btn-secondary"
+                            class="btn-sm btn btn-active"
                             :disabled="downloading"
                         >
                             {{ $t("app_update_info.not_now") }}
                         </button>
                     </form>
                     <button
-                        class="btn btn-primary"
+                        class="btn-sm btn btn-primary"
                         :disabled="downloading"
                         @click="install"
                     >

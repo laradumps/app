@@ -51,9 +51,7 @@ pre.sf-dump .sf-dump-ellipsis {
     overflow: hidden;
     vertical-align: top;
 }
-pre.sf-dump .sf-dump-ellipsis + .sf-dump-ellipsis {
-    max-width: none;
-}
+
 pre.sf-dump code {
     display: inline;
     padding: 0;

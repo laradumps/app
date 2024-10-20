@@ -129,7 +129,7 @@ const isDuplicated = (sql) => {
                     class="select-none !cursor-default collapse-title gap-2 text-base-content justify-between items-center font-light flex text-[12px]"
                 >
                     <ul
-                        class="flex gap-6 whitespace-nowrap"
+                        class="flex items-center gap-6 whitespace-nowrap"
                         v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
                     >
                         <li class="list-none">

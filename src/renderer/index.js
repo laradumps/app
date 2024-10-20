@@ -2,12 +2,13 @@ import { createApp } from "vue";
 import App from "@/App.vue";
 import "@/styles.css";
 
-import "highlight.js/styles/xcode.css";
 import hljs from "highlight.js/lib/core";
 import php from "highlight.js/lib/languages/php";
 import hljsVuePlugin from "@highlightjs/vue-plugin";
 import { createPinia } from "pinia";
 import { createI18n } from "vue-i18n";
+import FloatingVue from "floating-vue";
+
 import en from "@/lang/en";
 import ptBR from "@/lang/pt-BR";
 import esES from "@/lang/es-ES";
@@ -53,6 +54,7 @@ app.use(hljsVuePlugin);
 app.use(pinia);
 app.use(i18n);
 app.use(clipboard);
+app.use(FloatingVue);
 
 app.mount("#app");
 

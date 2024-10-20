@@ -1,4 +1,4 @@
-import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, IpcMainEvent, Notification } from "electron";
+import { app, screen, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, IpcMainEvent, Notification } from "electron";
 import windowStateKeeper from "electron-window-state";
 import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import { download } from "electron-dl";
@@ -21,10 +21,15 @@ import { configureLocalShortcut, registerShortcuts } from "./shortcut";
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
 import { createScreenWindow } from "./window/screen";
+import "./watcher";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
 const AutoLaunch = require("auto-launch");
+
+import XDebugServer from "./xdebug-server";
+import { XDebugYml } from "@/types/XDebug";
+const xdebugServer = XDebugServer.getInstance();
 
 let mainWindow: BrowserWindow;
 let coffeeWindow: BrowserWindow;
@@ -125,9 +130,9 @@ function createWindow(): BrowserWindow {
     }
 
     electronLocalShortcut.register("CommandOrControl+Shift+X", (): void => {
-        mainWindow.reload();
+        mainWindow.webContents.send("xdebug-connector::disconnect");
 
-        mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
+        setTimeout(() => mainWindow.reload(), 300);
     });
 
     win.once("ready-to-show", (): void => {
@@ -139,6 +144,13 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             win.webContents.openDevTools();
         }
+
+        win.webContents.openDevTools();
+    });
+
+    win.webContents.on("did-finish-load", () => {
+        // const breakpoints = getBreakpoints();
+        // console.log(breakpoints)
     });
 
     return win;
@@ -151,6 +163,48 @@ if (!isDev) {
         arg.value === "disabled" ? autoLauncher.disable() : autoLauncher.enable();
     });
 }
+
+ipcMain.on("send-xdebug-command", async (event, command) => {
+    try {
+        xdebugServer.sendCommand(command);
+        const response = await xdebugServer.getResponse();
+        event.reply("xdebug-response", response);
+    } catch (error) {
+        event.reply("xdebug-error", error.message);
+    }
+});
+
+ipcMain.on("read-file", (event, filePath) => {
+    fs.readFile(filePath, "utf-8", (err, data) => {
+        if (err) {
+            event.reply("file-read-error", err.message);
+        } else {
+            event.reply("file-read-success", data);
+        }
+    });
+});
+
+ipcMain.on("connect-xdebug", (event, args: XDebugYml) => {
+    try {
+        mainWindow.setSize(isDev ? 1300 : 780, 820);
+        mainWindow.webContents.send("xdebug-connected");
+
+        event.reply("xdebug-connected", true);
+    } catch (error) {
+        event.reply("xdebug-disconnected", false);
+    }
+});
+
+ipcMain.on("disconnect-xdebug", (event) => {
+    if (xdebugServer) {
+        mainWindow.setSize(isDev ? 1300 : 680, 640);
+
+        xdebugServer.closeClient();
+
+        event.sender.send("xdebug-disconnected", "Disconnected from Xdebug server");
+        mainWindow.webContents.send("xdebug-disconnected");
+    }
+});
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
     if (!Object.prototype.hasOwnProperty.call(arg.content, "meta")) {
@@ -205,9 +259,7 @@ ipcMain.on("screen-window:show", (event, arg) => {
         });
     };
 
-    screenExist
-        ? sendEnableMessage()
-        : screenWindow.webContents.once("did-finish-load", () => sendEnableMessage())
+    screenExist ? sendEnableMessage() : screenWindow.webContents.once("did-finish-load", () => sendEnableMessage());
 
     screenWindow.on("closed", () => {
         windowsMap.delete(arg.screen);
@@ -266,35 +318,82 @@ app.whenReady().then(async (): Promise<void> => {
 
         tray = new Tray(trayIcon);
 
-        const contextMenu: Electron.Menu = Menu.buildFromTemplate([
-            {
-                label: "Preferences",
-                click: async (): Promise<void> => {
-                    mainWindow.webContents.send("app::toggle-settings");
-                }
-            },
-            { label: "separator", type: "separator" },
-            {
-                label: "Exit",
-                accelerator: "Command+Q",
-                click: async (): Promise<void> => {
-                    app.quit();
-                }
-            }
-        ]);
-
         tray.setToolTip("LaraDumps");
 
-        tray.on("click", () => {
-            tray.setContextMenu(null);
-            if (!mainWindow.isVisible()) {
-                mainWindow.show();
-            }
+        let options: { [key: string]: boolean } = {};
+        let projectName: string;
+
+        function toSnakeCase(str: string): string {
+            return str
+                .replace(/([a-z])([A-Z])/g, "$1_$2")
+                .replace(/\s+/g, "_")
+                .toLowerCase();
+        }
+
+        function createMenuItem(label: string, selected: boolean): MenuItem {
+            return {
+                label: label,
+                type: "checkbox",
+                checked: selected,
+                click: (menuItem) => {
+                    options[toSnakeCase(label)] = !options[toSnakeCase(label)];
+
+                    const selectedOptions = Object.entries(options).map(([key, value]) => ({
+                        value: toSnakeCase(key),
+                        selected: value
+                    }));
+
+                    tray.setContextMenu(buildContextMenu());
+                    mainWindow.webContents.send("main:tray-updated-environment-options", JSON.parse(JSON.stringify(selectedOptions)));
+                }
+            } as MenuItem;
+        }
+
+        function capitalizeLabel(label: string): string {
+            return label
+                .split("_")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
+        }
+
+        function buildContextMenu(): Menu {
+            const menuTemplate: (MenuItem | { type: "separator" })[] = [
+                {
+                    label: projectName ?? "Observers",
+                    enabled: false
+                } as MenuItem,
+                { type: "separator" },
+                ...Object.entries(options).map(([label, selected]) => createMenuItem(capitalizeLabel(label), selected)),
+                { type: "separator" },
+                {
+                    label: "Exit",
+                    click: () => {
+                        app.quit();
+                    }
+                } as MenuItem
+            ];
+
+            return Menu.buildFromTemplate(menuTemplate);
+        }
+
+        tray.on("click", (event, bounds) => {
+            const { x, y } = bounds;
+            tray.popUpContextMenu(buildContextMenu(), { x, y });
         });
 
-        tray.on("right-click", () => {
-            tray.setContextMenu(contextMenu);
-            tray.popUpContextMenu();
+        ipcMain.on("main:tray-update-context-menu", (event, args) => {
+            console.log(args.environmentYmlList);
+            options = args.environmentYmlList?.reduce(
+                (acc, { value, selected }) => {
+                    acc[value] = selected;
+                    return acc;
+                },
+                {} as { [key: string]: boolean }
+            );
+
+            projectName = args.projectName;
+
+            tray.setContextMenu(buildContextMenu());
         });
     }
 });
@@ -461,7 +560,7 @@ ipcMain.on("main:download-complete", async (event, args) => {
 
 ipcMain.on("main:download-update", (): void => {
     setTimeout(async (): Promise<void> => {
-        if (process.platform === "darwin") {
+        if (isMac) {
             const downloadPath: string = app.getPath("downloads");
 
             const files: UpdateFileInfo[] = globalUpdateInfo.files;
@@ -471,6 +570,8 @@ ipcMain.on("main:download-update", (): void => {
             const downloadedFile = `${downloadPath}/${fileName}`;
 
             if (fs.existsSync(downloadedFile)) {
+                mainWindow.webContents.send("debug", downloadedFile);
+
                 await shell.openPath(downloadedFile);
 
                 app.quit();
@@ -485,15 +586,11 @@ ipcMain.on("main:download-update", (): void => {
 });
 
 ipcMain.on("native-theme", () => {
-    mainWindow.webContents.send(
-        nativeTheme.shouldUseDarkColors ? "app:theme-dark" : "app:theme-light"
-    );
+    mainWindow.webContents.send(nativeTheme.shouldUseDarkColors ? "app:theme-dark" : "app:theme-light");
 });
 
 nativeTheme.on("updated", () => {
-    mainWindow.webContents.send(
-        nativeTheme.shouldUseDarkColors  ? "app:theme-dark" : "app:theme-light"
-    )
+    mainWindow.webContents.send(nativeTheme.shouldUseDarkColors ? "app:theme-dark" : "app:theme-light");
 });
 
 ipcMain.on("main:pause-dumps", (event, args) => {
@@ -554,15 +651,21 @@ ipcMain.on("environment::check", (event, value) => {
             store.set("environments", environments);
             mainWindow.webContents.send("app-setting:project-added");
         }
+
         ipcMain.emit("environment::get");
+
         setTimeout(() => mainWindow.webContents.send("app-setting:set-active", environments[project]), 200);
     } catch (error) {
         console.error("Error updating environments in storage:", error);
     }
 });
 
-ipcMain.on("main:setting-get-environments", (event: IpcMainEvent, value: string): void => {
-    const file = value + "/laradumps.yaml";
+ipcMain.on("main:setting-get-environments", (event: IpcMainEvent, applicationPath: string): void => {
+    const file = applicationPath + "/laradumps.yaml";
+
+    const environments = store.get("environments", {});
+
+    const projectName = Object.entries(environments).find(([key, value]) => value === applicationPath)?.[0];
 
     try {
         const yaml = require("js-yaml");
@@ -579,10 +682,54 @@ ipcMain.on("main:setting-get-environments", (event: IpcMainEvent, value: string)
             };
         });
 
-        mainWindow.webContents.send("settings:env-file-contents", parseYaml);
+        mainWindow.webContents.send("settings:env-file-contents", {
+            projectName,
+            environmentYmlList: parseYaml
+        });
     } catch (e) {
         console.error(e);
-        mainWindow.webContents.send("settings:env-file-contents", []);
+        mainWindow.webContents.send("settings:env-file-contents", {
+            projectName,
+            environmentYmlList: {}
+        });
+    }
+});
+
+ipcMain.on("main:setting-get-xdebug-environments", (event: IpcMainEvent, applicationPath: string): void => {
+    const file = applicationPath + "/laradumps.yaml";
+
+    try {
+        const yaml = require("js-yaml");
+        const fs = require("fs");
+
+        const readFile = yaml.load(fs.readFileSync(file, "utf8"));
+
+        const parseYaml = {
+            workdir: readFile.app.workdir,
+            project_path: readFile.app.project_path,
+            separator: readFile.app?.separator ?? "/",
+            wsl_config: readFile.app.wsl_config,
+            client_host: readFile.xdebug?.client_host ?? "0.0.0.0",
+            client_port: readFile.xdebug?.client_port ?? 9003
+        };
+
+        xdebugServer.startClient(mainWindow, parseYaml);
+
+        mainWindow.webContents.send("settings:env-xdebug-file-contents", parseYaml);
+    } catch (e) {
+        console.error(e);
+        const parseYaml = {
+            workdir: "",
+            project_path: "",
+            separator: "/",
+            wsl_config: "",
+            client_host: "0.0.0.0",
+            client_port: 9003
+        };
+
+        xdebugServer.startClient(mainWindow, parseYaml);
+
+        mainWindow.webContents.send("settings:env-xdebug-file-contents");
     }
 });
 
