@@ -237,6 +237,16 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
                                 });
                             },
                             type: "radio"
+                        },
+                        {
+                            label: "Türkçe (TR)",
+                            click: async (): Promise<void> => {
+                                mainWindow.webContents.send("settings:set-language", {
+                                    value: "tr_TR",
+                                    label: "Türkçe (TR)"
+                                });
+                            },
+                            type: "radio"
                         }
                     ]
                 },
