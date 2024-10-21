@@ -4,6 +4,8 @@ import { computed, onMounted, ref, watch } from "vue";
 import JSConfetti from "js-confetti";
 import { useXDebug } from "@/store/xdebug";
 import { XDebugYml } from "@/types/XDebug";
+import IconPlus from "@/components/Icons/IconPlus.vue";
+import IconTrash from "@/components/Icons/IconTrash.vue";
 
 const xDebugStore = useXDebug();
 
@@ -58,7 +60,7 @@ onMounted(async () => {
 
     window.ipcRenderer.on("settings:env-file-contents", (event, contents: { environmentYmlList: null | object; projectName: string }) => {
         console.log(contents.environmentYmlList);
-        if (contents.environmentYmlList != null) {
+        if (contents.environmentYmlList.length > 0) {
             environments.value = [];
 
             contents.environmentYmlList.forEach((entry: Environment) => {
@@ -158,6 +160,14 @@ window.ipcRenderer.on("xdebug-file-parser-error", (event, args) => {
     console.log("error", args);
 });
 
+const addProject = () => {
+    window.ipcRenderer.send("main:choose-directory");
+};
+
+window.ipcRenderer.on("choose-directory", (event, args) => {
+    console.log(args);
+});
+
 watch(xdebug, (value) => {
     if (value) {
         connectToXdebug();
@@ -185,92 +195,49 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                     }"
                     class="px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
                 >
-                    <SignalSlashIcon
-                        v-if="selectedProject.length === 0"
-                        class="size-4 text-error"
-                    />
+                    <SignalSlashIcon v-if="selectedProject.length === 0" class="size-4 text-error" />
 
-                    <SignalIcon
-                        v-else
-                        :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
-                        class="size-4"
-                    />
+                    <SignalIcon v-else :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }" class="size-4" />
                 </div>
                 <ul
                     tabindex="0"
-                    class="dropdown-content min-w-40 overflow-y-auto z-200 menu p-2 bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto mt-[35px] !right-0"
+                    :class="{'h-[calc(100vh-3.5rem)]' : selectedProject && !xdebug}"
+                    class="dropdown-content min-w-[220px] space-y-3 gap-4 overflow-y-auto z-200 menu p-4 bg-neutral block border border-neutral-content/20 shadow-lg rounded-box mt-[35px] !right-0"
                 >
-                    <select
-                        v-model="selectedProject"
-                        @change="setActiveProject()"
-                        class="mb-3 select select-bordered select-xs bg-neutral text-neutral-content w-full h-[1.85rem] font-semibold max-w-xs"
-                    >
+                    <button class="btn btn-info w-full text-[10px]" @click="addProject">
+                        <IconPlus class="w-5"/>
+
+                        Add New Project
+                    </button>
+
+                    <select v-model="selectedProject" @change="setActiveProject()" class="select select-bordered select-xs bg-neutral text-neutral-content w-full h-[1.85rem] font-semibold max-w-xs">
                         <option value="">Select a project</option>
 
-                        <option
-                            v-for="project in projects"
-                            :ref="project.project"
-                            :value="project.path"
-                        >
-                            {{ project.project }} - {{ project.path }}
-                        </option>
+                        <option v-for="project in projects" :ref="project.project" :value="project.path">{{ project.project }} - {{ project.path }}</option>
                     </select>
 
-                    <div
-                        v-if="environments.length === 0"
-                        class="text-[10px] text-neutral-content"
-                    >
-                        No laradumps.yaml found in this project
-                    </div>
+                    <div v-if="environments.length === 0" class="text-xs text-neutral-content">No laradumps.yaml found in this project</div>
 
-                    <div
-                        class="overflow-auto"
-                        :style="{ 'height: calc(100vh - 11rem)': environments.length > 0 }"
-                    >
+                    <div class="overflow-auto" v-if="selectedProject">
                         <li>
-                            <label
-                                class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5"
-                                :class="{ 'bg-base-200': false }"
-                            >
-                                <input
-                                    type="checkbox"
-                                    :name="`xdebug`"
-                                    class="toggle toggle-xs toggle-accent"
-                                    v-model="xdebug"
-                                />
+                            <label class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5" :class="{ 'bg-base-200': false }">
+                                <input type="checkbox" :name="`xdebug`" class="toggle toggle-xs toggle-accent" v-model="xdebug" />
                                 <span class="text-[10px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
                             </label>
                         </li>
 
-                        <li
-                            :key="env.value"
-                            v-for="env in environments"
-                        >
-                            <label
-                                class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5"
-                                :class="{ 'bg-base-200': env.selected }"
-                            >
-                                <input
-                                    type="checkbox"
-                                    :name="`env-` + env.id"
-                                    v-model="env.selected"
-                                    class="toggle toggle-xs toggle-accent"
-                                    @change="save"
-                                    :disabled="xdebug"
-                                />
+                        <li :key="env.value" v-for="env in environments">
+                            <label class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5" :class="{ 'bg-base-200': env.selected }">
+                                <input type="checkbox" :name="`env-` + env.id" v-model="env.selected" class="toggle toggle-xs toggle-accent" @change="save" :disabled="xdebug" />
                                 <span class="text-[10px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
                             </label>
                         </li>
                     </div>
 
-                    <div>
-                        <button
-                            class="btn btn-warning text-warning-content mt-6 w-[100px] text-[10px]"
-                            @click="removeEnvironment"
-                        >
-                            Remove Project
-                        </button>
-                    </div>
+                    <button v-if="selectedProject" class="btn mt-2 btn-error text-warning-content w-full text-[10px]" @click="removeEnvironment">
+                        <IconTrash class="w-5" />
+                        Remove Project
+                    </button>
                 </ul>
             </div>
         </div>
