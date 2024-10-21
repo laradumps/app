@@ -294,7 +294,7 @@ const handleFileContent = (messageElement) => {
 
 window.ipcRenderer.on("send-command-error", (event, args) => {
     console.log("command err", args.error);
-    handleStop();
+   // handleStop();
 });
 
 const handleStop = () => {
