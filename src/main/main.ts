@@ -145,6 +145,8 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             win.webContents.openDevTools();
         }
+
+        win.webContents.openDevTools();
     });
 
     win.webContents.on("did-finish-load", () => {
