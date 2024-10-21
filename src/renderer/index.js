@@ -17,7 +17,7 @@ import itIT from "@/lang/it-IT";
 import zhCN from "@/lang/zh-CN";
 import idID from "@/lang/id-ID";
 import alAL from "@/lang/al-AL";
-import trTr from "@/lang/tr-TR";
+import trTR from "@/lang/tr-TR";
 
 import clipboard from "@/plugins/clipboard";
 
