@@ -122,6 +122,7 @@ const source = (filePath) => {
 };
 
 const handleResponse = (event, response) => {
+    console.log('response', response)
     parseResponse(response);
 };
 
@@ -247,7 +248,7 @@ const handlePropertyGet = (responseElement, evaluate) => {
 
         propertiesTree.value.push(list);
     });
-
+    //
     // console.log("Properties Tree (property_get):", propertiesTree.value);
     // console.log("Properties Tree Eval (property_get):", propertiesEvalTree.value);
     // console.log("Properties Context Tree (property_get):", propertiesContextTree.value);
