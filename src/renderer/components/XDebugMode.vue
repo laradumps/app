@@ -13,8 +13,9 @@ import IconContinue from "@/components/Icons/IconContinue.vue";
 import IconStepOver from "@/components/Icons/IconStepOver.vue";
 import IconStepInto from "@/components/Icons/IconStepInto.vue";
 import IconStop from "@/components/Icons/IconStop.vue";
-import { Splitpanes, Pane } from "splitpanes";
+import { Pane, Splitpanes } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
+import IconLoading from "@/components/Icons/IconLoading.vue";
 
 const xDebugStore = useXDebug();
 const response = ref<string>("");
@@ -24,7 +25,7 @@ const initialized = ref<boolean>(false);
 
 const evaluate = ref<string>("");
 const fileContent = ref<string[]>([]);
-const variablesNames = ref<{ name: string, classname?: string, type?: string, value?: any }[]>([]);
+const variablesNames = ref<{ name: string; classname?: string; type?: string; value?: any }[]>([]);
 const currentLine = ref<string>("");
 const currentFileName = ref<string>("");
 
@@ -37,6 +38,8 @@ const inMountEvent = ref<boolean>(false);
 const variableClicked = ref<boolean>(true);
 const selectedVariableName = ref<string>("");
 const variablesInLeftMenu = ref<boolean>(false);
+
+const loading = ref<boolean>(false);
 
 const getClassnameByVariableName = computed(() => {
     const variable = variablesNames.value.find((variable) => variable.name === selectedVariableName.value);
@@ -122,7 +125,8 @@ const source = (filePath) => {
 };
 
 const handleResponse = (event, response) => {
-    parseResponse(response);
+    loading.value = true;
+    setTimeout(() => parseResponse(response), 100);
 };
 
 const handlePropertyContextClick = (type, variable) => {
@@ -327,7 +331,7 @@ const parseResponse = async (xml) => {
     const xmlParts = xml.split(/(?=<\?xml)/);
 
     for (const xmlPart of xmlParts) {
-        console.log(xmlPart)
+        console.log(xmlPart);
 
         if (!xmlPart.trim()) continue;
 
@@ -358,7 +362,7 @@ const parseResponse = async (xml) => {
         const messageElement = doc.getElementsByTagName("xdebug:message");
 
         if (messageElement.length > 0) {
-            console.log('<< xdebug:message >>')
+            console.log("<< xdebug:message >>");
             handleFileContent(messageElement[0]);
         }
 
@@ -374,7 +378,7 @@ const parseResponse = async (xml) => {
                     console.error(`Error: (${errorCode}): ${errorMessage}`);
 
                     continue;
-                   // return;
+                    // return;
                 }
             }
 
@@ -414,10 +418,12 @@ const parseResponse = async (xml) => {
             const status = responseElement.getAttribute("status");
 
             if (command === "context_get" && status === "stopping") {
-              // handleStop();
+                // handleStop();
             }
         }
     }
+
+    loading.value = false;
 };
 
 const getHighlightedCode = (lineContent) => {
@@ -555,17 +561,21 @@ onBeforeUnmount(() => {
                         </button>
                     </div>
 
-                    <button
-                        class="btn btn-xs !px-1.5 btn-ghost"
-                        @click="stop"
-                        :disabled="variablesNames.length === 0"
-                        data-tippy-content="Stop (F2)"
-                    >
-                        <IconStop
-                            class="text-error w-5"
-                            :class="{ '!text-gray-500': variablesNames.length === 0 }"
-                        />
-                    </button>
+                    <div class="flex gap-2">
+                        <IconLoading class="text-base-content/70 w-5" :class="{ 'opacity-100': loading }" />
+
+                        <button
+                            class="btn btn-xs !px-1.5 btn-ghost"
+                            @click="stop"
+                            :disabled="variablesNames.length === 0"
+                            data-tippy-content="Stop (F2)"
+                        >
+                            <IconStop
+                                class="text-error w-5"
+                                :class="{ '!text-gray-500': variablesNames.length === 0 }"
+                            />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -596,7 +606,12 @@ onBeforeUnmount(() => {
                             https://xdebug.org
                         </div>
 
-                        <button @click="disconnect" class="mt-3 btn btn-sm text-xs btn-warning">Disconnect</button>
+                        <button
+                            @click="disconnect"
+                            class="mt-3 btn btn-sm text-xs btn-warning"
+                        >
+                            Disconnect
+                        </button>
                     </span>
                 </div>
 
@@ -788,5 +803,15 @@ onBeforeUnmount(() => {
 
 [data-tippy-root] {
     @apply break-all;
+}
+
+.spinner_Pcrv {
+    transform-origin: center;
+    animation: spinner_xeMo 0.6s linear infinite;
+}
+@keyframes spinner_xeMo {
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>

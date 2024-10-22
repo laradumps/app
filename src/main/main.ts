@@ -790,6 +790,5 @@ ipcMain.on("main:settings-update-environment", (event: Electron.IpcMainEvent, va
 });
 
 ipcMain.on("main:choose-directory", async (event, args) => {
-    chooseDirectory(mainWindow, event, args)
+    chooseDirectory(mainWindow, event, args);
 });
-

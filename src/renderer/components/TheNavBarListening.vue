@@ -195,46 +195,99 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                     }"
                     class="px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
                 >
-                    <SignalSlashIcon v-if="selectedProject.length === 0" class="size-4 text-error" />
+                    <SignalSlashIcon
+                        v-if="selectedProject.length === 0"
+                        class="size-4 text-error"
+                    />
 
-                    <SignalIcon v-else :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }" class="size-4" />
+                    <SignalIcon
+                        v-else
+                        :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
+                        class="size-4"
+                    />
                 </div>
                 <ul
                     tabindex="0"
-                    :class="{'h-[calc(100vh-3.5rem)]' : selectedProject && !xdebug}"
+                    :class="{ 'h-[calc(100vh-3.5rem)]': selectedProject && !xdebug }"
                     class="dropdown-content min-w-[220px] space-y-3 gap-4 overflow-y-auto z-200 menu p-4 bg-neutral block border border-neutral-content/20 shadow-lg rounded-box mt-[35px] !right-0"
                 >
-                    <button class="btn btn-info w-full text-[10px]" @click="addProject">
-                        <IconPlus class="w-5"/>
+                    <button
+                        class="btn btn-info w-full text-[10px]"
+                        @click="addProject"
+                    >
+                        <IconPlus class="w-5" />
 
                         Add New Project
                     </button>
 
-                    <select v-model="selectedProject" @change="setActiveProject()" class="select select-bordered select-xs bg-neutral text-neutral-content w-full h-[1.85rem] font-semibold max-w-xs">
+                    <select
+                        v-model="selectedProject"
+                        @change="setActiveProject()"
+                        class="select select-bordered select-xs bg-neutral text-neutral-content w-full h-[1.85rem] font-semibold max-w-xs"
+                    >
                         <option value="">Select a project</option>
 
-                        <option v-for="project in projects" :ref="project.project" :value="project.path">{{ project.project }} - {{ project.path }}</option>
+                        <option
+                            v-for="project in projects"
+                            :ref="project.project"
+                            :value="project.path"
+                        >
+                            {{ project.project }} - {{ project.path }}
+                        </option>
                     </select>
 
-                    <div v-if="environments.length === 0" class="text-xs text-neutral-content">No laradumps.yaml found in this project</div>
+                    <div
+                        v-if="environments.length === 0"
+                        class="text-xs text-neutral-content"
+                    >
+                        No laradumps.yaml found in this project
+                    </div>
 
-                    <div class="overflow-auto" v-if="selectedProject">
+                    <div
+                        class="overflow-auto"
+                        v-if="selectedProject"
+                    >
                         <li>
-                            <label class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5" :class="{ 'bg-base-200': false }">
-                                <input type="checkbox" :name="`xdebug`" class="toggle toggle-xs toggle-accent" v-model="xdebug" />
+                            <label
+                                class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5"
+                                :class="{ 'bg-base-200': false }"
+                            >
+                                <input
+                                    type="checkbox"
+                                    :name="`xdebug`"
+                                    class="toggle toggle-xs toggle-accent"
+                                    v-model="xdebug"
+                                />
                                 <span class="text-[10px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
                             </label>
                         </li>
 
-                        <li :key="env.value" v-for="env in environments">
-                            <label class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5" :class="{ 'bg-base-200': env.selected }">
-                                <input type="checkbox" :name="`env-` + env.id" v-model="env.selected" class="toggle toggle-xs toggle-accent" @change="save" :disabled="xdebug" />
+                        <li
+                            :key="env.value"
+                            v-for="env in environments"
+                        >
+                            <label
+                                class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5"
+                                :class="{ 'bg-base-200': env.selected }"
+                            >
+                                <input
+                                    type="checkbox"
+                                    :name="`env-` + env.id"
+                                    v-model="env.selected"
+                                    class="toggle toggle-xs toggle-accent"
+                                    @change="save"
+                                    :disabled="xdebug"
+                                />
                                 <span class="text-[10px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
                             </label>
                         </li>
                     </div>
 
-                    <button v-if="selectedProject" class="btn mt-2 btn-error text-warning-content w-full text-[10px]" @click="removeEnvironment">
+                    <button
+                        v-if="selectedProject"
+                        class="btn mt-2 btn-error text-warning-content w-full text-[10px]"
+                        @click="removeEnvironment"
+                    >
                         <IconTrash class="w-5" />
                         Remove Project
                     </button>

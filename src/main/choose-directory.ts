@@ -7,7 +7,7 @@ const isWindows: boolean = process.platform === "win32";
 const chooseDirectory = async (mainWindow: BrowserWindow, event, args) => {
     try {
         const result = await dialog.showOpenDialog(mainWindow, {
-            properties: ['openDirectory'],
+            properties: ["openDirectory"]
         });
 
         if (result.canceled) {
@@ -54,9 +54,9 @@ const chooseDirectory = async (mainWindow: BrowserWindow, event, args) => {
 
         mainWindow.webContents.send("choose-directory", { success: true, path: selectedDir });
     } catch (err) {
-        console.log(err)
+        console.log(err);
         mainWindow.webContents.send("choose-directory", { error: err.message });
     }
-}
+};
 
-export { chooseDirectory }
+export { chooseDirectory };
