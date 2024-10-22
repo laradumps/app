@@ -804,14 +804,4 @@ onBeforeUnmount(() => {
 [data-tippy-root] {
     @apply break-all;
 }
-
-.spinner_Pcrv {
-    transform-origin: center;
-    animation: spinner_xeMo 0.6s linear infinite;
-}
-@keyframes spinner_xeMo {
-    100% {
-        transform: rotate(360deg);
-    }
-}
 </style>
