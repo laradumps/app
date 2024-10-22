@@ -4,7 +4,7 @@ import fs from "fs";
 
 const isWindows: boolean = process.platform === "win32";
 
-const chooseDirectory = (mainWindow: BrowserWindow, event, args) => {
+const chooseDirectory = async (mainWindow: BrowserWindow, event, args) => {
     try {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openDirectory'],
