@@ -122,7 +122,6 @@ const source = (filePath) => {
 };
 
 const handleResponse = (event, response) => {
-    console.log('response', response)
     parseResponse(response);
 };
 
@@ -294,14 +293,13 @@ const handleFileContent = (messageElement) => {
 
 window.ipcRenderer.on("send-command-error", (event, args) => {
     console.log("command err", args.error);
-   // handleStop();
+    handleStop();
 });
 
 const handleStop = () => {
     variableClicked.value = true;
     variablesNames.value = [];
     currentLine.value = "";
-    fileContent.value = [];
     currentFileName.value = "";
     propertiesContextTree.value = [];
     propertiesEvalTree.value = [];
@@ -329,6 +327,8 @@ const parseResponse = async (xml) => {
     const xmlParts = xml.split(/(?=<\?xml)/);
 
     for (const xmlPart of xmlParts) {
+        console.log(xmlPart)
+
         if (!xmlPart.trim()) continue;
 
         const parser = new DOMParser();
@@ -358,6 +358,7 @@ const parseResponse = async (xml) => {
         const messageElement = doc.getElementsByTagName("xdebug:message");
 
         if (messageElement.length > 0) {
+            console.log('<< xdebug:message >>')
             handleFileContent(messageElement[0]);
         }
 
@@ -404,7 +405,7 @@ const parseResponse = async (xml) => {
                 const errorMessage = errorElement.getElementsByTagName("message")[0].textContent;
 
                 if (errorCode === "4") {
-                    console.error(`Error (${errorCode}): ${errorMessage}`);
+                    console.error(`Error 2 (${errorCode}): ${errorMessage}`);
                     continue;
                 }
             }
@@ -413,7 +414,7 @@ const parseResponse = async (xml) => {
             const status = responseElement.getAttribute("status");
 
             if (command === "context_get" && status === "stopping") {
-              //  handleStop();
+              // handleStop();
             }
         }
     }
