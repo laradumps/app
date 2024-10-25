@@ -145,8 +145,6 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             win.webContents.openDevTools();
         }
-
-        win.webContents.openDevTools();
     });
 
     win.webContents.on("did-finish-load", () => {
@@ -790,5 +788,5 @@ ipcMain.on("main:settings-update-environment", (event: Electron.IpcMainEvent, va
 });
 
 ipcMain.on("main:choose-directory", async (event, args) => {
-    chooseDirectory(mainWindow, event, args);
+    await chooseDirectory(mainWindow, event, args);
 });
