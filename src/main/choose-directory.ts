@@ -30,7 +30,7 @@ const chooseDirectory = async (mainWindow: BrowserWindow, event, args) => {
             const laravelConfig = yaml.load(fs.readFileSync(fromLaravel, "utf8"));
             const coreConfig = yaml.load(fs.readFileSync(fromCore, "utf8"));
 
-            console.log({coreConfig, laravelConfig})
+            console.log({ coreConfig, laravelConfig });
             config = { ...coreConfig, ...laravelConfig };
         } else if (fs.existsSync(fromCore)) {
             config = yaml.load(fs.readFileSync(fromCore, "utf8"));

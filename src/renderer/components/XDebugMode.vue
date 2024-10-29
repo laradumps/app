@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import hljs from "highlight.js/lib/core";
 import tippy from "tippy.js";
@@ -16,30 +16,33 @@ import IconStop from "@/components/Icons/IconStop.vue";
 import { Pane, Splitpanes } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import IconLoading from "@/components/Icons/IconLoading.vue";
+import { useI18n } from "vue-i18n";
 
 const xDebugStore = useXDebug();
-const response = ref<string>("");
-const error = ref<string>("");
-const transactionId = ref<number>(1);
-const initialized = ref<boolean>(false);
+const i18n = useI18n();
 
-const evaluate = ref<string>("");
-const fileContent = ref<string[]>([]);
-const variablesNames = ref<{ name: string; classname?: string; type?: string; value?: any }[]>([]);
-const currentLine = ref<string>("");
-const currentFileName = ref<string>("");
+const response = ref("");
+const error = ref("");
+const transactionId = ref(1);
+const initialized = ref(false);
 
-const propertiesTree = ref<any[]>([]);
-const propertiesContextTree = ref<any[]>([]);
-const propertiesEvalTree = ref<any[]>([]);
+const evaluate = ref("");
+const fileContent = ref([]);
+const variablesNames = ref([]);
+const currentLine = ref("");
+const currentFileName = ref("");
 
-const inStepCommand = ref<boolean>(false);
-const inMountEvent = ref<boolean>(false);
-const variableClicked = ref<boolean>(true);
-const selectedVariableName = ref<string>("");
-const variablesInLeftMenu = ref<boolean>(false);
+const propertiesTree = ref([]);
+const propertiesContextTree = ref([]);
+const propertiesEvalTree = ref([]);
 
-const loading = ref<boolean>(false);
+const inStepCommand = ref(false);
+const inMountEvent = ref(false);
+const variableClicked = ref(true);
+const selectedVariableName = ref("");
+const variablesInLeftMenu = ref(false);
+
+const loading = ref(false);
 
 const getClassnameByVariableName = computed(() => {
     const variable = variablesNames.value.find((variable) => variable.name === selectedVariableName.value);
@@ -418,6 +421,7 @@ const parseResponse = async (xml) => {
             const status = responseElement.getAttribute("status");
 
             if (command === "context_get" && status === "stopping") {
+                console.log('stopping')
                 // handleStop();
             }
         }
@@ -562,7 +566,10 @@ onBeforeUnmount(() => {
                     </div>
 
                     <div class="flex gap-2">
-                        <IconLoading class="text-base-content/70 w-5" :class="{ 'opacity-100': loading }" />
+                        <IconLoading
+                            class="text-base-content/70 w-5"
+                            :class="{ 'opacity-100': loading }"
+                        />
 
                         <button
                             class="btn btn-xs !px-1.5 btn-ghost"
@@ -593,26 +600,31 @@ onBeforeUnmount(() => {
                     v-if="variablesNames.length === 0"
                     class="flex h-[calc(100vh-135px)] w-full items-center justify-center"
                 >
-                    <span
+                    <div
                         type="button"
-                        class="select-none flex gap-5 flex-col items-center text-xs font-extrabold tracking-widest"
+                        class="select-none flex gap-7 flex-col items-center text-xs font-extrabold tracking-widest"
                     >
                         <SvgXDebug />
 
-                        <div
+                        <span
                             class="link"
                             @click="openXDebugLink"
                         >
                             https://xdebug.org
+                        </span>
+
+                        <div class="space-y-3 text-base-content font-normal">
+                            <li>{{ i18n.t("doc.add") }} <code class="bg-base-300 p-2 rounded">xdebug_break()</code> {{ i18n.t("doc.in_any_line_of_code") }}</li>
+                            <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
                         </div>
 
                         <button
                             @click="disconnect"
-                            class="mt-3 btn btn-sm text-xs btn-warning"
+                            class="mt-3 !px-3 btn btn-sm text-xs btn-warning"
                         >
                             Disconnect
                         </button>
-                    </span>
+                    </div>
                 </div>
 
                 <div
