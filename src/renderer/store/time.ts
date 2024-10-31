@@ -5,6 +5,7 @@ type Requests = {
     time: number | string;
     requestId: number | string;
     total: number;
+    uri: string;
 };
 
 type State = {
@@ -50,13 +51,20 @@ export const useTimeStore = defineStore("timeStore", {
 
             return this.requests[requestId].total;
         },
+        getUri(requestId: never) {
+            if (typeof this.requests[requestId] === "undefined") {
+                return 0;
+            }
+
+            return this.requests[requestId].uri;
+        },
         setOrder(value: never) {
             this.order = value;
         },
         setSelectedRequest(value: string) {
             this.selected = value;
         },
-        increment(requestId: string, dumpId: string, time: number | string) {
+        increment(requestId: string, dumpId: string, time: number | string, uri: string) {
             if (this.dumpIds.includes(dumpId)) {
                 return;
             }
@@ -74,7 +82,8 @@ export const useTimeStore = defineStore("timeStore", {
             this.requests[requestId] = {
                 requestId,
                 total,
-                time: moment().format("HH:mm:ss a")
+                time: moment().format("HH:mm:ss a"),
+                uri
             };
 
             if (!this.groups.includes(requestId)) {

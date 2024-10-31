@@ -185,7 +185,7 @@ ipcMain.on("read-file", (event, filePath) => {
 
 ipcMain.on("connect-xdebug", (event, args: XDebugYml) => {
     try {
-        mainWindow.setSize(isDev ? 1300 : 780, 820);
+        mainWindow.setSize(isDev ? 1400 : 1300, 820);
         mainWindow.webContents.send("xdebug-connected");
 
         event.reply("xdebug-connected", true);

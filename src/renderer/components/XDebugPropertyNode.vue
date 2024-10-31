@@ -1,12 +1,11 @@
 <template>
     <div>
-        <div class="property-node">
-            <div class="flex gap-1 items-center">
-                <button
-                    @click="handlePropertyClick"
-                    v-if="['array', 'object'].includes(property.type)"
-                    class="cursor-pointer"
-                >
+        <div class="property-node p-1">
+            <div
+                class="flex gap-1 items-center cursor-pointer"
+                @click="handlePropertyClick"
+            >
+                <button v-if="['array', 'object'].includes(property.type)">
                     <IconArrowRight v-if="!property.expanded" />
                     <IconArrowDown v-else />
                 </button>
@@ -133,7 +132,7 @@ const sendCommand = (cmd): void => {
 
 <style scoped>
 .property-node {
-    @apply p-1.5 text-sm rounded-md break-all;
+    @apply p-1.5 text-sm rounded-md whitespace-nowrap;
 }
 
 .children {

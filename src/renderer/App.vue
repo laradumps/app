@@ -499,8 +499,8 @@ const dumpsBagFiltered = computed(() => {
         })
         .map((dump) => {
             if (dump.type === "queries") {
-                const { time } = dump.queries;
-                timeStore.increment(dump.request_id, dump.id, time);
+                const { time, uri } = dump.queries;
+                timeStore.increment(dump.request_id, dump.id, time, uri);
             }
             return dump;
         })
@@ -580,6 +580,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         return;
     }
 
+    console.log(content);
     if (applicationPath.value != content.application_path) {
         window.ipcRenderer.send("environment::check", {
             applicationPath: content.application_path
@@ -826,6 +827,7 @@ function registerDefaultLocalShortcuts() {
                                 <div
                                     class="mb-[40px] w-full"
                                     :class="{
+                                        'mt-4': screenStore.screen === 'Queries',
                                         '-mt-2': screenStore.screen !== 'Queries',
                                         'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
                                     }"

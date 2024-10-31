@@ -3,7 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import hljs from "highlight.js/lib/core";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
-import "tippy.js/themes/translucent.css";
+import "tippy.js/themes/light-border.css";
 import "tippy.js/themes/light.css";
 import XDebugPropertyNode from "@/components/XDebugPropertyNode.vue";
 import SvgXDebug from "@/components/Svg/SvgXDebug.vue";
@@ -21,7 +21,6 @@ import { useI18n } from "vue-i18n";
 const xDebugStore = useXDebug();
 const i18n = useI18n();
 
-const response = ref("");
 const error = ref("");
 const transactionId = ref(1);
 const initialized = ref(false);
@@ -41,6 +40,8 @@ const inMountEvent = ref(false);
 const variableClicked = ref(true);
 const selectedVariableName = ref("");
 const variablesInLeftMenu = ref(false);
+
+const expandedProperties = ref({});
 
 const loading = ref(false);
 
@@ -137,10 +138,12 @@ const handlePropertyContextClick = (type, variable) => {
         return;
     }
 
+    expandedProperties.value[variable] = !expandedProperties.value[variable];
+
     selectedVariableName.value = variable;
     variablesInLeftMenu.value = true;
     propertyGet(variable);
-    setTimeout(() => modal_property_get.showModal(), 100);
+    // setTimeout(() => modal_property_get.showModal(), 100);
 };
 
 const handleContextGet = (responseElement) => {
@@ -167,9 +170,21 @@ const handleContextGet = (responseElement) => {
         }
     });
 
-    nextTick(() => tippy("[data-tippy-content]", { allowHTML: true, theme: "translucent", placement: "right-end" }));
+    nextTick(() => tippy("[data-tippy-content]", { allowHTML: true, theme: "light-border", placement: "right-end" }));
 
     // console.log("Context:", variablesNames.value);
+};
+
+const formatValue = (property) => {
+    if (["bool", "int", "float"].includes(property.type)) {
+        return property.value;
+    }
+
+    if (property.type === "null") {
+        return "null";
+    }
+
+    return `"${property.value}"`;
 };
 
 const handlePropertyGet = (responseElement, evaluate) => {
@@ -273,7 +288,9 @@ const handleFileContent = (messageElement) => {
         filename = filename.replace(xDebugStore.current.workdir, projectPath);
     }
 
-    ipcRenderer.send("read-file", filename.replace("file://", ""));
+    const isWindows = process.platform === "win32";
+
+    ipcRenderer.send("read-file", filename.replace(isWindows ? "file:///" : "file://", ""));
 
     ipcRenderer.on("file-read-success", (event, data) => {
         nextTick(() => {
@@ -357,6 +374,8 @@ const parseResponse = async (xml) => {
                 console.log("running in pest");
             }
 
+            window.ipcRenderer.send("main:show");
+
             setTimeout(async () => {
                 continueDebug();
             }, 100);
@@ -421,7 +440,7 @@ const parseResponse = async (xml) => {
             const status = responseElement.getAttribute("status");
 
             if (command === "context_get" && status === "stopping") {
-                console.log('stopping')
+                console.log("stopping");
                 // handleStop();
             }
         }
@@ -593,7 +612,7 @@ onBeforeUnmount(() => {
                     @keydown.enter="evaluateExpression"
                     v-model="evaluate"
                     placeholder="evaluate expression"
-                    class="input placeholder-opacity-75 text-xs tracking-wider border-base-content/10 rounded-none input-sm w-full"
+                    class="input placeholder-opacity-75 h-[40px] text-xs tracking-wider border-base-content/10 rounded-none input-sm w-full"
                 />
 
                 <div
@@ -633,31 +652,6 @@ onBeforeUnmount(() => {
                 >
                     <Splitpanes vertical>
                         <pane
-                            size="20"
-                            class="pane-code"
-                        >
-                            <div class="overflow-auto text-sm h-fill-available bg-base-300">
-                                <div
-                                    v-for="property in variablesNames"
-                                    :key="Math.random().toString(36).substr(2, 9)"
-                                    @click="handlePropertyContextClick(property.type, property.name)"
-                                    class="hover:bg-base-200 px-1 py-2 pl-3 cursor-not-allowed"
-                                    :class="{ 'cursor-pointer': property.type !== 'uninitialized' }"
-                                    :data-tippy-content="property.type === 'uninitialized' ? 'uninitialized' : property.value ? property.value : 'Click to open dump'"
-                                >
-                                    <div class="flex items-center">
-                                        <span
-                                            :class="{ 'opacity-70 !text-base-content line-through': property.type === 'uninitialized' }"
-                                            class="variable-name text-primary mr-2"
-                                            >{{ property.name.replace("$", "") }}</span
-                                        >
-                                        <span class="classname truncate">{{ " {" + (property.classname ?? property.type) + "}" }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </pane>
-
-                        <pane
                             size="90"
                             class="pane-code overflow-auto"
                         >
@@ -694,6 +688,54 @@ onBeforeUnmount(() => {
                                         @mouseup="handleSelectText"
                                     ></span>
                                     <div></div>
+                                </div>
+                            </div>
+                        </pane>
+
+                        <pane
+                            size="40"
+                            class="pane-code"
+                        >
+                            <div class="overflow-auto text-sm h-fill-available bg-base-300">
+                                <div
+                                    v-for="property in variablesNames"
+                                    :key="property.name + '-' + property.type"
+                                >
+                                    <div
+                                        :class="{
+                                            'cursor-pointer': property.type !== 'uninitialized',
+                                            'bg-base-100 border-l-4 !border-accent': expandedProperties[property.name]
+                                        }"
+                                        class="flex cursor-not-allowed border-l-4 border-transparent hover:bg-base-200 items-center px-1 py-2 pl-3"
+                                        @click="handlePropertyContextClick(property.type, property.name)"
+                                    >
+                                        <span
+                                            :class="{ 'opacity-70 !text-base-content line-through': property.type === 'uninitialized' }"
+                                            class="variable-name text-primary mr-2"
+                                            >{{ property.name.replace("$", "") }}</span
+                                        >
+                                        <span class="classname truncate"
+                                            >{{ " {" + (property.classname ?? property.type) + "}" }}
+                                            <span v-if="property.type !== 'uninitialized'">
+                                                =
+                                                <span class="text-secondary">{{ formatValue(property) }}</span>
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <div
+                                        v-if="expandedProperties[property.name]"
+                                        class="ml-5 py-2"
+                                    >
+                                        <XDebugPropertyNode
+                                            v-if="propertiesTree"
+                                            v-for="property in propertiesContextTree"
+                                            :key="'child-' + property.name + '-' + property.type"
+                                            :property="property"
+                                            :transition-id="transactionId"
+                                            @click="variableClicked = false"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </pane>
@@ -810,7 +852,7 @@ onBeforeUnmount(() => {
 }
 
 .splitpanes--vertical > .splitpanes__splitter {
-    @apply min-w-[0.03rem] hover:min-w-[0.095rem] rounded-md;
+    @apply min-w-[0.3rem] bg-accent/10 hover:bg-accent/40;
 }
 
 [data-tippy-root] {
