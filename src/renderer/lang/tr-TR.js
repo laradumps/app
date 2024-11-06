@@ -14,7 +14,9 @@ export default {
         run_global_laradumps_install: "global-laradumps install komutunu çalıştırın",
         select_your_preferred_theme: "Tercih ettiğiniz temayı seçin",
         change_your_ide_at_runtime: "Çalışma zamanında IDE'nizi değiştirin",
-        install_laravel: "Laravel'e yükleyin"
+        install_laravel: "Laravel'e yükleyin",
+        import: "Import",
+        laradumps_js_is_now_available: "LaraDumps JS is now available!"
     },
     footer: {
         support_laradumps: "LaraDumps'ı Destekleyin",

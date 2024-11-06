@@ -10,10 +10,23 @@ const currentTipKey = ref(0);
 
 const tips = ref([
     `<div class="space-y-3 text-base-content">
+        <div class="font-semibold text-base">${i18n.t('doc.laradumps_js_is_now_available')}</div>
+        <li>${i18n.t(
+        "doc.install_laradumps"
+    )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://www.npmjs.com/package/laradumps-js')" class="text-blue-500 underline cursor-pointer ml-1">https://www.npmjs.com/package/laradumps-js</span></li>
+        <li>
+            <code class="bg-base-300 p-1 rounded">import {ds} from 'laradumps-js'</code>
+        </li>
+        <li>${i18n.t("doc.add")}
+            <code class="bg-base-300 p-1 rounded">ds('Hello from javascript!')</code>
+             ${i18n.t("doc.somewhere_in_your_code")}</li>
+        <li>${i18n.t("doc.run_your_application_and_see_what_happens_here")}</li>
+    </div>`,
+    `<div class="space-y-3 text-base-content">
         <div class="font-semibold text-base">${i18n.t("doc.guide")}</div>
         <li>${i18n.t(
-            "doc.install_laradumps"
-        )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-blue-500 underline cursor-pointer ml-1">https://laradumps.dev</span></li>
+        "doc.install_laradumps"
+    )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-blue-500 underline cursor-pointer ml-1">https://laradumps.dev</span></li>
         <li>${i18n.t("doc.add")}
             <code class="bg-base-300 p-1 rounded">ds('Hello world!')</code>
              ${i18n.t("doc.somewhere_in_your_code")}</li>
