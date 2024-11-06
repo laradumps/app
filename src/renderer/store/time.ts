@@ -34,9 +34,11 @@ export const useTimeStore = defineStore("timeStore", {
 
             return this.requests[requestId].time;
         },
+
         get(requestId: never) {
             return this.requests[requestId];
         },
+
         getSelectedRequest() {
             if (typeof this.requests[this.selected] === "undefined") {
                 return 0;
@@ -44,6 +46,7 @@ export const useTimeStore = defineStore("timeStore", {
 
             return this.requests[this.selected];
         },
+
         getTotal(requestId: never) {
             if (typeof this.requests[requestId] === "undefined") {
                 return 0;
@@ -51,6 +54,7 @@ export const useTimeStore = defineStore("timeStore", {
 
             return this.requests[requestId].total;
         },
+
         getUri(requestId: never) {
             if (typeof this.requests[requestId] === "undefined") {
                 return 0;
@@ -58,13 +62,24 @@ export const useTimeStore = defineStore("timeStore", {
 
             return this.requests[requestId].uri;
         },
+
+        getMethod(requestId: never) {
+            if (typeof this.requests[requestId] === "undefined") {
+                return 0;
+            }
+
+            return this.requests[requestId].method;
+        },
+
         setOrder(value: never) {
             this.order = value;
         },
+
         setSelectedRequest(value: string) {
             this.selected = value;
         },
-        increment(requestId: string, dumpId: string, time: number | string, uri: string) {
+
+        increment(requestId: string, dumpId: string, time: number | string, uri: string, method: string) {
             if (this.dumpIds.includes(dumpId)) {
                 return;
             }
@@ -83,7 +98,8 @@ export const useTimeStore = defineStore("timeStore", {
                 requestId,
                 total,
                 time: moment().format("HH:mm:ss a"),
-                uri
+                uri,
+                method
             };
 
             if (!this.groups.includes(requestId)) {
@@ -92,6 +108,7 @@ export const useTimeStore = defineStore("timeStore", {
 
             this.dumpIds.push(dumpId);
         },
+
         clear() {
             this.requests = [];
             this.dumpIds = [];

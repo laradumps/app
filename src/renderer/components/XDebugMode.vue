@@ -269,7 +269,7 @@ const handlePropertyGet = (responseElement, evaluate) => {
 
         propertiesTree.value.push(list);
     });
-    //
+
     // console.log("Properties Tree (property_get):", propertiesTree.value);
     // console.log("Properties Tree Eval (property_get):", propertiesEvalTree.value);
     // console.log("Properties Context Tree (property_get):", propertiesContextTree.value);
@@ -351,8 +351,6 @@ const parseResponse = async (xml) => {
     const xmlParts = xml.split(/(?=<\?xml)/);
 
     for (const xmlPart of xmlParts) {
-        console.log(xmlPart);
-
         if (!xmlPart.trim()) continue;
 
         const parser = new DOMParser();
@@ -441,7 +439,7 @@ const parseResponse = async (xml) => {
 
             if (command === "context_get" && status === "stopping") {
                 console.log("stopping");
-                // handleStop();
+                handleStop();
             }
         }
     }
@@ -667,8 +665,9 @@ onBeforeUnmount(() => {
                                     :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
                                 >
                                     <DumpLink
-                                        class="font-normal text-[11px]"
+                                        class="font-normal h-full text-[11px]"
                                         :label="lineNumber"
+                                        :show-icon="true"
                                         :ide-handler="{
                                             workdir: xDebugStore.current.workdir,
                                             project_path: xDebugStore.current.project_path,
@@ -716,7 +715,7 @@ onBeforeUnmount(() => {
                                         >
                                         <span class="classname truncate"
                                             >{{ " {" + (property.classname ?? property.type) + "}" }}
-                                            <span v-if="property.type !== 'uninitialized'">
+                                            <span v-if="!['uninitialized', 'object'].includes(property.type)">
                                                 =
                                                 <span class="text-secondary">{{ formatValue(property) }}</span>
                                             </span>

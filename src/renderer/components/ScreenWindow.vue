@@ -48,8 +48,8 @@ const dumpsBagFiltered = computed(() => {
 
     props.dumpsBag.map((dump) => {
         if (dump.type === "queries") {
-            const { time } = dump.queries;
-            timeStore.increment(dump.request_id, dump.id, time);
+            const { time, uri, method } = dump.queries;
+            timeStore.increment(dump.request_id, dump.id, time, uri, method);
         }
 
         return dump;
@@ -105,7 +105,6 @@ watch(timeStore.groups, () => {
             <div
                 class="w-full mt-1 mb-[40px]"
                 :class="{
-                    'mt-12': screen == 'Queries',
                     'flex flex-col-reverse': reorderStore.reverse && screen !== 'Queries'
                 }"
             >

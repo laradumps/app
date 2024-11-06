@@ -499,8 +499,8 @@ const dumpsBagFiltered = computed(() => {
         })
         .map((dump) => {
             if (dump.type === "queries") {
-                const { time, uri } = dump.queries;
-                timeStore.increment(dump.request_id, dump.id, time, uri);
+                const { time, uri, method } = dump.queries;
+                timeStore.increment(dump.request_id, dump.id, time, uri, method);
             }
             return dump;
         })
