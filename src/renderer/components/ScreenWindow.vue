@@ -48,8 +48,8 @@ const dumpsBagFiltered = computed(() => {
 
     props.dumpsBag.map((dump) => {
         if (dump.type === "queries") {
-            const { time } = dump.queries;
-            timeStore.increment(dump.request_id, dump.id, time);
+            const { time, uri, method } = dump.queries;
+            timeStore.increment(dump.request_id, dump.id, time, uri, method);
         }
 
         return dump;
