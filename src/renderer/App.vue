@@ -592,10 +592,9 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     if (interval.value == null) {
         if (content.type === "queries" || content.type === "livewire") {
-            interval.value = setInterval(() => {
-                setTimeout(() => toggleScreen("screen 1"), 50);
-                setTimeout(() => toggleScreen(content.screen.screen_name), 50);
-            }, 700);
+            interval.value = setInterval(() =>
+                setTimeout(() => toggleScreen(content.screen.screen_name), 50)
+                , 700);
         } else {
             setTimeout(() => toggleScreen(content.screen.screen_name), 50);
         }

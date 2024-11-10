@@ -32,12 +32,12 @@ export const useScreenStore = defineStore("screen", {
         all() {
             return this.screens;
         },
-        get(screen: String) {
+        get(screen: string) {
             return this.screens.filter((screenPayload: ScreenPayload) => {
                 return screenPayload.screen_name === screen;
             })[0];
         },
-        toggleVisible(screenName: String) {
+        toggleVisible(screenName: string) {
             this.screens = this.screens.map((screen: ScreenPayload) => {
                 if (screen.screen_name === screenName) {
                     return { ...screen, visible: !screen.visible };
@@ -45,7 +45,7 @@ export const useScreenStore = defineStore("screen", {
                 return screen;
             });
         },
-        hidden(screenName: String) {
+        hidden(screenName: string) {
             this.screens = this.screens.map((screen: ScreenPayload) => {
                 if (screen.screen_name === screenName) {
                     return { ...screen, visible: false };
@@ -54,7 +54,7 @@ export const useScreenStore = defineStore("screen", {
             });
         },
         getNext(screenName: string) {
-            const index = this.screens.findIndex((screen) => screen.screen_name === screenName);
+            const index = this.screens.findIndex((screen: ScreenPayload) => screen.screen_name === screenName);
             if (index === -1) return null;
 
             const nextIndex = (index + 1) % this.screens.length;
