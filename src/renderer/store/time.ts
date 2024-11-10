@@ -6,6 +6,7 @@ type Requests = {
     requestId: number | string;
     total: number;
     uri: string;
+    method: string;
 };
 
 type State = {
