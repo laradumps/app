@@ -33,7 +33,7 @@
                 </div>
 
                 <div class="flex gap-3 items-end">
-                    <span class="label gap-2 !justify-end !text-left p-1.5">
+                    <label class="label gap-2 !justify-end !text-left p-1.5">
                         <input
                             type="checkbox"
                             v-model="formattedQueriesStore.formatted"
@@ -41,7 +41,7 @@
                             @click="formattedQueriesStore.toggle()"
                         />
                         <span class="text-[11px] whitespace-nowrap font-normal uppercase">Prettify</span>
-                    </span>
+                    </label>
 
                     <div>
                         <span class="text-[11px] uppercase">Order</span>
