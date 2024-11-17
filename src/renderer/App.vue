@@ -766,7 +766,7 @@ function registerDefaultLocalShortcuts() {
 
                         <div
                             :class="{
-                                'mt-12': screenStore.screen === 'Queries',
+                                'mt-[7.6rem]': screenStore.screen === 'Queries',
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
                             }"
