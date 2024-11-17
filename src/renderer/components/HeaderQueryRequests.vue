@@ -28,28 +28,36 @@
                         class="flex flex-row-reverse gap-3"
                     >
                         <span class="text-primary text-base">{{ duplicatesStore.totalByRequestId(timeStore.selected) }}</span>
-                        <span class="text-[11px] uppercase">duplicated</span>
+                        <span class="text-[11px] uppercase badge badge-warning font-semibold">duplicated</span>
                     </div>
                 </div>
 
-                <div>
-                    <span class="label gap-2 !justify-end !text-left p-1.5">
-                                        <input
-                                            type="checkbox"
-                                            v-model="formattedQueriesStore.formatted"
-                                            class="toggle toggle-xs toggle-primary"
-                                            @click="formattedQueriesStore.toggle()"
-                                        />
-                                        <span class="text-[11px] whitespace-nowrap font-normal uppercase">Prettify</span>
-                                    </span>
+                <div class="flex gap-3 items-end">
+                    <label class="label gap-2 !justify-end !text-left p-1.5">
+                        <input
+                            type="checkbox"
+                            v-model="formattedQueriesStore.formatted"
+                            class="toggle toggle-xs toggle-primary"
+                            @click="formattedQueriesStore.toggle()"
+                        />
+                        <span class="text-[11px] whitespace-nowrap font-normal uppercase">Prettify</span>
+                    </label>
+
+                    <div>
+                        <span class="text-[11px] uppercase">Order</span>
+                        <div>
+                            <SelectMenu
+                                @selected="timeStore.setOrder($event.id)"
+                                class="dark:!bg-base-600 !text-xs !w-[100px]"
+                                v-model:data="queryOrder"
+                            />
+                        </div>
+                    </div>
                 </div>
-
-
             </div>
-
         </div>
 
-        <div class="flex gap-3 w-full text-sm items-center justify-between">
+        <div class="flex w-full text-sm items-center justify-between">
             <div class="w-full">
                 <span class="text-[11px] uppercase">Request</span>
                 <div>
@@ -61,16 +69,6 @@
                     />
                 </div>
             </div>
-            <div>
-                <span class="text-[11px] uppercase">Order</span>
-                <div>
-                    <SelectMenu
-                        @selected="timeStore.setOrder($event.id)"
-                        class="dark:!bg-base-600 !text-xs !w-[100px]"
-                        v-model:data="queryOrder"
-                    />
-                </div>
-            </div>
         </div>
     </div>
 </template>
@@ -78,17 +76,13 @@
 <script setup>
 import { useTimeStore } from "@/store/time";
 import SelectMenu from "@/components/SelectMenu.vue";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useFormattedQueriesStore } from "@/store/formatted-queries";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
 const duplicatesStore = useQueryDuplicated();
-
-const requests = timeStore.requests;
-const groups = timeStore.groups;
-const selected = ref();
 
 const props = defineProps({
     total: {

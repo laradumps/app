@@ -592,10 +592,9 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     if (interval.value == null) {
         if (content.type === "queries" || content.type === "livewire") {
-            interval.value = setInterval(() => {
-                setTimeout(() => toggleScreen("screen 1"), 50);
-                setTimeout(() => toggleScreen(content.screen.screen_name), 50);
-            }, 700);
+            interval.value = setInterval(() =>
+                setTimeout(() => toggleScreen(content.screen.screen_name), 50)
+                , 700);
         } else {
             setTimeout(() => toggleScreen(content.screen.screen_name), 50);
         }
@@ -767,7 +766,7 @@ function registerDefaultLocalShortcuts() {
 
                         <div
                             :class="{
-                                'mt-12': screenStore.screen === 'Queries',
+                                'mt-[7.6rem]': screenStore.screen === 'Queries',
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
                             }"
