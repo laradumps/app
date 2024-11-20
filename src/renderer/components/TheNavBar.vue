@@ -7,6 +7,8 @@ import GlobalSearch from "@/components/GlobalSearch.vue";
 import TheNavBarListening from "@/components/TheNavBarListening.vue";
 import HeaderGlobalFilter from "@/components/HeaderColorsFilter.vue";
 import NavBarPause from "@/components/NavBarPause.vue";
+import { useCollapse } from "@/store/collapse";
+const collapseStore = useCollapse();
 
 defineProps({
     hasColor: {
@@ -51,6 +53,8 @@ const clear = () => {
 
             <!-- pause -->
             <NavBarPause v-bind:is-saved-dumps-window="inSavedDumpsWindow" />
+
+            <button @click="collapseStore.toggle()">Collapse</button>
 
             <!-- global search -->
             <GlobalSearch v-if="payloadCount > 0" />

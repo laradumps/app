@@ -21,9 +21,11 @@ import DumpDump from "@/components/DumpDump.vue";
 import IconTrash from "@/components/Icons/IconTrash.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useTimeStore } from "@/store/time";
+import { useCollapse } from "@/store/collapse";
 
 const duplicatesStore = useQueryDuplicated();
 const timeStore = useTimeStore();
+const collapseStore = useCollapse();
 
 const saveDump = () => window.ipcRenderer.send("main:save-dumps", JSON.stringify(props.payload));
 
@@ -118,8 +120,7 @@ const isDuplicated = (sql) => {
                 :class="{
                     [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
                     [bgColor]: typeof bgColor !== 'undefined',
-                    'collapse-open': open,
-                    'collapse-close': open
+                    'collapse-open': collapseStore.open || open,
                 }"
                 class="collapse bg-base-200/70 bg-laravel border border-base-content/5"
             >
@@ -187,18 +188,23 @@ const isDuplicated = (sql) => {
                             Duplicated
                         </div>
 
-                        <div class="-mr-2 text-base-content/70 p-2">
+                        <div class="flex items-center -mr-2 text-base-content/70 p-2">
                             <button
                                 v-show="!open"
                                 v-on:click="open = true"
                             >
-                                <span>▶</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg>
                             </button>
                             <button
                                 v-show="open"
                                 v-on:click="open = false"
                             >
-                                <span>▼</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+
                             </button>
                         </div>
                     </div>
