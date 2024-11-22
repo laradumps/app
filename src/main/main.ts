@@ -205,9 +205,7 @@ ipcMain.on("screen-window:show", (event, arg) => {
         });
     };
 
-    screenExist
-        ? sendEnableMessage()
-        : screenWindow.webContents.once("did-finish-load", () => sendEnableMessage())
+    screenExist ? sendEnableMessage() : screenWindow.webContents.once("did-finish-load", () => sendEnableMessage());
 
     screenWindow.on("closed", () => {
         windowsMap.delete(arg.screen);
@@ -485,15 +483,11 @@ ipcMain.on("main:download-update", (): void => {
 });
 
 ipcMain.on("native-theme", () => {
-    mainWindow.webContents.send(
-        nativeTheme.shouldUseDarkColors ? "app:theme-dark" : "app:theme-light"
-    );
+    mainWindow.webContents.send(nativeTheme.shouldUseDarkColors ? "app:theme-dark" : "app:theme-light");
 });
 
 nativeTheme.on("updated", () => {
-    mainWindow.webContents.send(
-        nativeTheme.shouldUseDarkColors  ? "app:theme-dark" : "app:theme-light"
-    )
+    mainWindow.webContents.send(nativeTheme.shouldUseDarkColors ? "app:theme-dark" : "app:theme-light");
 });
 
 ipcMain.on("main:pause-dumps", (event, args) => {

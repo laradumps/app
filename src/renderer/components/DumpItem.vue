@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onMounted, ref } from "vue";
+import { computed, defineProps, nextTick, onMounted, ref, watch } from "vue";
 import DumpLink from "@/components/DumpLink.vue";
 import DumpQueries from "@/components/DumpQueries.vue";
 import DumpJson from "@/components/DumpJson.vue";
@@ -112,6 +112,10 @@ const bgColor = computed(() => getColorClass("bg"));
 const isDuplicated = (sql) => {
     return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
 };
+
+watch(collapseStore, (value) => {
+    open.value = value.open;
+});
 </script>
 <template>
     <div class="group text-sm pt-2">
@@ -120,7 +124,7 @@ const isDuplicated = (sql) => {
                 :class="{
                     [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
                     [bgColor]: typeof bgColor !== 'undefined',
-                    'collapse-open': collapseStore.open || open,
+                    'collapse-open': open
                 }"
                 class="collapse bg-base-200/70 bg-laravel border border-base-content/5"
             >
@@ -193,18 +197,39 @@ const isDuplicated = (sql) => {
                                 v-show="!open"
                                 v-on:click="open = true"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    class="size-4"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                    />
                                 </svg>
                             </button>
                             <button
                                 v-show="open"
                                 v-on:click="open = false"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    class="size-4"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                                    />
                                 </svg>
-
                             </button>
                         </div>
                     </div>

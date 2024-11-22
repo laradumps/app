@@ -96,5 +96,6 @@ export default {
     },
     pause: "Pause",
     is_paused: "LaraDumps is paused.",
-    remove: "Remove"
+    remove: "Remove",
+    collapse: "Collapse all dumps"
 };

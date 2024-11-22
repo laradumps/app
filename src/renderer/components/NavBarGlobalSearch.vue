@@ -2,6 +2,7 @@
 import { ref, nextTick, onMounted, onUnmounted } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import { useGlobalSearchStore } from "@/store/global-search";
+import IconPin from "@/components/Icons/IconPin.vue";
 
 const showInput = ref(false);
 const globalSearch = useGlobalSearchStore();
@@ -37,13 +38,13 @@ onUnmounted(() => {
     >
         <button
             tabindex="0"
-            :class="{
-            '!text-primary bg-base-200': showInput
-        }"
-            class="px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+            class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
             @click="toggleInputVisibility"
         >
-            <MagnifyingGlassIcon class="size-4" />
+            <MagnifyingGlassIcon
+                class="size-4"
+                :class="{ 'text-primary': showInput }"
+            />
         </button>
         <div
             v-if="showInput"

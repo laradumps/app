@@ -112,10 +112,7 @@ const setActiveProject = () => {
         <div
             tabindex="0"
             role="button"
-            :class="{
-            '!text-primary bg-base-200': selectedProject
-        }"
-            class="px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+            class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         >
             <SignalSlashIcon
                 v-if="selectedProject.length === 0"

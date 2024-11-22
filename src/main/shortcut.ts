@@ -235,7 +235,7 @@ function configureLocalShortcut(mainWindow: BrowserWindow): void {
                 try {
                     shortcuts = await Promise.all(promises);
 
-                    const filteredShortcuts = shortcuts.filter(shortcut => shortcut && Object.keys(shortcut).length > 0);
+                    const filteredShortcuts = shortcuts.filter((shortcut) => shortcut && Object.keys(shortcut).length > 0);
 
                     mainWindow.webContents.send("app:local-shortcut::list", filteredShortcuts);
                 } catch (error) {
@@ -247,7 +247,6 @@ function configureLocalShortcut(mainWindow: BrowserWindow): void {
             retrieveShortcuts().then();
         });
     });
-
 }
 
 export { registerShortcuts, configureLocalShortcut };
