@@ -618,10 +618,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     if (interval.value == null) {
         if (content.type === "queries" || content.type === "livewire") {
-            interval.value = setInterval(() => {
-                setTimeout(() => toggleScreen("screen 1"), 50);
-                setTimeout(() => toggleScreen(content.screen.screen_name), 50);
-            }, 700);
+            interval.value = setInterval(() => setTimeout(() => toggleScreen(content.screen.screen_name), 50), 700);
         } else {
             setTimeout(() => toggleScreen(content.screen.screen_name), 50);
         }
@@ -629,6 +626,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
 
+    console.log(payload);
     if (content.screen.new_window) {
         screenStore.hidden(content.screen.screen_name);
 
@@ -801,7 +799,7 @@ function registerDefaultLocalShortcuts() {
                         <div
                             v-if="!xdebugMode"
                             :class="{
-                                'mt-12': screenStore.screen === 'Queries',
+                                'mt-[7.6rem]': screenStore.screen === 'Queries',
                                 'w-auto p-6 pb-8 items-center': payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
                             }"

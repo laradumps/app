@@ -95,5 +95,6 @@ export default {
     },
     pause: "Duraklat",
     is_paused: "LaraDumps duraklatıldı.",
-    remove: "Kaldır"
+    remove: "Kaldır",
+    collapse: "Collapse all dumps"
 };

@@ -3,10 +3,11 @@ import { defineProps, defineEmits, ref } from "vue";
 import { TrashIcon } from "@heroicons/vue/24/outline";
 import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
 import { useSettingStore } from "@/store/setting";
-import GlobalSearch from "@/components/GlobalSearch.vue";
-import TheNavBarListening from "@/components/TheNavBarListening.vue";
+import NavBarGlobalSearch from "@/components/NavBarGlobalSearch.vue";
+import NavBarListening from "@/components/NavBarListening.vue";
 import HeaderGlobalFilter from "@/components/HeaderColorsFilter.vue";
 import NavBarPause from "@/components/NavBarPause.vue";
+import NavBarCollapse from "@/components/NavBarCollapse.vue";
 
 defineProps({
     hasColor: {
@@ -60,7 +61,7 @@ window.ipcRenderer.on("xdebug-connection-status", (event, args) => {
             <a
                 v-show="payloadCount > 0 && !inSavedDumpsWindow && !settingStore.setting && !xdebugMode"
                 :title="$t('menu.clear')"
-                class="px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer transition-all duration-100 ease-in rounded-md"
+                class="w-[32px] tab px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer transition-all duration-100 ease-in rounded-md"
                 @click="clear()"
             >
                 <TrashIcon class="size-4" />
@@ -73,13 +74,16 @@ window.ipcRenderer.on("xdebug-connection-status", (event, args) => {
             />
 
             <!-- global search -->
-            <GlobalSearch v-if="payloadCount > 0" />
+            <NavBarGlobalSearch v-if="payloadCount > 0" />
+
+            <!-- collapse -->
+            <NavBarCollapse v-if="payloadCount > 0" />
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />
 
             <!-- listening -->
-            <TheNavBarListening v-if="!inSavedDumpsWindow" />
+            <NavBarListening v-if="!inSavedDumpsWindow" />
         </div>
     </div>
 </template>

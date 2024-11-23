@@ -16,14 +16,14 @@ const value = computed(() => {
 });
 
 function countNodes(obj: any): number {
-    if (typeof obj !== 'object' || obj === null) return 0;
+    if (typeof obj !== "object" || obj === null) return 0;
 
     let count = 0;
     const stack = [obj];
 
     while (stack.length) {
         const node = stack.pop();
-        if (typeof node === 'object' && node !== null) {
+        if (typeof node === "object" && node !== null) {
             count++;
             for (const key in node) {
                 if (Object.prototype.hasOwnProperty.call(node, key)) {
@@ -58,9 +58,9 @@ const shouldCollapse = computed(() => countNodes(value.value) >= 4);
     background-color: transparent !important;
 }
 .vjs-node-index {
-    @apply text-base-content/40
+    @apply text-base-content/40;
 }
 .vjs-carets {
-    @apply text-base-content/70 top-[6px] cursor-pointer right-[2px] absolute
+    @apply text-base-content/70 top-[6px] cursor-pointer right-[2px] absolute;
 }
 </style>
