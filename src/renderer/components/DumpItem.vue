@@ -117,14 +117,14 @@ const badgeClasses = computed(() => {
     const { label, color } = props.payload;
 
     const baseClass =
-        "badge text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto";
+        "badge font-medium text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto";
 
     const dynamicClass = {
-        '!bg-error text-error-content': ['error', 'emergency'].includes(label) || color === 'red',
-        '!bg-info text-info-content': label === 'info' || color === 'blue',
-        '!bg-warning text-warning-content': label === 'warning' || color === 'orange',
-        '!bg-gray-400 text-warning-content': label === 'debug',
-        '!bg-success text-success-content': color === 'green',
+        '!bg-error !text-error-content': ['error', 'emergency'].includes(label) || color === 'red',
+        '!bg-info !text-info-content': label === 'info' || color === 'blue',
+        '!bg-warning !text-warning-content': label === 'warning' || color === 'orange',
+        '!bg-gray-400! text-warning-content': label === 'debug',
+        '!bg-success !text-success-content': color === 'green',
         '!bg-black': color === 'black',
     };
 
