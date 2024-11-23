@@ -2,7 +2,7 @@
     <div class="absolute top-[2.8rem] bg-base-100 space-y-1 px-4 pb-3 z-100 h-auto w-full">
         <div
             v-if="timeStore.groups.length > 0"
-            class=" justify-between items-center gap-4 text-base-content"
+            class="justify-between items-center gap-4 text-base-content"
         >
             <div class="flex justify-between">
                 <div class="flex w-full items-center">

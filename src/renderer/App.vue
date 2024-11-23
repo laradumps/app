@@ -165,7 +165,7 @@ onMounted(() => {
 
     window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
 
-    window.ipcRenderer.send("local-shortcut:get")
+    window.ipcRenderer.send("local-shortcut:get");
 
     window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
         localShortcutList.value = arg;
@@ -592,9 +592,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     if (interval.value == null) {
         if (content.type === "queries" || content.type === "livewire") {
-            interval.value = setInterval(() =>
-                setTimeout(() => toggleScreen(content.screen.screen_name), 50)
-                , 700);
+            interval.value = setInterval(() => setTimeout(() => toggleScreen(content.screen.screen_name), 50), 700);
         } else {
             setTimeout(() => toggleScreen(content.screen.screen_name), 50);
         }
@@ -602,6 +600,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
 
+    console.log(payload);
     if (content.screen.new_window) {
         screenStore.hidden(content.screen.screen_name);
 
