@@ -113,6 +113,29 @@ const isDuplicated = (sql) => {
     return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
 };
 
+const badgeClasses = computed(() => {
+    const { label, color } = props.payload;
+
+    const baseClass =
+        "badge text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto";
+
+    const dynamicClass = {
+        '!bg-error text-error-content': ['error', 'emergency'].includes(label) || color === 'red',
+        '!bg-info text-info-content': label === 'info' || color === 'blue',
+        '!bg-warning text-warning-content': label === 'warning' || color === 'orange',
+        '!bg-gray-400 text-warning-content': label === 'debug',
+        '!bg-success text-success-content': color === 'green',
+        '!bg-black': color === 'black',
+    };
+
+    const additionalClasses = Object.entries(dynamicClass)
+        .filter(([_, condition]) => condition)
+        .map(([className]) => className)
+        .join(' ');
+
+    return `${baseClass} ${additionalClasses}`;
+});
+
 watch(collapseStore, (value) => {
     open.value = value.open;
 });
@@ -180,8 +203,7 @@ watch(collapseStore, (value) => {
 
                         <div
                             v-if="props.payload.type !== `queries`"
-                            class="badge text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto"
-                        >
+                            :class="badgeClasses">
                             {{ props.payload.label ?? props.payload.type }}
                         </div>
 
