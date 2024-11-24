@@ -120,7 +120,7 @@ const evaluateExpression = () => {
         sendCommand(`eval -i ${id} -- ${btoa(evaluate.value)}`);
 
         setTimeout(() => modal_property_get.showModal(), 200);
-    }, 200);
+    }, 300);
 };
 
 const source = (filePath) => {
@@ -143,7 +143,7 @@ const handlePropertyContextClick = (type, variable) => {
     selectedVariableName.value = variable;
     variablesInLeftMenu.value = true;
     propertyGet(variable);
-    // setTimeout(() => modal_property_get.showModal(), 100);
+    setTimeout(() => modal_property_get.showModal(), 100);
 };
 
 const handleContextGet = (responseElement) => {

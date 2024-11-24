@@ -86,7 +86,6 @@ const parseResponse = (xml) => {
                 childrenArray.shift();
             }
 
-            console.log(childrenArray);
             return childrenArray;
         }
     }

@@ -405,16 +405,17 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
         }
     ];
 
-    // Enables copy to clipboard in macOS
     if (process.platform === "darwin") {
         menuTemplate.splice(1, 0, {
             label: "Edit",
             submenu: [
-                {
-                    label: "Copy",
-                    accelerator: "CmdOrCtrl+C",
-                    selector: "copy:"
-                }
+                { label: "Undo", role: "undo" },
+                { label: "Redo", role: "redo" },
+                { type: "separator" },
+                { label: "Cut", role: "cut" },
+                { label: "Copy", role: "copy" },
+                { label: "Paste", role: "paste" },
+                { label: "Select All", role: "selectAll" }
             ]
         });
     }
