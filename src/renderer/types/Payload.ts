@@ -31,10 +31,6 @@ export interface TimeTrackPayload {
     elapsed_time?: string;
 }
 
-export interface LabelPayload {
-    label: string;
-}
-
 export interface TableV2Payload {
     values: string[];
     headerStyle: string[];
@@ -124,9 +120,9 @@ export interface Payload {
     time_track?: TimeTrackPayload;
     html?: string;
     mail: MailPayload;
-    label?: LabelPayload;
+    label?: string;
     table_v2?: TableV2Payload;
-    color?: ColorPayload;
+    color?: string;
     json?: JSONPayload;
     contains?: ContainsPayload;
     validate?: ValidatePayload;
