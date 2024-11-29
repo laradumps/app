@@ -34,7 +34,6 @@ const generateLink = (ide: string) => {
 
     const linkPath = projectPath + relativePath;
 
-    console.log(realPath);
     if (realPath != null) {
         if (IDEHandler.value.includes("wsl_config")) {
             if (wsl_config != undefined) {

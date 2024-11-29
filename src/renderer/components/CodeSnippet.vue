@@ -7,11 +7,13 @@ import { useAppearanceStore } from "@/store/appearance";
 
 const appearanceStore = useAppearanceStore();
 
+const containerSize = ref(0);
+const activeFileIndex = ref(0);
+
 const props = defineProps<{
     payload: Payload;
 }>();
 
-const activeFileIndex = ref(0);
 const totalFiles = computed(() => props.payload.code_snippet.length);
 
 const toggleFileVisibility = (index: number) => {
@@ -21,9 +23,12 @@ const toggleFileVisibility = (index: number) => {
 const navigateFiles = (direction: "next" | "prev") => {
     if (direction === "next") {
         activeFileIndex.value = (activeFileIndex.value + 1) % totalFiles.value;
-    } else if (direction === "prev") {
-        activeFileIndex.value =
-            (activeFileIndex.value - 1 + totalFiles.value) % totalFiles.value;
+
+        return;
+    }
+
+    if (direction === "prev") {
+        activeFileIndex.value = (activeFileIndex.value - 1 + totalFiles.value) % totalFiles.value;
     }
 };
 
@@ -55,7 +60,6 @@ const getLineContent = (lineContent: string) => {
     return hljs.highlight(lineContent, { language: "php" }).value;
 };
 
-const containerSize = ref(0);
 const observeContainer = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
