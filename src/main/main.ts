@@ -45,7 +45,7 @@ function createWindow(): BrowserWindow {
     const browserWindowOptions: BrowserWindowConstructorOptions = {
         fullscreen: false,
         fullscreenable: false,
-        width: isDev ? 1080 : 650,
+        width: isDev ? 1080 : 690,
         height: 640,
         resizable: true,
         alwaysOnTop: false,
@@ -64,7 +64,8 @@ function createWindow(): BrowserWindow {
     }
 
     if (isMac) {
-        browserWindowOptions.titleBarStyle = "hidden";
+        browserWindowOptions.titleBarStyle = "hiddenInset";
+        browserWindowOptions.trafficLightPosition = { x: 12, y: 11 };
     }
 
     const win: BrowserWindow = new BrowserWindow(browserWindowOptions);
