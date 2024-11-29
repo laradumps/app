@@ -178,7 +178,7 @@ ipcMain.on("send-screen-window-update", (event, args) => {
 
 ipcMain.on("screen-window:show", (event, arg) => {
     let screenWindow: BrowserWindow;
-    let screenExist = windowsMap.has(arg.screen);
+    const screenExist = windowsMap.has(arg.screen);
 
     if (!screenExist) {
         screenWindow = createScreenWindow(mainWindow, arg.screen);
@@ -362,8 +362,29 @@ ipcMain.on("main:open-custom-window", (event, link) => {
                     window.shell.openExternal(target.href);
                 }
             });
+
+            window.addEventListener('contextmenu', (e) => {
+              e.preventDefault()
+              window.ipcRenderer.send('mail-preview::show-context-menu')
+            })
         `);
     });
+});
+
+ipcMain.on("mail-preview::show-context-menu", (event) => {
+    const template = [
+        {
+            label: "Inspect",
+            click: () => {
+                const win = BrowserWindow.fromWebContents(event.sender);
+                if (win) {
+                    win.webContents.openDevTools();
+                }
+            }
+        }
+    ];
+    const menu = Menu.buildFromTemplate(template);
+    menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
 });
 
 ipcMain.on("main:create-static-tmp-file", (event, value) => {
