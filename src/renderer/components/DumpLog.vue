@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted } from "vue";
+import { computed, defineProps, onMounted, ref } from "vue";
 
 import { Payload } from "@/types/Payload";
 import CodeSnippet from "@/components/CodeSnippet.vue";
@@ -7,6 +7,12 @@ import CodeSnippet from "@/components/CodeSnippet.vue";
 const props = defineProps<{
     payload: Payload;
 }>();
+
+const showCompletedMessage = ref(false);
+
+const toggleCompletedMessage = computed(() => {
+    showCompletedMessage.value = !showCompletedMessage.value;
+});
 
 onMounted(() => {
     if (typeof props.payload.code_snippet == "undefined") {
@@ -22,9 +28,19 @@ onMounted(() => {
         id="log"
         class="space-y-2"
     >
-        <article class="prose my-3 mb-6">
-            <h4 class="text-sm">{{ props.payload.log_application?.message }}</h4>
-        </article>
+        <div
+            @dblclick="toggleCompletedMessage"
+            title="Double click to expand"
+            class="prose my-3 mb-6 tracking-wide"
+        >
+            <h2 :class="{
+                'max-h-[400px] overflow-auto': showCompletedMessage,
+                'line-clamp-5': !showCompletedMessage,
+                'text-sm font-semibold break-all': true
+            }">
+                {{ props.payload.log_application?.message }}
+            </h2>
+        </div>
 
         <div
             v-if="typeof props.payload.code_snippet == 'undefined'"

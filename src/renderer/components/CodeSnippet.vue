@@ -1,21 +1,54 @@
 <script setup lang="ts">
-import { computed, defineProps, ref } from "vue";
+import { computed, defineProps, onMounted, onUnmounted, ref } from "vue";
 import { Payload } from "@/types/Payload";
 import hljs from "highlight.js/lib/core";
 import DumpLink from "@/components/DumpLink.vue";
+import { useAppearanceStore } from "@/store/appearance";
+
+const appearanceStore = useAppearanceStore();
 
 const props = defineProps<{
     payload: Payload;
 }>();
 
 const activeFileIndex = ref(0);
+const totalFiles = computed(() => props.payload.code_snippet.length);
 
 const toggleFileVisibility = (index: number) => {
     activeFileIndex.value = activeFileIndex.value === index ? null : index;
 };
 
+const navigateFiles = (direction: "next" | "prev") => {
+    if (direction === "next") {
+        activeFileIndex.value = (activeFileIndex.value + 1) % totalFiles.value;
+    } else if (direction === "prev") {
+        activeFileIndex.value =
+            (activeFileIndex.value - 1 + totalFiles.value) % totalFiles.value;
+    }
+};
+
+const handleKeydown = (event: KeyboardEvent) => {
+    if (event.key === "ArrowRight") {
+        navigateFiles("next");
+
+        return;
+    }
+
+    if (event.key === "ArrowLeft") {
+        navigateFiles("prev");
+    }
+};
+
+onMounted(() => {
+    window.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", handleKeydown);
+});
+
 const getFileLineDisplay = (codeSnippet: any) => {
-    return `${codeSnippet.route} ${codeSnippet.line}`;
+    return codeSnippet.route;
 };
 
 const getLineContent = (lineContent: string) => {
@@ -46,8 +79,8 @@ observeContainer("dumps-base");
         :key="index"
     >
         <div
-            :class="{ 'font-semibold': activeFileIndex === index }"
-            class="text-base-content/80 !font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
+            :class="{ '!font-semibold': activeFileIndex === index }"
+            class="text-base-content tracking-wide !font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
             @click="toggleFileVisibility(index)"
         >
             {{ getFileLineDisplay(codeSnippet) }}
@@ -59,14 +92,14 @@ observeContainer("dumps-base");
 
         <div
             v-if="activeFileIndex === index"
-            class="code-snippet rounded-md scrollable mt-2"
+            :class="{ ['theme-' + appearanceStore.value] : true, 'code-snippet rounded-md scrollable mt-2' : true }"
             :style="{ maxWidth: containerWidth }"
         >
             <div
                 :id="`current-snippet-${index}`"
                 v-for="(lineContent, lineNumber) in codeSnippet.snippet"
                 :key="`${lineNumber}-code`"
-                :class="{ 'bg-red-500/40 shadow-lg font-semibold': parseInt(lineNumber) === codeSnippet.line }"
+                :class="{'bg-red-500/20 shadow-lg font-semibold': parseInt(lineNumber) === codeSnippet.line }"
                 class="flex items-center tracking-widest leading-6 hover:!bg-red-500/20 px-2 group/line"
             >
                 <DumpLink
@@ -91,13 +124,14 @@ observeContainer("dumps-base");
         </div>
     </div>
 </template>
+
 <style>
 .code-snippet {
-    @apply bg-base-300;
+    @apply bg-base-300 border border-base-content/20;
 }
 
 [data-theme="light"] .code-snippet {
-    @apply !bg-white border;
+    @apply !bg-white border border-base-content/10;
 }
 
 .scrollable {
@@ -159,7 +193,7 @@ observeContainer("dumps-base");
     color: #d19a66 !important;
 }
 
-.hljs-bullet,
+[data-theme="dark"] .hljs-bullet,
 .hljs-link,
 .hljs-meta,
 .hljs-selector-id,
@@ -175,11 +209,11 @@ observeContainer("dumps-base");
 }
 
 .hljs-emphasis {
-    font-style: italic !important;
+    font-style: italic;
 }
 
 .hljs-strong {
-    font-weight: 700 !important;
+    font-weight: 700;
 }
 
 .hljs-link {
