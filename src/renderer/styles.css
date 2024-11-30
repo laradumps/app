@@ -65,3 +65,11 @@ body {
 [data-theme="laravel"] .bg-laravel {
     @apply bg-neutral;
 }
+
+.traceable {
+    @apply text-sm tracking-wider;
+}
+
+.line-number {
+    @apply inline-block w-[40px] select-none text-base-content;
+}

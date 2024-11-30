@@ -1,4 +1,4 @@
-import IdeHandle from "@/types/IdeHandle";
+import { IdeHandle } from "@/types/IdeHandle";
 
 export interface QueriesPayload {
     connectionName: string;
@@ -84,6 +84,11 @@ export interface ScreenPayload {
     new_window: boolean;
 }
 
+export interface CodeSnippet {
+    file: string;
+    line: number;
+    snippet: Record<string, string>;
+}
 export interface Meta {
     auto_invoke_app: string;
     laradumps_version: string;
@@ -133,4 +138,5 @@ export interface Payload {
     log_application?: LogApplicationPayload;
     screen?: ScreenPayload;
     meta: Meta;
+    code_snippet: CodeSnippet[];
 }

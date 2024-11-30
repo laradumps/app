@@ -34,7 +34,7 @@ const clear = () => {
 </script>
 
 <template>
-    <div class="flex justify-between items-center px-2 my-1.5 text-center z-100">
+    <div class="flex justify-between items-center pb-0.5 px-2 text-center z-100">
         <div class="ml-8 w-full select-none nav-bar">&nbsp;</div>
 
         <div class="flex gap-1 items-center mt-0.5">

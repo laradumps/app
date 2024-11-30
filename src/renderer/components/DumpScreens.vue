@@ -1,5 +1,5 @@
 <template>
-    <div class="flex mb-2">
+    <div class="flex mb-1">
         <div
             class="select-none gap-1 flex py-1"
             v-for="(screen, index) in screenStore.allVisible()"
