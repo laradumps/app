@@ -39,7 +39,6 @@ const generateLink = (ide: string) => {
             if (wsl_config != undefined) {
                 link.value = ide.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 
-                console.log(link.value);
                 return;
             }
 
