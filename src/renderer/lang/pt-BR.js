@@ -12,13 +12,14 @@ export default {
         install_laradumps_globally: "Instale o LaraDumps globalmente",
         run: "run",
         run_global_laradumps_install: "Execute global-laradumps install",
-        select_your_preferred_theme: "Select your preferred theme",
-        change_your_ide_at_runtime: "Change your IDE at runtime",
-        install_laravel: "Install on Laravel"
-    },
-    footer: {
-        support_laradumps: "Dê uma estrela",
-        star_out_repository: "no repositório do LaraDumps"
+        select_your_preferred_theme: "Selecione seu tema preferido",
+        change_your_ide_at_runtime: "Mude de IDE em tempo de execução",
+        install_laravel: "Instale no Laravel",
+        tips: "Dicas",
+        support: "Apoie o LaraDumps!",
+        buy_me_a_coffee: "Pague um café",
+        give_us_start: "Dê estrelas no repositório",
+        contribute_code: "Contribua com código e ajude-nos a crescer"
     },
     menu: {
         clear: "Limpar",
