@@ -49,7 +49,7 @@ const tips = ref([
             <li><span>Menu -> IDE</span></li>
             <li><span>PHPStorm, vs code, vs code remote ...</span></li>
         </div>
-    </div>`,
+    </div>`
 ]);
 
 const currentTip = computed(() => tips.value[currentIndex.value]);

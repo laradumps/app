@@ -33,11 +33,13 @@ onMounted(() => {
             title="Double click to expand"
             class="prose my-3 mb-6 tracking-wide"
         >
-            <h2 :class="{
-                'max-h-[400px] overflow-auto': showCompletedMessage,
-                'line-clamp-5': !showCompletedMessage,
-                'text-sm font-semibold break-all': true
-            }">
+            <h2
+                :class="{
+                    'max-h-[400px] overflow-auto': showCompletedMessage,
+                    'line-clamp-5': !showCompletedMessage,
+                    'text-sm font-semibold break-all': true
+                }"
+            >
                 {{ props.payload.log_application?.message }}
             </h2>
         </div>

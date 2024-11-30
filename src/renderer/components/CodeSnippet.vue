@@ -69,8 +69,8 @@ const getIdeHandleFromStack = (codeSnippet: CodeSnippet, lineNumber: string): Id
         class_name: props.payload.ide_handle.class_name,
         separator: props.payload.ide_handle.separator,
         wsl_config: props.payload.ide_handle.wsl_config
-    }
-}
+    };
+};
 
 const observeContainer = (id: string) => {
     const element = document.getElementById(id);
@@ -99,7 +99,10 @@ observeContainer("dumps-base");
             class="text-base-content tracking-wide !font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
             @click="toggleFileVisibility(index)"
         >
-            <IconArrowLight v-if="activeFileIndex === index" class="size-4"/>
+            <IconArrowLight
+                v-if="activeFileIndex === index"
+                class="size-4"
+            />
             {{ getFileLineDisplay(codeSnippet) }}
         </div>
 
@@ -112,7 +115,7 @@ observeContainer("dumps-base");
                 :id="`current-snippet-${index}`"
                 v-for="(lineContent, lineNumber) in codeSnippet.snippet"
                 :key="`${lineNumber}-code`"
-                :class="{'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === codeSnippet.line }"
+                :class="{ 'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === codeSnippet.line }"
                 class="flex items-center tracking-widest leading-6 hover:!bg-red-500/20 px-2 group/line"
             >
                 <DumpLink
@@ -158,13 +161,13 @@ observeContainer("dumps-base");
 
 .hljs-comment,
 .hljs-quote {
-    @apply !text-[#5c6370] italic
+    @apply !text-[#5c6370] italic;
 }
 
 .hljs-doctag,
 .hljs-formula,
 .hljs-keyword {
-    @apply !text-[#c678dd]
+    @apply !text-[#c678dd];
 }
 
 .hljs-deletion,
@@ -172,11 +175,11 @@ observeContainer("dumps-base");
 .hljs-section,
 .hljs-selector-tag,
 .hljs-subst {
-    @apply !text-[#e06c75]
+    @apply !text-[#e06c75];
 }
 
 .hljs-literal {
-    @apply !text-[#56b6c2]
+    @apply !text-[#56b6c2];
 }
 
 .hljs-addition,
@@ -185,7 +188,7 @@ observeContainer("dumps-base");
 .hljs-regexp,
 .hljs-meta,
 .hljs-string {
-    @apply !text-[#98c379]
+    @apply !text-[#98c379];
 }
 .hljs-attr,
 .hljs-number,
@@ -204,7 +207,7 @@ observeContainer("dumps-base");
 .hljs-selector-id,
 .hljs-symbol,
 .hljs-title {
-    @apply text-blue-400  !important;;
+    @apply text-blue-400  !important;
 }
 
 .hljs-built_in,
@@ -218,7 +221,7 @@ observeContainer("dumps-base");
 }
 
 .hljs-strong {
-    @apply font-semibold
+    @apply font-semibold;
 }
 
 .hljs-link {
