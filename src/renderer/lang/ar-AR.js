@@ -14,11 +14,12 @@ export default {
         run_global_laradumps_install: "تشغيل سكريبت laradumps-install",
         select_your_preferred_theme: "اختر الثيم المفضل لديك",
         change_your_ide_at_runtime: "قم بتغيير IDE الخاص بك أثناء التشغيل",
-        install_laravel: "تثبيت مع Laravel"
-    },
-    footer: {
-        support_laradumps: "ادعم LaraDumps",
-        star_out_repository: "ضع نجمة على Repository الخاصة بنا"
+        install_laravel: "تثبيت مع Laravel",
+        tips: "Tips",
+        support: "Support LaraDumps!",
+        buy_me_a_coffee: "Buy me a coffee",
+        give_us_start: "Give us stars",
+        contribute_code: "Contribute code and help us grow"
     },
     menu: {
         clear: "مسح",
