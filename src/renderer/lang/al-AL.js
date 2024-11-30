@@ -14,11 +14,12 @@ export default {
         run_global_laradumps_install: "Ekzekuto instalimin global të LaraDumps",
         select_your_preferred_theme: "Select your preferred theme",
         change_your_ide_at_runtime: "Change your IDE at runtime",
-        install_laravel: "Install on Laravel"
-    },
-    footer: {
-        support_laradumps: "Mbështet LaraDumps",
-        star_out_repository: "Jep një yll repozitorit tonë"
+        install_laravel: "Install on Laravel",
+        tips: "Tips",
+        support: "Support LaraDumps!",
+        buy_me_a_coffee: "Buy me a coffee",
+        give_us_start: "Give us stars",
+        contribute_code: "Contribute code and help us grow"
     },
     menu: {
         clear: "Pastro",

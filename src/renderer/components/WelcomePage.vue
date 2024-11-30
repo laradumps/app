@@ -27,7 +27,7 @@ const props = defineProps({
                         :key="shortcut.alias"
                         class="font-light rounded-md p-1 px-2 text-xs"
                         ><span class="font-normal">{{ $t(shortcut.label) }}</span
-                        >: <span class="badge-accent badge">{{ shortcut.originalValue }}</span></span
+                        >: <span class="bg-base-300 badge">{{ shortcut.originalValue }}</span></span
                     >
                 </div>
             </div>
