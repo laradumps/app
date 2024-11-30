@@ -43,7 +43,7 @@ onMounted(() => {
         </div>
 
         <div
-            v-if="typeof props.payload.code_snippet == 'undefined'"
+            v-if="Object.values(props.payload.code_snippet).length === 0"
             v-html="props.payload.log_application?.context[0]"
         ></div>
 

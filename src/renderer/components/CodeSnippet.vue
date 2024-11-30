@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, defineProps, onMounted, onUnmounted, ref } from "vue";
-import { Payload } from "@/types/Payload";
+import { CodeSnippet, Payload } from "@/types/Payload";
 import hljs from "highlight.js/lib/core";
 import DumpLink from "@/components/DumpLink.vue";
 import { useAppearanceStore } from "@/store/appearance";
-
-const appearanceStore = useAppearanceStore();
+import { IdeHandle } from "@/types/IdeHandle";
+import IconArrowLight from "@/components/Icons/IconArrowLight.vue";
 
 const containerSize = ref(0);
 const activeFileIndex = ref(0);
@@ -13,6 +13,14 @@ const activeFileIndex = ref(0);
 const props = defineProps<{
     payload: Payload;
 }>();
+
+onMounted(() => {
+    window.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", handleKeydown);
+});
 
 const totalFiles = computed(() => props.payload.code_snippet.length);
 
@@ -44,14 +52,6 @@ const handleKeydown = (event: KeyboardEvent) => {
     }
 };
 
-onMounted(() => {
-    window.addEventListener("keydown", handleKeydown);
-});
-
-onUnmounted(() => {
-    window.removeEventListener("keydown", handleKeydown);
-});
-
 const getFileLineDisplay = (codeSnippet: any) => {
     return codeSnippet.route;
 };
@@ -59,6 +59,18 @@ const getFileLineDisplay = (codeSnippet: any) => {
 const getLineContent = (lineContent: string) => {
     return hljs.highlight(lineContent, { language: "php" }).value;
 };
+
+const getIdeHandleFromStack = (codeSnippet: CodeSnippet, lineNumber: string): IdeHandle => {
+    return {
+        workdir: props.payload.ide_handle.workdir,
+        project_path: props.payload.ide_handle.project_path,
+        real_path: codeSnippet.file,
+        line: lineNumber,
+        class_name: props.payload.ide_handle.class_name,
+        separator: props.payload.ide_handle.separator,
+        wsl_config: props.payload.ide_handle.wsl_config
+    }
+}
 
 const observeContainer = (id: string) => {
     const element = document.getElementById(id);
@@ -87,38 +99,27 @@ observeContainer("dumps-base");
             class="text-base-content tracking-wide !font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
             @click="toggleFileVisibility(index)"
         >
+            <IconArrowLight v-if="activeFileIndex === index" class="size-4"/>
             {{ getFileLineDisplay(codeSnippet) }}
-            <span
-                v-if="activeFileIndex === index"
-                class="rounded-full size-[0.50rem] bg-success"
-            ></span>
         </div>
 
         <div
             v-if="activeFileIndex === index"
-            :class="{ ['theme-' + appearanceStore.value] : true, 'code-snippet rounded-md scrollable mt-2' : true }"
+            class="code-snippet rounded-md scrollable mt-2"
             :style="{ maxWidth: containerWidth }"
         >
             <div
                 :id="`current-snippet-${index}`"
                 v-for="(lineContent, lineNumber) in codeSnippet.snippet"
                 :key="`${lineNumber}-code`"
-                :class="{'bg-red-500/20 shadow-lg font-semibold': parseInt(lineNumber) === codeSnippet.line }"
+                :class="{'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === codeSnippet.line }"
                 class="flex items-center tracking-widest leading-6 hover:!bg-red-500/20 px-2 group/line"
             >
                 <DumpLink
                     class="font-normal h-full text-base-content text-[11px]"
                     :label="lineNumber"
                     :show-icon="true"
-                    :ide-handler="{
-                        workdir: payload.ide_handle.workdir,
-                        project_path: payload.ide_handle.project_path,
-                        real_path: codeSnippet.file,
-                        line: lineNumber,
-                        class_name: payload.ide_handle.class_name,
-                        separator: payload.ide_handle.separator,
-                        wsl_config: payload.ide_handle.wsl_config
-                    }"
+                    :ide-handler="getIdeHandleFromStack(codeSnippet, lineNumber)"
                 />
                 <span
                     class="language-php py-1.5 highlight whitespace-pre hljs h-full text-xs text-primary font-normal"
@@ -152,19 +153,18 @@ observeContainer("dumps-base");
 
 .hljs,
 .hljs-params {
-    color: #abb2bf !important;
+    @apply !text-base-content/80;
 }
 
 .hljs-comment,
 .hljs-quote {
-    color: #5c6370 !important;
-    font-style: italic !important;
+    @apply !text-[#5c6370] italic
 }
 
 .hljs-doctag,
 .hljs-formula,
 .hljs-keyword {
-    color: #c678dd !important;
+    @apply !text-[#c678dd]
 }
 
 .hljs-deletion,
@@ -172,19 +172,20 @@ observeContainer("dumps-base");
 .hljs-section,
 .hljs-selector-tag,
 .hljs-subst {
-    color: #e06c75 !important;
+    @apply !text-[#e06c75]
 }
 
 .hljs-literal {
-    color: #56b6c2 !important;
+    @apply !text-[#56b6c2]
 }
 
 .hljs-addition,
 .hljs-attribute,
 .hljs-meta .hljs-string,
 .hljs-regexp,
+.hljs-meta,
 .hljs-string {
-    color: #98c379 !important;
+    @apply !text-[#98c379]
 }
 .hljs-attr,
 .hljs-number,
@@ -194,33 +195,33 @@ observeContainer("dumps-base");
 .hljs-template-variable,
 .hljs-type,
 .hljs-variable {
-    color: #d19a66 !important;
+    @apply text-rose-400  !important;
 }
 
-[data-theme="dark"] .hljs-bullet,
+.hljs-bullet,
 .hljs-link,
 .hljs-meta,
 .hljs-selector-id,
 .hljs-symbol,
 .hljs-title {
-    color: #61aeee !important;
+    @apply text-blue-400  !important;;
 }
 
 .hljs-built_in,
-.hljs-class .hljs-title,
+.hljs-class,
 .hljs-title.class_ {
-    color: #e6c07b !important;
+    @apply text-orange-400  !important;
 }
 
 .hljs-emphasis {
-    font-style: italic;
+    @apply italic;
 }
 
 .hljs-strong {
-    font-weight: 700;
+    @apply font-semibold
 }
 
 .hljs-link {
-    text-decoration: underline;
+    @apply underline;
 }
 </style>
