@@ -34,13 +34,11 @@ const generateLink = (ide: string) => {
 
     const linkPath = projectPath + relativePath;
 
-    console.log(realPath);
     if (realPath != null) {
         if (IDEHandler.value.includes("wsl_config")) {
             if (wsl_config != undefined) {
                 link.value = ide.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 
-                console.log(link.value);
                 return;
             }
 
@@ -96,7 +94,7 @@ const label = computed(() => {
             <div class="break-all h-[32px] tracking-wider hover:opacity-75 flex items-center">
                 <span
                     class="whitespace-nowrap"
-                    :class="{ '!text-gray-400': props.label }"
+                    :class="{ '!text-base-content/70 font-semibold': props.label }"
                     >{{ label }}</span
                 >
                 <a

@@ -46,7 +46,7 @@ const isOrange = computed(() => ({
         class="space-x-2 flex justify-end items-center border-r border-base-content/50 pr-5 mr-5"
         v-if="screenStore.screen !== 'Queries' && hasColor"
     >
-        <div class="h-full flex gap-3 px-2">
+        <div class="h-full flex gap-2 px-2">
             <button
                 :class="isDark"
                 @click="selectedColors.add('black')"
@@ -67,7 +67,7 @@ const isOrange = computed(() => ({
                 :class="isOrange"
                 @click="selectedColors.add('orange')"
                 type="button"
-                class="p-1.5 badge badge-xs bg-warning/50  hover:bg-warning"
+                class="p-1.5 badge badge-xs bg-warning/50 hover:bg-warning"
             ></button>
 
             <button

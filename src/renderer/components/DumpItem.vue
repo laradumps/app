@@ -116,22 +116,21 @@ const isDuplicated = (sql) => {
 const badgeClasses = computed(() => {
     const { label, color } = props.payload;
 
-    const baseClass =
-        "badge font-medium text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto";
+    const baseClass = "badge font-medium text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto";
 
     const dynamicClass = {
-        '!bg-error !text-error-content': ['error', 'emergency'].includes(label) || color === 'red',
-        '!bg-info !text-info-content': label === 'info' || color === 'blue',
-        '!bg-warning !text-warning-content': label === 'warning' || color === 'orange',
-        '!bg-gray-400! text-warning-content': label === 'debug',
-        '!bg-success !text-success-content': color === 'green',
-        '!bg-black': color === 'black',
+        "!bg-error !text-error-content": ["error", "emergency"].includes(label) || color === "red",
+        "!bg-info !text-info-content": label === "info" || color === "blue",
+        "!bg-warning !text-warning-content": label === "warning" || color === "orange",
+        "!bg-gray-400! text-warning-content": label === "debug",
+        "!bg-success !text-success-content": color === "green",
+        "!bg-black": color === "black"
     };
 
     const additionalClasses = Object.entries(dynamicClass)
         .filter(([_, condition]) => condition)
         .map(([className]) => className)
-        .join(' ');
+        .join(" ");
 
     return `${baseClass} ${additionalClasses}`;
 });
@@ -149,6 +148,7 @@ watch(collapseStore, (value) => {
                     [bgColor]: typeof bgColor !== 'undefined',
                     'collapse-open': open
                 }"
+                id=""
                 class="collapse bg-base-200/70 bg-laravel border border-base-content/5"
             >
                 <div
@@ -203,7 +203,8 @@ watch(collapseStore, (value) => {
 
                         <div
                             v-if="props.payload.type !== `queries`"
-                            :class="badgeClasses">
+                            :class="badgeClasses"
+                        >
                             {{ props.payload.label ?? props.payload.type }}
                         </div>
 

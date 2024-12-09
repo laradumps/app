@@ -15,13 +15,13 @@ export default {
         select_your_preferred_theme: "اختر الثيم المفضل لديك",
         change_your_ide_at_runtime: "قم بتغيير IDE الخاص بك أثناء التشغيل",
         install_laravel: "تثبيت مع Laravel",
-        in_any_project_toggle: "In any project, toggle",
+        tips: "Tips",
+        support: "Support LaraDumps!",
+        buy_me_a_coffee: "Buy me a coffee",
+        give_us_start: "Give us stars",
+        contribute_code: "Contribute code and help us grow",
         install_php_extension: "Install PHP extension",
         in_any_line_of_code: "in any line of code"
-    },
-    footer: {
-        support_laradumps: "ادعم LaraDumps",
-        star_out_repository: "ضع نجمة على Repository الخاصة بنا"
     },
     menu: {
         clear: "مسح",

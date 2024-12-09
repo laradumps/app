@@ -14,11 +14,12 @@ export default {
         run_global_laradumps_install: "global-laradumps install komutunu çalıştırın",
         select_your_preferred_theme: "Tercih ettiğiniz temayı seçin",
         change_your_ide_at_runtime: "Çalışma zamanında IDE'nizi değiştirin",
-        install_laravel: "Laravel'e yükleyin"
-    },
-    footer: {
-        support_laradumps: "LaraDumps'ı Destekleyin",
-        star_out_repository: "deposunu yıldızlayın"
+        install_laravel: "Laravel'e yükleyin",
+        tips: "Tips",
+        support: "Support LaraDumps!",
+        buy_me_a_coffee: "Buy me a coffee",
+        give_us_start: "Give us stars",
+        contribute_code: "Contribute code and help us grow"
     },
     menu: {
         clear: "Temizle",

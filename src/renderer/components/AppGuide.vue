@@ -21,6 +21,13 @@ const tips = ref([
     </div>`,
 
     `<div class="space-y-3 text-base-content">
+        <div class="font-semibold !text-base">${i18n.t("doc.support")}</div>
+        <div>⭐️ ${i18n.t("doc.give_us_start")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/app')" class="text-blue-500 text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</span></div>
+        <div>🥷🏻 ${i18n.t("doc.contribute_code")}</div>
+        <div>❤️ <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/sponsors/luanfreitasdev')" class="text-blue-500 text-sm underline cursor-pointer">${i18n.t("doc.buy_me_a_coffee")}</span></div>
+    </div>`,
+
+    `<div class="space-y-3 text-base-content">
         <div class="font-semibold text-base">Xdebug step debugging</div>
         <li>${i18n.t("doc.install_php_extension")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-blue-500 underline cursor-pointer ml-1">download</span></li>
         <li>${i18n.t("doc.in_any_project_toggle")} <strong>xdebug</strong></li>
@@ -35,40 +42,20 @@ const tips = ref([
             <li>${i18n.t("doc.available")}: <span class="italic font-light">${i18n.t("doc.shortcuts_list")}</span></li>
         </div>
     </div>`,
-    `<div>
-        <div class="space-y-3 text-base-content">
-            <div class="font-semibold text-base">${i18n.t("doc.install_laradumps_globally")}</div>
-            <li>
-                <code class="bg-base-300 p-1 rounded">composer global require laradumps/global-laradumps</code>
-            </li>
-            <li>${i18n.t("doc.run")} <code class="bg-base-300 p-1 rounded">global-laradumps install</code></li>
-        </div>
-    </div>`,
+
     `<div>
         <div class="space-y-3 text-base-content">
             <div class="font-semibold text-base">${i18n.t("doc.select_your_preferred_theme")}</div>
-            <li>
-                <code class="bg-base-300 p-1 rounded">Menu -> Theme</code>
-            </li>
-            <li><code class="bg-base-300 p-1 rounded">light, dark, dracula, dim, laravel ...</code></li>
+            <li><span>Menu -> Theme</span></li>
+            <li><span>light, dark, dracula, dim, laravel ...</span></li>
         </div>
     </div>`,
+
     `<div>
         <div class="space-y-3 text-base-content">
             <div class="font-semibold text-base">${i18n.t("doc.change_your_ide_at_runtime")}</div>
-            <li>
-                <code class="bg-base-300 p-1 rounded">Menu -> IDE</code>
-            </li>
-            <li><code class="bg-base-300 p-1 rounded">PHPStorm, vs code, vs code remote ...</code></li>
-        </div>
-    </div>`,
-    `<div>
-        <div class="space-y-3 text-base-content">
-            <div class="font-semibold text-base">${i18n.t("doc.install_laravel")}</div>
-            <li>
-                <code class="bg-base-300 p-1 rounded">composer require laradumps/laradumps ^3.0 --dev</code>
-            </li>
-            <li>${i18n.t("doc.run")} <code class="bg-base-300 p-1 rounded">php artisan ds:init $(pwd)</code></li>
+            <li><span>Menu -> IDE</span></li>
+            <li><span>PHPStorm, vs code, vs code remote ...</span></li>
         </div>
     </div>`
 ]);
@@ -80,7 +67,7 @@ let timer;
 function startTimer() {
     timer = setInterval(() => {
         nextRandom();
-    }, 10000);
+    }, 15000);
 }
 
 function stopTimer() {
@@ -130,7 +117,7 @@ function nextRandom() {
 
 <template>
     <div>
-        <div class="carousel1 mt-6">
+        <div class="carousel1 -mt-10">
             <button
                 v-if="currentIndex > 0"
                 class="arrow left hidden group-hover:block"
@@ -139,13 +126,15 @@ function nextRandom() {
                 <ChevronLeftIcon class="w-5" />
             </button>
             <div class="content">
+                <div class="font-semibold text-lg">💡 {{ $t("doc.tips") }}</div>
+
                 <div
                     :key="currentTipKey"
-                    class="mt-3 text-sm font-normal"
+                    class="mt-8 text-xs font-normal"
                 >
                     <div
                         v-html="currentTip"
-                        class="!text-neutral"
+                        class="!text-neutral text-sm"
                     ></div>
                 </div>
             </div>

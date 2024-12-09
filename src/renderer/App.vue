@@ -626,7 +626,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
 
-    console.log(payload);
     if (content.screen.new_window) {
         screenStore.hidden(content.screen.screen_name);
 
@@ -823,6 +822,7 @@ function registerDefaultLocalShortcuts() {
                                 }"
                             >
                                 <div
+                                    id="dumps-base"
                                     class="mb-[40px] w-full"
                                     :class="{
                                         'mt-4': screenStore.screen === 'Queries',

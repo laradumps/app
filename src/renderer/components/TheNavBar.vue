@@ -45,8 +45,8 @@ window.ipcRenderer.on("xdebug-connection-status", (event, args) => {
 </script>
 
 <template>
-    <div class="flex justify-between items-center gap-3 px-2 my-1.5 text-center z-100">
-        <div class="ml-8 w-full select-none movable-container h-[38px]">&nbsp;</div>
+    <div class="flex justify-between items-center pb-0.5 px-2 text-center z-100">
+        <div class="ml-8 w-full select-none movable-container">&nbsp;</div>
 
         <div class="flex gap-2 items-center">
             <span

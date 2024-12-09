@@ -15,13 +15,13 @@ export default {
         select_your_preferred_theme: "Selecione seu thema preferido",
         change_your_ide_at_runtime: "Altere a IDE em tempo de execução",
         install_laravel: "Instalar com Laravel",
-        in_any_project_toggle: "Em qualquer projeto, alterne",
+        tips: "Dicas",
+        support: "Apoie o LaraDumps!",
+        buy_me_a_coffee: "Pague um café",
+        give_us_start: "Dê estrelas no repositório",
+        contribute_code: "Contribua com código e ajude-nos a crescer",
         install_php_extension: "Instalar a extensão PHP",
         in_any_line_of_code: "em qualquer linha de código."
-    },
-    footer: {
-        support_laradumps: "Dê uma estrela",
-        star_out_repository: "no repositório do LaraDumps"
     },
     menu: {
         clear: "Limpar",

@@ -51,7 +51,7 @@ function createWindow(): BrowserWindow {
     const browserWindowOptions: BrowserWindowConstructorOptions = {
         fullscreen: false,
         fullscreenable: false,
-        width: isDev ? 1080 : 650,
+        width: isDev ? 1080 : 690,
         height: 640,
         resizable: true,
         alwaysOnTop: false,
@@ -70,7 +70,8 @@ function createWindow(): BrowserWindow {
     }
 
     if (isMac) {
-        browserWindowOptions.titleBarStyle = "hidden";
+        browserWindowOptions.titleBarStyle = "hiddenInset";
+        browserWindowOptions.trafficLightPosition = { x: 12, y: 11 };
     }
 
     const win: BrowserWindow = new BrowserWindow(browserWindowOptions);
@@ -230,7 +231,7 @@ ipcMain.on("send-screen-window-update", (event, args) => {
 
 ipcMain.on("screen-window:show", (event, arg) => {
     let screenWindow: BrowserWindow;
-    let screenExist = windowsMap.has(arg.screen);
+    const screenExist = windowsMap.has(arg.screen);
 
     if (!screenExist) {
         screenWindow = createScreenWindow(mainWindow, arg.screen);
@@ -461,8 +462,29 @@ ipcMain.on("main:open-custom-window", (event, link) => {
                     window.shell.openExternal(target.href);
                 }
             });
+
+            window.addEventListener('contextmenu', (e) => {
+              e.preventDefault()
+              window.ipcRenderer.send('mail-preview::show-context-menu')
+            })
         `);
     });
+});
+
+ipcMain.on("mail-preview::show-context-menu", (event) => {
+    const template = [
+        {
+            label: "Inspect",
+            click: () => {
+                const win = BrowserWindow.fromWebContents(event.sender);
+                if (win) {
+                    win.webContents.openDevTools();
+                }
+            }
+        }
+    ];
+    const menu = Menu.buildFromTemplate(template);
+    menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
 });
 
 ipcMain.on("main:create-static-tmp-file", (event, value) => {

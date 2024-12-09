@@ -1,6 +1,6 @@
 {
     "name": "laradumps",
-    "version": "3.7.0",
+    "version": "3.8.0",
     "private": false,
     "description": "LaraDumps a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
@@ -44,7 +44,7 @@
         "electron-updater": "6.3.0",
         "electron-window-state": "^5.0.3",
         "eslint-config-prettier": "9.1.0",
-        "express": "^4.21.1",
+        "express": "^4.21.2",
         "floating-vue": "^5.2.2",
         "highlight.js": "^11.10.0",
         "hotkeys-js": "^3.13.7",

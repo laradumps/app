@@ -15,12 +15,13 @@ export default {
         select_your_preferred_theme: "Select your preferred theme",
         change_your_ide_at_runtime: "Change your IDE at runtime",
         install_laravel: "Install on Laravel",
+        tips: "Tips",
+        support: "Support LaraDumps!",
+        buy_me_a_coffee: "Buy me a coffee",
+        give_us_start: "Give us stars",
+        contribute_code: "Contribute code and help us grow",
         install_php_extension: "Install PHP extension",
         in_any_line_of_code: "in any line of code"
-    },
-    footer: {
-        support_laradumps: "Mbështet LaraDumps",
-        star_out_repository: "Jep një yll repozitorit tonë"
     },
     menu: {
         clear: "Pastro",
