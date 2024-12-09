@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted } from "vue";
+import { defineProps } from "vue";
 import { Payload } from "@/types/Payload";
 import VueJsonPretty from "vue-json-pretty";
 
