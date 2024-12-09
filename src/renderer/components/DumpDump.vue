@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps } from "vue";
+import { defineProps, onMounted } from "vue";
 import { Payload } from "@/types/Payload";
 import VueJsonPretty from "vue-json-pretty";
 
@@ -10,11 +10,11 @@ const props = defineProps<{
 
 <template>
     <div>
-        <div v-if="props.payload.hasOwnProperty('cols')">
+        <div v-if="payload.hasOwnProperty('cols')">
             <div class="flex gap-2 w-full">
                 <div
                     class="w-full"
-                    v-for="(content, i) in props.payload.dump?.original_content"
+                    v-for="(content, i) in payload.dump?.original_content"
                     :key="i"
                 >
                     <VueJsonPretty
@@ -27,14 +27,21 @@ const props = defineProps<{
                 </div>
             </div>
         </div>
+
         <div
-            v-else-if="!props.payload.hasOwnProperty('cols')"
-            :id="`dump-content-${props.payload.sf_dump_id}`"
-            v-show="props.payload.dump?.dump !== ''"
+            v-else-if="!payload.hasOwnProperty('cols')"
+            v-show="payload.dump?.dump !== ''"
             class="text-base-content break-all"
-            v-html="props.payload.dump?.dump === null ? 'null' : props.payload.dump.dump"
-        ></div>
+        >
+            <span
+                v-if="payload.dump?.variable_type === 'string'"
+                v-text="payload.dump.dump"
+            ></span>
+            <span
+                v-else
+                :id="`dump-content-${payload.sf_dump_id}`"
+                v-html="payload.dump?.dump === null ? 'null' : payload.dump?.dump"
+            ></span>
+        </div>
     </div>
 </template>
-
-<style scoped></style>

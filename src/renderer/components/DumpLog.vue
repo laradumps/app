@@ -32,6 +32,9 @@ onMounted(() => {
             @dblclick="toggleCompletedMessage"
             title="Double click to expand"
             class="prose my-3 mb-6 tracking-wide"
+            :class="{
+                '!my-2' : Object.values(payload.code_snippet || {}).length === 0
+            }"
         >
             <h2
                 :class="{
@@ -40,18 +43,16 @@ onMounted(() => {
                     'text-sm font-semibold break-all': true
                 }"
             >
-                {{ props.payload.log_application?.message }}
+                {{ payload.log_application?.message }}
             </h2>
         </div>
 
-        <div
-            v-if="Object.values(props.payload.code_snippet).length === 0"
-            v-html="props.payload.log_application?.context[0]"
-        ></div>
-
+        <div v-if="Object.values(payload.code_snippet || {}).length === 0">
+            <div v-html="payload.log_application?.context[0]"></div>
+        </div>
         <CodeSnippet
             v-else
-            :payload="payload"
+            :payload="payload || {}"
         />
     </div>
 </template>
