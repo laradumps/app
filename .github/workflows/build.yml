@@ -15,17 +15,16 @@ jobs:
             - name: Check out Git repository
               uses: actions/checkout@v4
 
-            - name: Install Node.js and Yarn
+            - name: Install Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  cache: "yarn"
 
             - name: Install dependencies
-              run: yarn
+              run: npm install
 
             - name: Bundle with webpack and esbuild
-              run: yarn run build
+              run: npm run build
 
             - name: Updater
               run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
