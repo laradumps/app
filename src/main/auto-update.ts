@@ -1,11 +1,18 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
-import { CompletedInfo } from "@/types/Updater";
-import { download } from "electron-dl";
+import electronDl, { download, Progress } from "electron-dl";
 import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import fs from "fs";
 import { isDev, isMac } from "./main";
 
 let globalUpdateInfo: UpdateInfo;
+
+interface File {
+    filename: string;
+    path: string;
+    fileSize: number;
+    mimeType: string;
+    url: string;
+}
 
 export const init = async (mainWindow: BrowserWindow) => {
     if (!isDev) {
@@ -52,12 +59,12 @@ export const init = async (mainWindow: BrowserWindow) => {
     }
 
     ipcMain.on("main:download-progress-info", async (event, args) => {
-        const properties = {
-            onProgress: (progress: number) => {
+        const properties: electronDl.Options = {
+            onProgress: (progress: Progress) => {
                 mainWindow.webContents.send("autoUpdater:download-progress", progress);
             },
-            onCompleted: (item: CompletedInfo) => {
-                mainWindow.webContents.send("autoUpdater:download-complete", item);
+            onCompleted: (file: File): void => {
+                mainWindow.webContents.send("autoUpdater:download-complete", file);
             }
         };
 

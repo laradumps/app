@@ -12,9 +12,9 @@
     "parser": "@typescript-eslint/parser",
     "extends": ["plugin:vue/vue3-essential", "eslint:recommended", "plugin:@typescript-eslint/eslint-recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
     "rules": {
-        "no-console": "warn",
+        "no-console": "off",
         "@typescript-eslint/ban-ts-comment": "off",
         "prettier/prettier": "error",
-        "@typescript-eslint/no-var-require": "off"
+        "@typescript-eslint/no-var-requires": "off"
     }
 }

@@ -28,7 +28,7 @@ export const init = async (mainWindow: BrowserWindow) => {
                 .toLowerCase();
         }
 
-        function createMenuItem(label: string, selected: boolean): MenuItem {
+        function createMenuItem(label: string, selected: boolean) {
             return {
                 label: label,
                 type: "checkbox",

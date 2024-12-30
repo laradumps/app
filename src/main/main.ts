@@ -12,11 +12,9 @@ import { initCoffeeWindow } from "./window/coffee";
 import { configureLocalShortcut, registerShortcuts } from "./shortcut";
 
 import { createMenu } from "./main-menu";
-import { createScreenWindow } from "./window/screen";
 import "./watcher";
 
 import { chooseDirectory } from "./choose-directory";
-import { Payload } from "@/types/Payload";
 
 import * as xdebug from "./xdebug";
 import * as customWindow from "./custom-window";
@@ -138,7 +136,7 @@ app.whenReady().then(async (): Promise<void> => {
     });
 
     // @ts-ignore
-    mainWindow.on("close", function (event: Event): void {
+    mainWindow.on("close", function (): void {
         mainWindow.webContents.send("server:close", {});
     });
 
@@ -266,7 +264,7 @@ ipcMain.on("main:dialog", async (event, arg): void => {
         message: arg.message
     });
 
-    await mainWindow.webContents.send("main:dialog-choice", choice);
+    mainWindow.webContents.send("main:dialog-choice", choice);
 });
 
 ipcMain.on("native-theme", () => {
