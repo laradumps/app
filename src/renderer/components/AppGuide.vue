@@ -30,7 +30,7 @@ const tips = ref([
     `<div class="space-y-3 text-base-content">
         <div class="font-semibold text-base">Xdebug step debugging</div>
         <li>${i18n.t("doc.install_php_extension")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-blue-500 underline cursor-pointer ml-1">download</span></li>
-        <li>${i18n.t("doc.in_any_project_toggle")} <strong>xdebug</strong></li>
+        <li>${i18n.t("doc.in_any_project_toggle")}</li>
         <li>${i18n.t("doc.add")} <code class="bg-base-300 p-1 rounded">xdebug_break()</code> ${i18n.t("doc.in_any_line_of_code")}</li>
         <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
     </div>`,

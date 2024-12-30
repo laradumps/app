@@ -51,7 +51,7 @@ window.ipcRenderer.on("xdebug-connection-status", (event, args) => {
         <div class="flex gap-2 items-center">
             <span
                 v-if="xdebugConnected"
-                class="badge badge-success text-[10px] tracking-widest font-semibold whitespace-nowrap"
+                class="badge badge-success text-xs tracking-widest font-semibold whitespace-nowrap"
                 >xdebug: connected</span
             >
 

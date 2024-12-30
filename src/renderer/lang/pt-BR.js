@@ -21,7 +21,8 @@ export default {
         give_us_start: "Dê estrelas no repositório",
         contribute_code: "Contribua com código e ajude-nos a crescer",
         install_php_extension: "Instalar a extensão PHP",
-        in_any_line_of_code: "em qualquer linha de código."
+        in_any_line_of_code: "em qualquer linha de código.",
+        in_any_project_toggle: "em qualquer projeto, habilite o xdebug"
     },
     menu: {
         clear: "Limpar",
