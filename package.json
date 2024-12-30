@@ -10,9 +10,9 @@
         "electron": "node build.js --dev && electron .",
         "build": "vite build && node build.js --prod",
         "start": "npm run build && electron .",
-        "release-mac": "electron-builder --publish always --mac --universal",
-        "release-win": "electron-builder --publish always --win",
-        "release-linux": "electron-builder --publish always --linux",
+        "release-mac": "npm run build && electron-builder --publish always --mac --universal",
+        "release-win": "npm run build && electron-builder --publish always --win",
+        "release-linux": "npm run build && electron-builder --publish always --linux",
         "fix": "eslint --fix --ext .js src/renderer && npm run format",
         "lint": "eslint src/renderer**",
         "format": "prettier . --write --single-attribute-per-line"
@@ -62,7 +62,7 @@
         "tree-kill": "^1.2.2",
         "typescript": "*",
         "vue": "3.5.12",
-        "vue-i18n": "^9.14.2",
+        "vue-i18n": "9.4.1",
         "vue-json-pretty": "^2.4.0",
         "which": "^4.0.0",
         "xml2js": "^0.6.2"
