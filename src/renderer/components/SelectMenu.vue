@@ -37,7 +37,6 @@ onUpdated(() => {
         selected.value = props.data[props.defaultValue] ?? props.data[0];
     }
 });
-
 </script>
 
 <template>

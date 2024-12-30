@@ -36,11 +36,8 @@ body {
 }
 
 .btn {
-    min-height: unset;
-    height: 28px;
-    padding-left: 4px;
-    padding-right: 4px;
-    border-right: 0 !important;
+    min-height: unset !important;
+    @apply py-1 px-3 h-[38px];
 }
 
 /* daisyui */

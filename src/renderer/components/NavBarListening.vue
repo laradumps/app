@@ -206,10 +206,10 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                 <ul
                     tabindex="0"
                     :class="{ 'h-[calc(100vh-3.5rem)]': selectedProject && !xdebug }"
-                    class="dropdown-content min-w-[220px] space-y-3 gap-4 overflow-y-auto z-200 menu p-4 bg-neutral block border border-neutral-content/20 shadow-lg rounded-box mt-[35px] !right-0"
+                    class="dropdown-content min-w-[280px] space-y-3 gap-4 overflow-y-auto z-200 menu p-4 bg-neutral block border border-neutral-content/20 shadow-lg rounded-box mt-[35px] !right-0"
                 >
                     <button
-                        class="btn btn-info w-full text-[10px]"
+                        class="btn btn-info btn-outline w-full text-xs"
                         @click="addProject"
                     >
                         <IconPlus class="w-5" />
@@ -217,25 +217,33 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                         Add New Project
                     </button>
 
-                    <select
-                        v-model="selectedProject"
-                        @change="setActiveProject()"
-                        class="select select-bordered select-xs bg-neutral text-neutral-content w-full h-[1.85rem] font-semibold max-w-xs"
-                    >
-                        <option value="">Select a project</option>
-
-                        <option
-                            v-for="project in projects"
-                            :ref="project.project"
-                            :value="project.path"
+                    <div class="flex gap-2 items-center">
+                        <select
+                            v-model="selectedProject"
+                            @change="setActiveProject()"
+                            class="select select-bordered text-xs select-xs bg-neutral text-neutral-content w-full h-[1.85rem] font-semibold max-w-xs"
                         >
-                            {{ project.project }} - {{ project.path }}
-                        </option>
-                    </select>
+                            <option value="">Select a project</option>
+
+                            <option
+                                v-for="project in projects"
+                                :ref="project.project"
+                                :value="project.path"
+                            >
+                                {{ project.project }} - {{ project.path }}
+                            </option>
+                        </select>
+                        <div
+                            @click="removeEnvironment"
+                            v-if="selectedProject"
+                        >
+                            <IconTrash class="w-5 danger text-error" />
+                        </div>
+                    </div>
 
                     <div
                         v-if="environments.length === 0"
-                        class="text-xs text-neutral-content"
+                        class="text-[11px] text-neutral-content"
                     >
                         No laradumps.yaml found in this project
                     </div>
@@ -255,7 +263,7 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                                     class="toggle toggle-xs toggle-accent"
                                     v-model="xdebug"
                                 />
-                                <span class="text-[10px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
+                                <span class="text-[11px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
                             </label>
                         </li>
 
@@ -275,19 +283,10 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                                     @change="save"
                                     :disabled="xdebug"
                                 />
-                                <span class="text-[10px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
+                                <span class="text-[11px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
                             </label>
                         </li>
                     </div>
-
-                    <button
-                        v-if="selectedProject"
-                        class="btn mt-2 btn-error text-warning-content w-full text-[10px]"
-                        @click="removeEnvironment"
-                    >
-                        <IconTrash class="w-5" />
-                        Remove Project
-                    </button>
                 </ul>
             </div>
         </div>

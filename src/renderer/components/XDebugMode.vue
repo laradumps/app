@@ -140,7 +140,6 @@ const handlePropertyContextClick = (type, variable, openModal) => {
     openModal && setTimeout(() => modal_property_get.showModal(), 30);
 };
 
-
 const handleContextGet = (responseElement) => {
     const properties = responseElement.getElementsByTagName("property");
 
@@ -720,7 +719,7 @@ onBeforeUnmount(() => {
 
                                     <template
                                         v-if="expandedProperties[property.name]"
-                                        :key="expandedProperties +'-'+property.name"
+                                        :key="expandedProperties + '-' + property.name"
                                         class="ml-5 py-2"
                                     >
                                         <XDebugPropertyNode

@@ -33,7 +33,7 @@ onMounted(() => {
             title="Double click to expand"
             class="prose my-3 mb-6 tracking-wide"
             :class="{
-                '!my-2' : Object.values(payload.code_snippet || {}).length === 0
+                '!my-2': Object.values(payload.code_snippet || {}).length === 0
             }"
         >
             <h2

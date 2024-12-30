@@ -423,7 +423,7 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
     return menuTemplate;
 }
 
-async function createMenu(mainWindow, windowsMap) {
+async function createMenu(mainWindow: BrowserWindow, windowsMap) {
     const menuTemplate = await getMenuTemplate(mainWindow, windowsMap);
 
     const menu = Menu.buildFromTemplate(menuTemplate);

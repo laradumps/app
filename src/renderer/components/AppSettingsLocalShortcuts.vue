@@ -133,7 +133,7 @@ const toggleSetting = () => {
             </label>
         </div>
 
-        <div class="flex gap-2 justify-end">
+        <div class="flex gap-3 justify-between">
             <button
                 @click="toggleSetting"
                 type="button"
@@ -142,21 +142,23 @@ const toggleSetting = () => {
                 {{ $t("settings.cancel") }}
             </button>
 
-            <button
-                @click="editShortcut"
-                type="button"
-                class="btn btn-default"
-            >
-                {{ $t("settings.edit") }}
-            </button>
+            <div class="flex gap-3 justify-end">
+                <button
+                    @click="editShortcut"
+                    type="button"
+                    class="btn btn-info"
+                >
+                    {{ $t("settings.edit") }}
+                </button>
 
-            <button
-                @click="save"
-                type="button"
-                class="btn btn-secondary"
-            >
-                {{ $t("settings.save") }}
-            </button>
+                <button
+                    @click="save"
+                    type="button"
+                    class="btn btn-secondary"
+                >
+                    {{ $t("settings.save") }}
+                </button>
+            </div>
         </div>
     </div>
 </template>

@@ -1,6 +1,6 @@
 export interface XDebugYml {
     client_host: string;
-    client_port: string;
+    client_port: number;
     wsl_config: string;
     workdir: string;
     project_path: string;
