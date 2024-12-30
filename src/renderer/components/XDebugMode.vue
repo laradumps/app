@@ -39,17 +39,11 @@ const inStepCommand = ref(false);
 const inMountEvent = ref(false);
 const variableClicked = ref(true);
 const selectedVariableName = ref("");
-const variablesInLeftMenu = ref(false);
+const variablesInSidebar = ref(false);
 
 const expandedProperties = ref({});
 
 const loading = ref(false);
-
-const getClassnameByVariableName = computed(() => {
-    const variable = variablesNames.value.find((variable) => variable.name === selectedVariableName.value);
-
-    return variable?.classname ?? variable?.type;
-});
 
 const openXDebugLink = () => {
     window.ipcRenderer.send("main:openLink", "https://xdebug.org");
@@ -133,18 +127,19 @@ const handleResponse = (event, response) => {
     setTimeout(() => parseResponse(response), 100);
 };
 
-const handlePropertyContextClick = (type, variable) => {
-    if (type === "uninitialized") {
-        return;
-    }
+const handlePropertyContextClick = (type, variable, openModal) => {
+    if (type === "uninitialized") return;
 
-    expandedProperties.value[variable] = !expandedProperties.value[variable];
+    expandedProperties.value = { [variable]: true };
 
     selectedVariableName.value = variable;
-    variablesInLeftMenu.value = true;
+    variablesInSidebar.value = true;
+
     propertyGet(variable);
-    setTimeout(() => modal_property_get.showModal(), 100);
+
+    openModal && setTimeout(() => modal_property_get.showModal(), 30);
 };
+
 
 const handleContextGet = (responseElement) => {
     const properties = responseElement.getElementsByTagName("property");
@@ -262,7 +257,7 @@ const handlePropertyGet = (responseElement, evaluate) => {
             return;
         }
 
-        if (variablesInLeftMenu.value) {
+        if (variablesInSidebar.value) {
             propertiesContextTree.value.push(list);
             return;
         }
@@ -491,7 +486,7 @@ const handleKeyboardEvent = async (event) => {
 const handleClick = (event) => {
     inStepCommand.value = false;
     variableClicked.value = true;
-    variablesInLeftMenu.value = false;
+    variablesInSidebar.value = false;
     event.preventDefault();
 
     const target = event.target;
@@ -702,11 +697,12 @@ onBeforeUnmount(() => {
                                 >
                                     <div
                                         :class="{
-                                            'cursor-pointer': property.type !== 'uninitialized',
+                                            'cursor-pointer': property.type !== 'string',
+                                            'cursor-not-allowed': property.type === 'string',
                                             'bg-base-100 border-l-4 !border-accent': expandedProperties[property.name]
                                         }"
-                                        class="flex cursor-not-allowed border-l-4 border-transparent hover:bg-base-200 items-center px-1 py-2 pl-3"
-                                        @click="handlePropertyContextClick(property.type, property.name)"
+                                        class="flex border-l-4 border-transparent hover:bg-base-200 items-center px-1 py-2 pl-3"
+                                        @click="property.type !== 'string' ? handlePropertyContextClick(property.type, property.name, false) : null"
                                     >
                                         <span
                                             :class="{ 'opacity-70 !text-base-content line-through': property.type === 'uninitialized' }"
@@ -722,8 +718,9 @@ onBeforeUnmount(() => {
                                         </span>
                                     </div>
 
-                                    <div
+                                    <template
                                         v-if="expandedProperties[property.name]"
+                                        :key="expandedProperties +'-'+property.name"
                                         class="ml-5 py-2"
                                     >
                                         <XDebugPropertyNode
@@ -734,7 +731,7 @@ onBeforeUnmount(() => {
                                             :transition-id="transactionId"
                                             @click="variableClicked = false"
                                         />
-                                    </div>
+                                    </template>
                                 </div>
                             </div>
                         </pane>
@@ -755,8 +752,7 @@ onBeforeUnmount(() => {
                     v-if="selectedVariableName && propertiesEvalTree.length === 0"
                 >
                     <div class="select-none">
-                        <span class="variable-name !text-primary">{{ selectedVariableName }}</span
-                        ><span class="classname">{{ " {" + getClassnameByVariableName + "}" }}</span>
+                        <span class="variable-name text-base text-primary">{{ selectedVariableName }}</span>
                     </div>
                 </div>
 
@@ -774,7 +770,7 @@ onBeforeUnmount(() => {
                     <XDebugPropertyNode
                         v-if="propertiesTree"
                         v-for="property in propertiesTree"
-                        :key="Math.random().toString(36).substr(2, 9)"
+                        :key="'propertiesTree-' + property.name + '-' + property.type"
                         :property="property"
                         :transition-id="transactionId"
                         @click="variableClicked = false"
@@ -783,7 +779,7 @@ onBeforeUnmount(() => {
                     <XDebugPropertyNode
                         v-if="propertiesTree"
                         v-for="property in propertiesContextTree"
-                        :key="Math.random().toString(36).substr(2, 9)"
+                        :key="'propertiesContextTree-' + property.name + '-' + property.type"
                         :property="property"
                         :transition-id="transactionId"
                         @click="variableClicked = false"
@@ -792,7 +788,7 @@ onBeforeUnmount(() => {
                     <XDebugPropertyNode
                         v-if="propertiesTree"
                         v-for="property in propertiesEvalTree"
-                        :key="Math.random().toString(36).substr(2, 9)"
+                        :key="'propertiesEvalTree-' + property.name + '-' + property.type"
                         :property="property"
                         :transition-id="transactionId"
                         @click="variableClicked = false"

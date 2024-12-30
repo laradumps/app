@@ -1,4 +1,4 @@
-import { app, screen, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, IpcMainEvent, Notification } from "electron";
+import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, IpcMainEvent, Notification } from "electron";
 import windowStateKeeper from "electron-window-state";
 import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
 import { download } from "electron-dl";
@@ -30,6 +30,7 @@ const AutoLaunch = require("auto-launch");
 import XDebugServer from "./xdebug-server";
 import { XDebugYml } from "@/types/XDebug";
 import { chooseDirectory } from "./choose-directory";
+import { Payload } from "@/types/Payload";
 const xdebugServer = XDebugServer.getInstance();
 
 let mainWindow: BrowserWindow;
@@ -186,7 +187,7 @@ ipcMain.on("read-file", (event, filePath) => {
 
 ipcMain.on("connect-xdebug", (event, args: XDebugYml) => {
     try {
-        mainWindow.setSize(isDev ? 1400 : 1300, 820);
+        mainWindow.setSize(isDev ? 1200 : 1100, 720);
         mainWindow.webContents.send("xdebug-connected");
 
         event.reply("xdebug-connected", true);
@@ -214,7 +215,7 @@ ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
     event.sender.send(arg.type, arg);
 });
 
-function sendScreenWindowUpdate(screen, payload) {
+function sendScreenWindowUpdate(screen: string, payload: Payload) {
     const screenWindow = windowsMap.get(screen);
     if (screenWindow && screenWindow.webContents) {
         screenWindow.webContents.send("app:screen-window-update", {
@@ -335,7 +336,7 @@ app.whenReady().then(async (): Promise<void> => {
                 label: label,
                 type: "checkbox",
                 checked: selected,
-                click: (menuItem) => {
+                click: () => {
                     options[toSnakeCase(label)] = !options[toSnakeCase(label)];
 
                     const selectedOptions = Object.entries(options).map(([key, value]) => ({
