@@ -355,11 +355,11 @@ const dumpListeners = () => {
         const filterPayload: Payload = payload.value.filter((globalPayload: Payload) => globalPayload.id === content.id)[0];
 
         if (filterPayload.hasOwnProperty("json")) {
-            textContent = filterPayload.json?.original_content || '';
+            textContent = filterPayload.json?.original_content || "";
         }
 
         if (filterPayload.hasOwnProperty("dump")) {
-            textContent = filterPayload.dump?.original_content || '';
+            textContent = filterPayload.dump?.original_content || "";
         }
 
         const strContains = Helper.strContains(textContent, content.validate.content, {

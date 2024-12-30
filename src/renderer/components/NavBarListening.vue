@@ -236,8 +236,9 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                         <div
                             @click="removeEnvironment"
                             v-if="selectedProject"
+                            class="cursor-pointer w-6"
                         >
-                            <IconTrash class="w-5 danger text-error" />
+                            <IconTrash class="w-4 danger text-error" />
                         </div>
                     </div>
 
