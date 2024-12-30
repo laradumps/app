@@ -3,7 +3,7 @@ import { ScreenPayload } from "@/types/Payload";
 
 type State = {
     screen: string;
-    screens: [];
+    screens: ScreenPayload[];
     pinned?: string | null;
 };
 
@@ -17,7 +17,7 @@ export const useScreenStore = defineStore("screen", {
             this.screen = value;
         },
         add(screen: ScreenPayload) {
-            const exists = this.screens.filter((screenPayload: ScreenPayload) => screen.screen_name === screenPayload.screen_name).length > 0;
+            const exists = this.screens.some((screenPayload: ScreenPayload) => screenPayload.screen_name === screen.screen_name);
 
             if (!exists) {
                 this.screens.push(screen);
@@ -32,10 +32,8 @@ export const useScreenStore = defineStore("screen", {
         all() {
             return this.screens;
         },
-        get(screen: string) {
-            return this.screens.filter((screenPayload: ScreenPayload) => {
-                return screenPayload.screen_name === screen;
-            })[0];
+        get(screenName: string) {
+            return this.screens.find((screenPayload: ScreenPayload) => screenPayload.screen_name === screenName) || null;
         },
         toggleVisible(screenName: string) {
             this.screens = this.screens.map((screen: ScreenPayload) => {
@@ -58,10 +56,7 @@ export const useScreenStore = defineStore("screen", {
             if (index === -1) return null;
 
             const nextIndex = (index + 1) % this.screens.length;
-            return this.screens[nextIndex];
+            return this.screens[nextIndex] || null;
         }
-    },
-    persist: {
-        enabled: true
     }
 });

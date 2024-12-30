@@ -351,15 +351,15 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("validate", (event, { content }) => {
-        let textContent;
-        const filterPayload = payload.value.filter((globalPayload: Payload) => globalPayload.id === content.id)[0];
+        let textContent: string;
+        const filterPayload: Payload = payload.value.filter((globalPayload: Payload) => globalPayload.id === content.id)[0];
 
         if (filterPayload.hasOwnProperty("json")) {
-            textContent = filterPayload.json.original_content;
+            textContent = filterPayload.json?.original_content || '';
         }
 
         if (filterPayload.hasOwnProperty("dump")) {
-            textContent = filterPayload.dump.original_content;
+            textContent = filterPayload.dump?.original_content || '';
         }
 
         const strContains = Helper.strContains(textContent, content.validate.content, {
@@ -575,7 +575,7 @@ type EventType = "label" | "color" | "screen" | "dump";
 
 const interval = ref(null);
 
-const dispatch = (type: string, event: EventType, content: any): void => {
+const dispatch = (type: string, event: Electron.IpcRendererEvent, content: any): void => {
     if (isPaused.value) {
         return;
     }
