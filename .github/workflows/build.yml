@@ -39,19 +39,19 @@ jobs:
 
             - name: 🐧 Build Linux
               if: matrix.os == 'ubuntu-latest'
-              run: npm run release-linux
+              run: npm run publish-linux
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
                   SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
             - name: 💻 Build Windows
               if: matrix.os == 'windows-latest'
-              run: npm run release-win
+              run: npm run publish-win
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
             - name:  Build Mac
               if: matrix.os == 'macos-latest'
-              run: npm run release-mac
+              run: npm run publish-mac
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}

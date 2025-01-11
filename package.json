@@ -8,10 +8,12 @@
     "scripts": {
         "dev": "concurrently \"vite\" \"node build.js --dev && electron .\"",
         "build": "vite build && node build.js --prod",
-        "start": "npm run build && electron .",
-        "release-mac": "electron-builder --publish always --mac --universal",
-        "release-win": "electron-builder --publish always --win",
-        "release-linux": "electron-builder --publish always --linux",
+        "build-win": "npm run build && electron-builder --win",
+        "build-mac": "npm run build && electron-builder --mac --universal",
+        "build-linux": "npm run build && electron-builder --linux",
+        "publish-win": "npm run build && electron-builder --publish always --win",
+        "publish-mac": "npm run build && electron-builder --publish always --mac --universal",
+        "publish-linux": "npm run build && electron-builder --publish always --linux",
         "fix": "eslint --fix --ext .js src/renderer && npm run format",
         "lint": "eslint src/renderer**",
         "format": "prettier . --write --single-attribute-per-line"
