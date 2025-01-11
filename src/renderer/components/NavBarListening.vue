@@ -58,9 +58,8 @@ onMounted(async () => {
         }
     });
 
-    window.ipcRenderer.on("settings:env-file-contents", (event, contents: { environmentYmlList: null | object; projectName: string }) => {
-        console.log(contents.environmentYmlList);
-        if (contents.environmentYmlList.length > 0) {
+    window.ipcRenderer.on("settings:env-file-contents", (event, contents: { environmentYmlList: null | Environment[]; projectName: string }) => {
+        if (contents.environmentYmlList && contents.environmentYmlList.length > 0) {
             environments.value = [];
 
             contents.environmentYmlList.forEach((entry: Environment) => {
@@ -206,10 +205,10 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                 <ul
                     tabindex="0"
                     :class="{ 'h-[calc(100vh-3.5rem)]': selectedProject && !xdebug }"
-                    class="dropdown-content min-w-[280px] space-y-3 gap-4 overflow-y-auto z-200 menu p-4 bg-neutral block border border-neutral-content/20 shadow-lg rounded-box mt-[35px] !right-0"
+                    class="dropdown-content min-w-[280px] space-y-3 gap-4 overflow-y-auto z-200 menu p-4 bg-base-200 block border border-base-content/20 shadow-lg rounded-box mt-[35px] !right-0"
                 >
                     <button
-                        class="btn btn-info btn-outline w-full text-xs"
+                        class="btn btn-info  w-full text-xs"
                         @click="addProject"
                     >
                         <IconPlus class="w-5" />
@@ -221,7 +220,7 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                         <select
                             v-model="selectedProject"
                             @change="setActiveProject()"
-                            class="select select-bordered text-xs select-xs bg-neutral text-neutral-content w-full h-[1.85rem] font-semibold max-w-xs"
+                            class="select select-bordered text-xs select-xs w-full h-[1.85rem] font-semibold max-w-xs"
                         >
                             <option value="">Select a project</option>
 
@@ -255,7 +254,7 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                     >
                         <li>
                             <label
-                                class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5"
+                                class="label !justify-start !text-left p-1.5"
                                 :class="{ 'bg-base-200': false }"
                             >
                                 <input
@@ -273,8 +272,7 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                             v-for="env in environments"
                         >
                             <label
-                                class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5"
-                                :class="{ 'bg-base-200': env.selected }"
+                                class="label !justify-start !text-left p-1 mt-1"
                             >
                                 <input
                                     type="checkbox"

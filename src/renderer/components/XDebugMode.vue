@@ -613,7 +613,7 @@ onBeforeUnmount(() => {
                 >
                     <div
                         type="button"
-                        class="select-none flex gap-7 flex-col items-center text-xs font-extrabold tracking-widest"
+                        class="select-none flex gap-7 flex-col items-center text-xs tracking-wide"
                     >
                         <SvgXDebug />
 
@@ -624,17 +624,12 @@ onBeforeUnmount(() => {
                             https://xdebug.org
                         </span>
 
-                        <div class="space-y-3 text-base-content font-normal">
+                        <div class="space-y-3 text-base-content text-sm font-normal">
                             <li>{{ i18n.t("doc.add") }} <code class="bg-base-300 p-2 rounded">xdebug_break()</code> {{ i18n.t("doc.in_any_line_of_code") }}</li>
                             <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
                         </div>
 
-                        <button
-                            @click="disconnect"
-                            class="mt-3 !px-3 btn btn-sm text-xs btn-warning"
-                        >
-                            Disconnect
-                        </button>
+                        <button @click="disconnect" class="select-none inline-flex h-6 text-sm w-max min-w-max items-center justify-center badge-outline badge badge-warning p-1 transition hover:bg-opacity-50 disabled:opacity-25 !px-2" ><span class="text-xs">Disconnect</span></button>
                     </div>
                 </div>
 

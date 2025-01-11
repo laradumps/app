@@ -49,11 +49,7 @@ window.ipcRenderer.on("xdebug-connection-status", (event, args) => {
         <div class="ml-8 w-full select-none movable-container">&nbsp;</div>
 
         <div class="flex gap-2 items-center">
-            <span
-                v-if="xdebugConnected"
-                class="badge badge-success text-xs tracking-widest font-semibold whitespace-nowrap"
-                >xdebug: connected</span
-            >
+            <span v-if="xdebugConnected" class="select-none inline-flex h-6 text-sm w-max min-w-max items-center justify-center badge-outline badge badge-success p-1 transition hover:bg-opacity-50 disabled:opacity-25 !px-2" ><span class="text-xs">xdebug connected</span></span>
 
             <HeaderGlobalFilter v-bind:has-color="hasColor && !xdebugMode" />
 

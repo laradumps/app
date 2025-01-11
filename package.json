@@ -6,8 +6,7 @@
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
     "main": "dist/main.js",
     "scripts": {
-        "dev": "vite",
-        "electron": "node build.js --dev && electron .",
+        "dev": "concurrently \"vite\" \"node build.js --dev && electron .\"",
         "build": "vite build && node build.js --prod",
         "start": "npm run build && electron .",
         "release-mac": "npm run build && electron-builder --publish always --mac --universal",
@@ -32,6 +31,8 @@
         "axios": "^1.7.7",
         "body-parser": "^1.20.3",
         "chokidar": "^4.0.1",
+        "concurrency": "^0.1.4",
+        "concurrently": "^9.1.2",
         "core-js": "^3.38.1",
         "cors": "^2.8.5",
         "electron-context-menu": "^3.6.1",
