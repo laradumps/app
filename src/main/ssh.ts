@@ -1,6 +1,7 @@
 import { Client, ConnectConfig } from "ssh2";
 import { readFileSync } from "fs";
 import { ipcMain, Notification } from "electron";
+import net from "net";
 
 class SSHClient {
     private config: ConnectConfig;
@@ -43,6 +44,31 @@ class SSHClient {
         });
     }
 
+    async forwardIn(port: number): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.conn
+                .forwardIn("localhost", port, (err: unknown) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve();
+                })
+                .on("tcp connection", (info, accept) => {
+                    // Forward the connection to the local application
+                    const stream = accept();
+                    const localSocket = net.connect(port, "127.0.0.1", () => {
+                        stream.pipe(localSocket).pipe(stream); // Forward data between remote and local
+                    });
+
+                    // Handle errors
+                    localSocket.on("error", (err) => {
+                        console.error("Local socket error:", err);
+                        stream.end();
+                    });
+                });
+        });
+    }
+
     disconnect() {
         if (this.isConnected) {
             this.conn.end();
@@ -51,12 +77,16 @@ class SSHClient {
     }
 }
 
+let sshClient: SSHClient | null = null;
+
 export const init = async () => {
     ipcMain.on("ssh:connect", connect);
+    ipcMain.on("ssh:listen", listen);
+    ipcMain.on("ssh:disconnect", disconnect);
 };
 
 export const connect = async (event: any, config: any, data: any = {}) => {
-    const sshClient = new SSHClient(config);
+    sshClient = new SSHClient(config);
     try {
         await sshClient.connect();
 
@@ -74,6 +104,27 @@ export const connect = async (event: any, config: any, data: any = {}) => {
     } catch (error: any) {
         handleConnectionFailed(event, config, error, data);
     } finally {
+        sshClient.disconnect();
+    }
+};
+
+export const listen = async (event: any, config: any) => {
+    sshClient = new SSHClient(config);
+    try {
+        await sshClient.connect();
+        await sshClient.forwardIn(9191);
+        event.reply("ssh:listen-response", {
+            connected: true
+        });
+    } catch (error: unknown) {
+        event.reply("ssh:listen-response", {
+            connected: false
+        });
+    }
+};
+
+export const disconnect = async (event: any) => {
+    if (sshClient) {
         sshClient.disconnect();
     }
 };

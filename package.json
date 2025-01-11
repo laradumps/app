@@ -67,6 +67,7 @@
         "@interactjs/types": "^1.10.27",
         "@types/electron": "^1.6.10",
         "@types/electron-json-storage": "^4.5.4",
+        "@types/ssh2": "^1.15.3",
         "@types/which": "^3.0.3",
         "@vitejs/plugin-vue": "5.0.4",
         "@vue/compiler-sfc": "3.4.23",

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { ArrowPathIcon, ServerIcon } from "@heroicons/vue/24/outline";
+import { ArrowPathIcon, ServerIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import { useSSHStore } from "@/store/ssh";
 import Modal from "./Modal.vue";
 import { Ref } from "vue";
@@ -22,36 +22,63 @@ const form: Ref<ConnectionConfig> = ref({
     private_key: "/Users/saeed/.ssh/id_rsa"
 });
 const emit = defineEmits(["connected"]);
+const listenId = ref<number | null>();
 
 onMounted(() => {
-    window.ipcRenderer.on("ssh:connect-response", (event, response) => {
-        sshStore.setConnecting(false);
-
-        console.log(response);
-        if (response.data.state === "create" && response.connected) {
-            sshStore.addConnection(response.config);
-            addSSHModal.value.closeModal();
-            emit("connected");
-        }
-
-        if (response.data.state === "edit" && response.connected) {
-            sshStore.updateConnection(response.config.id, response.config);
-            addSSHModal.value.closeModal();
-            emit("connected");
-        }
-    });
+    window.ipcRenderer.on("ssh:connect-response", connectResponse);
+    window.ipcRenderer.on("ssh:listen-response", listenResponse);
 });
 
 onUnmounted(() => {
     window.ipcRenderer.removeAllListeners("ssh:connect-response");
+    window.ipcRenderer.removeAllListeners("ssh:listen-response");
 });
 
 const connect = () => {
     if (sshStore.connecting) return;
-
     sshStore.setConnecting(true);
-
     window.ipcRenderer.send("ssh:connect", { ...form.value }, { state: "create", notify: true });
+};
+
+const connectResponse = (event: any, response: any) => {
+    sshStore.setConnecting(false);
+
+    if (response.data.state === "create" && response.connected) {
+        sshStore.addConnection(response.config);
+        addSSHModal.value.closeModal();
+        emit("connected");
+    }
+
+    if (response.data.state === "edit" && response.connected) {
+        sshStore.updateConnection(response.config.id, response.config);
+        addSSHModal.value.closeModal();
+        emit("connected");
+    }
+};
+
+const listen = (id: number, event: any) => {
+    window.ipcRenderer.send("ssh:disconnect");
+    listenId.value = event.target.checked ? id : null;
+    if (listenId.value) {
+        sshStore.setConnecting(true);
+        let conn = sshStore.getConnection(id);
+        window.ipcRenderer.send("ssh:listen", { ...conn });
+    }
+};
+
+const listenResponse = (event: any, response: any) => {
+    sshStore.setConnecting(false);
+    if (!response.connected) {
+        listenId.value = null;
+    }
+};
+
+const removeConnection = (id: number) => {
+    if (listenId.value === id) {
+        window.ipcRenderer.send("ssh:disconnect");
+        listenId.value = null;
+    }
+    sshStore.remove(id);
 };
 </script>
 
@@ -69,8 +96,40 @@ const connect = () => {
         >
             <div
                 v-if="sshStore.connections.length > 0"
-                class="text-[10px] text-neutral-content"
-            ></div>
+                class="overflow-auto space-y-1"
+                style="height: calc(100vh - 11rem)"
+            >
+                <li
+                    v-for="connection in sshStore.connections"
+                    :key="`connection-${connection.id}`"
+                >
+                    <div class="flex items-center justify-between p-1.5">
+                        <label
+                            class="bg-transparent text-neutral-content flex items-center cursor-pointer"
+                            :class="{ 'bg-base-200': 1 }"
+                        >
+                            <input
+                                type="checkbox"
+                                :checked="connection.id === listenId"
+                                @change="listen(connection.id, $event)"
+                                class="toggle toggle-xs toggle-accent mr-1"
+                                :value="connection.id"
+                            />
+                            <span class="text-[10px] whitespace-nowrap font-semibold uppercase">{{ connection.name }}</span>
+                        </label>
+                        <span v-if="sshStore.connecting && connection.id === listenId">
+                            <ArrowPathIcon class="w-4 animate-spin" />
+                        </span>
+                        <span v-else>
+                            <TrashIcon
+                                @click="removeConnection(connection.id)"
+                                class="w-4 hover:text-red-500"
+                            />
+                        </span>
+                    </div>
+                </li>
+            </div>
+
             <div
                 v-else
                 class="text-[10px] text-neutral-content"
