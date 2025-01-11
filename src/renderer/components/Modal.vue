@@ -62,7 +62,7 @@ defineExpose({ openModal, closeModal });
                             leave-to="opacity-0 scale-95"
                         >
                             <DialogPanel
-                                class="w-full transform overflow-hidden rounded-lg p-6 text-left align-middle transition-all bg-base-200 text-base-content"
+                                class="w-full transform overflow-hidden rounded-lg p-6 text-left align-middle transition-all bg-base-100 text-base-content"
                                 :class="{
                                     'max-w-md': props.size === 'md',
                                     'max-w-lg': props.size === 'lg',

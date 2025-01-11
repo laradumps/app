@@ -7,6 +7,7 @@ import { Ref } from "vue";
 import { ConnectionConfig } from "@/types/Ssh.type";
 import { onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
+import IconPlus from "@/components/Icons/IconPlus.vue";
 
 const i18n = useI18n();
 const sshModal = ref();
@@ -76,6 +77,8 @@ const listenResponse = (event: any, response: any) => {
     if (!response.connected) {
         listenId.value = null;
     }
+
+    console.log(response);
 };
 
 const removeConnection = (id: number) => {
@@ -126,24 +129,31 @@ const editConnection = (id: number) => {
         >
             <ServerIcon class="w-4" />
         </button>
+
         <ul
             tabindex="0"
-            class="dropdown-content min-w-40 overflow-y-auto z-200 menu p-2 bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto mt-[35px] !right-0"
+            class="dropdown-content min-w-80 overflow-y-auto z-200 menu p-3 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[35px] !right-0"
         >
+            <div class="flex justify-between items-center">
+                <span>SSH</span>
+                <button
+                    class="flex btn btn-warning text-warning-content w-auto text-xs !px-3"
+                    @click="addConnection"
+                >
+                    <IconPlus class="w-4" />
+                    Add Connection
+                </button>
+            </div>
             <div
                 v-if="sshStore.connections.length > 0"
-                class="overflow-auto space-y-1"
-                style="height: calc(100vh - 11rem)"
+                class="overflow-auto space-y-1 mt-2"
             >
                 <li
                     v-for="connection in sshStore.connections"
                     :key="`connection-${connection.id}`"
                 >
-                    <div class="flex items-center justify-between p-1.5">
-                        <label
-                            class="bg-transparent text-neutral-content flex items-center cursor-pointer"
-                            :class="{ 'bg-base-200': 1 }"
-                        >
+                    <div class="flex items-center justify-between p-2 my-1">
+                        <label class="bg-transparent text-base-content flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
                                 :checked="connection.id === listenId"
@@ -153,19 +163,25 @@ const editConnection = (id: number) => {
                             />
                             <span class="text-[10px] whitespace-nowrap font-semibold uppercase truncate max-w-[100px]">{{ connection.name }}</span>
                         </label>
-                        <div class="flex w-[50px] items-center justify-end">
+                        <div class="flex gap-2 items-center justify-end">
                             <template v-if="sshStore.connecting && connection.id === listenId">
-                                <ArrowPathIcon class="w-4 animate-spin" />
+                                <button class="p-1">
+                                    <ArrowPathIcon class="w-4 animate-spin" />
+                                </button>
                             </template>
                             <template v-else>
-                                <PencilIcon
-                                    @click="editConnection(connection.id)"
-                                    class="w-4 hover:text-blue-500 mr-1"
-                                />
-                                <TrashIcon
-                                    @click="removeConnection(connection.id)"
-                                    class="w-4 hover:text-red-500"
-                                />
+                                <button class="p-1">
+                                    <PencilIcon
+                                        @click="editConnection(connection.id)"
+                                        class="w-4 hover:text-blue-500"
+                                    />
+                                </button>
+                                <button class="p-1">
+                                    <TrashIcon
+                                        @click="removeConnection(connection.id)"
+                                        class="w-4 hover:text-red-500"
+                                    />
+                                </button>
                             </template>
                         </div>
                     </div>
@@ -174,18 +190,9 @@ const editConnection = (id: number) => {
 
             <div
                 v-else
-                class="text-[10px] text-neutral-content"
+                class="text-xs text-neutral-content"
             >
                 No connections!
-            </div>
-
-            <div>
-                <button
-                    class="btn btn-warning text-warning-content mt-6 w-[100px] text-[10px]"
-                    @click="addConnection"
-                >
-                    Add Connection
-                </button>
             </div>
         </ul>
 
@@ -279,7 +286,7 @@ const editConnection = (id: number) => {
                 <Divider />
                 <div class="flex items-center justify-end">
                     <button
-                        class="btn btn-warning text-warning-content mt-6 w-[100px] text-[10px]"
+                        class="btn btn-warning text-warning-content mt-6 w-[100px] text-xs"
                         @click="connect"
                     >
                         <ArrowPathIcon
