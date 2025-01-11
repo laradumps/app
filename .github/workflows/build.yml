@@ -24,9 +24,6 @@ jobs:
             - name: Install dependencies
               run: npm install --force
 
-            - name: Bundle with webpack and esbuild
-              run: yarn run build
-
             - name: Updater
               run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
               env:
