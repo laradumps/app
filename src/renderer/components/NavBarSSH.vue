@@ -13,13 +13,13 @@ const addSSHModal = ref();
 const sshStore = useSSHStore();
 const form: Ref<ConnectionConfig> = ref({
     id: Date.now(),
-    name: "vito-demo",
-    host: "91.107.146.132",
+    name: "",
+    host: "",
     port: 22,
-    username: "vito",
+    username: "",
     auth_type: "key",
     password: "",
-    private_key: "/Users/saeed/.ssh/id_rsa"
+    private_key: ""
 });
 const emit = defineEmits(["connected"]);
 const listenId = ref<number | null>();
