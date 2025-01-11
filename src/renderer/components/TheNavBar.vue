@@ -8,6 +8,7 @@ import NavBarListening from "@/components/NavBarListening.vue";
 import HeaderGlobalFilter from "@/components/HeaderColorsFilter.vue";
 import NavBarPause from "@/components/NavBarPause.vue";
 import NavBarCollapse from "@/components/NavBarCollapse.vue";
+import NavBarSSH from "@/components/NavBarSSH.vue";
 
 defineProps({
     hasColor: {
@@ -61,6 +62,9 @@ const clear = () => {
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />
+
+            <!-- ssh -->
+            <NavBarSSH />
 
             <!-- listening -->
             <NavBarListening v-if="!inSavedDumpsWindow" />

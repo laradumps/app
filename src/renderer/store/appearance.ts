@@ -10,6 +10,7 @@ export const useAppearanceStore = defineStore("theme", {
         setTheme(theme: string) {
             this.value = theme;
             localStorage.theme = theme;
+            document.documentElement.setAttribute("data-theme", theme);
         }
     }
 });

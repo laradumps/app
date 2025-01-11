@@ -6,6 +6,7 @@ import { download } from "electron-dl";
 import path, { join, resolve } from "path";
 import * as url from "url";
 import fs from "fs";
+import * as ssh from "./ssh";
 
 import storage from "electron-json-storage";
 
@@ -656,3 +657,5 @@ ipcMain.on("main:settings-update-environment", (event: Electron.IpcMainEvent, va
         console.error(err);
     }
 });
+
+ssh.init();
