@@ -116,10 +116,14 @@ export const listen = async (event: any, config: any) => {
         event.reply("ssh:listen-response", {
             connected: true
         });
-    } catch (error: unknown) {
+    } catch (error: any) {
         event.reply("ssh:listen-response", {
             connected: false
         });
+        new Notification({
+            title: "Error",
+            body: error.message ?? "Connection to the server failed"
+        }).show();
     }
 };
 
