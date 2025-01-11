@@ -211,7 +211,7 @@ const editConnection = (id: number) => {
                         id="name"
                         v-model="form.name"
                         placeholder="production-server"
-                        class="js-shortcut grow input input-bordered input-sm w-full"
+                        class="input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />
@@ -222,7 +222,7 @@ const editConnection = (id: number) => {
                         id="host"
                         v-model="form.host"
                         placeholder="1.2.3.4"
-                        class="js-shortcut grow input input-bordered input-sm w-full"
+                        class="input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />
@@ -232,7 +232,7 @@ const editConnection = (id: number) => {
                         type="number"
                         id="port"
                         v-model="form.port"
-                        class="js-shortcut grow input input-bordered input-sm w-full"
+                        class="input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />
@@ -242,7 +242,7 @@ const editConnection = (id: number) => {
                         id="auth-type"
                         v-model="form.auth_type"
                         :placeholder="$t('ssh.auth_type')"
-                        class="js-shortcut grow select select-bordered select-sm w-full"
+                        class="grow select select-bordered select-sm w-full"
                     >
                         <option value="key">Private Key (Recommended)</option>
                         <option value="password">Password</option>
@@ -255,7 +255,7 @@ const editConnection = (id: number) => {
                         type="text"
                         id="username"
                         v-model="form.username"
-                        class="js-shortcut grow input input-bordered input-sm w-full"
+                        class="input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />
@@ -268,7 +268,7 @@ const editConnection = (id: number) => {
                         type="password"
                         id="password"
                         v-model="form.password"
-                        class="js-shortcut grow input input-bordered input-sm w-full"
+                        class="input input-bordered input-sm w-full"
                     />
                 </div>
                 <div
@@ -280,7 +280,7 @@ const editConnection = (id: number) => {
                         type="text"
                         id="key"
                         v-model="form.private_key"
-                        class="js-shortcut grow input input-bordered input-sm w-full"
+                        class="input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />

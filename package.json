@@ -6,8 +6,7 @@
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
     "main": "dist/main.js",
     "scripts": {
-        "dev": "vite",
-        "electron": "node build.js --dev && electron .",
+        "dev": "concurrently \"vite\" \"node build.js --dev && electron .\"",
         "build": "vite build && node build.js --prod",
         "start": "npm run build && electron .",
         "release-mac": "electron-builder --publish always --mac --universal",
@@ -59,7 +58,7 @@
         "tree-kill": "^1.2.2",
         "typescript": "*",
         "vue": "3.4.23",
-        "vue-i18n": "9.4.1",
+        "vue-i18n": "^9.14.2",
         "vue-json-pretty": "^2.4.0",
         "which": "^4.0.0"
     },
@@ -71,6 +70,7 @@
         "@types/which": "^3.0.3",
         "@vitejs/plugin-vue": "5.0.4",
         "@vue/compiler-sfc": "3.4.23",
+        "concurrently": "^9.1.2",
         "daisyui": "^4.10.2",
         "electron": "^32.1.0",
         "electron-builder": "24.13.3",
