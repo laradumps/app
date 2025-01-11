@@ -5,8 +5,6 @@ import { useSSHStore } from "@/store/ssh";
 import Modal from "./Modal.vue";
 import { Ref } from "vue";
 import { ConnectionConfig } from "@/types/Ssh.type";
-import TextInput from "./TextInput.vue";
-import SelectInput from "./SelectInput.vue";
 import { onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -201,47 +199,56 @@ const editConnection = (id: number) => {
             >
                 <div class="grid grid-cols-2 items-center">
                     <div>{{ $t("ssh.name") }}</div>
-                    <TextInput
+                    <input
+                        type="text"
                         id="name"
                         v-model="form.name"
                         placeholder="production-server"
+                        class="js-shortcut grow input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />
                 <div class="grid grid-cols-2 items-center">
                     <div>{{ $t("ssh.host") }}</div>
-                    <TextInput
+                    <input
+                        type="text"
                         id="host"
                         v-model="form.host"
                         placeholder="1.2.3.4"
+                        class="js-shortcut grow input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />
                 <div class="grid grid-cols-2 items-center">
                     <div>{{ $t("ssh.port") }}</div>
-                    <TextInput
+                    <input
+                        type="number"
                         id="port"
                         v-model="form.port"
+                        class="js-shortcut grow input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />
                 <div class="grid grid-cols-2 items-center">
                     <div>{{ $t("ssh.auth_type") }}</div>
-                    <SelectInput
+                    <select
                         id="auth-type"
                         v-model="form.auth_type"
                         :placeholder="$t('ssh.auth_type')"
+                        class="js-shortcut grow select select-bordered select-sm w-full"
                     >
                         <option value="key">Private Key (Recommended)</option>
                         <option value="password">Password</option>
-                    </SelectInput>
+                    </select>
                 </div>
                 <Divider />
                 <div class="grid grid-cols-2 items-center">
                     <div>{{ $t("ssh.username") }}</div>
-                    <TextInput
+                    <input
+                        type="text"
                         id="username"
                         v-model="form.username"
+                        class="js-shortcut grow input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />
@@ -250,10 +257,11 @@ const editConnection = (id: number) => {
                     class="grid grid-cols-2 items-center"
                 >
                     <div>{{ $t("ssh.password") }}</div>
-                    <TextInput
-                        id="password"
+                    <input
                         type="password"
+                        id="password"
                         v-model="form.password"
+                        class="js-shortcut grow input input-bordered input-sm w-full"
                     />
                 </div>
                 <div
@@ -261,9 +269,11 @@ const editConnection = (id: number) => {
                     class="grid grid-cols-2 items-center"
                 >
                     <div>{{ $t("ssh.private_key") }}</div>
-                    <TextInput
+                    <input
+                        type="text"
                         id="key"
                         v-model="form.private_key"
+                        class="js-shortcut grow input input-bordered input-sm w-full"
                     />
                 </div>
                 <Divider />
