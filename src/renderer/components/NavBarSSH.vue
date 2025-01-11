@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { ArrowPathIcon, ServerIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { ArrowPathIcon, PencilIcon, ServerIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import { useSSHStore } from "@/store/ssh";
 import Modal from "./Modal.vue";
 import { Ref } from "vue";
@@ -8,8 +8,10 @@ import { ConnectionConfig } from "@/types/Ssh.type";
 import TextInput from "./TextInput.vue";
 import SelectInput from "./SelectInput.vue";
 import { onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 
-const addSSHModal = ref();
+const i18n = useI18n();
+const sshModal = ref();
 const sshStore = useSSHStore();
 const form: Ref<ConnectionConfig> = ref({
     id: Date.now(),
@@ -21,6 +23,7 @@ const form: Ref<ConnectionConfig> = ref({
     password: "",
     private_key: ""
 });
+const editId = ref<number | null>(null);
 const emit = defineEmits(["connected"]);
 const listenId = ref<number | null>();
 
@@ -37,6 +40,10 @@ onUnmounted(() => {
 const connect = () => {
     if (sshStore.connecting) return;
     sshStore.setConnecting(true);
+    if (editId.value) {
+        window.ipcRenderer.send("ssh:connect", { ...form.value }, { state: "edit", notify: true });
+        return;
+    }
     window.ipcRenderer.send("ssh:connect", { ...form.value }, { state: "create", notify: true });
 };
 
@@ -45,13 +52,13 @@ const connectResponse = (event: any, response: any) => {
 
     if (response.data.state === "create" && response.connected) {
         sshStore.addConnection(response.config);
-        addSSHModal.value.closeModal();
+        sshModal.value.closeModal();
         emit("connected");
     }
 
     if (response.data.state === "edit" && response.connected) {
         sshStore.updateConnection(response.config.id, response.config);
-        addSSHModal.value.closeModal();
+        sshModal.value.closeModal();
         emit("connected");
     }
 };
@@ -78,14 +85,45 @@ const removeConnection = (id: number) => {
         window.ipcRenderer.send("ssh:disconnect");
         listenId.value = null;
     }
-    sshStore.remove(id);
+    window.ipcRenderer.on("main:dialog-choice", (event, arg) => {
+        if (arg === 0) {
+            sshStore.remove(id);
+        }
+    });
+    window.ipcRenderer.send("main:dialog", {
+        buttons: [i18n.t("yes"), i18n.t("no")],
+        title: i18n.t("ssh.remove_connection"),
+        message: i18n.t("ssh.remove_connection_confirm")
+    });
+};
+
+const addConnection = () => {
+    form.value = {
+        id: Date.now(),
+        name: "",
+        host: "",
+        port: 22,
+        username: "",
+        auth_type: "key",
+        password: "",
+        private_key: ""
+    };
+    editId.value = null;
+    sshModal.value.openModal();
+};
+
+const editConnection = (id: number) => {
+    let conn = sshStore.getConnection(id);
+    form.value = { ...conn };
+    editId.value = id;
+    sshModal.value.openModal();
 };
 </script>
 
 <template>
     <div class="dropdown dropdown-left">
         <button
-            :title="$t('ssh')"
+            :title="$t('menu.ssh')"
             class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         >
             <ServerIcon class="w-4" />
@@ -115,17 +153,23 @@ const removeConnection = (id: number) => {
                                 class="toggle toggle-xs toggle-accent mr-1"
                                 :value="connection.id"
                             />
-                            <span class="text-[10px] whitespace-nowrap font-semibold uppercase">{{ connection.name }}</span>
+                            <span class="text-[10px] whitespace-nowrap font-semibold uppercase truncate max-w-[100px]">{{ connection.name }}</span>
                         </label>
-                        <span v-if="sshStore.connecting && connection.id === listenId">
-                            <ArrowPathIcon class="w-4 animate-spin" />
-                        </span>
-                        <span v-else>
-                            <TrashIcon
-                                @click="removeConnection(connection.id)"
-                                class="w-4 hover:text-red-500"
-                            />
-                        </span>
+                        <div class="flex w-[50px] items-center justify-end">
+                            <template v-if="sshStore.connecting && connection.id === listenId">
+                                <ArrowPathIcon class="w-4 animate-spin" />
+                            </template>
+                            <template v-else>
+                                <PencilIcon
+                                    @click="editConnection(connection.id)"
+                                    class="w-4 hover:text-blue-500 mr-1"
+                                />
+                                <TrashIcon
+                                    @click="removeConnection(connection.id)"
+                                    class="w-4 hover:text-red-500"
+                                />
+                            </template>
+                        </div>
                     </div>
                 </li>
             </div>
@@ -140,7 +184,7 @@ const removeConnection = (id: number) => {
             <div>
                 <button
                     class="btn btn-warning text-warning-content mt-6 w-[100px] text-[10px]"
-                    @click="addSSHModal.openModal()"
+                    @click="addConnection"
                 >
                     Add Connection
                 </button>
@@ -148,15 +192,15 @@ const removeConnection = (id: number) => {
         </ul>
 
         <Modal
-            ref="addSSHModal"
-            :title="$t('Add SSH Connection')"
+            ref="sshModal"
+            :title="editId ? $t('ssh.edit_connection') : $t('ssh.add_connection')"
         >
             <form
                 class="mx-auto space-y-3"
                 @submit.prevent="connect"
             >
                 <div class="grid grid-cols-2 items-center">
-                    <div>Name</div>
+                    <div>{{ $t("ssh.name") }}</div>
                     <TextInput
                         id="name"
                         v-model="form.name"
@@ -165,7 +209,7 @@ const removeConnection = (id: number) => {
                 </div>
                 <Divider />
                 <div class="grid grid-cols-2 items-center">
-                    <div>Host</div>
+                    <div>{{ $t("ssh.host") }}</div>
                     <TextInput
                         id="host"
                         v-model="form.host"
@@ -174,7 +218,7 @@ const removeConnection = (id: number) => {
                 </div>
                 <Divider />
                 <div class="grid grid-cols-2 items-center">
-                    <div>Port</div>
+                    <div>{{ $t("ssh.port") }}</div>
                     <TextInput
                         id="port"
                         v-model="form.port"
@@ -182,11 +226,11 @@ const removeConnection = (id: number) => {
                 </div>
                 <Divider />
                 <div class="grid grid-cols-2 items-center">
-                    <div>Authentication Type</div>
+                    <div>{{ $t("ssh.auth_type") }}</div>
                     <SelectInput
                         id="auth-type"
                         v-model="form.auth_type"
-                        placeholder="Authentication Type"
+                        :placeholder="$t('ssh.auth_type')"
                     >
                         <option value="key">Private Key (Recommended)</option>
                         <option value="password">Password</option>
@@ -194,7 +238,7 @@ const removeConnection = (id: number) => {
                 </div>
                 <Divider />
                 <div class="grid grid-cols-2 items-center">
-                    <div>Username</div>
+                    <div>{{ $t("ssh.username") }}</div>
                     <TextInput
                         id="username"
                         v-model="form.username"
@@ -205,7 +249,7 @@ const removeConnection = (id: number) => {
                     v-if="form.auth_type === 'password'"
                     class="grid grid-cols-2 items-center"
                 >
-                    <div>Password</div>
+                    <div>{{ $t("ssh.password") }}</div>
                     <TextInput
                         id="password"
                         type="password"
@@ -216,11 +260,10 @@ const removeConnection = (id: number) => {
                     v-if="form.auth_type === 'key'"
                     class="grid grid-cols-2 items-center"
                 >
-                    <div>Private Key Path</div>
+                    <div>{{ $t("ssh.private_key") }}</div>
                     <TextInput
                         id="key"
                         v-model="form.private_key"
-                        placeholder="path to private key"
                     />
                 </div>
                 <Divider />
@@ -233,7 +276,7 @@ const removeConnection = (id: number) => {
                             v-if="sshStore.connecting"
                             class="w-4 animate-spin"
                         />
-                        <span v-else>Connect</span>
+                        <span v-else>{{ $t("ssh.connect") }}</span>
                     </button>
                 </div>
             </form>
