@@ -15,14 +15,14 @@ jobs:
             - name: Check out Git repository
               uses: actions/checkout@v4
 
-            - name: Install Node.js and Yarn
+            - name: Install Node.js and npm
               uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  cache: "yarn"
+                  cache: "npm"
 
             - name: Install dependencies
-              run: yarn
+              run: npm install --force
 
             - name: Bundle with webpack and esbuild
               run: yarn run build
