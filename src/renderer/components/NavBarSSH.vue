@@ -8,9 +8,11 @@ import { ConnectionConfig } from "@/types/Ssh.type";
 import { onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import IconPlus from "@/components/Icons/IconPlus.vue";
+import Divider from "@/components/Divider.vue";
 
 const i18n = useI18n();
 const sshModal = ref();
+const connected = ref(false);
 const sshStore = useSSHStore();
 const form: Ref<ConnectionConfig> = ref({
     id: Date.now(),
@@ -39,6 +41,7 @@ onUnmounted(() => {
 const connect = () => {
     if (sshStore.connecting) return;
     sshStore.setConnecting(true);
+
     if (editId.value) {
         window.ipcRenderer.send("ssh:connect", { ...form.value }, { state: "edit", notify: true });
         return;
@@ -78,7 +81,7 @@ const listenResponse = (event: any, response: any) => {
         listenId.value = null;
     }
 
-    console.log(response);
+    connected.value = response.connected;
 };
 
 const removeConnection = (id: number) => {
@@ -127,7 +130,10 @@ const editConnection = (id: number) => {
             :title="$t('menu.ssh')"
             class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         >
-            <ServerIcon class="w-4" />
+            <ServerIcon
+                class="w-4"
+                :class="{ 'text-primary': connected }"
+            />
         </button>
 
         <ul
@@ -141,7 +147,7 @@ const editConnection = (id: number) => {
                     @click="addConnection"
                 >
                     <IconPlus class="w-4" />
-                    Add Connection
+                    {{ $t("ssh.add_connection") }}
                 </button>
             </div>
             <div
@@ -152,7 +158,7 @@ const editConnection = (id: number) => {
                     v-for="connection in sshStore.connections"
                     :key="`connection-${connection.id}`"
                 >
-                    <div class="flex items-center justify-between p-2 my-1">
+                    <div class="flex items-center justify-between px-0.5 my-1">
                         <label class="bg-transparent text-base-content flex items-center cursor-pointer">
                             <input
                                 type="checkbox"

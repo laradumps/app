@@ -555,6 +555,8 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         return;
     }
 
+    console.log(content);
+
     if (applicationPath.value != content.application_path) {
         window.ipcRenderer.send("environment::check", {
             applicationPath: content.application_path
