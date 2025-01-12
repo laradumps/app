@@ -190,7 +190,7 @@ const editConnection = (id: number) => {
 
             <div
                 v-else
-                class="text-xs text-neutral-content"
+                class="text-xs text-base-content mt-5"
             >
                 No connections!
             </div>
