@@ -66,6 +66,7 @@ const connectResponse = (event: any, response: any) => {
 };
 
 const listen = (id: number, event: any) => {
+    connected.value = false;
     window.ipcRenderer.send("ssh:disconnect");
     listenId.value = event.target.checked ? id : null;
     if (listenId.value) {

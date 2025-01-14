@@ -5,7 +5,7 @@ import { IdeHandle } from "@/types/IdeHandle";
 import IconPencil from "@/components/Icons/IconPencil.vue";
 
 const props = defineProps<{
-    ideHandler?: IdeHandle;
+    ideHandler: IdeHandle;
     label?: string;
     showIcon: boolean;
 }>();
@@ -56,12 +56,12 @@ const label = computed(() => {
         return props.label;
     }
 
-    if (props.ideHandler.line?.toString() !== "") {
-        return props.ideHandler.class_name + ":" + props.ideHandler.line;
+    if (props.ideHandler.real_path == null || props.ideHandler.real_path.includes("ExecutionLoopClosure")) {
+        return "Tinker";
     }
 
-    if (props.ideHandler.real_path == null) {
-        return "Tinker";
+    if (props.ideHandler.line?.toString() !== "") {
+        return props.ideHandler.class_name + ":" + props.ideHandler.line;
     }
 
     return "";
@@ -72,10 +72,10 @@ const label = computed(() => {
     <div>
         <a
             v-if="!showIcon"
-            :href="link"
+            :href="label === 'Tinker' ? '#' : link"
             :title="label"
-            :class="{ 'cursor-pointer': link }"
-            class="flex items-center group cursor-pointer"
+            :class="{ 'cursor-pointer': link && label !== 'Tinker' }"
+            class="flex items-center group"
         >
             <span class="break-all tracking-wider hover:opacity-75 flex items-center">
                 <span
