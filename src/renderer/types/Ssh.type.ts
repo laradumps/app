@@ -7,6 +7,7 @@ export interface ConnectionConfig {
     auth_type: string;
     password: string | undefined;
     private_key: string | undefined;
+    new_window: boolean;
 }
 
 export interface ConnectionReply {

@@ -1,7 +1,7 @@
 <template>
     <svg
         stroke="currentColor"
-        class="h-5 w-5"
+        class="h-3.5"
         fill="none"
         viewBox="0 0 24 24"
     >

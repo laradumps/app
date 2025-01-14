@@ -22,7 +22,8 @@ const form: Ref<ConnectionConfig> = ref({
     username: "",
     auth_type: "key",
     password: "",
-    private_key: ""
+    private_key: "",
+    new_window: false
 });
 const editId = ref<number | null>(null);
 const emit = defineEmits(["connected"]);
@@ -288,6 +289,15 @@ const editConnection = (id: number) => {
                         id="key"
                         v-model="form.private_key"
                         class="input input-bordered input-sm w-full"
+                    />
+                </div>
+                <Divider />
+                <div class="grid grid-cols-2 items-center">
+                    <label>Show in new window</label>
+                    <input
+                        type="checkbox"
+                        v-model="form.new_window"
+                        class="toggle toggle-xs toggle-accent"
                     />
                 </div>
                 <Divider />

@@ -10,6 +10,7 @@ class SSHClient {
     private conn: Client;
     private isConnected: boolean;
     private readonly name: string;
+    private readonly newWindow: boolean;
 
     constructor(connectionConfig: any) {
         this.config = {
@@ -21,6 +22,7 @@ class SSHClient {
         };
 
         this.name = connectionConfig.name;
+        this.newWindow = connectionConfig.new_window;
 
         if (connectionConfig.auth_type === "password" && connectionConfig.password) {
             this.config.password = connectionConfig.password;
@@ -92,7 +94,7 @@ class SSHClient {
                                         type: "screen",
                                         screen: {
                                             screen_name: this.name + " - " + this.config.host,
-                                            new_window: true,
+                                            new_window: this.newWindow,
                                             raise_in: 0,
                                             pinned: false,
                                             visible: false
