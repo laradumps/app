@@ -1,12 +1,15 @@
-import { Client, ConnectConfig } from "ssh2";
+import { AcceptConnection, Client, ConnectConfig, TcpConnectionDetails } from "ssh2";
 import { readFileSync } from "fs";
 import { ipcMain, Notification } from "electron";
 import net from "net";
+import axios from "axios";
+import { Payload } from "@/types/Payload";
 
 class SSHClient {
-    private config: ConnectConfig;
+    private readonly config: ConnectConfig;
     private conn: Client;
     private isConnected: boolean;
+    private readonly name: string;
 
     constructor(connectionConfig: any) {
         this.config = {
@@ -16,6 +19,9 @@ class SSHClient {
             password: "",
             privateKey: ""
         };
+
+        this.name = connectionConfig.name;
+
         if (connectionConfig.auth_type === "password" && connectionConfig.password) {
             this.config.password = connectionConfig.password;
         }
@@ -53,14 +59,62 @@ class SSHClient {
                     }
                     resolve();
                 })
-                .on("tcp connection", (info, accept) => {
+                .on("tcp connection", (info: TcpConnectionDetails, accept: AcceptConnection) => {
                     // Forward the connection to the local application
                     const stream = accept();
                     const localSocket = net.connect(port, "127.0.0.1", () => {
-                        stream.pipe(localSocket).pipe(stream); // Forward data between remote and local
+                        let buffer = "";
+                        let expectedLength = 0;
+
+                        stream.on("data", async (data: Buffer) => {
+                            try {
+                                buffer += data.toString();
+
+                                if (expectedLength === 0) {
+                                    const contentLengthMatch = buffer.match(/Content-Length:\s*(\d+)/);
+                                    if (contentLengthMatch) {
+                                        expectedLength = parseInt(contentLengthMatch[1], 10);
+                                    }
+                                }
+
+                                const jsonStartIndex = buffer.indexOf("{");
+                                if (expectedLength > 0 && buffer.length >= expectedLength + jsonStartIndex) {
+                                    const jsonString = buffer.substring(jsonStartIndex, jsonStartIndex + expectedLength);
+
+                                    const payload: Payload = JSON.parse(jsonString);
+
+                                    const fullUrl = `http://${info.destIP}:${info.destPort}/api/dumps`;
+
+                                    await axios.post(fullUrl, payload);
+
+                                    const screenPayload = {
+                                        ...payload,
+                                        type: "screen",
+                                        screen: {
+                                            screen_name: this.name + " - " + this.config.host,
+                                            new_window: true,
+                                            raise_in: 0,
+                                            pinned: false,
+                                            visible: false
+                                        }
+                                    };
+                                    await axios.post(fullUrl, screenPayload);
+
+                                    buffer = buffer.substring(jsonStartIndex + expectedLength);
+                                    expectedLength = 0;
+                                }
+                            } catch (postError) {
+                                new Notification({
+                                    title: "SSH",
+                                    body: "Error sending HTTP POST"
+                                }).show();
+                                console.error("Error sending HTTP POST:", postError);
+                            }
+                        });
+
+                        localSocket.pipe(stream);
                     });
 
-                    // Handle errors
                     localSocket.on("error", (err) => {
                         console.error("Local socket error:", err);
                         stream.end();
