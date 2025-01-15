@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+        - "README.md"
   pull_request:
 
 jobs:
@@ -25,7 +27,7 @@ jobs:
           node-version: '22.x'
 
       - name: Install NPM Dependencies
-        run: npm install
+        run: npm install --force
 
       - name: Install Snapcraft
         if: matrix.os == 'ubuntu-latest'
