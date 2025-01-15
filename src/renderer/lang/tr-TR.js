@@ -97,5 +97,19 @@ export default {
     pause: "Duraklat",
     is_paused: "LaraDumps duraklatıldı.",
     remove: "Kaldır",
-    collapse: "Collapse all dumps"
+    collapse: "Collapse all dumps",
+    ssh: {
+        add_connection: "Add Connection",
+        edit_connection: "Edit Connection",
+        remove_connection: "Remove Connection",
+        remove_connection_confirm: "Are you sure you want to remove this connection?",
+        name: "Name",
+        host: "Host",
+        port: "Port",
+        username: "Username",
+        password: "Password",
+        auth_type: "Authentication Type",
+        private_key: "Private Key Path",
+        connect: "Connect"
+    }
 };

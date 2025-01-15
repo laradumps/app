@@ -27,7 +27,8 @@ export default {
         settings: "Settings",
         reorder: "Reorder",
         saved_dumps: "Saved Dumps",
-        toggle_menu: "Show menu"
+        toggle_menu: "Show menu",
+        ssh: "SSH"
     },
     settings: {
         settings: "Settings",
@@ -97,5 +98,19 @@ export default {
     pause: "Pause",
     is_paused: "LaraDumps is paused.",
     remove: "Remove",
-    collapse: "Collapse all dumps"
+    collapse: "Collapse all dumps",
+    ssh: {
+        add_connection: "Add Connection",
+        edit_connection: "Edit Connection",
+        remove_connection: "Remove Connection",
+        remove_connection_confirm: "Are you sure you want to remove this connection?",
+        name: "Name",
+        host: "Host",
+        port: "Port",
+        username: "Username",
+        password: "Password",
+        auth_type: "Authentication Type",
+        private_key: "Private Key Path",
+        connect: "Connect"
+    }
 };

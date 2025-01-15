@@ -2,6 +2,7 @@
 import { SignalIcon, SignalSlashIcon } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref } from "vue";
 import JSConfetti from "js-confetti";
+import { useCurrentProject } from "@/store/current-project";
 
 interface Project {
     path: string;
@@ -18,6 +19,8 @@ const selectedProject = ref<string>("");
 const newProject = ref<boolean>(false);
 const projects = ref<Project[]>([]);
 const environments = ref<Environment[]>([]);
+
+const currentProjectStore = useCurrentProject();
 
 onMounted(async () => {
     projects.value = [];
@@ -103,6 +106,7 @@ const removeEnvironment = () => {
 };
 
 const setActiveProject = () => {
+    currentProjectStore.set(selectedProject.value);
     window.ipcRenderer.send("main:setting-get-environments", selectedProject.value);
 };
 </script>
@@ -127,12 +131,12 @@ const setActiveProject = () => {
         </div>
         <ul
             tabindex="0"
-            class="dropdown-content min-w-40 overflow-y-auto z-200 menu p-2 bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto mt-[35px] !right-0"
+            class="dropdown-content min-w-40 overflow-y-auto z-200 menu p-2 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[35px] !right-0"
         >
             <select
                 v-model="selectedProject"
                 @change="setActiveProject()"
-                class="mb-3 select select-bordered select-xs bg-neutral text-neutral-content w-full h-[1.85rem] font-semibold max-w-xs"
+                class="mb-3 select select-bordered select-xs text-base-content w-full h-[1.85rem] font-semibold max-w-xs"
             >
                 <option value="">Select a project</option>
 
@@ -147,7 +151,7 @@ const setActiveProject = () => {
 
             <div
                 v-if="environments.length === 0"
-                class="text-[10px] text-neutral-content"
+                class="text-[10px] text-base-content"
             >
                 No laradumps.yaml found in this project
             </div>
@@ -161,7 +165,7 @@ const setActiveProject = () => {
                     v-for="env in environments"
                 >
                     <label
-                        class="bg-neutral text-neutral-content label !justify-start !text-left p-1.5"
+                        class="text-base-content label !justify-start !text-left p-1.5 my-0.5"
                         :class="{ 'bg-base-200': env.selected }"
                     >
                         <input
@@ -171,7 +175,7 @@ const setActiveProject = () => {
                             class="toggle toggle-xs toggle-accent"
                             @change="save"
                         />
-                        <span class="text-[10px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
+                        <span class="text-[11px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
                     </label>
                 </li>
             </div>

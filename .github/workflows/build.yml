@@ -15,17 +15,14 @@ jobs:
             - name: Check out Git repository
               uses: actions/checkout@v4
 
-            - name: Install Node.js and Yarn
+            - name: Install Node.js and npm
               uses: actions/setup-node@v4
               with:
-                  node-version: 20
-                  cache: "yarn"
+                  node-version: 22
+                  cache: "npm"
 
             - name: Install dependencies
-              run: yarn
-
-            - name: Bundle with webpack and esbuild
-              run: yarn run build
+              run: npm install --force
 
             - name: Updater
               run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
@@ -39,19 +36,19 @@ jobs:
 
             - name: 🐧 Build Linux
               if: matrix.os == 'ubuntu-latest'
-              run: npm run release-linux
+              run: npm run publish-linux
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
                   SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
             - name: 💻 Build Windows
               if: matrix.os == 'windows-latest'
-              run: npm run release-win
+              run: npm run publish-win
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
             - name:  Build Mac
               if: matrix.os == 'macos-latest'
-              run: npm run release-mac
+              run: npm run publish-mac
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}

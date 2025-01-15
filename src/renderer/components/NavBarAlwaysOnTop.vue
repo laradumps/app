@@ -38,7 +38,7 @@ const toggleAlwaysOnTop = () => {
         @click="toggleAlwaysOnTop()"
     >
         <IconPin
-            class="w-4"
+            class="w-3.5"
             :class="{ 'text-primary': isAlwaysOnTop }"
         />
     </button>

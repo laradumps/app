@@ -410,11 +410,11 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
         menuTemplate.splice(1, 0, {
             label: "Edit",
             submenu: [
-                {
-                    label: "Copy",
-                    accelerator: "CmdOrCtrl+C",
-                    selector: "copy:"
-                }
+                { label: "Undo", role: "undo", accelerator: "CmdOrCtrl+Z" },
+                { label: "Redo", role: "redo", accelerator: "Shift+CmdOrCtrl+Z" },
+                { type: "separator" },
+                { label: "Copy", role: "copy", accelerator: "CmdOrCtrl+C" },
+                { label: "Paste", role: "paste", accelerator: "CmdOrCtrl+V" }
             ]
         });
     }
