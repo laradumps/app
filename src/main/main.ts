@@ -127,18 +127,12 @@ function createWindow(): BrowserWindow {
     }
 
     electronLocalShortcut.register("CommandOrControl+Shift+X", (): void => {
-        window.ipcRenderer.send("ssh:disconnect");
-        setTimeout(() => {
-            mainWindow.reload();
-            mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
-        }, 30);
+        mainWindow.reload();
     });
 
     win.once("ready-to-show", (): void => {
         win.show();
         win.focus();
-
-        mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
 
         if (isDev) {
             win.webContents.openDevTools();
@@ -428,7 +422,6 @@ ipcMain.on("main:is-always-on-top", (): void => {
 
 ipcMain.on("main:get-app-version", (): void => {
     mainWindow.webContents.send("main:app-version", { version: app.getVersion() });
-    mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
 });
 
 ipcMain.on("main:show", (): void => {
