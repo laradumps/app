@@ -4,7 +4,7 @@ import { ArrowPathIcon, PencilIcon, ServerIcon, TrashIcon } from "@heroicons/vue
 import { useSSHStore } from "@/store/ssh";
 import Modal from "./Modal.vue";
 import { Ref } from "vue";
-import { ConnectionConfig } from "@/types/Ssh.type";
+import { ConnectionConfig } from "@/types/ssh.type";
 import { onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import IconPlus from "@/components/Icons/IconPlus.vue";
@@ -23,7 +23,8 @@ const form: Ref<ConnectionConfig> = ref({
     auth_type: "key",
     password: "",
     private_key: "",
-    new_window: false
+    new_window: false,
+    connected: false
 });
 const editId = ref<number | null>(null);
 const emit = defineEmits(["connected"]);
@@ -74,16 +75,32 @@ const listen = (id: number, event: any) => {
         sshStore.setConnecting(true);
         let conn = sshStore.getConnection(id);
         window.ipcRenderer.send("ssh:listen", { ...conn });
+    } else {
+        const connection: ConnectionConfig | undefined = sshStore.getConnection(id);
+
+        if (connection) {
+            connection.connected = false;
+            sshStore.updateConnection(id, connection);
+        }
     }
 };
 
-const listenResponse = (event: any, response: any) => {
+const listenResponse = (event: any, response: { connected: boolean }) => {
     sshStore.setConnecting(false);
-    if (!response.connected) {
-        listenId.value = null;
-    }
 
     connected.value = response.connected;
+
+    if (listenId.value) {
+        const connection: ConnectionConfig | undefined = sshStore.getConnection(listenId.value);
+        if (connection) {
+            connection.connected = true;
+            sshStore.updateConnection(listenId.value, connection);
+        }
+
+        return;
+    }
+
+    window.ipcRenderer.send("ssh:disconnect");
 };
 
 const removeConnection = (id: number) => {
@@ -112,7 +129,9 @@ const addConnection = () => {
         username: "",
         auth_type: "key",
         password: "",
-        private_key: ""
+        private_key: "",
+        new_window: false,
+        connected: false
     };
     editId.value = null;
     sshModal.value.openModal();

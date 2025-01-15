@@ -3,14 +3,19 @@ import { computed, defineProps, onMounted, ref, watch } from "vue";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import { IdeHandle } from "@/types/IdeHandle";
 import IconPencil from "@/components/Icons/IconPencil.vue";
+import { useCurrentProject } from "@/store/current-project";
 
 const props = defineProps<{
     ideHandler: IdeHandle;
     label?: string;
-    showIcon: boolean;
+    showIcon: {
+        type: boolean;
+        required: false;
+    };
 }>();
 
 const IDEHandler = useIDEHandlerStore();
+const currentProjectStore = useCurrentProject();
 
 const link = ref();
 
@@ -19,9 +24,7 @@ onMounted(() => {
 });
 
 watch(IDEHandler.value, (value) => {
-    const ide = value;
-
-    generateLink(ide);
+    generateLink(value);
 });
 
 const generateLink = (ide: string) => {
@@ -29,10 +32,15 @@ const generateLink = (ide: string) => {
     const realPath = props.ideHandler.real_path;
     const workdir = props.ideHandler.workdir;
     const wsl_config = props.ideHandler.wsl_config;
+    const base_path = props.ideHandler.base_path;
 
     const relativePath = realPath?.replace(workdir, "").replace(projectPath, "");
 
-    const linkPath = projectPath + relativePath;
+    let linkPath = projectPath + relativePath;
+
+    if (base_path) {
+        linkPath = linkPath.replace(base_path, currentProjectStore.value);
+    }
 
     if (realPath != null) {
         if (IDEHandler.value.includes("wsl_config")) {
@@ -44,6 +52,11 @@ const generateLink = (ide: string) => {
 
             link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
 
+            return;
+        }
+
+        if (base_path && currentProjectStore.value) {
+            link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
             return;
         }
 

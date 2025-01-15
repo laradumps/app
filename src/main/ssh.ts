@@ -4,6 +4,7 @@ import { ipcMain, Notification } from "electron";
 import net from "net";
 import axios from "axios";
 import { Payload } from "@/types/Payload";
+import { ConnectionConfig } from "@/types/ssh.type";
 
 class SSHClient {
     private readonly config: ConnectConfig;
@@ -93,7 +94,7 @@ class SSHClient {
                                         ...payload,
                                         type: "screen",
                                         screen: {
-                                            screen_name: this.name + " - " + this.config.host,
+                                            screen_name: this.name,
                                             new_window: this.newWindow,
                                             raise_in: 0,
                                             pinned: false,
@@ -164,17 +165,19 @@ export const connect = async (event: any, config: any, data: any = {}) => {
     }
 };
 
-export const listen = async (event: any, config: any) => {
+export const listen = async (event: any, config: ConnectionConfig) => {
     sshClient = new SSHClient(config);
     try {
         await sshClient.connect();
         await sshClient.forwardIn(9191);
         event.reply("ssh:listen-response", {
-            connected: true
+            connected: true,
+            id: config.id
         });
     } catch (error: any) {
         event.reply("ssh:listen-response", {
-            connected: false
+            connected: false,
+            id: config.id
         });
         new Notification({
             title: "Error",

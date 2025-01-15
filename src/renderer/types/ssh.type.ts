@@ -8,9 +8,5 @@ export interface ConnectionConfig {
     password: string | undefined;
     private_key: string | undefined;
     new_window: boolean;
-}
-
-export interface ConnectionReply {
     connected: boolean;
-    config: ConnectionConfig;
 }

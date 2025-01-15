@@ -2,6 +2,7 @@
 import { SignalIcon, SignalSlashIcon } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref } from "vue";
 import JSConfetti from "js-confetti";
+import { useCurrentProject } from "@/store/current-project";
 
 interface Project {
     path: string;
@@ -18,6 +19,8 @@ const selectedProject = ref<string>("");
 const newProject = ref<boolean>(false);
 const projects = ref<Project[]>([]);
 const environments = ref<Environment[]>([]);
+
+const currentProjectStore = useCurrentProject();
 
 onMounted(async () => {
     projects.value = [];
@@ -103,6 +106,7 @@ const removeEnvironment = () => {
 };
 
 const setActiveProject = () => {
+    currentProjectStore.set(selectedProject.value);
     window.ipcRenderer.send("main:setting-get-environments", selectedProject.value);
 };
 </script>

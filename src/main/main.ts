@@ -127,9 +127,11 @@ function createWindow(): BrowserWindow {
     }
 
     electronLocalShortcut.register("CommandOrControl+Shift+X", (): void => {
-        mainWindow.reload();
-
-        mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
+        window.ipcRenderer.send("ssh:disconnect");
+        setTimeout(() => {
+            mainWindow.reload();
+            mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
+        }, 30);
     });
 
     win.once("ready-to-show", (): void => {
