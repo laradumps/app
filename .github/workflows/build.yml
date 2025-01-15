@@ -1,4 +1,4 @@
-name: build
+name: Release
 
 on:
     workflow_dispatch:
@@ -34,20 +34,20 @@ jobs:
               run: |
                   sudo snap install snapcraft --classic
 
-            - name: 🐧 Build Linux
+            - name: 🐧 Release Linux
               if: matrix.os == 'ubuntu-latest'
               run: npm run publish-linux
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
                   SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
-            - name: 💻 Build Windows
+            - name: 💻 Release Windows
               if: matrix.os == 'windows-latest'
               run: npm run publish-win
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-            - name:  Build Mac
+            - name:  Release Mac
               if: matrix.os == 'macos-latest'
               run: npm run publish-mac
               env:
