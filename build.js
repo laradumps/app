@@ -4,7 +4,7 @@ const options = {
     platform: "node",
     bundle: true,
     target: 'node20',
-    external: ["electron"],
+    external: ["electron", "cpu-features"],
     define: {
         "process.env.NODE_ENV": `"${process.argv[2] === "--dev" ? "development" : "production"}"`,
         "process.platform": `"${process.platform}"`
