@@ -15,7 +15,6 @@ import Store from "electron-store";
 const store = new Store();
 
 import { initSavedDumps } from "./window/saved-dumps";
-import { initCoffeeWindow } from "./window/coffee";
 
 import { configureLocalShortcut, registerShortcuts } from "./shortcut";
 
@@ -28,7 +27,6 @@ const isMac: boolean = process.platform === "darwin";
 const AutoLaunch = require("auto-launch");
 
 let mainWindow: BrowserWindow;
-let coffeeWindow: BrowserWindow;
 let savedDumpWindow: BrowserWindow;
 let tray: Electron.Tray;
 let globalUpdateInfo: UpdateInfo;
@@ -212,7 +210,6 @@ ipcMain.on("screen-window:show", (event, arg) => {
 
 app.whenReady().then(async (): Promise<void> => {
     mainWindow = createWindow();
-    coffeeWindow = initCoffeeWindow();
     savedDumpWindow = initSavedDumps();
 
     await createMenu(mainWindow, windowsMap);

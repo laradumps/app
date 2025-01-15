@@ -356,8 +356,6 @@ const dumpListeners = () => {
 
     window.ipcRenderer.on("query", (event, { content }) => dispatch("query", event, content));
 
-    window.ipcRenderer.on("coffee", (event, arg) => window.ipcRenderer.send("main:grab-a-coffee", arg));
-
     window.ipcRenderer.on("time_track", (event, { content }) => {
         const exist = payload.value.filter((globalPayload: Payload) => globalPayload.label === content.time_track.label);
 
@@ -373,10 +371,6 @@ const dumpListeners = () => {
         const elapsedTime = humanizeDuration(duration.asMilliseconds());
 
         payload.value.filter((globalPayload) => globalPayload.label === content.time_track.label).map((globalPayload) => (globalPayload.time_track.elapsed_time = elapsedTime));
-    });
-
-    window.ipcRenderer.on("coffee", (event, arg) => {
-        window.ipcRenderer.send("coffee:grab-a-coffee", arg);
     });
 };
 
