@@ -1,5 +1,5 @@
-import { buildSync } from "esbuild";
-import { copyFileSync } from "fs";
+const { buildSync } = require("esbuild");
+const { copyFileSync } = require("fs");
 const options = {
     platform: "node",
     bundle: true,
