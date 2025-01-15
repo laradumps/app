@@ -22,7 +22,12 @@ jobs:
                   cache: "npm"
 
             - name: Install dependencies
+              if: matrix.os != 'windows-latest'
               run: rm -rf node_modules && npm install
+
+            - name: Install dependencies
+              if: matrix.os == 'windows-latest'
+              run: npm install
 
             - name: Updater
               run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
