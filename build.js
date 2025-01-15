@@ -3,6 +3,7 @@ const { copyFileSync } = require("fs");
 const options = {
     platform: "node",
     bundle: true,
+    target: 'node20',
     external: ["electron"],
     define: {
         "process.env.NODE_ENV": `"${process.argv[2] === "--dev" ? "development" : "production"}"`,
