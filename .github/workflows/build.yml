@@ -22,7 +22,7 @@ jobs:
                   cache: "npm"
 
             - name: Install dependencies
-              run: npm install --force
+              run: rm -rf node_modules && npm install
 
             - name: Updater
               run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
