@@ -60,8 +60,5 @@ export const useScreenStore = defineStore("screen", {
             const nextIndex = (index + 1) % this.screens.length;
             return this.screens[nextIndex];
         }
-    },
-    persist: {
-        enabled: true
     }
 });

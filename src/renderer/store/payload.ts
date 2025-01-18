@@ -22,8 +22,5 @@ export const usePayloadStore = defineStore("payload", {
         clearAll() {
             this.payload = [];
         }
-    },
-    persist: {
-        enabled: true
     }
 });
