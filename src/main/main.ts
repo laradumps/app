@@ -37,18 +37,19 @@ const electronLocalShortcut = require("electron-localshortcut");
 
 function createWindow(): BrowserWindow {
     const winState: windowStateKeeper.State = windowStateKeeper({
-        defaultWidth: 670,
-        defaultHeight: 660
+        defaultWidth: 680,
+        defaultHeight: 620
     });
 
     const browserWindowOptions: BrowserWindowConstructorOptions = {
         fullscreen: false,
         fullscreenable: false,
-        width: isDev ? 1080 : 690,
-        height: 640,
+        width: 680,
+        height: 620,
         resizable: true,
         alwaysOnTop: false,
         center: true,
+        titleBarStyle: isMac ? 'hiddenInset' : 'default',
         webPreferences: {
             contextIsolation: false,
             preload: resolve(__dirname, "preload.js"),
@@ -63,27 +64,22 @@ function createWindow(): BrowserWindow {
     }
 
     if (isMac) {
-        browserWindowOptions.titleBarStyle = "hiddenInset";
         browserWindowOptions.trafficLightPosition = { x: 12, y: 11 };
     }
 
-    const win: BrowserWindow = new BrowserWindow(browserWindowOptions);
+    const window: BrowserWindow = new BrowserWindow(browserWindowOptions);
 
-    winState.manage(win);
+    window.setMenuBarVisibility(false)
 
-    if (isDev) {
-        win.loadURL(`http://localhost:4999`);
-    }
+    winState.manage(window);
+
+    window.loadURL(isDev ? `http://localhost:4999` :  url.format({
+        pathname: join(__dirname, "app", "index.html"),
+        protocol: "file:",
+        slashes: true
+    }));
 
     if (!isDev) {
-        win.loadURL(
-            url.format({
-                pathname: join(__dirname, "app", "index.html"),
-                protocol: "file:",
-                slashes: true
-            })
-        );
-
         autoUpdater.autoDownload = false;
 
         autoUpdater.on("update-available", async (updateInfo: UpdateInfo): Promise<void> => {
@@ -128,16 +124,16 @@ function createWindow(): BrowserWindow {
         mainWindow.reload();
     });
 
-    win.once("ready-to-show", (): void => {
-        win.show();
-        win.focus();
+    window.once("ready-to-show", (): void => {
+        window.show();
+        window.focus();
 
         if (isDev) {
-            win.webContents.openDevTools();
+            window.webContents.openDevTools();
         }
     });
 
-    return win;
+    return window;
 }
 
 if (!isDev) {

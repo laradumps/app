@@ -169,22 +169,6 @@ onMounted(() => {
     dumpListeners();
     mainMenuListeners();
 
-    //* * Convert shortcuts to Electron format **/
-    Object.defineProperty(String.prototype, "beautifyShortcut", {
-        value() {
-            if (process.platform === "darwin") {
-                return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
-            }
-            return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
-        }
-    });
-
-    Object.defineProperty(String.prototype, "toElectronFormat", {
-        value() {
-            return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
-        }
-    });
-
     window.ipcRenderer.send("environment::get");
 });
 
@@ -701,14 +685,6 @@ function registerDefaultLocalShortcuts() {
         >
             <div>
                 <TheAppUpdateInfo />
-
-                <TheNavBar
-                    v-if="!settingStore.setting"
-                    v-model:in-saved-dumps-window="inSavedDumpsWindow"
-                    v-model:payload-count="payload.length"
-                    v-model:has-color="hasColor"
-                    @clear-all="clearAll($event)"
-                />
 
                 <div
                     v-if="isPaused"

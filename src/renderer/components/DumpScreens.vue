@@ -8,7 +8,6 @@
             v-bind:draggable="!['screen 1', 'Livewire'].includes(screen.screen_name)"
             @dragstart="onDragStart(index)"
             @dragover.prevent
-            @drop="onDrop(index)"
             @dragend="onDragEnd($event, screen)"
             title="drag and drop to open in new window"
         >
@@ -20,18 +19,11 @@
                     'tabs-bordered': screen.screen_name === screenStore.screen && screenStore.screens.length > 1
                 }"
             >
-                <input
-                    type="radio"
-                    class="tab uppercase font-normal tracking-wider text-[0.65rem]"
-                    :aria-label="screen.screen_name"
-                />
+                <input type="radio" class="tab uppercase font-normal tracking-wider text-[0.65rem]" :aria-label="screen.screen_name" />
             </div>
         </div>
 
-        <div
-            v-if="showTooltip"
-            class="flex gap-2 border border-neutral/30 bg-neutral text-neutral-content text-neutral py-1 px-1.5 rounded text-xs fixed right-2 top-2"
-        >
+        <div v-if="showTooltip" class="flex gap-2 border border-neutral/30 bg-neutral text-neutral-content py-1 px-1.5 rounded text-xs fixed right-2 top-2">
             <IconExternalLink class="size-4" />
             <span>Drag and drop to open in new window</span>
         </div>
@@ -49,33 +41,12 @@ const emit = defineEmits(["toggleScreen"]);
 const screenStore = useScreenStore();
 const payloadStore = usePayloadStore();
 
-const props = defineProps({
-    payload: {
-        type: Array,
-        default: null
-    }
-});
-
 const showTooltip = ref(false);
 const isDraggingIndex = ref(null);
 
 const onDragStart = (index) => {
     isDraggingIndex.value = index;
     showTooltip.value = true;
-};
-
-const onDrop = (index) => {
-    if (isDraggingIndex.value !== null) {
-        const draggedScreen = props.screens ? props.screens[isDraggingIndex.value] : false;
-
-        if (!draggedScreen) {
-            return;
-        }
-
-        props.screens.splice(isDraggingIndex.value, 1);
-        props.screens.splice(index, 0, draggedScreen);
-        isDraggingIndex.value = null;
-    }
 };
 
 const onDragEnd = (event, screen) => {
