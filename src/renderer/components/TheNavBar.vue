@@ -40,7 +40,6 @@ const clear = () => {
                 <div class="flex gap-1 items-center">
                     <!-- clear -->
                     <a
-                        v-show="payloadStore.payload.length > 0 && !inSavedDumpsWindow && !settingStore.setting"
                         :title="$t('menu.clear')"
                         class="w-[32px] tab px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer transition-all duration-100 ease-in rounded-md"
                         @click="clear()"
@@ -50,7 +49,6 @@ const clear = () => {
 
                     <!-- pause -->
                     <NavBarPause
-                        v-if="payloadStore.payload.length > 0"
                         v-bind:is-saved-dumps-window="inSavedDumpsWindow"
                     />
                 </div>

@@ -47,7 +47,7 @@ function createWindow(): BrowserWindow {
         resizable: true,
         alwaysOnTop: false,
         center: true,
-        titleBarStyle: isMac ? "hiddenInset" : "default",
+        titleBarStyle: "hiddenInset",
         webPreferences: {
             contextIsolation: false,
             preload: resolve(__dirname, "preload.js"),
