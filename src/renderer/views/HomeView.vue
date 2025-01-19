@@ -169,7 +169,7 @@ onMounted(() => {
     dumpListeners();
     mainMenuListeners();
 
-    window.ipcRenderer.send("environment::get");
+    window.ipcRenderer.send("storage.get");
 });
 
 const setDefaultCheckForUpdates = () => {
@@ -529,7 +529,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     }
 
     if (applicationPath.value != content.application_path) {
-        window.ipcRenderer.send("environment::check", {
+        window.ipcRenderer.send("storage.check", {
             applicationPath: content.application_path
         });
         applicationPath.value = content.application_path;

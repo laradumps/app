@@ -38,7 +38,6 @@ const clear = () => {
         <div class="ml-8 w-full select-none flex justify-between">
             <div class="ml-10 w-auto h-full">
                 <div class="flex gap-1 items-center">
-
                     <!-- clear -->
                     <a
                         v-show="payloadStore.payload.length > 0 && !inSavedDumpsWindow && !settingStore.setting"
@@ -50,14 +49,17 @@ const clear = () => {
                     </a>
 
                     <!-- pause -->
-                    <NavBarPause v-if="payloadStore.payload.length > 0" v-bind:is-saved-dumps-window="inSavedDumpsWindow" />
+                    <NavBarPause
+                        v-if="payloadStore.payload.length > 0"
+                        v-bind:is-saved-dumps-window="inSavedDumpsWindow"
+                    />
                 </div>
             </div>
             <div class="w-full nav-bar">&nbsp;</div>
         </div>
 
         <div class="flex gap-1 items-center m-0.5">
-<!--            <HeaderGlobalFilter v-bind:has-color="hasColor" />-->
+            <!--            <HeaderGlobalFilter v-bind:has-color="hasColor" />-->
 
             <!-- global search -->
             <NavBarGlobalSearch v-if="payloadStore.payload.length > 0" />

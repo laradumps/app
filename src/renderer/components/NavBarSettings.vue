@@ -1,12 +1,12 @@
 <script setup>
-import { ref } from 'vue'
-import { CogIcon, HomeIcon } from '@heroicons/vue/24/outline'
+import { ref } from "vue";
+import { CogIcon, HomeIcon } from "@heroicons/vue/24/outline";
 
-const isSettings = ref(false)
+const isSettings = ref(false);
 
 const togglePage = () => {
-    isSettings.value = !isSettings.value
-}
+    isSettings.value = !isSettings.value;
+};
 </script>
 
 <template>

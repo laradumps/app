@@ -22,50 +22,53 @@ const environments = ref<Environment[]>([]);
 
 const currentProjectStore = useCurrentProject();
 
+const handleProjectAdded = () => {
+    window.ipcRenderer.send("storage.get");
+    const jsConfetti = new JSConfetti();
+    jsConfetti.addConfetti();
+    newProject.value = true;
+    setTimeout(() => (newProject.value = false), 5000);
+};
+
+const handleSetActiveProject = (event, value) => {
+    if (value.length > 0) {
+        selectedProject.value = value;
+        currentProjectStore.set(selectedProject.value);
+        window.ipcRenderer.send("storage.get-environments", selectedProject.value);
+    }
+};
+
+const handleStorageGet = (event, value: object) => {
+    const projectsArray = Object.keys(value).map((key) => ({ project: key, path: value[key] }));
+
+    projects.value = projectsArray;
+
+    if (projectsArray.length > 0) {
+        selectedProject.value = projectsArray[0].path;
+        currentProjectStore.set(selectedProject.value);
+        window.ipcRenderer.send("storage.get-environments", selectedProject.value);
+    }
+};
+
+const handleGetEnvironments = (event, value) => {
+    if (value != null) {
+        environments.value = [];
+        value.forEach((entry: Environment) => {
+            environments.value.push({
+                id: entry.id,
+                value: entry.value,
+                selected: entry.selected
+            });
+        });
+    }
+};
+
 onMounted(async () => {
     projects.value = [];
-
-    window.ipcRenderer.on("app-setting:project-added", () => {
-        window.ipcRenderer.send("environment::get");
-
-        const jsConfetti = new JSConfetti();
-
-        jsConfetti.addConfetti();
-
-        newProject.value = true;
-        setTimeout(() => (newProject.value = false), 5000);
-    });
-
-    window.ipcRenderer.on("app-setting:set-active", (event, value) => {
-        if (value.length > 0) {
-            selectedProject.value = value;
-            setActiveProject();
-        }
-    });
-
-    window.ipcRenderer.on("app-setting:set-environment", (event, value: object) => {
-        const projectsArray = Object.keys(value).map((key) => ({ project: key, path: value[key] }));
-
-        projects.value = projectsArray;
-
-        if (projectsArray.length > 0) {
-            selectedProject.value = projectsArray[0].path;
-            setActiveProject();
-        }
-    });
-
-    window.ipcRenderer.on("settings:env-file-contents", (event, value) => {
-        if (value != null) {
-            environments.value = [];
-            value.forEach((entry: Environment) => {
-                environments.value.push({
-                    id: entry.id,
-                    value: entry.value,
-                    selected: entry.selected
-                });
-            });
-        }
-    });
+    window.ipcRenderer.on("app-setting:project-added", handleProjectAdded);
+    window.ipcRenderer.on("storage.set-active.reply", handleSetActiveProject);
+    window.ipcRenderer.on("storage.get.reply", handleStorageGet);
+    window.ipcRenderer.on("storage.get-environments.reply", handleGetEnvironments);
 });
 
 const selectedEnvironment = computed(() => {
@@ -78,22 +81,22 @@ const selectedEnvironment = computed(() => {
 });
 
 const save = async (): Promise<void> => {
-    window.ipcRenderer.send("main:settings-update-environment", {
+    window.ipcRenderer.send("storage.update", {
         selected: selectedEnvironment.value,
         project: selectedProject.value
     });
 };
 
-const removeEnvironment = () => {
+const remove = () => {
     if (selectedProject.value !== "") {
         window.ipcRenderer.on("main:dialog-choice", (event, arg) => {
             if (arg === 0) {
-                window.ipcRenderer.send("main:setting-remove-environments", selectedProject.value);
+                window.ipcRenderer.send("storage.remove", selectedProject.value);
 
                 selectedProject.value = "";
                 environments.value = [];
 
-                window.ipcRenderer.emit("environment::get");
+                window.ipcRenderer.emit("storage.get");
             }
         });
 
@@ -107,7 +110,7 @@ const removeEnvironment = () => {
 
 const setActiveProject = () => {
     currentProjectStore.set(selectedProject.value);
-    window.ipcRenderer.send("main:setting-get-environments", selectedProject.value);
+    window.ipcRenderer.send("storage.get-environments", selectedProject.value);
 };
 </script>
 
@@ -183,7 +186,7 @@ const setActiveProject = () => {
             <div v-if="environments.length > 0">
                 <button
                     class="btn btn-warning text-warning-content mt-6 w-[100px] text-[10px]"
-                    @click="removeEnvironment"
+                    @click="remove"
                 >
                     Remove Project
                 </button>

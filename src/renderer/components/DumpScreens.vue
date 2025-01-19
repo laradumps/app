@@ -19,11 +19,18 @@
                     'tabs-bordered': screen.screen_name === screenStore.screen && screenStore.screens.length > 1
                 }"
             >
-                <input type="radio" class="tab uppercase font-normal tracking-wider text-[0.65rem]" :aria-label="screen.screen_name" />
+                <input
+                    type="radio"
+                    class="tab uppercase font-normal tracking-wider text-[0.65rem]"
+                    :aria-label="screen.screen_name"
+                />
             </div>
         </div>
 
-        <div v-if="showTooltip" class="flex gap-2 border border-neutral/30 bg-neutral text-neutral-content py-1 px-1.5 rounded text-xs fixed right-2 top-2">
+        <div
+            v-if="showTooltip"
+            class="flex gap-2 border border-neutral/30 bg-neutral text-neutral-content py-1 px-1.5 rounded text-xs fixed right-2 top-2"
+        >
             <IconExternalLink class="size-4" />
             <span>Drag and drop to open in new window</span>
         </div>

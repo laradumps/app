@@ -26,24 +26,22 @@ Object.defineProperty(String.prototype, "toElectronFormat", {
 
 <template>
     <div>
-        <div
-            class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
-        >
+        <div class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available">
             <div
                 :class="{
-                    '!space-y-0' : payloadStore.payload.length > 0
+                    '!space-y-0': payloadStore.payload.length > 0
                 }"
                 class="absolute w-full h-full min-h-full space-y-3"
             >
                 <TheNavBar
                     v-if="!settingStore.setting"
-                    has-color/>
+                    has-color
+                />
 
                 <main class="w-full h-full">
                     <RouterView :key="$route.fullPath" />
                 </main>
             </div>
         </div>
-
     </div>
 </template>
