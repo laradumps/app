@@ -27,12 +27,12 @@ interface DataStructure {
 const store = new Store();
 
 export const init = async () => {
-    ipcMain.on("storage.get", getEnvironments)
+    ipcMain.on("storage.get", getEnvironments);
     ipcMain.on("storage.check", checkEnvironment);
     ipcMain.on("storage.get-environments", getEnvironmentFileContents);
     ipcMain.on("storage.remove", removeEnvironment);
     ipcMain.on("storage.update", updateEnvironment);
-}
+};
 
 const getEnvironments = (event) => {
     try {
@@ -41,7 +41,7 @@ const getEnvironments = (event) => {
     } catch (error) {
         console.error("Error getting storage:", error);
     }
-}
+};
 
 const checkEnvironment = (event, value) => {
     const store = new Store();
@@ -73,7 +73,7 @@ const checkEnvironment = (event, value) => {
     } catch (error) {
         console.error("Error updating environments in storage:", error);
     }
-}
+};
 
 const getEnvironmentFileContents = (event: IpcMainEvent, value: string) => {
     const file = value + "/laradumps.yaml";
@@ -86,7 +86,7 @@ const getEnvironmentFileContents = (event: IpcMainEvent, value: string) => {
                 id: index,
                 value: key,
                 name: key.replace(/_/g, " "),
-                selected: val,
+                selected: val
             };
         });
 
@@ -95,7 +95,7 @@ const getEnvironmentFileContents = (event: IpcMainEvent, value: string) => {
         console.error(e);
         event.reply("storage.get-environments.reply", []);
     }
-}
+};
 
 const removeEnvironment = (event: IpcMainEvent, value: string) => {
     const store = new Store();
@@ -121,7 +121,7 @@ const removeEnvironment = (event: IpcMainEvent, value: string) => {
     } catch (error) {
         console.error("Error updating storage:", error);
     }
-}
+};
 
 const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; project: string }) => {
     const { selected, project } = value;
@@ -152,4 +152,4 @@ const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; projec
     } catch (err) {
         console.error(err);
     }
-}
+};

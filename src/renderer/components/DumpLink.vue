@@ -69,6 +69,10 @@ const label = computed(() => {
         return props.label;
     }
 
+    if (props.ideHandler.class_name === "empty") {
+        return "Tinker";
+    }
+
     if (props.ideHandler.real_path == null || props.ideHandler.real_path.includes("ExecutionLoopClosure")) {
         return "Tinker";
     }
@@ -93,7 +97,7 @@ const label = computed(() => {
             <span class="break-all tracking-wider hover:opacity-75 flex items-center">
                 <span
                     class="whitespace-nowrap"
-                    :class="{ '!text-gray-400': props.label }"
+                    :class="{ '!text-gray-400': label }"
                     >{{ label }}</span
                 >
             </span>
@@ -107,7 +111,7 @@ const label = computed(() => {
             <div class="break-all h-[32px] tracking-wider hover:opacity-75 flex items-center">
                 <span
                     class="whitespace-nowrap"
-                    :class="{ '!text-base-content/70 font-semibold': props.label }"
+                    :class="{ '!text-base-content/70 font-semibold': label }"
                     >{{ label }}</span
                 >
                 <a

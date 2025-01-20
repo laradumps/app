@@ -161,10 +161,10 @@ watch(collapseStore, (value) => {
                         v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
                     >
                         <li class="list-none">
-                            {{ props.payload.date_time }}
+                            {{ payload.date_time }}
                         </li>
                         <li>
-                            <DumpLink :ide-handler="props.payload.ide_handle" />
+                            <DumpLink :ide-handler="payload.ide_handle" />
                         </li>
                     </ul>
                     <div class="group flex justify-center items-center gap-2">
@@ -196,16 +196,16 @@ watch(collapseStore, (value) => {
 
                         <!-- variable type -->
                         <div
-                            v-show="props.payload.dump?.variable_type !== undefined"
+                            v-show="payload.dump?.variable_type !== undefined"
                             class="text-[0.70rem] opacity-70"
-                            v-text="`(${props.payload.dump?.variable_type})`"
+                            v-text="`(${payload.dump?.variable_type})`"
                         ></div>
 
                         <div
-                            v-if="props.payload.type !== `queries`"
+                            v-if="payload.type !== `queries`"
                             :class="badgeClasses"
                         >
-                            {{ props.payload.label ?? props.payload.type }}
+                            {{ payload.label ?? payload.type }}
                         </div>
 
                         <div

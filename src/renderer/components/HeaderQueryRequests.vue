@@ -1,3 +1,59 @@
+<script setup>
+import { useTimeStore } from "@/store/time";
+import SelectMenu from "@/components/SelectMenu.vue";
+import { computed } from "vue";
+import { useFormattedQueriesStore } from "@/store/formatted-queries";
+import { useQueryDuplicated } from "@/store/query-duplicated";
+
+const timeStore = useTimeStore();
+const formattedQueriesStore = useFormattedQueriesStore();
+const duplicatesStore = useQueryDuplicated();
+
+const props = defineProps({
+    total: {
+        type: Number,
+        default: 0
+    },
+    totalFiltered: {
+        type: Number,
+        default: 0
+    },
+    inScreenWindow: {
+        type: Boolean,
+        default: false
+    }
+});
+
+const queryOrder = computed(() => {
+    return [
+        {
+            id: false,
+            label: "default"
+        },
+        {
+            id: true,
+            label: "desc"
+        },
+        {
+            id: false,
+            label: "asc"
+        }
+    ];
+});
+
+const allRequests = computed(() => {
+    let requests = timeStore.groups.map((group, index) => ({
+        index: index + 1,
+        id: group,
+        label: `#${index + 1} - <b>${timeStore.getTotal(group).toFixed(2)}ms</b> - ${timeStore.getUri(group)} (${timeStore.getMethod(group)})`
+    }));
+
+    requests.sort((a, b) => b.index - a.index);
+
+    return requests;
+});
+</script>
+
 <template>
     <div class="absolute top-[2.8rem] bg-base-100 space-y-1 px-4 pb-3 z-100 h-auto w-full">
         <div
@@ -72,62 +128,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { useTimeStore } from "@/store/time";
-import SelectMenu from "@/components/SelectMenu.vue";
-import { computed } from "vue";
-import { useFormattedQueriesStore } from "@/store/formatted-queries";
-import { useQueryDuplicated } from "@/store/query-duplicated";
-
-const timeStore = useTimeStore();
-const formattedQueriesStore = useFormattedQueriesStore();
-const duplicatesStore = useQueryDuplicated();
-
-const props = defineProps({
-    total: {
-        type: Number,
-        default: 0
-    },
-    payload: {
-        type: Object
-    },
-    totalFiltered: {
-        type: Number,
-        default: 0
-    },
-    inScreenWindow: {
-        type: Boolean,
-        default: false
-    }
-});
-
-const queryOrder = computed(() => {
-    return [
-        {
-            id: false,
-            label: "default"
-        },
-        {
-            id: true,
-            label: "desc"
-        },
-        {
-            id: false,
-            label: "asc"
-        }
-    ];
-});
-
-const allRequests = computed(() => {
-    let requests = timeStore.groups.map((group, index) => ({
-        index: index + 1,
-        id: group,
-        label: `#${index + 1} - <b>${timeStore.getTotal(group).toFixed(2)}ms</b> - ${timeStore.getUri(group)} (${timeStore.getMethod(group)})`
-    }));
-
-    requests.sort((a, b) => b.index - a.index);
-
-    return requests;
-});
-</script>

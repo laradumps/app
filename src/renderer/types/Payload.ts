@@ -29,6 +29,7 @@ export interface TimeTrackPayload {
     end_time: string;
     time: string;
     elapsed_time?: string;
+    label?: string;
 }
 
 export interface TableV2Payload {

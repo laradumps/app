@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useSettingStore } from "@/store/setting";
+import TheNavBar from "@/components/TheNavBar.vue";
+import { usePayloadStore } from "@/store/payload";
+import { onMounted } from "vue";
 
 const settingStore = useSettingStore();
 const payloadStore = usePayloadStore();
-
-import TheNavBar from "@/components/TheNavBar.vue";
-import { usePayloadStore } from "@/store/payload";
 
 //* * Convert shortcuts to Electron format **/
 Object.defineProperty(String.prototype, "beautifyShortcut", {
@@ -21,6 +21,36 @@ Object.defineProperty(String.prototype, "toElectronFormat", {
     value() {
         return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
     }
+});
+
+const getZoomLevel = (value: number): void => {
+    let zoomFactor = value;
+
+    window.webFrame.setZoomFactor(zoomFactor);
+
+    document.querySelector("body").addEventListener(
+        "mousewheel",
+        (e) => {
+            if (e.ctrlKey) {
+                let value;
+                e.preventDefault();
+
+                value = e.deltaY > 0 ? (zoomFactor -= 0.1) : (zoomFactor += 0.1);
+
+                window.ipcRenderer.send("main:update-zoom-level", value);
+
+                window.webFrame.setZoomFactor(value);
+            }
+        },
+        {
+            passive: false
+        }
+    );
+};
+
+onMounted(() => {
+    window.ipcRenderer.send("zoom-level");
+    window.ipcRenderer.on("zoom-level.reply", (event, value) => getZoomLevel(value));
 });
 </script>
 

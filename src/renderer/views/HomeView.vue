@@ -13,7 +13,6 @@ import { useColorStore } from "@/store/colors";
 import { Payload } from "@/types/Payload";
 import * as Helper from "@/helpers";
 import moment from "moment/moment";
-import humanizeDuration from "humanize-duration";
 import TheNavBar from "@/components/TheNavBar.vue";
 import AppSetting from "@/components/AppSetting.vue";
 import DumpItem from "@/components/DumpItem.vue";
@@ -78,31 +77,23 @@ onMounted(() => {
     appearanceStore.setTheme(localStorage.theme);
 
     setDefaultCheckForUpdates();
-
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
-
     addScreen(defaultScreen.value);
 
     window.ipcRenderer.on("app:pause-dumps", (event, arg) => (isPaused.value = arg));
 
     window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
-        if (arg === 0) {
-            registerDefaultLocalShortcuts();
-        }
+        arg === 0 && registerDefaultLocalShortcuts();
     });
 
     window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
 
-    window.ipcRenderer.send("main:os-temp-dir");
-    window.ipcRenderer.send("main:get-app-version");
-
-    window.ipcRenderer.on("app:os-temp-dir", (event, value) => getZoomLevel(value));
-
-    window.ipcRenderer.on("main:app-version", (event, arg) => setTimeout(() => (appVersion.value = `v${arg.version}`), 100));
+    window.ipcRenderer.send("main:app-version");
+    window.ipcRenderer.on("main:app-version.reply", (event, arg) => setTimeout(() => (appVersion.value = `v${arg.version}`), 100));
 
     window.ipcRenderer.on("app:load-all-saved-dumps", async () => {
         inSavedDumpsWindow.value = true;
-        clearAll();
+        // clearAll();
 
         await loadAllSavedPayload();
     });
@@ -127,24 +118,16 @@ onMounted(() => {
         }
     });
 
-    window.ipcRenderer.on("clear", () => clearAll());
-
-    window.ipcRenderer.on("app:local-shortcut-execute::clearAll", () => clearAll());
-
     if (appearanceStore.value === "auto") {
         window.ipcRenderer.send("native-theme", appearanceStore.value);
     }
 
     window.ipcRenderer.on("app:theme-dark", () => {
-        if (appearanceStore.value === "auto") {
-            appearanceStore.setTheme("dim");
-        }
+        appearanceStore.value === "auto" && appearanceStore.setTheme("dim");
     });
 
     window.ipcRenderer.on("app:theme-light", () => {
-        if (appearanceStore.value === "auto") {
-            appearanceStore.setTheme("light");
-        }
+        appearanceStore.value === "auto" && appearanceStore.setTheme("light");
     });
 
     window.ipcRenderer.on("app::scroll-direction", (event, args) => {
@@ -185,14 +168,11 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));
-
     window.ipcRenderer.on("mailable", (event, { content }) => dispatch("mailable", event, content));
-
     window.ipcRenderer.on("table_v2", (event, { content }) => dispatch("table_v2", event, content));
-
     window.ipcRenderer.on("mail", (event, { content }) => {
         const filterPayload: boolean =
-            payload.value.filter((payload: Payload) => {
+            payloadStore.payload.filter((payload: Payload) => {
                 if (payload.hasOwnProperty("mail")) {
                     return payload.mail.messageId == content.mail.messageId;
                 }
@@ -205,138 +185,32 @@ const dumpListeners = () => {
         }
     });
 
-    window.ipcRenderer.on("label", (event, { content }) => {
-        payload.value
-            .filter((globalPayload) => globalPayload.id === content.id)
-            .map((globalPayload) => {
-                globalPayload.label = content.label.label;
-                return payload;
-            });
-    });
-
-    window.ipcRenderer.on("color", (event, { content }) => {
-        payload.value
-            .filter((globalPayload: Payload) => globalPayload.id === content.id)
-            .map((globalPayload: Payload) => {
-                globalPayload.color = content.color;
-                return payload;
-            });
-    });
-
-    window.ipcRenderer.on("table", (event, { content }) => {
-        payload.value = payload.value.filter((payload: Payload) => {
-            if (payload.type === "table") {
-                return payload.type === "table";
-            }
-            return true;
-        });
-
-        dispatch("table", event, content);
-    });
-
+    window.ipcRenderer.on("label", (event, { content }) => payloadStore.updateLabelPayload(content));
+    window.ipcRenderer.on("table", (event, { content }) => dispatch("table", event, content));
     window.ipcRenderer.on("http-client", (event, { content }) => dispatch("http-client", event, content));
-
     window.ipcRenderer.on("model", (event, { content }) => dispatch("model", event, content));
-
     window.ipcRenderer.on("log_application", (event, { content }) => {
-        let color;
-        switch (content.log_application.level) {
-            case "error":
-            case "critical":
-            case "alert":
-            case "emergency":
-                color = "red";
-                break;
-            case "warning":
-                color = "orange";
-                break;
-            case "notice":
-                color = "green";
-                break;
-            case "info":
-                color = "blue";
-                break;
-            case "debug":
-                color = "gray";
-                break;
-            default:
-        }
-
-        content.color = color;
-        content.label = content.log_application.level;
-
         dispatch("log_application", event, content);
+        payloadStore.updateLogPayload(content);
     });
-
     window.ipcRenderer.on("color", (event, { content }) => {
-        payload.value.filter((globalPayload: Payload) => globalPayload.id === content.id).map((globalPayload: Payload) => (globalPayload.color = content.color.color));
+        payloadStore.updateColorPayload(content);
     });
-
-    window.ipcRenderer.on("screen", (event, { content }) => dispatch("screen", event, content));
-
-    window.ipcRenderer.on("cols", (event, { content }) => {
-        payload.value
-            .filter((globalPayload: Payload) => globalPayload.id === content.id)
-            .map((globalPayload: Payload) => {
-                globalPayload.cols = content.cols;
-                return payload;
-            });
+    window.ipcRenderer.on("screen", (event, { content }) => {
+        dispatch("screen", event, content);
+        payloadStore.updateScreenPayload(content);
     });
-
     window.ipcRenderer.on("json_validate", (event, { content }) => {
-        let toValidate: string | undefined;
-        const filterPayload: Payload = payload.value.filter((payload) => payload.id === content.id)[0];
-
-        if (filterPayload.hasOwnProperty("dump")) {
-            toValidate = filterPayload.dump?.original_content;
-        }
-
-        if (filterPayload.hasOwnProperty("json")) {
-            toValidate = filterPayload.json?.original_content;
-        }
-
-        payload.value
-            .filter((globalPayload: Payload) => globalPayload.id === content.id)
-            .map((globalPayload: Payload) => {
-                globalPayload.validate_json = true;
-                globalPayload.is_json = typeof toValidate != undefined ? Helper.isJson(toValidate) : false;
-                return payload;
-            });
+        payloadStore.updateJSONValidatePayload(content);
     });
-
     window.ipcRenderer.on("validate", (event, { content }) => {
-        let textContent;
-        const filterPayload = payload.value.filter((globalPayload: Payload) => globalPayload.id === content.id)[0];
-
-        if (filterPayload.hasOwnProperty("json")) {
-            textContent = filterPayload.json.original_content;
-        }
-
-        if (filterPayload.hasOwnProperty("dump")) {
-            textContent = filterPayload.dump.original_content;
-        }
-
-        const strContains = Helper.strContains(textContent, content.validate.content, {
-            is_case_sensitive: content.validate.is_case_sensitive,
-            is_whole_word: content.validate.is_whole_word
-        });
-
-        payload.value
-            .filter((globalPayload: Payload) => globalPayload.id === content.id)
-            .map((globalPayload: Payload) => {
-                globalPayload.str_contains = strContains;
-                return payload;
-            });
+        payloadStore.updateValidatePayload(content);
     });
-
     window.ipcRenderer.on("json", (event, { content }) => dispatch("screen", event, content));
-
     window.ipcRenderer.on("queries", (event, { content }) => dispatch("queries", event, content));
-
     window.ipcRenderer.on("query", (event, { content }) => dispatch("query", event, content));
-
     window.ipcRenderer.on("time_track", (event, { content }) => {
-        const exist = payload.value.filter((globalPayload: Payload) => globalPayload.label === content.time_track.label);
+        const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.label === content.time_track.label);
 
         if (exist.length === 0) {
             dispatch("time-track", event, content);
@@ -344,12 +218,7 @@ const dumpListeners = () => {
             return;
         }
 
-        const _end = moment.unix(content.time_track.end_time);
-        const _start = moment.unix(exist[0].time_track.time);
-        const duration = moment.duration(_start.diff(_end));
-        const elapsedTime = humanizeDuration(duration.asMilliseconds());
-
-        payload.value.filter((globalPayload) => globalPayload.label === content.time_track.label).map((globalPayload) => (globalPayload.time_track.elapsed_time = elapsedTime));
+        payloadStore.updateTimeTrackPayload(content);
     });
 };
 
@@ -388,24 +257,7 @@ window.addEventListener("update-payload", (event) => {
     console.log(payloadStore.get(inScreenWindow.value));
 });
 
-/**
- * Computes whether there are any payloads with a "color" property.
- * @returns {boolean} True if there are payloads with a "color" property, otherwise false.
- */
-const hasColor = computed(() => {
-    return payload.value.filter((payload) => payload.hasOwnProperty("color")).length > 0;
-});
-
-/**
- * Filters and sorts payloads based on search criteria and color filtering.
- * @returns {Array} An array of filtered and sorted payloads.
- */
 const dumpsBagFiltered = computed(() => {
-    /**
-     * Helper function to sort payloads in reverse time order.
-     * @param {boolean} reversed - Indicates whether the sorting order is reversed.
-     * @returns {Function} A comparison function for sorting payloads.
-     */
     const reverseTimeOrder = (reversed) => {
         return function () {
             reversed = !reversed;
@@ -423,18 +275,18 @@ const dumpsBagFiltered = computed(() => {
     const dumps = dumpsBag.value;
 
     dumps
-        .filter((dump) => dump.type === "queries")
-        .forEach((dump: Payload) => {
-            const sql = dump.queries.sql;
+        .filter((payload: Payload) => payload.type === "queries")
+        .forEach((payload: Payload) => {
+            const sql = payload.queries?.sql || "";
 
-            const isDuplicate = dumps.filter((d: Payload) => d.type === "queries" && d.request_id === dump.request_id && d.queries.sql === sql);
+            const isDuplicate = dumps.filter((payload1: Payload) => payload1.type === "queries" && payload1.request_id === payload.request_id && payload1.queries.sql === sql);
 
-            queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
+            queryDuplicatedStore.add(payload.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
         });
 
     return dumps
         .filter(
-            (dump) =>
+            (dump: Payload) =>
                 JSON.stringify(dump[dump.type] ?? "")
                     .toLowerCase()
                     .includes(globalSearchStore.search.toLowerCase()) || dump.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
@@ -445,7 +297,7 @@ const dumpsBagFiltered = computed(() => {
             }
             return true;
         })
-        .map((dump) => {
+        .map((dump: Payload) => {
             if (dump.type === "queries") {
                 const { time, uri, method } = dump.queries;
                 timeStore.increment(dump.request_id, dump.id, time, uri, method);
@@ -455,30 +307,15 @@ const dumpsBagFiltered = computed(() => {
         .sort(sort());
 });
 
-/**
- * Adds a screen to the `screens` array if it doesn't already exist.
- * @param {Object} param - The screen object to be added.
- */
 const addScreen = (param) => {
     param.visible = true;
-
     screenStore.add(param);
 };
 
-/**
- * Maximizes the application window if `autoInvokeApp` is truthy.
- * @param {string|boolean} autoInvokeApp - Indicates whether to automatically invoke the application.
- */
 const maximizeApp = (autoInvokeApp: string | boolean): void => {
-    if (autoInvokeApp) {
-        window.ipcRenderer.send("main:show");
-    }
+    autoInvokeApp && window.ipcRenderer.send("main:show");
 };
 
-/**
- * Toggles the active screen and updates the `dumpsBag` based on the selected screen.
- * @param {string} value - The name of the screen to be toggled.
- */
 const toggleScreen = async (value: string): Promise<void> => {
     if (screenStore.get(value) && !screenStore.get(value).visible) {
         return;
@@ -490,7 +327,7 @@ const toggleScreen = async (value: string): Promise<void> => {
 
     screenStore.activeScreen(value);
 
-    dumpsBag.value = payload.value.filter((payload) => payload.type !== "screen" && payload.screen.screen_name === value);
+    dumpsBag.value = payloadStore.payload.filter((payload) => payload.type !== "screen" && payload.screen.screen_name === value);
 
     await nextTick(() => {
         if (scrollDirection.isTop()) {
@@ -512,13 +349,6 @@ const toggleScreen = async (value: string): Promise<void> => {
     }
 };
 
-/**
- * Dispatches an event with a specific type, event, and content. Updates the payload and screen information based on the content type.
- * @param {string} type - The type of the event.
- * @param {string} event - The name of the event.
- * @param {Object} content - The content of the event.
- */
-
 type EventType = "label" | "color" | "screen" | "dump";
 
 const interval = ref(null);
@@ -539,12 +369,13 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     settingStore.setting = false;
 
     if (content.type === "screen") {
-        payload.value.filter((dump: Payload) => dump.id === content.id).map((dump: Payload) => (dump.screen = content.screen));
-
         addScreen(content.screen);
     } else {
         content.screen = defaultScreen.value;
-        payload.value.push(content);
+
+        if (typeof content.date_time == "undefined") {
+            content.date_time = moment().format("hh:mm:ss a");
+        }
 
         payloadStore.add(content);
     }
@@ -556,12 +387,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
         maximizeApp(autoInvokeApp);
     }
-
-    payload.value.map((dump: Payload) => {
-        if (typeof dump.date_time == "undefined") {
-            dump.date_time = moment().format("hh:mm:ss a");
-        }
-    });
 
     if (interval.value == null) {
         if (content.type === "queries" || content.type === "livewire") {
@@ -591,67 +416,9 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     }
 };
 
-/**
- * Loads all saved payloads and sets the document title accordingly.
- */
 const loadAllSavedPayload = (): void => {
     document.title = "LaraDumps - Saved";
     window.ipcRenderer.send("saved-dumps:load");
-};
-
-/**
- * Sets the zoom level of the application window and handles zooming using the mousewheel event.
- * @param {number} value - The initial zoom factor.
- */
-const getZoomLevel = (value: number): void => {
-    let zoomFactor = value;
-
-    window.webFrame.setZoomFactor(zoomFactor);
-
-    document.querySelector("body").addEventListener(
-        "mousewheel",
-        (e) => {
-            if (e.ctrlKey) {
-                let value;
-                e.preventDefault();
-
-                value = e.deltaY > 0 ? (zoomFactor -= 0.1) : (zoomFactor += 0.1);
-
-                window.ipcRenderer.send("main:update-zoom-level", value);
-
-                window.webFrame.setZoomFactor(value);
-            }
-        },
-        {
-            passive: false
-        }
-    );
-};
-
-/**
- * Clears all data and resets the application to its initial state.
- */
-const clearAll = (): void => {
-    // context
-    dumpsBag.value = [];
-    payload.value = [];
-    livewireRequests.value = [];
-
-    // store
-    timeStore.clear();
-    globalSearchStore.clear();
-    colorStore.clear();
-    payloadStore.clearAll();
-
-    // screenStore
-    screenStore.clearAll();
-    screenStore.activeScreen("screen 1");
-    screenStore.add({
-        screen_name: "screen 1",
-        visible: true,
-        pinned: false,
-        raise_in: 0
-    });
 };
 
 function registerDefaultLocalShortcuts() {
@@ -698,7 +465,7 @@ function registerDefaultLocalShortcuts() {
                     <!-- main -->
                     <main
                         :class="{
-                            'overflow-auto': payload.length > 0
+                            'overflow-auto': payloadStore.payload.length > 0
                         }"
                         class="flex-1 flex flex-col shrink-0 left-16 right-0 min-h-full"
                     >
@@ -718,10 +485,7 @@ function registerDefaultLocalShortcuts() {
                             <div class="flex-1 px-3">
                                 <div class="flex items-center justify-between overflow-x-auto">
                                     <div class="flex">
-                                        <DumpScreens
-                                            @toggleScreen="toggleScreen"
-                                            v-model:payload="payload"
-                                        />
+                                        <DumpScreens @toggleScreen="toggleScreen" />
                                     </div>
                                 </div>
                             </div>
@@ -730,8 +494,8 @@ function registerDefaultLocalShortcuts() {
                         <div
                             :class="{
                                 'mt-[7.6rem]': screenStore.screen === 'Queries',
-                                'w-auto p-6 pb-8 items-center': payload.length === 0,
-                                'h-[100vh] w-[100vw] flex': payload.length === 0 && !settingStore.setting
+                                'w-auto p-6 pb-8 items-center': payloadStore.payload.length === 0,
+                                'h-[100vh] w-[100vw] flex': payloadStore.payload.length === 0 && !settingStore.setting
                             }"
                             class="rounded-sm text-base overflow-auto"
                         >
@@ -740,7 +504,6 @@ function registerDefaultLocalShortcuts() {
                             <div v-if="screenStore.screen === 'Queries'">
                                 <HeaderQueryRequests
                                     :in-screen-window="inScreenWindow ? 'true' : 'false'"
-                                    :payload="payload"
                                     :all-requests="allRequests"
                                     :total="dumpsBagFiltered.length"
                                     :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
@@ -756,10 +519,9 @@ function registerDefaultLocalShortcuts() {
                                     id="dumps-base"
                                     class="mb-[40px] w-full"
                                     :class="{
-                                        '-mt-2': screenStore.screen !== 'Queries',
                                         'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
                                     }"
-                                    v-if="payload.length > 0 && !settingStore.setting"
+                                    v-if="payloadStore.payload.length > 0 && !settingStore.setting"
                                 >
                                     <div
                                         class="w-full"
@@ -787,7 +549,7 @@ function registerDefaultLocalShortcuts() {
 
                             <div
                                 class="w-full h-full -mt-6"
-                                v-if="payload.length === 0 && !settingStore.setting"
+                                v-if="payloadStore.payload.length === 0 && !settingStore.setting"
                             >
                                 <WelcomePage :local-shortcut-list="localShortcutList" />
                             </div>
