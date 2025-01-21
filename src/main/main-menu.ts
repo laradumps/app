@@ -31,15 +31,6 @@ ipcMain.on("main-menu:set-theme-selected", (event, args) => {
     });
 });
 
-ipcMain.on("main-menu:set-auto-launch", (event, args) => {
-    storage.set(`AutoLaunch`, args, (error: Error | null): void => {
-        if (error) {
-            console.error("Error setting storage:", error);
-            return;
-        }
-    });
-});
-
 async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
     let IDEHandlerSelected: IDEHandlerSelected;
     let ThemeSelected: ThemeSelected;

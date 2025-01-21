@@ -1,6 +1,6 @@
-import { app, Tray, nativeTheme, nativeImage, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, IpcMainEvent, Notification } from "electron";
+import { app, nativeTheme, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell } from "electron";
 import windowStateKeeper from "electron-window-state";
-import { autoUpdater, UpdateFileInfo, UpdateInfo } from "electron-updater";
+import { autoUpdater } from "electron-updater";
 import { download } from "electron-dl";
 
 import path, { join, resolve } from "path";
@@ -13,6 +13,8 @@ import storage from "electron-json-storage";
 import * as electronStore from "./storage";
 import * as electronAutoUpdate from "./auto-update";
 import * as electronTray from "./tray";
+import * as customWindow from "./custom-window";
+import * as electronAutoLaunch from "./auto-launch";
 
 import { initSavedDumps } from "./window/saved-dumps";
 
@@ -24,7 +26,6 @@ import { createScreenWindow } from "./window/screen";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
-const AutoLaunch = require("auto-launch");
 
 let mainWindow: BrowserWindow;
 let savedDumpWindow: BrowserWindow;
@@ -42,7 +43,7 @@ function createWindow(): BrowserWindow {
     const browserWindowOptions: BrowserWindowConstructorOptions = {
         fullscreen: false,
         fullscreenable: false,
-        width: 680,
+        width: 730,
         height: 620,
         resizable: true,
         alwaysOnTop: false,
@@ -97,14 +98,6 @@ function createWindow(): BrowserWindow {
     });
 
     return window;
-}
-
-if (!isDev) {
-    const autoLauncher = new AutoLaunch({ name: "LaraDumps" });
-
-    ipcMain.on("main-menu:set-auto-launch", (event: Electron.IpcMainEvent, arg): void => {
-        arg.value === "disabled" ? autoLauncher.disable() : autoLauncher.enable();
-    });
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
@@ -224,12 +217,6 @@ app.on("browser-window-focus", (): void => {
     registerShortcuts(mainWindow);
 });
 
-ipcMain.on("main:get-memory-usage", () => {
-    const memoryUsage = process.memoryUsage();
-
-    mainWindow.webContents.send("app:memory-usage", memoryUsage);
-});
-
 ipcMain.on("main:get-ide-handler", (): void => {
     const jsonFilePath = path.join(app.getAppPath(), "./src/renderer/ide-handle-support.json");
 
@@ -243,43 +230,6 @@ ipcMain.on("main:get-ide-handler", (): void => {
         const parsedData = JSON.parse(data);
 
         mainWindow.webContents.send("app:ide-handler", parsedData);
-    });
-});
-
-ipcMain.on("main:open-custom-window", (event, link) => {
-    const window: BrowserWindow = new BrowserWindow({
-        show: true,
-        width: 830,
-        height: 690,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            preload: resolve(__dirname, "preload.js")
-        },
-        alwaysOnTop: true,
-        title: link.title
-    });
-
-    window.loadURL(link.url);
-
-    window.webContents.on("did-finish-load", () => {
-        window.webContents.executeJavaScript(`
-            document.addEventListener('click', function(event) {
-                var target = event.target;
-                while (target && target.tagName !== 'A') {
-                    target = target.parentNode;
-                }
-                if (target && target.tagName === 'A' && target.href && !target.href.startsWith('file://')) {
-                    event.preventDefault();
-                    window.shell.openExternal(target.href);
-                }
-            });
-
-            window.addEventListener('contextmenu', (e) => {
-              e.preventDefault()
-              window.ipcRenderer.send('mail-preview::show-context-menu')
-            })
-        `);
     });
 });
 
@@ -331,8 +281,8 @@ ipcMain.on("main:toggle-always-on-top", (event, arg) => {
     setTimeout(() => mainWindow.setAlwaysOnTop(arg), 200);
 });
 
-ipcMain.on("main:is-always-on-top", (): void => {
-    mainWindow.webContents.send("main:is-always-on-top", { is_always_on_top: mainWindow.isAlwaysOnTop() });
+ipcMain.on("main:is-always-on-top", (event): void => {
+    event.reply("main:is-always-on-top", { is_always_on_top: mainWindow.isAlwaysOnTop() });
 });
 
 ipcMain.on("main:app-version", (event): void => {
@@ -402,5 +352,11 @@ ipcMain.on("main:pause-dumps", (event, args) => {
     mainWindow.webContents.send("app:pause-dumps", args);
 });
 
+ipcMain.on("platform", (event, args) => {
+    event.reply("platform.reply", process.platform);
+});
+
+customWindow.init();
+electronAutoLaunch.init();
 electronStore.init();
 ssh.init();

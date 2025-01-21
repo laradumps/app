@@ -141,7 +141,7 @@ watch(collapseStore, (value) => {
 </script>
 <template>
     <div class="group text-sm pt-2">
-        <div class="px-3 w-full">
+        <div class="px-2.5 w-full">
             <div
                 :class="{
                     [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
@@ -149,7 +149,7 @@ watch(collapseStore, (value) => {
                     'collapse-open': open
                 }"
                 id=""
-                class="collapse bg-base-200/70 bg-laravel border border-base-content/5"
+                class="collapse bg-base-300/70 bg-laravel border border-base-content/5"
             >
                 <div
                     @dblclick="open = !open"

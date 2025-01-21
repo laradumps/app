@@ -97,7 +97,7 @@ const label = computed(() => {
             <span class="break-all tracking-wider hover:opacity-75 flex items-center">
                 <span
                     class="whitespace-nowrap"
-                    :class="{ '!text-gray-400': label }"
+                    :class="{ '!text-gray-400': props.label }"
                     >{{ label }}</span
                 >
             </span>

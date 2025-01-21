@@ -13,6 +13,7 @@ body {
 
 .nav-bar {
     -webkit-app-region: drag;
+    height: 39px;
 }
 
 ::-webkit-scrollbar {

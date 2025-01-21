@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed } from "vue";
+import { defineProps, defineEmits, computed, onMounted, ref } from "vue";
 import { TrashIcon } from "@heroicons/vue/24/outline";
 import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
 import NavBarGlobalSearch from "@/components/NavBarGlobalSearch.vue";
@@ -12,6 +12,7 @@ import { usePayloadStore } from "@/store/payload";
 import ClearAll from "@/components/ClearAll.vue";
 import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
 
+const platform = ref('')
 defineProps({
     inSavedDumpsWindow: {
         type: Boolean,
@@ -19,16 +20,24 @@ defineProps({
     }
 });
 
+onMounted(() => {
+    window.ipcRenderer.send('platform')
+    window.ipcRenderer.on('platform.reply', (event, args) => {
+        platform.value = args
+    })
+})
+
 const payloadStore = usePayloadStore();
 
 const hasColor = computed(() => {
     return payloadStore.payload.filter((payload) => payload.hasOwnProperty("color")).length > 0;
 });
+
 </script>
 
 <template>
     <div class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10">
-        <div class="ml-8 w-full select-none flex justify-between">
+        <div v-if="payloadStore.payload.length > 0" :class="{'ml-8' : platform === 'darwin'}">
             <div class="ml-10 w-auto h-full">
                 <div class="flex gap-1 items-center">
                     <!-- clear -->
@@ -36,7 +45,7 @@ const hasColor = computed(() => {
 
                     <!-- pause -->
                     <NavBarPause
-                        v-if="payloadStore.payload.length > 0"
+
                         v-bind:is-saved-dumps-window="inSavedDumpsWindow"
                     />
                 </div>

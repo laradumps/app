@@ -239,7 +239,7 @@ const mainMenuListeners = () => {
     });
 
     window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
-        window.ipcRenderer.send("main-menu:set-auto-launch", { value: args.value });
+        window.ipcRenderer.send("set-auto-launch", { value: args.value });
     });
 
     window.ipcRenderer.on("settings:set-language", (event, args) => {

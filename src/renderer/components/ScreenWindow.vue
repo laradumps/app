@@ -126,4 +126,8 @@ watch(timeStore.groups, () => {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.nav-bar {
+    height: auto !important;
+}
+</style>
