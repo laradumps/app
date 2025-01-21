@@ -12,7 +12,7 @@ import { usePayloadStore } from "@/store/payload";
 import ClearAll from "@/components/ClearAll.vue";
 import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
 
-const platform = ref('')
+const platform = ref("");
 defineProps({
     inSavedDumpsWindow: {
         type: Boolean,
@@ -21,33 +21,32 @@ defineProps({
 });
 
 onMounted(() => {
-    window.ipcRenderer.send('platform')
-    window.ipcRenderer.on('platform.reply', (event, args) => {
-        platform.value = args
-    })
-})
+    window.ipcRenderer.send("platform");
+    window.ipcRenderer.on("platform.reply", (event, args) => {
+        platform.value = args;
+    });
+});
 
 const payloadStore = usePayloadStore();
 
 const hasColor = computed(() => {
     return payloadStore.payload.filter((payload) => payload.hasOwnProperty("color")).length > 0;
 });
-
 </script>
 
 <template>
     <div class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10">
-        <div v-if="payloadStore.payload.length > 0" :class="{'ml-8' : platform === 'darwin'}">
+        <div
+            v-if="payloadStore.payload.length > 0"
+            :class="{ 'ml-8': platform === 'darwin' }"
+        >
             <div class="ml-10 w-auto h-full">
                 <div class="flex gap-1 items-center">
                     <!-- clear -->
                     <ClearAll />
 
                     <!-- pause -->
-                    <NavBarPause
-
-                        v-bind:is-saved-dumps-window="inSavedDumpsWindow"
-                    />
+                    <NavBarPause v-bind:is-saved-dumps-window="inSavedDumpsWindow" />
                 </div>
             </div>
         </div>

@@ -38,4 +38,4 @@ export const init = async () => {
         `);
         });
     });
-}
+};
