@@ -11,9 +11,7 @@ import { useGlobalSearchStore } from "@/store/global-search";
 import { useI18n } from "vue-i18n";
 import { useColorStore } from "@/store/colors";
 import { Payload } from "@/types/Payload";
-import * as Helper from "@/helpers";
 import moment from "moment/moment";
-import TheNavBar from "@/components/TheNavBar.vue";
 import AppSetting from "@/components/AppSetting.vue";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
@@ -275,13 +273,13 @@ const dumpsBagFiltered = computed(() => {
     const dumps = dumpsBag.value;
 
     dumps
-        .filter((payload: Payload) => payload.type === "queries")
-        .forEach((payload: Payload) => {
-            const sql = payload.queries?.sql || "";
+        .filter((dump: Payload) => dump.type === "queries")
+        .forEach((dump: Payload) => {
+            const sql = dump.queries.sql;
 
-            const isDuplicate = dumps.filter((payload1: Payload) => payload1.type === "queries" && payload1.request_id === payload.request_id && payload1.queries.sql === sql);
+            const isDuplicate = dumps.filter((d: Payload) => d.type === "queries" && d.request_id === dump.request_id && d.queries.sql === sql);
 
-            queryDuplicatedStore.add(payload.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
+            queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
         });
 
     return dumps
@@ -354,6 +352,8 @@ type EventType = "label" | "color" | "screen" | "dump";
 const interval = ref(null);
 
 const dispatch = (type: string, event: EventType, content: any): void => {
+
+    console.log(content)
     if (isPaused.value) {
         return;
     }
@@ -368,11 +368,17 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     content.rendered = false;
     settingStore.setting = false;
 
-    if (content.type === "screen") {
+    if (content.screen) {
         addScreen(content.screen);
-    } else {
-        content.screen = defaultScreen.value;
+    }
 
+    if (content.type === "screen") {
+        addScreen({
+            ...content.screen,
+            pinned: false,
+            visible: true
+        });
+    } else {
         if (typeof content.date_time == "undefined") {
             content.date_time = moment().format("hh:mm:ss a");
         }
@@ -383,17 +389,8 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     let screenName = content.screen.screen_name ?? "screen 1";
 
     if (!["Logs", "Queries"].includes(screenName)) {
-        const autoInvokeApp = typeof content.meta === "object" ? content.meta.auto_invoke_app : true;
-
+        const autoInvokeApp = content.meta.auto_invoke_app
         maximizeApp(autoInvokeApp);
-    }
-
-    if (interval.value == null) {
-        if (content.type === "queries" || content.type === "livewire") {
-            interval.value = setInterval(() => setTimeout(() => toggleScreen(content.screen.screen_name), 50), 700);
-        } else {
-            setTimeout(() => toggleScreen(content.screen.screen_name), 50);
-        }
     }
 
     const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
@@ -433,30 +430,14 @@ function registerDefaultLocalShortcuts() {
 }
 </script>
 <template>
-    <div
-        v-cloak
-        id="app"
-        :data-theme="appearanceStore.value"
-        :class="{ absolute: !inScreenWindow }"
-        class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
-    >
-        <ScreenWindow
-            v-if="inScreenWindow"
-            :dumps-bag="payloadScreen"
-            v-model:screen="inScreenWindow"
-        />
+    <div v-cloak id="app" :data-theme="appearanceStore.value" :class="{ absolute: !inScreenWindow }" class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available">
+        <ScreenWindow v-if="inScreenWindow" :dumps-bag="payloadScreen" v-model:screen="inScreenWindow" />
 
-        <div
-            v-else
-            class="absolute w-full h-full min-h-full"
-        >
+        <div v-else class="absolute w-full h-full min-h-full">
             <div>
                 <TheAppUpdateInfo />
 
-                <div
-                    v-if="isPaused"
-                    class="bg-warning tracking-wider text-center uppercase text-warning-content text-xs py-1 my-1"
-                >
+                <div v-if="isPaused" class="bg-warning tracking-wider text-center uppercase text-warning-content text-xs py-1 my-1">
                     {{ $t("is_paused") }}
                 </div>
 
@@ -470,18 +451,12 @@ function registerDefaultLocalShortcuts() {
                         class="flex-1 flex flex-col shrink-0 left-16 right-0 min-h-full"
                     >
                         <!-- AppSettings -->
-                        <div
-                            class="overflow-auto min-h-screen pb-8"
-                            v-if="settingStore.setting"
-                        >
+                        <div class="overflow-auto min-h-screen pb-8" v-if="settingStore.setting">
                             <AppSetting :local-shortcut-list="localShortcutList" />
                         </div>
 
                         <!-- screen buttons -->
-                        <div
-                            v-if="screenStore.screens.length > 1 && !settingStore.setting"
-                            class="flex"
-                        >
+                        <div v-if="screenStore.screens.length > 1 && !settingStore.setting" class="flex">
                             <div class="flex-1 px-3">
                                 <div class="flex items-center justify-between overflow-x-auto">
                                     <div class="flex">
@@ -523,12 +498,7 @@ function registerDefaultLocalShortcuts() {
                                     }"
                                     v-if="payloadStore.payload.length > 0 && !settingStore.setting"
                                 >
-                                    <div
-                                        class="w-full"
-                                        :id="payload.id"
-                                        v-for="(payload, index) in dumpsBagFiltered"
-                                        :key="payload.sf_dump_id"
-                                    >
+                                    <div class="w-full" :id="payload.id" v-for="(payload, index) in dumpsBagFiltered" :key="payload.sf_dump_id">
                                         <DumpItem
                                             :in-saved-dumps-window="inSavedDumpsWindow"
                                             v-show="screenStore.screen === 'Queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'Livewire'"
@@ -536,10 +506,7 @@ function registerDefaultLocalShortcuts() {
                                         />
                                     </div>
 
-                                    <div
-                                        class="pt-2"
-                                        v-if="screenStore.screen === 'Livewire'"
-                                    >
+                                    <div class="pt-2" v-if="screenStore.screen === 'Livewire'">
                                         <DumpLivewire v-model:livewire-requests="livewireRequests" />
                                     </div>
                                 </div>
@@ -547,10 +514,7 @@ function registerDefaultLocalShortcuts() {
 
                             <div id="bottom"></div>
 
-                            <div
-                                class="w-full h-full -mt-6"
-                                v-if="payloadStore.payload.length === 0 && !settingStore.setting"
-                            >
+                            <div class="w-full h-full -mt-6" v-if="payloadStore.payload.length === 0 && !settingStore.setting">
                                 <WelcomePage :local-shortcut-list="localShortcutList" />
                             </div>
                         </div>

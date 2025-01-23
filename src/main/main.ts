@@ -101,10 +101,6 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
-    if (!Object.prototype.hasOwnProperty.call(arg.content, "meta")) {
-        return;
-    }
-
     event.sender.send(arg.type, arg);
 });
 
