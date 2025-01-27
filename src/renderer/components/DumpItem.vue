@@ -114,9 +114,10 @@ const isDuplicated = (sql) => {
 };
 
 const badgeClasses = computed(() => {
-    const { label, color } = props.payload;
+    const { color } = props.payload;
+    const { label } = props.payload.with_label;
 
-    const baseClass = "badge font-medium text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto";
+    const baseClass = "badge uppercase font-semibold text-xs text-base-content bg-base-100 border border-neutral-content/20 shadow-sm rounded-box w-auto";
 
     const dynamicClass = {
         "!bg-error !text-error-content": ["error", "emergency"].includes(label) || color === "red",
@@ -138,10 +139,19 @@ const badgeClasses = computed(() => {
 watch(collapseStore, (value) => {
     open.value = value.open;
 });
+
+const getLabel = computed(() => {
+    console.log(props.payload)
+    if (Object.values(props.payload.with_label).length > 0 && props.payload.with_label.label !== "") {
+        return props.payload.with_label.label
+    }
+
+    return props.payload.type
+})
 </script>
 <template>
     <div class="group text-sm pt-2">
-        <div class="px-2.5 w-full">
+        <div class="px-2 w-full">
             <div
                 :class="{
                     [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
@@ -154,7 +164,7 @@ watch(collapseStore, (value) => {
                 <div
                     @dblclick="open = !open"
                     title="Double click to collapse"
-                    class="select-none !cursor-default collapse-title gap-2 text-base-content justify-between items-center font-light flex text-[12px]"
+                    class="select-none !cursor-default collapse-title text-base-content justify-between items-center font-light flex text-xs"
                 >
                     <ul
                         class="flex gap-6 whitespace-nowrap"
@@ -202,10 +212,11 @@ watch(collapseStore, (value) => {
                         ></div>
 
                         <div
+                            class="-mr-1"
                             v-if="payload.type !== `queries`"
                             :class="badgeClasses"
                         >
-                            {{ payload.label ?? payload.type }}
+                            {{ getLabel }}
                         </div>
 
                         <div

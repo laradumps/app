@@ -63,7 +63,7 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
             <div class="flex items-center select-none">
                 <div
                     class="w-full"
-                    v-if="props.payload.screen.screen_name != 'Slow Queries'"
+                    v-if="payload.to_screen.screen_name != 'Slow Queries'"
                 >
                     <div
                         v-show="percentage <= 100"

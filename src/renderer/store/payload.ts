@@ -20,10 +20,10 @@ export const usePayloadStore = defineStore("payload", {
             this.payload.push(object);
         },
         get(screen: String) {
-            return this.payload.filter((payload) => payload.screen?.screen_name === screen);
+            return this.payload.filter((payload) => payload.to_screen.screen_name === screen);
         },
         clear(screen: String) {
-            this.payload = this.payload.filter((payload) => payload.screen?.screen_name !== screen);
+            this.payload = this.payload.filter((payload) => payload.to_screen.screen_name !== screen);
         },
         clearAll() {
             this.payload = [];
@@ -31,6 +31,10 @@ export const usePayloadStore = defineStore("payload", {
         updatePayload(content: { id: string; [key: string]: any }, field: string, transform?: (value: any) => any) {
             const index = this.findPayloadIndex(content.id);
             if (index !== -1) {
+                console.log({
+                   // ...this.payload[index],
+                    [field]: transform ? transform(content[field]) : content[field]
+                })
                 this.payload[index] = {
                     ...this.payload[index],
                     [field]: transform ? transform(content[field]) : content[field]
@@ -40,8 +44,8 @@ export const usePayloadStore = defineStore("payload", {
         updateColorPayload(content: { id: string; color: { color: string } }) {
             this.updatePayload(content, "color", (color) => color.color);
         },
-        updateScreenPayload(content: { id: string; screen: ScreenPayload }) {
-            this.updatePayload(content, "screen");
+        updateScreenPayload(content: { id: string; to_screen: ScreenPayload }) {
+            this.updatePayload(content, "to_screen");
         },
         updateLogPayload(content: { id: string; log_application: LogApplicationPayload }) {
             const colorMap: Record<string, string> = {
@@ -59,7 +63,9 @@ export const usePayloadStore = defineStore("payload", {
                 this.payload[index] = {
                     ...this.payload[index],
                     color: colorMap[content.log_application.level] || "",
-                    label: content.log_application.level
+                    with_label: {
+                        label: content.log_application.level
+                    }
                 };
             }
         },
@@ -82,7 +88,7 @@ export const usePayloadStore = defineStore("payload", {
             }
         },
         updateTimeTrackPayload(content: { id: string; time_track: TimeTrackPayload }) {
-            const exist = this.payload.find((payload) => payload.label === content.time_track.label);
+            const exist = this.payload.find((payload) => payload.with_label.label === content.time_track.label);
             const index = this.findPayloadIndex(content.id);
             if (index !== -1 && exist) {
                 const duration = moment.duration(moment.unix(exist.time_track.time).diff(moment.unix(content.time_track.end_time)));
@@ -90,7 +96,7 @@ export const usePayloadStore = defineStore("payload", {
             }
         },
         updateLabelPayload(content: { id: string; label: any }) {
-            this.updatePayload(content, "label", (label) => label.label);
+            this.updatePayload(content, "with_label");
         }
     }
 });

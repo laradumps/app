@@ -183,7 +183,9 @@ const dumpListeners = () => {
         }
     });
 
-    window.ipcRenderer.on("label", (event, { content }) => payloadStore.updateLabelPayload(content));
+    window.ipcRenderer.on("label", (event, { content }) => {
+        payloadStore.updateLabelPayload(content)
+    });
     window.ipcRenderer.on("table", (event, { content }) => dispatch("table", event, content));
     window.ipcRenderer.on("http-client", (event, { content }) => dispatch("http-client", event, content));
     window.ipcRenderer.on("model", (event, { content }) => dispatch("model", event, content));
@@ -204,11 +206,11 @@ const dumpListeners = () => {
     window.ipcRenderer.on("validate", (event, { content }) => {
         payloadStore.updateValidatePayload(content);
     });
-    window.ipcRenderer.on("json", (event, { content }) => dispatch("screen", event, content));
+    window.ipcRenderer.on("json", (event, { content }) => dispatch("json", event, content));
     window.ipcRenderer.on("queries", (event, { content }) => dispatch("queries", event, content));
     window.ipcRenderer.on("query", (event, { content }) => dispatch("query", event, content));
     window.ipcRenderer.on("time_track", (event, { content }) => {
-        const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.label === content.time_track.label);
+        const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.with_label.label === content.time_track.label);
 
         if (exist.length === 0) {
             dispatch("time-track", event, content);
@@ -319,13 +321,9 @@ const toggleScreen = async (value: string): Promise<void> => {
         return;
     }
 
-    clearInterval(interval.value);
-
-    interval.value = null;
-
     screenStore.activeScreen(value);
 
-    dumpsBag.value = payloadStore.payload.filter((payload) => payload.type !== "screen" && payload.screen.screen_name === value);
+    dumpsBag.value = payloadStore.payload.filter((payload) => payload.type !== "screen" && payload.to_screen.screen_name === value);
 
     await nextTick(() => {
         if (scrollDirection.isTop()) {
@@ -343,17 +341,13 @@ const toggleScreen = async (value: string): Promise<void> => {
         setTimeout(() => {
             const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
             if (lastPayload) timeStore.selected = lastPayload.request_id;
-        }, 600);
+        }, 50);
     }
 };
 
 type EventType = "label" | "color" | "screen" | "dump";
 
-const interval = ref(null);
-
 const dispatch = (type: string, event: EventType, content: any): void => {
-
-    console.log(content)
     if (isPaused.value) {
         return;
     }
@@ -368,13 +362,13 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     content.rendered = false;
     settingStore.setting = false;
 
-    if (content.screen) {
-        addScreen(content.screen);
+    if (typeof content.to_screen.screen_name == "string") {
+        addScreen(content.to_screen);
     }
 
     if (content.type === "screen") {
         addScreen({
-            ...content.screen,
+            ...content.to_screen,
             pinned: false,
             visible: true
         });
@@ -386,31 +380,31 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         payloadStore.add(content);
     }
 
-    let screenName = content.screen.screen_name ?? "screen 1";
+    let screenName = content.to_screen.screen_name ?? "screen 1"
 
     if (!["Logs", "Queries"].includes(screenName)) {
-        const autoInvokeApp = content.meta.auto_invoke_app
-        maximizeApp(autoInvokeApp);
+        maximizeApp(content.auto_invoke_app);
     }
 
-    const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.screen?.screen_name === content.screen.screen_name)));
+    const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name)));
 
-    if (content.screen.new_window) {
-        screenStore.hidden(content.screen.screen_name);
+    if (content.to_screen.new_window) {
+        screenStore.hidden(content.to_screen.screen_name);
 
         window.ipcRenderer.send("screen-window:show", {
-            screen: content.screen.screen_name,
+            screen: content.to_screen.screen_name,
             payload: serializablePayload,
             position: {}
         });
-
-        setTimeout(() => toggleScreen(content.screen.screen_name), 200);
     } else {
         window.ipcRenderer.send("send-screen-window-update", {
-            screen: content.screen.screen_name,
+            screen: content.to_screen.screen_name,
             payload: serializablePayload
         });
     }
+
+    console.log(content.to_screen)
+    setTimeout(() => toggleScreen(content.to_screen.screen_name), 100);
 };
 
 const loadAllSavedPayload = (): void => {
@@ -496,9 +490,10 @@ function registerDefaultLocalShortcuts() {
                                     :class="{
                                         'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
                                     }"
-                                    v-if="payloadStore.payload.length > 0 && !settingStore.setting"
+                                    v-if="payloadStore.payload.length > 0"
                                 >
                                     <div class="w-full" :id="payload.id" v-for="(payload, index) in dumpsBagFiltered" :key="payload.sf_dump_id">
+
                                         <DumpItem
                                             :in-saved-dumps-window="inSavedDumpsWindow"
                                             v-show="screenStore.screen === 'Queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'Livewire'"

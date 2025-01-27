@@ -85,6 +85,10 @@ export interface ScreenPayload {
     new_window: boolean;
 }
 
+export interface LabelPayload {
+    label: string;
+}
+
 export interface CodeSnippet {
     file: string;
     line: number;
@@ -125,7 +129,6 @@ export interface Payload {
     time_track?: TimeTrackPayload;
     html?: string;
     mail: MailPayload;
-    label?: string;
     table_v2?: TableV2Payload;
     color?: string;
     json?: JSONPayload;
@@ -137,7 +140,8 @@ export interface Payload {
     table?: TablePayload;
     mailable?: MailablePayload;
     log_application?: LogApplicationPayload;
-    screen?: ScreenPayload;
+    to_screen: ScreenPayload;
+    with_label: LabelPayload;
     meta: Meta;
     code_snippet: CodeSnippet[];
 }
