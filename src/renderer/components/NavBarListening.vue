@@ -112,6 +112,14 @@ const setActiveProject = () => {
     currentProjectStore.set(selectedProject.value);
     window.ipcRenderer.send("storage.get-environments", selectedProject.value);
 };
+
+const countSelectedEnvironment = computed(() => {
+    return selectedEnvironment.value.filter((environment) => environment.selected).length
+})
+
+const countManySelectedEnvironment = computed(() => {
+    return selectedEnvironment.value.filter((environment) => environment.selected).length
+})
 </script>
 
 <template>
@@ -121,6 +129,14 @@ const setActiveProject = () => {
             role="button"
             class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         >
+            <span v-show="countSelectedEnvironment > 0 && countManySelectedEnvironment <= 4" class="absolute -left-0.5 top-1 text-[11px] badge badge-warning p-0.5 h-[14px]">
+                {{ countSelectedEnvironment }}
+            </span>
+
+            <span v-show="countManySelectedEnvironment > 4" class="absolute animate-pulse -left-0.5 top-1 text-[11px] badge badge-error p-0.5 h-[14px]">
+                {{ countSelectedEnvironment }}
+            </span>
+
             <SignalSlashIcon
                 v-if="selectedProject.length === 0"
                 class="size-4 text-error"
