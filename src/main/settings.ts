@@ -24,19 +24,19 @@ const defaultSettings: Settings = {
         always_on_top: {
             originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
             keys: process.platform === "darwin" ? "Alt+Shift+T" : "Ctrl+Shift+T",
-            label: "settings.shortcut.alwaysOnTop",
+            label: "settings.shortcut.alwaysOnTop"
         },
         clear_all: {
             originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
             keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K",
-            label: "settings.shortcut.clear",
+            label: "settings.shortcut.clear"
         }
     }
 };
 
 export const init = async () => {
     ipcMain.on("settings.store", storeSettings);
-    ipcMain.on("settings.init-shortcuts", initShortcuts)
+    ipcMain.on("settings.init-shortcuts", initShortcuts);
 };
 
 export const storeSettings = async (_event: any, data: Settings) => {
@@ -47,7 +47,7 @@ export const initShortcuts = (event) => {
     const electronLocalShortcut = require("electron-localshortcut");
 
     for (let key in getSettings().shortcuts) {
-        const shortcut: Shortcut = getSettings().shortcuts[key]
+        const shortcut: Shortcut = getSettings().shortcuts[key];
 
         electronLocalShortcut.register(shortcut.keys, (): void => {
             // eslint-disable-next-line no-console
@@ -55,7 +55,7 @@ export const initShortcuts = (event) => {
             event.reply("app:local-shortcut-execute::" + key);
         });
     }
-}
+};
 
 export const getSettings = () => {
     let settingsRaw: string = "";

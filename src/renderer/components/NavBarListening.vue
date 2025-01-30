@@ -134,7 +134,7 @@ const setActiveProject = () => {
         </div>
         <ul
             tabindex="0"
-            class="dropdown-content min-w-40 overflow-y-auto z-200 menu p-2 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-0"
+            class="dropdown-content min-w-64 overflow-y-auto z-200 menu p-2 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-10"
         >
             <select
                 v-model="selectedProject"
@@ -154,14 +154,16 @@ const setActiveProject = () => {
 
             <div
                 v-if="environments.length === 0"
-                class="text-[10px] text-base-content"
+                class="text-xs text-base-content"
             >
                 No laradumps.yaml found in this project
             </div>
 
             <div
                 class="overflow-auto"
-                style="height: calc(100vh - 11rem)"
+                :class="{
+                    'calc(100vh-12rem) p-0' : environments.length > 0,
+                }"
             >
                 <li
                     :key="env.value"
@@ -185,7 +187,7 @@ const setActiveProject = () => {
 
             <div v-if="environments.length > 0">
                 <button
-                    class="btn btn-warning text-warning-content mt-6 w-[100px] text-[10px]"
+                    class="btn btn-warning text-warning-content mt-6 w-auto btn-sm text-xs"
                     @click="remove"
                 >
                     Remove Project

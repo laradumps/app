@@ -257,6 +257,10 @@ ipcMain.on("main:update-zoom-level", (event, value): void => {
     storage.set("zoomLevel", { value: value });
 });
 
+ipcMain.on("get-icon", (event, args) => {
+    event.reply("icon", resolve(__dirname, "icon.png"));
+});
+
 ipcMain.on("zoom-level", (): void => {
     let zoomFactor = 1.0;
 

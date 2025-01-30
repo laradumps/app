@@ -126,12 +126,12 @@ const saveShortcuts = async () => {
 
             settingsStore.settings.shortcuts[element.name] = shortcut;
 
-            console.log(element.name)
+            console.log(element.name);
             window.ipcRenderer.send("local-shortcut:set", shortcut);
         }
     });
 
-    await saveSettings()
+    await saveSettings();
 
     window.ipcRenderer.send("settings.init-shortcuts");
 

@@ -74,10 +74,6 @@ onMounted(() => {
 
     window.ipcRenderer.on("app:pause-dumps", (event, arg) => (isPaused.value = arg));
 
-    window.ipcRenderer.on("app:local-shortcut::count", (event, arg) => {
-        arg === 0 && registerDefaultLocalShortcuts();
-    });
-
     window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
 
     window.ipcRenderer.send("main:app-version");
@@ -111,14 +107,14 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("app:theme-dark", () => {
-        settingsStore.settings.theme = 'dim'
-        document.documentElement.setAttribute("data-theme", 'light');
+        settingsStore.settings.theme = "dim";
+        document.documentElement.setAttribute("data-theme", "light");
         settingsStore.update();
     });
 
     window.ipcRenderer.on("app:theme-light", () => {
-        settingsStore.settings.theme = 'light'
-        document.documentElement.setAttribute("data-theme", 'light');
+        settingsStore.settings.theme = "light";
+        document.documentElement.setAttribute("data-theme", "light");
         settingsStore.update();
     });
 
@@ -134,10 +130,6 @@ onMounted(() => {
     window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
 
     window.ipcRenderer.send("local-shortcut:get");
-
-    window.ipcRenderer.on("app:local-shortcut::list", (event, arg) => {
-        localShortcutList.value = arg;
-    });
 
     dumpListeners();
     mainMenuListeners();
@@ -369,17 +361,6 @@ const loadAllSavedPayload = (): void => {
     document.title = "LaraDumps - Saved";
     window.ipcRenderer.send("saved-dumps:load");
 };
-
-function registerDefaultLocalShortcuts() {
-    let shortcutClearAllObject = {
-        alias: "clearAll",
-        label: "settings.shortcut.clear",
-        shortcut: "ds_shortcut_clearAll",
-        originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
-        keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K"
-    };
-    window.ipcRenderer.send("local-shortcut:set", shortcutClearAllObject);
-}
 </script>
 <template>
     <div
@@ -490,7 +471,7 @@ function registerDefaultLocalShortcuts() {
                                 class="w-full h-full -mt-6"
                                 v-if="payloadStore.payload.length === 0"
                             >
-                                <WelcomePage :local-shortcut-list="localShortcutList" />
+                                <WelcomePage />
                             </div>
                         </div>
                     </main>

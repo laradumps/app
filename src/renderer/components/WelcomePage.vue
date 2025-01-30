@@ -1,11 +1,14 @@
 <script setup>
 import AppGuide from "@/components/AppGuide.vue";
+import { onMounted, ref } from "vue";
 
-const props = defineProps({
-    localShortcutList: {
-        required: true,
-        type: Array
-    }
+const iconPath = ref();
+
+onMounted(() => {
+    window.ipcRenderer.send("get-icon");
+    window.ipcRenderer.on("icon", (event, args) => {
+        iconPath.value = args;
+    });
 });
 </script>
 <template>
@@ -14,22 +17,17 @@ const props = defineProps({
             <div id="output"></div>
 
             <!-- welcome page -->
-            <div class="w-full px-4 text-sm leading-6">
+            <div class="w-full px-4 text-sm space-y-2">
+                <div class="w-full flex justify-center">
+                    <img
+                        :src="iconPath"
+                        alt=""
+                        class="size-16 mr-2"
+                    />
+                </div>
+
                 <!-- app guide -->
                 <AppGuide />
-            </div>
-        </div>
-        <div class="fixed left-[40px] bottom-10 w-auto">
-            <div class="flex gap-2 justify-end text-right">
-                <div v-for="shortcut in localShortcutList">
-                    <span
-                        v-if="shortcut.hasOwnProperty('shortcut')"
-                        :key="shortcut.alias"
-                        class="font-light rounded-md p-1 px-2 text-xs"
-                        ><span class="font-normal">{{ $t(shortcut.label) }}</span
-                        >: <span class="bg-base-300 badge">{{ shortcut.originalValue }}</span></span
-                    >
-                </div>
             </div>
         </div>
     </div>
