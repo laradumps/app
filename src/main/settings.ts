@@ -1,6 +1,6 @@
 import path from "path";
 import * as fs from "node:fs";
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, ipcMain } from "electron";
 import os from "os";
 import { Settings, Shortcut } from "@/types/settings.type";
 
@@ -19,7 +19,8 @@ const defaultSettings: Settings = {
     check_for_updates: "auto_download",
     ide_handler: "phpstorm://open?file={filepath}&line={line}",
     auto_launch: "disabled",
-    scroll_direction: "todo",
+    scroll_direction: "top",
+    reverse: false,
     shortcuts: {
         always_on_top: {
             originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
@@ -74,7 +75,8 @@ export const getSettings = () => {
             check_for_updates: settingsJson.check_for_updates || defaultSettings.check_for_updates,
             auto_launch: settingsJson.auto_launch || defaultSettings.auto_launch,
             scroll_direction: settingsJson.scroll_direction || defaultSettings.scroll_direction,
-            shortcuts: settingsJson.shortcuts || defaultSettings.shortcuts
+            shortcuts: settingsJson.shortcuts || defaultSettings.shortcuts,
+            reverse: settingsJson.reverse || defaultSettings.reverse
         };
     } else {
         settings = defaultSettings;

@@ -24,7 +24,6 @@ export default {
     menu: {
         clear: "Limpiar",
         settings: "Configuración",
-        reorder: "Reordenar",
         saved_dumps: "Volcados guardados",
         toggle_menu: "Mostar menú"
     },

@@ -24,7 +24,6 @@ export default {
     menu: {
         clear: "Cancella",
         settings: "Impostazioni",
-        reorder: "Riordina",
         saved_dumps: "Dumps salvati",
         toggle_menu: "Mostra il menù"
     },

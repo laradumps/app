@@ -3,7 +3,6 @@ import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref } from "vue"
 import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
 import { useScreenStore } from "@/store/screen";
 import { useI18nStore } from "@/store/i18n";
-import { useReorder } from "@/store/reorder";
 import { useTimeStore } from "@/store/time";
 import { useGlobalSearchStore } from "@/store/global-search";
 import { useI18n } from "vue-i18n";
@@ -25,7 +24,6 @@ import { useSettingsStore } from "@/store/settings";
 markRaw(TheUpdateModalInfo);
 
 const screenStore = useScreenStore();
-const reorderStore = useReorder();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
@@ -124,6 +122,7 @@ onMounted(() => {
     mainMenuListeners();
 
     window.ipcRenderer.send("storage.get");
+    toggleScreen('screen 1')
 });
 
 const dumpListeners = () => {
@@ -428,7 +427,7 @@ const loadAllSavedPayload = (): void => {
                                     id="dumps-base"
                                     class="mb-[40px] w-full"
                                     :class="{
-                                        'flex flex-col-reverse': reorderStore.reverse && screenStore.screen !== 'Queries'
+                                        'flex flex-col-reverse': settingsStore.settings.dump_order === 'reversed' && screenStore.screen !== 'Queries'
                                     }"
                                     v-if="payloadStore.payload.length > 0"
                                 >

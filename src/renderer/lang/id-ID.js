@@ -24,7 +24,6 @@ export default {
     menu: {
         clear: "Bersihkan",
         settings: "Pengaturan",
-        reorder: "Urutkan Kembali",
         saved_dumps: "Dumps yang disimpan",
         toggle_menu: "Tampilkan Menu"
     },

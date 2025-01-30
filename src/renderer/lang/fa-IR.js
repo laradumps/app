@@ -24,7 +24,6 @@ export default {
     menu: {
         clear: "پاک کردن",
         settings: "تنظیمات",
-        reorder: "مرتب سازی",
         saved_dumps: "دامپ‌های ذخیره شده",
         toggle_menu: "نمایش منو"
     },

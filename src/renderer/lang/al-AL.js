@@ -24,7 +24,6 @@ export default {
     menu: {
         clear: "Pastro",
         settings: "Cilësimet",
-        reorder: "Rendit",
         saved_dumps: "Dhëmbëzat e ruajtura",
         toggle_menu: "Shfaq menu"
     },

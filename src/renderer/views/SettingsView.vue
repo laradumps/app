@@ -62,6 +62,10 @@ const saveScrollDirection = () => {
     nextTick(() => saveSettings());
 }
 
+const saveReverse = () => {
+    nextTick(() => saveSettings());
+}
+
 const getSavedLocalShortcuts = () => {
     window.ipcRenderer.send("local-shortcut:get");
 
@@ -281,12 +285,32 @@ const editShortcut = () => {
                 </div>
             </div>
 
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Dump Order</div>
+                <div class="flex items-center justify-between">
+                    <SelectInput
+                        id="scroll"
+                        v-model="settingsStore.settings.dump_order"
+                        @change="saveReverse()"
+                        placeholder="Dump Order"
+                        class="w-full"
+                    >
+                        <option
+                            v-for="(value, key) in settingsStore.dumpOrder"
+                            :value="key"
+                        >
+                            {{ value }}
+                        </option>
+                    </SelectInput>
+                </div>
+            </div>
+
             <div class="mt-10 flex items-center justify-between">
                 <h1 class="text-lg font-semibold">{{ $t("settings.shortcuts") }}</h1>
             </div>
 
             <Divider class="mt-3" />
-
             <div
                 v-for="(shortcut, key) in settingsStore.settings.shortcuts"
                 :key="key"

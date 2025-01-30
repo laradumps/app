@@ -23,7 +23,6 @@ export default {
     },
     menu: {
         clear: "Clear",
-        reorder: "Reorder",
         saved_dumps: "Saved Dumps",
         ssh: "SSH"
     },

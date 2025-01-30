@@ -24,7 +24,6 @@ export default {
     menu: {
         clear: "Temizle",
         settings: "Ayarlar",
-        reorder: "Yeniden Sırala",
         saved_dumps: "Kaydedilen Dumps",
         toggle_menu: "Menüyü göster"
     },

@@ -24,7 +24,6 @@ export default {
     menu: {
         clear: "مسح",
         settings: "الإعدادات",
-        reorder: "إعادة الترتيب",
         saved_dumps: "المحفوظات",
         toggle_menu: "إظهار القائمة"
     },

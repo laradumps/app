@@ -54,6 +54,11 @@ const scrollDirection = {
     bottom: "Bottom"
 }
 
+const dumpOrder = {
+    normal: "Normal",
+    reversed: "Reversed"
+}
+
 export const useSettingsStore = defineStore("settings", () => {
     const themes = ref(themeColors);
 
@@ -64,6 +69,7 @@ export const useSettingsStore = defineStore("settings", () => {
         ide_handler: "phpstorm://open?file={filepath}&line={line}",
         scroll_direction: "todo",
         auto_launch: "disabled",
+        dump_order: "normal",
         shortcuts: {
             always_on_top: {
                 originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
@@ -94,7 +100,8 @@ export const useSettingsStore = defineStore("settings", () => {
             check_for_updates: s.check_for_updates || "auto_download",
             ide_handler: s.ide_handler || "phpstorm://open?file={filepath}&line={line}",
             auto_launch: s.auto_launch || "disabled",
-            scroll_direction: s.scroll_direction || "todo",
+            scroll_direction: s.scroll_direction || "top",
+            dump_order: s.reverse || 'normal',
             shortcuts: s.shortcuts || {
                 always_on_top: {
                     originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
@@ -110,5 +117,5 @@ export const useSettingsStore = defineStore("settings", () => {
         };
     };
 
-    return { settings, update, themes, languageOptions, ideHandlerOptions, autoLaunchOptions, scrollDirection, checkForUpdateOptions, setSettings };
+    return { settings, update, themes, languageOptions, ideHandlerOptions, autoLaunchOptions, dumpOrder, scrollDirection, checkForUpdateOptions, setSettings };
 });

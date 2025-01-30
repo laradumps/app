@@ -24,7 +24,6 @@ export default {
     menu: {
         clear: "清除",
         settings: "设置",
-        reorder: "重新排序",
         saved_dumps: "已保存的转储",
         toggle_menu: "显示菜单"
     },
