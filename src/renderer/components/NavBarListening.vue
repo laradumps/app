@@ -162,7 +162,7 @@ const setActiveProject = () => {
             <div
                 class="overflow-auto"
                 :class="{
-                    'calc(100vh-12rem) p-0' : environments.length > 0,
+                    'h-[calc(100vh-11rem)] p-0': environments.length > 0
                 }"
             >
                 <li

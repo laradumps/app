@@ -61,14 +61,14 @@ export const useSettingsStore = defineStore("settings", () => {
         auto_launch: "disabled",
         shortcuts: {
             always_on_top: {
-                keys: "",
-                label: "",
-                originalValue: ""
+                originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
+                keys: process.platform === "darwin" ? "Alt+Shift+T" : "Ctrl+Shift+T",
+                label: "settings.shortcut.alwaysOnTop"
             },
             clear_all: {
-                keys: "",
-                label: "",
-                originalValue: ""
+                originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
+                keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K",
+                label: "settings.shortcut.clear"
             }
         }
     };
@@ -94,7 +94,7 @@ export const useSettingsStore = defineStore("settings", () => {
                 always_on_top: {
                     originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
                     keys: process.platform === "darwin" ? "Alt+Shift+T" : "Ctrl+Shift+T",
-                    label: "settings.shortcut.always_on_top"
+                    label: "settings.shortcut.alwaysOnTop"
                 },
                 clear_all: {
                     originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",

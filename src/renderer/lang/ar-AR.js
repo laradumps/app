@@ -23,7 +23,6 @@ export default {
     },
     menu: {
         clear: "مسح",
-        language: "اللغة",
         settings: "الإعدادات",
         reorder: "إعادة الترتيب",
         saved_dumps: "المحفوظات",
@@ -50,15 +49,10 @@ export default {
         run_to_add_your_project_here: "قم بتنفيذ الأمر vendor/bin/laradumps لإعداد مشروعك هنا",
         projects: "المشاريع",
         no_project_here: "لا يوجد مشروع هنا",
-        reset_data: "إعادة ضبط البيانات",
-        reset_data_description: "هذا الإعداد سيقوم بمسح جميع البيانات الموجودة في LaraDumps.",
-        clear_all_settings_dialog_message: "هل أنت واثق أنك تريد حذف جميع الإعدادات ؟",
-        deleted_message: "تم حذف الإعدادات بنجاح!",
-        system: "النظام",
-        appearance: "المظهر",
         check_for_updates: "التحقق من وجود تحديثات",
         update_available: "هناك تحديث متاح",
-        enable: "تفعيل"
+        enable: "تفعيل",
+        changes_saved: "Changes Saved"
     },
     click_to_copy: "اضغط للنسخ",
     please_select_a_component: "يرجى إختيار مكون",

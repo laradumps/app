@@ -23,7 +23,6 @@ export default {
     },
     menu: {
         clear: "Temizle",
-        language: "Dil",
         settings: "Ayarlar",
         reorder: "Yeniden Sırala",
         saved_dumps: "Kaydedilen Dumps",
@@ -50,15 +49,10 @@ export default {
         run_to_add_your_project_here: "Projenizi buraya eklemek için vendor/bin/laradumps configure komutunu çalıştırın",
         projects: "Projeler",
         no_project_here: "Burada Proje Yok",
-        reset_data: "Verileri Sıfırla",
-        reset_data_description: "Bu işlem LaraDumps'ta 'Projeler ve Kaydedilen Dumps' olarak kaydedilen tüm verileri temizler",
-        clear_all_settings_dialog_message: "Tüm ayarları temizlemek istediğinizden emin misiniz?",
-        deleted_message: "Ayarlar başarıyla silindi!",
-        system: "Sistem",
-        appearance: "Görünüm",
         check_for_updates: "Güncellemeleri kontrol et",
         update_available: "Güncelleme Mevcut",
-        enable: "Etkinleştir"
+        enable: "Etkinleştir",
+        changes_saved: "Changes Saved"
     },
     click_to_copy: "Kopyalamak için tıklayın",
     please_select_a_component: "Lütfen bir bileşen seçin",

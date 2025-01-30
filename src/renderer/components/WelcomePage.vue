@@ -17,13 +17,14 @@ onMounted(() => {
             <div id="output"></div>
 
             <!-- welcome page -->
-            <div class="w-full px-4 text-sm space-y-2">
-                <div class="w-full flex justify-center">
+            <div class="w-full px-4 text-sm space-y-5">
+                <div class="w-full flex justify-center items-center text-lg">
                     <img
                         :src="iconPath"
                         alt=""
-                        class="size-16 mr-2"
+                        class="size-7 mr-2"
                     />
+                    LaraDumps
                 </div>
 
                 <!-- app guide -->

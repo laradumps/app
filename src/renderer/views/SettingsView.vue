@@ -151,11 +151,11 @@ const editShortcut = () => {
     <div class="overflow-auto text-base-content">
         <div class="max-w-lg mx-auto p-10">
             <div class="flex items-center justify-between">
-                <h1 class="text-lg font-semibold">Settings</h1>
+                <h1 class="text-lg font-semibold">{{ $t("settings.settings") }}</h1>
                 <span
                     :class="{ 'opacity-0': !saved, 'opacity-65': saved }"
                     class="transition-all duration-300"
-                    >Changes Saved</span
+                    >{{ $t("settings.changes_saved") }}</span
                 >
             </div>
             <Divider class="mt-3" />
@@ -180,7 +180,7 @@ const editShortcut = () => {
             </div>
             <Divider class="mt-3" />
             <div class="mt-3 grid grid-cols-2 items-center">
-                <div>Language</div>
+                <div>{{ $t("settings.language") }}</div>
                 <div class="flex items-center justify-between">
                     <SelectInput
                         id="theme"
@@ -220,7 +220,7 @@ const editShortcut = () => {
             </div>
             <Divider class="mt-3" />
             <div class="mt-3 grid grid-cols-2 items-center">
-                <div>Check for Updates</div>
+                <div>{{ $t("settings.check_for_updates") }}</div>
                 <div class="flex items-center justify-between">
                     <SelectInput
                         id="theme"
@@ -260,7 +260,7 @@ const editShortcut = () => {
             </div>
 
             <div class="mt-10 flex items-center justify-between">
-                <h1 class="text-lg font-semibold">Shortcuts</h1>
+                <h1 class="text-lg font-semibold">{{ $t("settings.shortcuts") }}</h1>
             </div>
 
             <Divider class="mt-3" />

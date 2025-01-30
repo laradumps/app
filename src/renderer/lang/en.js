@@ -23,11 +23,8 @@ export default {
     },
     menu: {
         clear: "Clear",
-        language: "Language",
-        settings: "Settings",
         reorder: "Reorder",
         saved_dumps: "Saved Dumps",
-        toggle_menu: "Show menu",
         ssh: "SSH"
     },
     settings: {
@@ -51,15 +48,10 @@ export default {
         run_to_add_your_project_here: "Run vendor/bin/laradumps configure to add your project here",
         projects: "Projects",
         no_project_here: "No Project here",
-        reset_data: "Reset Data",
-        reset_data_description: "This action will clear all data saved in LaraDumps as 'Projects and Saved Dumps'",
-        clear_all_settings_dialog_message: "Are you sure you want to clear all settings?",
-        deleted_message: "Settings deleted successfully!",
-        system: "System",
-        appearance: "Appearance",
         check_for_updates: "Check for updates",
         update_available: "Update Available",
-        enable: "Enable"
+        enable: "Enable",
+        changes_saved: "Changes Saved"
     },
     click_to_copy: "Click to copy",
     please_select_a_component: "Please select a component",

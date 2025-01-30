@@ -24,7 +24,6 @@ export default {
     menu: {
         clear: "Limpar",
         saved_dumps: "Dumps salvos",
-        language: "Idioma",
         settings: "Configurações",
         toggle_menu: "Mostrar menu"
     },
@@ -49,15 +48,10 @@ export default {
         run_to_add_your_project_here: "Execute vendor/bin/laradumps configure para adicionar seu projeto aqui",
         projects: "Projetos",
         no_project_here: "Não há projetos aqui.",
-        reset_data: "Limpar",
-        reset_data_description: "Esta ação limpará todos os dados salvos no LaraDumps como 'Projetos and Dumps salvos'",
-        clear_all_settings_dialog_message: "Tem certeza de que deseja limpar todas as configurações?",
-        deleted_message: "Configurações excluídas com sucesso!",
-        system: "Sistema",
-        appearance: "Aparência",
         check_for_updates: "Buscar por atualizaçoēs",
         update_available: "Atualização disponível",
-        enable: "Habilitar"
+        enable: "Habilitar",
+        changes_saved: "Alterações Salvas"
     },
     click_to_copy: "Clique para copiar",
     elapsed_time: "Tempo decorrido",

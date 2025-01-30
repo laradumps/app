@@ -23,7 +23,6 @@ export default {
     },
     menu: {
         clear: "پاک کردن",
-        language: "زبان",
         settings: "تنظیمات",
         reorder: "مرتب سازی",
         saved_dumps: "دامپ‌های ذخیره شده",
@@ -50,15 +49,10 @@ export default {
         run_to_add_your_project_here: "برای اضافه کردن پروژه خود، vendor/bin/laradumps configure را اجرا کنید",
         projects: "پروژه‌ها",
         no_project_here: "هیچ پروژه‌ای در اینجا وجود ندارد",
-        reset_data: "بازنشانی داده",
-        reset_data_description: "این عمل باعث پاک شدن تمام داده‌های ذخیره شده در لارادامپس به عنوان 'پروژه‌ها و دامپ‌های ذخیره شده' می‌شود",
-        clear_all_settings_dialog_message: "آیا مطمئن هستید که می‌خواهید تمام تنظیمات را پاک کنید؟",
-        deleted_message: "تنظیمات با موفقیت حذف شدند!",
-        system: "سیستم",
-        appearance: "ظاهر",
         check_for_updates: "بررسی برای به‌روزرسانی‌ها",
         update_available: "به‌روزرسانی در دسترس است",
-        enable: "Enable"
+        enable: "Enable",
+        changes_saved: "Changes Saved"
     },
     click_to_copy: "برای کپی کردن کلیک کنید",
     please_select_a_component: "لطفاً یک مولفه را انتخاب کنید",

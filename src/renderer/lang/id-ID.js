@@ -23,7 +23,6 @@ export default {
     },
     menu: {
         clear: "Bersihkan",
-        language: "Bahasa",
         settings: "Pengaturan",
         reorder: "Urutkan Kembali",
         saved_dumps: "Dumps yang disimpan",
@@ -50,15 +49,10 @@ export default {
         run_to_add_your_project_here: "Jalankan vendor/bin/laradumps configure untuk menambahkan proyek anda disini",
         projects: "Proyek",
         no_project_here: "Tidak ada Proyek di sini",
-        reset_data: "Reset Data",
-        reset_data_description: "Tindakan ini akan menghapus semua data yang disimpan di Laradumps sebagai 'Proyek dan Dumps yang disimpan'",
-        clear_all_settings_dialog_message: "Anda yakin ingin menghapus semua pengaturan?",
-        deleted_message: "Pengaturan berhasil dihapus!",
-        system: "Sistem",
-        appearance: "Tampilan",
         check_for_updates: "Periksa Pembaruan",
         update_available: "Pembaruan Tersedia",
-        enable: "Enable"
+        enable: "Enable",
+        changes_saved: "Changes Saved"
     },
     click_to_copy: "Klik untuk menyalin",
     please_select_a_component: "Silahkan pilih komponen",
