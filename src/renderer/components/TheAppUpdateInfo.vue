@@ -4,6 +4,9 @@ import { UpdateInfo } from "electron-updater";
 import { CompletedInfo, DownloadInfo } from "@/types/Updater";
 import moment from "moment";
 import IconDownload from "@/components/Icons/IconDownload.vue";
+import { useSettingsStore } from "@/store/settings";
+
+const settingsStore = useSettingsStore();
 
 const updateInfo = ref({});
 const modal = ref(null);
@@ -25,8 +28,7 @@ window.ipcRenderer.on("update-available", (event, arg) => {
 });
 
 window.ipcRenderer.on("autoUpdater:update-info", (event, args: UpdateInfo) => {
-    localStorage.updateAvailable = "true";
-    if (localStorage.autoUpdate === "manual_download" || localStorage.autoUpdate === undefined) {
+    if (settingsStore.settings.check_for_updates === "manual_download") {
         return;
     }
 

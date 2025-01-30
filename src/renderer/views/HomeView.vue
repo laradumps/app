@@ -2,17 +2,14 @@
 import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref } from "vue";
 import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
 import { useScreenStore } from "@/store/screen";
-import { useAppearanceStore } from "@/store/appearance";
 import { useI18nStore } from "@/store/i18n";
 import { useReorder } from "@/store/reorder";
-import { useSettingStore } from "@/store/setting";
 import { useTimeStore } from "@/store/time";
 import { useGlobalSearchStore } from "@/store/global-search";
 import { useI18n } from "vue-i18n";
 import { useColorStore } from "@/store/colors";
 import { Payload } from "@/types/Payload";
 import moment from "moment/moment";
-import AppSetting from "@/components/AppSetting.vue";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
@@ -24,19 +21,19 @@ import ScreenWindow from "@/components/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
 import { useScrollDirection } from "@/store/scroll-direction";
 import { useQueryDuplicated } from "@/store/query-duplicated";
+import { useSettingsStore } from "@/store/settings";
 
 markRaw(TheUpdateModalInfo);
 
 const screenStore = useScreenStore();
-const appearanceStore = useAppearanceStore();
 const reorderStore = useReorder();
-const settingStore = useSettingStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const IDEHandler = useIDEHandlerStore();
 const payloadStore = usePayloadStore();
 const scrollDirection = useScrollDirection();
+const settingsStore = useSettingsStore();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
@@ -67,14 +64,11 @@ const allRequests = ref([]);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
-    localStorage.updateAvailable = "false";
 });
 
 onMounted(() => {
     IDEHandler.setValue(localStorage.IDEHandler);
-    appearanceStore.setTheme(localStorage.theme);
 
-    setDefaultCheckForUpdates();
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
     addScreen(defaultScreen.value);
 
@@ -116,16 +110,16 @@ onMounted(() => {
         }
     });
 
-    if (appearanceStore.value === "auto") {
-        window.ipcRenderer.send("native-theme", appearanceStore.value);
-    }
-
     window.ipcRenderer.on("app:theme-dark", () => {
-        appearanceStore.value === "auto" && appearanceStore.setTheme("dim");
+        settingsStore.settings.theme = 'dim'
+        document.documentElement.setAttribute("data-theme", 'light');
+        settingsStore.update();
     });
 
     window.ipcRenderer.on("app:theme-light", () => {
-        appearanceStore.value === "auto" && appearanceStore.setTheme("light");
+        settingsStore.settings.theme = 'light'
+        document.documentElement.setAttribute("data-theme", 'light');
+        settingsStore.update();
     });
 
     window.ipcRenderer.on("app::scroll-direction", (event, args) => {
@@ -136,8 +130,6 @@ onMounted(() => {
             behavior: "smooth"
         });
     });
-
-    window.ipcRenderer.on("app::toggle-settings", () => settingStore.toggle());
 
     window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
 
@@ -152,12 +144,6 @@ onMounted(() => {
 
     window.ipcRenderer.send("storage.get");
 });
-
-const setDefaultCheckForUpdates = () => {
-    if (typeof localStorage.autoUpdate === "undefined") {
-        localStorage.autoUpdate = "automatic";
-    }
-};
 
 const dumpListeners = () => {
     window.ipcRenderer.on("livewire", (event, { content }) => {
@@ -184,7 +170,7 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("label", (event, { content }) => {
-        payloadStore.updateLabelPayload(content)
+        payloadStore.updateLabelPayload(content);
     });
     window.ipcRenderer.on("table", (event, { content }) => dispatch("table", event, content));
     window.ipcRenderer.on("http-client", (event, { content }) => dispatch("http-client", event, content));
@@ -223,35 +209,8 @@ const dumpListeners = () => {
 };
 
 const mainMenuListeners = () => {
-    // set
-    window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: localStorage.IDEHandler });
-    window.ipcRenderer.send("main-menu:set-theme-selected", { value: localStorage.theme });
-
-    // get
-    window.ipcRenderer.on("changeTheme", (event, args) => {
-        window.ipcRenderer.send("main-menu:set-theme-selected", { value: args.value });
-        appearanceStore.setTheme(args.value);
-    });
-
-    window.ipcRenderer.on("changeIDE", (event, args) => {
-        window.ipcRenderer.send("main-menu:set-ide-handler-selected", { value: args.value });
-        IDEHandler.setValue(args.value);
-    });
-
-    window.ipcRenderer.on("changeAutoLaunch", (event, args) => {
-        window.ipcRenderer.send("set-auto-launch", { value: args.value });
-    });
-
-    window.ipcRenderer.on("settings:set-language", (event, args) => {
-        localeStore.set(args.value);
-        locale.value = localeStore.value;
-        location.reload();
-    });
+    window.ipcRenderer.on("changeAutoLaunch", (event, args) => {});
 };
-
-window.ipcRenderer.on("settings:check-for-updates", (event, args) => {
-    localStorage.autoUpdate = args.value;
-});
 
 window.addEventListener("update-payload", (event) => {
     console.log(payloadStore.get(inScreenWindow.value));
@@ -360,7 +319,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
     }
 
     content.rendered = false;
-    settingStore.setting = false;
 
     if (typeof content.to_screen.screen_name == "string") {
         addScreen(content.to_screen);
@@ -380,7 +338,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         payloadStore.add(content);
     }
 
-    let screenName = content.to_screen.screen_name ?? "screen 1"
+    let screenName = content.to_screen.screen_name ?? "screen 1";
 
     if (!["Logs", "Queries"].includes(screenName)) {
         maximizeApp(content.auto_invoke_app);
@@ -403,7 +361,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         });
     }
 
-    console.log(content.to_screen)
+    console.log(content.to_screen);
     setTimeout(() => toggleScreen(content.to_screen.screen_name), 100);
 };
 
@@ -424,14 +382,28 @@ function registerDefaultLocalShortcuts() {
 }
 </script>
 <template>
-    <div v-cloak id="app" :data-theme="appearanceStore.value" :class="{ absolute: !inScreenWindow }" class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available">
-        <ScreenWindow v-if="inScreenWindow" :dumps-bag="payloadScreen" v-model:screen="inScreenWindow" />
+    <div
+        :class="{ absolute: !inScreenWindow }"
+        class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
+    >
+        <ScreenWindow
+            v-if="inScreenWindow"
+            :dumps-bag="payloadScreen"
+            v-model:screen="inScreenWindow"
+        />
 
-        <div v-else class="absolute w-full h-full min-h-full">
+        <div
+            v-else
+            :data-theme="settingsStore.settings.theme"
+            class="absolute w-full h-full min-h-full"
+        >
             <div>
                 <TheAppUpdateInfo />
 
-                <div v-if="isPaused" class="bg-warning tracking-wider text-center uppercase text-warning-content text-xs py-1 my-1">
+                <div
+                    v-if="isPaused"
+                    class="bg-warning tracking-wider text-center uppercase text-warning-content text-xs py-1 my-1"
+                >
                     {{ $t("is_paused") }}
                 </div>
 
@@ -444,13 +416,11 @@ function registerDefaultLocalShortcuts() {
                         }"
                         class="flex-1 flex flex-col shrink-0 left-16 right-0 min-h-full"
                     >
-                        <!-- AppSettings -->
-                        <div class="overflow-auto min-h-screen pb-8" v-if="settingStore.setting">
-                            <AppSetting :local-shortcut-list="localShortcutList" />
-                        </div>
-
                         <!-- screen buttons -->
-                        <div v-if="screenStore.screens.length > 1 && !settingStore.setting" class="flex">
+                        <div
+                            v-if="screenStore.screens.length > 1"
+                            class="flex"
+                        >
                             <div class="flex-1 px-3">
                                 <div class="flex items-center justify-between overflow-x-auto">
                                     <div class="flex">
@@ -464,7 +434,7 @@ function registerDefaultLocalShortcuts() {
                             :class="{
                                 'mt-[7.6rem]': screenStore.screen === 'Queries',
                                 'w-auto p-6 pb-8 items-center': payloadStore.payload.length === 0,
-                                'h-[100vh] w-[100vw] flex': payloadStore.payload.length === 0 && !settingStore.setting
+                                'h-[100vh] w-[100vw] flex': payloadStore.payload.length === 0
                             }"
                             class="rounded-sm text-base overflow-auto"
                         >
@@ -492,8 +462,12 @@ function registerDefaultLocalShortcuts() {
                                     }"
                                     v-if="payloadStore.payload.length > 0"
                                 >
-                                    <div class="w-full" :id="payload.id" v-for="(payload, index) in dumpsBagFiltered" :key="payload.sf_dump_id">
-
+                                    <div
+                                        class="w-full"
+                                        :id="payload.id"
+                                        v-for="(payload, index) in dumpsBagFiltered"
+                                        :key="payload.sf_dump_id"
+                                    >
                                         <DumpItem
                                             :in-saved-dumps-window="inSavedDumpsWindow"
                                             v-show="screenStore.screen === 'Queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'Livewire'"
@@ -501,7 +475,10 @@ function registerDefaultLocalShortcuts() {
                                         />
                                     </div>
 
-                                    <div class="pt-2" v-if="screenStore.screen === 'Livewire'">
+                                    <div
+                                        class="pt-2"
+                                        v-if="screenStore.screen === 'Livewire'"
+                                    >
                                         <DumpLivewire v-model:livewire-requests="livewireRequests" />
                                     </div>
                                 </div>
@@ -509,7 +486,10 @@ function registerDefaultLocalShortcuts() {
 
                             <div id="bottom"></div>
 
-                            <div class="w-full h-full -mt-6" v-if="payloadStore.payload.length === 0 && !settingStore.setting">
+                            <div
+                                class="w-full h-full -mt-6"
+                                v-if="payloadStore.payload.length === 0"
+                            >
                                 <WelcomePage :local-shortcut-list="localShortcutList" />
                             </div>
                         </div>

@@ -18,13 +18,6 @@ export const init = async (window: BrowserWindow) => {
 
         const contextMenu: Electron.Menu = Menu.buildFromTemplate([
             {
-                label: "Preferences",
-                click: async (): Promise<void> => {
-                    window.webContents.send("app::toggle-settings");
-                }
-            },
-            { label: "separator", type: "separator" },
-            {
                 label: "Exit",
                 accelerator: "Command+Q",
                 click: async (): Promise<void> => {

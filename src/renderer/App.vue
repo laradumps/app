@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { useSettingStore } from "@/store/setting";
 import TheNavBar from "@/components/TheNavBar.vue";
 import { usePayloadStore } from "@/store/payload";
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
+import { useSettingsStore } from "@/store/settings";
 
-const settingStore = useSettingStore();
 const payloadStore = usePayloadStore();
+const settingsStore = useSettingsStore();
+
+const readyToLoad = ref(false);
 
 //* * Convert shortcuts to Electron format **/
 Object.defineProperty(String.prototype, "beautifyShortcut", {
@@ -49,29 +51,31 @@ const getZoomLevel = (value: number): void => {
 };
 
 onMounted(() => {
+    window.ipcRenderer.on("init.reply", async (e: any, args) => {
+        settingsStore.setSettings(args.settings);
+        readyToLoad.value = true;
+        window.ipcRenderer.send("settings.init-shortcuts");
+    });
+
     window.ipcRenderer.send("zoom-level");
     window.ipcRenderer.on("zoom-level.reply", (event, value) => getZoomLevel(value));
 });
 </script>
 
 <template>
-    <div>
-        <div class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available">
-            <div
-                :class="{
-                    '!space-y-0': payloadStore.payload.length > 0
-                }"
-                class="absolute w-full h-full min-h-full space-y-3"
-            >
-                <TheNavBar
-                    v-if="!settingStore.setting"
-                    has-color
-                />
+    <div class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available">
+        <div
+            :data-theme="settingsStore.settings.theme"
+            :class="{
+                '!space-y-0': payloadStore.payload.length > 0
+            }"
+            class="absolute w-full h-full min-h-full"
+        >
+            <TheNavBar has-color />
 
-                <main class="w-full h-full">
-                    <RouterView :key="$route.fullPath" />
-                </main>
-            </div>
+            <main class="w-full overflow-auto h-[calc(100vh-50px)]">
+                <RouterView :key="$route.fullPath" />
+            </main>
         </div>
     </div>
 </template>

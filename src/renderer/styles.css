@@ -36,14 +36,6 @@ body {
     background-color: #9d9a9a;
 }
 
-.btn {
-    min-height: unset;
-    height: 28px;
-    padding-left: 4px;
-    padding-right: 4px;
-    border-right: 0 !important;
-}
-
 /* daisyui */
 .collapse {
     @apply rounded-md;

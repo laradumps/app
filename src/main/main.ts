@@ -15,10 +15,9 @@ import * as electronAutoUpdate from "./auto-update";
 import * as electronTray from "./tray";
 import * as customWindow from "./custom-window";
 import * as electronAutoLaunch from "./auto-launch";
+import * as settings from "./settings";
 
 import { initSavedDumps } from "./window/saved-dumps";
-
-import { configureLocalShortcut, registerShortcuts } from "./shortcut";
 
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
@@ -43,7 +42,7 @@ function createWindow(): BrowserWindow {
     const browserWindowOptions: BrowserWindowConstructorOptions = {
         fullscreen: false,
         fullscreenable: false,
-        width: 730,
+        width: isDev ? 1200 : 730,
         height: 620,
         resizable: true,
         alwaysOnTop: false,
@@ -54,7 +53,7 @@ function createWindow(): BrowserWindow {
             preload: resolve(__dirname, "preload.js"),
             nodeIntegration: true
         },
-        show: true,
+        show: false,
         icon: path.join(__dirname, "icon.png")
     };
 
@@ -81,6 +80,16 @@ function createWindow(): BrowserWindow {
                   slashes: true
               })
     );
+
+    window.webContents.on("did-finish-load", async () => {
+        try {
+            window.webContents.send("init.reply", {
+                settings: settings.getSettings()
+            });
+
+            window.show();
+        } catch (error) {}
+    });
 
     !isDev && electronAutoUpdate.init(window);
 
@@ -190,8 +199,6 @@ app.whenReady().then(async (): Promise<void> => {
 
     await autoUpdater.checkForUpdates();
 
-    configureLocalShortcut(mainWindow);
-
     const userDataPath = app.getPath("userData");
 
     storage.setDataPath(path.join(userDataPath, "storage"));
@@ -207,10 +214,6 @@ app.on("activate", (): void => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
-});
-
-app.on("browser-window-focus", (): void => {
-    registerShortcuts(mainWindow);
 });
 
 ipcMain.on("main:get-ide-handler", (): void => {
@@ -352,6 +355,7 @@ ipcMain.on("platform", (event, args) => {
     event.reply("platform.reply", process.platform);
 });
 
+settings.init();
 customWindow.init();
 electronAutoLaunch.init();
 electronStore.init();

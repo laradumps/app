@@ -32,9 +32,9 @@ export const usePayloadStore = defineStore("payload", {
             const index = this.findPayloadIndex(content.id);
             if (index !== -1) {
                 console.log({
-                   // ...this.payload[index],
+                    // ...this.payload[index],
                     [field]: transform ? transform(content[field]) : content[field]
-                })
+                });
                 this.payload[index] = {
                     ...this.payload[index],
                     [field]: transform ? transform(content[field]) : content[field]

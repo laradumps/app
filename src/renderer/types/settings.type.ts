@@ -1,9 +1,20 @@
+export interface Shortcut {
+    label: string;
+    originalValue: string;
+    keys: string;
+}
+
+export interface Shortcuts {
+    clear_all: Shortcut;
+    always_on_top: Shortcut;
+}
+
 export interface Settings {
-  version: string
-  laravelPath: string
-  php: string | ''
-  theme: string
-  editorFontSize: number
-  editorWordWrap: string
-  layout: string
+    theme: string;
+    language: string;
+    check_for_updates: string;
+    auto_launch: string;
+    scroll_direction: string;
+    ide_handler: string;
+    shortcuts: Shortcuts;
 }

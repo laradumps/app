@@ -141,13 +141,13 @@ watch(collapseStore, (value) => {
 });
 
 const getLabel = computed(() => {
-    console.log(props.payload)
+    console.log(props.payload);
     if (Object.values(props.payload.with_label).length > 0 && props.payload.with_label.label !== "") {
-        return props.payload.with_label.label
+        return props.payload.with_label.label;
     }
 
-    return props.payload.type
-})
+    return props.payload.type;
+});
 </script>
 <template>
     <div class="group text-sm pt-2">

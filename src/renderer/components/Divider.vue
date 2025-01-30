@@ -9,7 +9,7 @@ const props = defineProps({
 });
 
 const classes = computed(() => {
-    let defaultClasses = "h-[1px] border-t border-base-300";
+    let defaultClasses = "h-[1px] border-t border-base-content/10";
     return `${defaultClasses} ${props.class}`;
 });
 </script>

@@ -49,7 +49,7 @@ onUpdated(() => {
                 class="relative w-full h-[34px] text-left cursor-default rounded-md border border-base-content/15 py-1.5 pl-3 pr-10 shadow-sm focus:border-base-700 focus:outline-none focus:ring-1 focus:ring-base-500 sm:text-sm"
             >
                 <span
-                    class="block truncate text-xs text-base-content"
+                    class="block truncate text-sm text-base-content"
                     v-html="selected?.label"
                 ></span>
                 <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -75,7 +75,7 @@ onUpdated(() => {
                         :value="item"
                         v-slot="{ active, selected }"
                     >
-                        <li :class="[active ? 'text-primary bg-base-600' : 'text-base-900', 'relative hover:text-base-900 cursor-pointer select-none py-2 pl-8 pr-4 text-xs']">
+                        <li :class="[active ? 'text-primary bg-base-600' : 'text-base-900', 'relative hover:text-base-900 cursor-pointer select-none py-2 pl-8 pr-4 text-sm']">
                             <span
                                 :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']"
                                 v-html="item.label"
