@@ -19,7 +19,6 @@ import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
 import ScreenWindow from "@/components/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
-import { useScrollDirection } from "@/store/scroll-direction";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useSettingsStore } from "@/store/settings";
 
@@ -32,7 +31,6 @@ const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const IDEHandler = useIDEHandlerStore();
 const payloadStore = usePayloadStore();
-const scrollDirection = useScrollDirection();
 const settingsStore = useSettingsStore();
 
 const { locale } = useI18n({ useScope: "global" });
@@ -116,15 +114,6 @@ onMounted(() => {
         settingsStore.settings.theme = "light";
         document.documentElement.setAttribute("data-theme", "light");
         settingsStore.update();
-    });
-
-    window.ipcRenderer.on("app::scroll-direction", (event, args) => {
-        reorderStore.set(args.value);
-        scrollDirection.set(args.value);
-
-        document.getElementById(args.value).scrollIntoView({
-            behavior: "smooth"
-        });
     });
 
     window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
@@ -277,7 +266,7 @@ const toggleScreen = async (value: string): Promise<void> => {
     dumpsBag.value = payloadStore.payload.filter((payload) => payload.type !== "screen" && payload.to_screen.screen_name === value);
 
     await nextTick(() => {
-        if (scrollDirection.isTop()) {
+        if (settingsStore.settings.scroll_direction === "top") {
             document.getElementById("top").scrollIntoView({
                 behavior: "smooth"
             });

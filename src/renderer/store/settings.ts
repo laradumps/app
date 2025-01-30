@@ -49,6 +49,11 @@ const autoLaunchOptions = {
     enabled: "Enabled"
 };
 
+const scrollDirection = {
+    top: "Top",
+    bottom: "Bottom"
+}
+
 export const useSettingsStore = defineStore("settings", () => {
     const themes = ref(themeColors);
 
@@ -105,5 +110,5 @@ export const useSettingsStore = defineStore("settings", () => {
         };
     };
 
-    return { settings, update, themes, languageOptions, ideHandlerOptions, autoLaunchOptions, checkForUpdateOptions, setSettings };
+    return { settings, update, themes, languageOptions, ideHandlerOptions, autoLaunchOptions, scrollDirection, checkForUpdateOptions, setSettings };
 });

@@ -212,7 +212,7 @@ const getLabel = computed(() => {
                         ></div>
 
                         <div
-                            class="-mr-1"
+                            class="-mr-1 text-[0.68rem] !font-normal"
                             v-if="payload.type !== `queries`"
                             :class="badgeClasses"
                         >

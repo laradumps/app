@@ -40,8 +40,6 @@ const saveLanguage = () => {
     locale.value = localeStore.value;
 
     nextTick(() => saveSettings());
-
-    // nextTick(() => location.reload())
 };
 
 const saveIDEHandler = () => {
@@ -59,6 +57,10 @@ const saveAutoLaunch = () => {
 
     nextTick(() => saveSettings());
 };
+
+const saveScrollDirection = () => {
+    nextTick(() => saveSettings());
+}
 
 const getSavedLocalShortcuts = () => {
     window.ipcRenderer.send("local-shortcut:get");
@@ -251,6 +253,26 @@ const editShortcut = () => {
                     >
                         <option
                             v-for="(value, key) in settingsStore.autoLaunchOptions"
+                            :value="key"
+                        >
+                            {{ value }}
+                        </option>
+                    </SelectInput>
+                </div>
+            </div>
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Scroll Direction</div>
+                <div class="flex items-center justify-between">
+                    <SelectInput
+                        id="scroll"
+                        v-model="settingsStore.settings.scroll_direction"
+                        @change="saveScrollDirection()"
+                        placeholder="Scroll Direction"
+                        class="w-full"
+                    >
+                        <option
+                            v-for="(value, key) in settingsStore.scrollDirection"
                             :value="key"
                         >
                             {{ value }}

@@ -42,7 +42,7 @@ function createWindow(): BrowserWindow {
     const browserWindowOptions: BrowserWindowConstructorOptions = {
         fullscreen: false,
         fullscreenable: false,
-        width: isDev ? 1200 : 730,
+        width: isDev ? 1280 : 760,
         height: 620,
         resizable: true,
         alwaysOnTop: false,
@@ -110,6 +110,7 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
+    console.log('type', arg.type)
     event.sender.send(arg.type, arg);
 });
 

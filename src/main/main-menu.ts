@@ -31,32 +31,6 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
             label: "Options",
             submenu: [
                 {
-                    label: "Scroll Direction",
-                    submenu: [
-                        {
-                            label: "Top",
-                            click: async (): Promise<void> => {
-                                mainWindow.webContents.send("app::scroll-direction", { value: "top" });
-                                windowsMap.forEach((window: BrowserWindow) => {
-                                    window.webContents.send("app::scroll-direction", { value: "top" });
-                                });
-                            },
-                            type: "radio",
-                            checked: true
-                        },
-                        {
-                            label: "Bottom",
-                            click: async (): Promise<void> => {
-                                mainWindow.webContents.send("app::scroll-direction", { value: "bottom" });
-                                windowsMap.forEach((window: BrowserWindow) => {
-                                    window.webContents.send("app::scroll-direction", { value: "bottom" });
-                                });
-                            },
-                            type: "radio"
-                        }
-                    ]
-                },
-                {
                     label: "Saved Dumps",
                     click: async (): Promise<void> => {
                         mainWindow.webContents.send("app::show-saved-dumps");
