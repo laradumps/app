@@ -17,5 +17,5 @@ export interface Settings {
     scroll_direction: string;
     ide_handler: string;
     shortcuts: Shortcuts;
-    dump_order: 'normal' | 'reversed';
+    dump_order: "normal" | "reversed";
 }

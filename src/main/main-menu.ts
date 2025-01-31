@@ -1,6 +1,6 @@
-import { app, BrowserWindow, Menu, shell } from "electron";
+import { app, Menu, shell } from "electron";
 
-async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
+async function getMenuTemplate() {
     const menuTemplate = [
         {
             label: "Menu",
@@ -23,17 +23,6 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
                     accelerator: process.platform === "darwin" ? "Command+Q" : "Ctrl+Q",
                     click: () => {
                         app.quit();
-                    }
-                }
-            ]
-        },
-        {
-            label: "Options",
-            submenu: [
-                {
-                    label: "Saved Dumps",
-                    click: async (): Promise<void> => {
-                        mainWindow.webContents.send("app::show-saved-dumps");
                     }
                 }
             ]
@@ -98,8 +87,8 @@ async function getMenuTemplate(mainWindow: BrowserWindow, windowsMap: Map) {
     return menuTemplate;
 }
 
-async function createMenu(mainWindow, windowsMap) {
-    const menuTemplate = await getMenuTemplate(mainWindow, windowsMap);
+async function createMenu() {
+    const menuTemplate = await getMenuTemplate();
 
     const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);

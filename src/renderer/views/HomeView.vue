@@ -41,14 +41,12 @@ const defaultScreen = ref({
     pinned: false,
     new_window: false
 });
+
 const appVersion = ref("");
-const localShortcutList = ref([]);
 
 const payload = ref([]);
-
 const dumpsBag = ref([]);
 const inSavedDumpsWindow = ref(false);
-
 const inScreenWindow = ref(false);
 const payloadScreen = ref([]);
 
@@ -75,13 +73,6 @@ onMounted(() => {
     window.ipcRenderer.send("main:app-version");
     window.ipcRenderer.on("main:app-version.reply", (event, arg) => setTimeout(() => (appVersion.value = `v${arg.version}`), 100));
 
-    window.ipcRenderer.on("app:load-all-saved-dumps", async () => {
-        inSavedDumpsWindow.value = true;
-        // clearAll();
-
-        await loadAllSavedPayload();
-    });
-
     window.ipcRenderer.on("app:screen-window-enable", async (event, args) => {
         inScreenWindow.value = args.screen;
         payloadScreen.value = args.payload;
@@ -93,36 +84,12 @@ onMounted(() => {
         payloadScreen.value = args.payload;
     });
 
-    window.ipcRenderer.on("app:render-all-saved-dumps", (event, content) => {
-        try {
-            const payload = JSON.parse(content);
-            dispatch(payload.type, event, payload);
-        } catch (e) {
-            console.log(e);
-        }
-    });
-
-    window.ipcRenderer.on("app:theme-dark", () => {
-        settingsStore.settings.theme = "dim";
-        document.documentElement.setAttribute("data-theme", "light");
-        settingsStore.update();
-    });
-
-    window.ipcRenderer.on("app:theme-light", () => {
-        settingsStore.settings.theme = "light";
-        document.documentElement.setAttribute("data-theme", "light");
-        settingsStore.update();
-    });
-
-    window.ipcRenderer.on("app::show-saved-dumps", () => window.ipcRenderer.send("saved-dumps:show"));
-
     window.ipcRenderer.send("local-shortcut:get");
 
     dumpListeners();
-    mainMenuListeners();
 
     window.ipcRenderer.send("storage.get");
-    toggleScreen('screen 1')
+    toggleScreen("screen 1");
 });
 
 const dumpListeners = () => {
@@ -186,10 +153,6 @@ const dumpListeners = () => {
 
         payloadStore.updateTimeTrackPayload(content);
     });
-};
-
-const mainMenuListeners = () => {
-    window.ipcRenderer.on("changeAutoLaunch", (event, args) => {});
 };
 
 window.addEventListener("update-payload", (event) => {
@@ -341,13 +304,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         });
     }
 
-    console.log(content.to_screen);
-    setTimeout(() => toggleScreen(content.to_screen.screen_name), 100);
-};
-
-const loadAllSavedPayload = (): void => {
-    document.title = "LaraDumps - Saved";
-    window.ipcRenderer.send("saved-dumps:load");
+    setTimeout(() => toggleScreen(content.to_screen.screen_name), 10);
 };
 </script>
 <template>
@@ -368,13 +325,6 @@ const loadAllSavedPayload = (): void => {
         >
             <div>
                 <TheAppUpdateInfo />
-
-                <div
-                    v-if="isPaused"
-                    class="bg-warning tracking-wider text-center uppercase text-warning-content text-xs py-1 my-1"
-                >
-                    {{ $t("is_paused") }}
-                </div>
 
                 <!-- content -->
                 <div class="flex overflow-hidden flex-col flex-1 right-0 absolute left-0 h-fill-available">
@@ -438,7 +388,6 @@ const loadAllSavedPayload = (): void => {
                                         :key="payload.sf_dump_id"
                                     >
                                         <DumpItem
-                                            :in-saved-dumps-window="inSavedDumpsWindow"
                                             v-show="screenStore.screen === 'Queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'Livewire'"
                                             :payload="payload"
                                         />

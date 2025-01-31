@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { CogIcon, HomeIcon } from "@heroicons/vue/24/outline";
-import router from '../router'
+import router from "../router";
 
 const inSettingPage = ref(false);
 
@@ -10,10 +10,10 @@ const togglePage = () => {
 };
 
 onMounted(() => {
-    window.ipcRenderer.on('new.dumps', () => {
-        router.push({ name: 'home' })
-    })
-})
+    window.ipcRenderer.on("new.dumps", () => {
+        router.push({ name: "home" });
+    });
+});
 </script>
 
 <template>

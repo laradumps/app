@@ -59,6 +59,18 @@ onMounted(() => {
 
     window.ipcRenderer.send("zoom-level");
     window.ipcRenderer.on("zoom-level.reply", (event, value) => getZoomLevel(value));
+
+    window.ipcRenderer.on("app:theme-dark", () => {
+        settingsStore.settings.theme = "dim";
+        document.documentElement.setAttribute("data-theme", "light");
+        settingsStore.update();
+    });
+
+    window.ipcRenderer.on("app:theme-light", () => {
+        settingsStore.settings.theme = "light";
+        document.documentElement.setAttribute("data-theme", "light");
+        settingsStore.update();
+    });
 });
 </script>
 

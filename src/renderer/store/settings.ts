@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { Settings } from "@/types/settings.type";
-import { Payload } from "@/types/Payload";
 
 const themeColors = {
+    system: "System",
     light: "Light",
     dark: "Dark",
     dracula: "Dracula",
@@ -52,12 +52,12 @@ const autoLaunchOptions = {
 const scrollDirection = {
     top: "Top",
     bottom: "Bottom"
-}
+};
 
 const dumpOrder = {
     normal: "Normal",
     reversed: "Reversed"
-}
+};
 
 export const useSettingsStore = defineStore("settings", () => {
     const themes = ref(themeColors);
@@ -101,7 +101,7 @@ export const useSettingsStore = defineStore("settings", () => {
             ide_handler: s.ide_handler || "phpstorm://open?file={filepath}&line={line}",
             auto_launch: s.auto_launch || "disabled",
             scroll_direction: s.scroll_direction || "top",
-            dump_order: s.reverse || 'normal',
+            dump_order: s.reverse || "normal",
             shortcuts: s.shortcuts || {
                 always_on_top: {
                     originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",

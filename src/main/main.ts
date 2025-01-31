@@ -17,8 +17,6 @@ import * as customWindow from "./custom-window";
 import * as electronAutoLaunch from "./auto-launch";
 import * as settings from "./settings";
 
-import { initSavedDumps } from "./window/saved-dumps";
-
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
 import { createScreenWindow } from "./window/screen";
@@ -27,7 +25,6 @@ const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
 
 let mainWindow: BrowserWindow;
-let savedDumpWindow: BrowserWindow;
 
 const windowsMap = new Map();
 
@@ -110,7 +107,7 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
-    mainWindow.webContents.send('new.dumps')
+    mainWindow.webContents.send("new.dumps");
     event.sender.send(arg.type, arg);
 });
 
@@ -168,9 +165,8 @@ ipcMain.on("screen-window:show", (event, arg) => {
 
 app.whenReady().then(async (): Promise<void> => {
     mainWindow = createWindow();
-    savedDumpWindow = initSavedDumps();
 
-    await createMenu(mainWindow, windowsMap);
+    await createMenu();
 
     mainWindow.on("minimize", (event: Event): void => {
         event.preventDefault();
@@ -190,12 +186,6 @@ app.whenReady().then(async (): Promise<void> => {
 
     mainWindow.on("closed", (): void => {
         app.exit(0);
-    });
-
-    // @ts-ignore
-    savedDumpWindow.on("close", (event: Event): void => {
-        event.preventDefault();
-        savedDumpWindow.hide();
     });
 
     await autoUpdater.checkForUpdates();

@@ -27,20 +27,11 @@ const duplicatesStore = useQueryDuplicated();
 const timeStore = useTimeStore();
 const collapseStore = useCollapse();
 
-const saveDump = () => window.ipcRenderer.send("main:save-dumps", JSON.stringify(props.payload));
-
 const open = ref(true);
 const openOptions = ref(false);
 
-const removeSaveDump = () => {
-    const payloadId = props.payload.id;
-    window.ipcRenderer.send("saved-dumps:remove", payloadId);
-    document.getElementById(payloadId).remove();
-};
-
 const props = defineProps<{
     payload: Payload;
-    inSavedDumpsWindow?: boolean;
 }>();
 
 const copyDump = () => {
@@ -188,20 +179,20 @@ const getLabel = computed(() => {
                             >
                                 <CopyToClick />
                             </div>
-                            <div
-                                :title="$t('menu.saved_dumps')"
-                                @click="saveDump"
-                                v-if="!inSavedDumpsWindow"
-                            >
-                                <SaveDump />
-                            </div>
-                            <div
-                                :title="$t('menu.remove')"
-                                @click="removeSaveDump"
-                                v-if="inSavedDumpsWindow"
-                            >
-                                <IconTrash class="cursor-pointer size-4" />
-                            </div>
+<!--                            <div-->
+<!--                                :title="$t('menu.saved_dumps')"-->
+<!--                                @click="saveDump"-->
+<!--                                v-if="!inSavedDumpsWindow"-->
+<!--                            >-->
+<!--                                <SaveDump />-->
+<!--                            </div>-->
+<!--                            <div-->
+<!--                                :title="$t('menu.remove')"-->
+<!--                                @click="removeSaveDump"-->
+<!--                                v-if="inSavedDumpsWindow"-->
+<!--                            >-->
+<!--                                <IconTrash class="cursor-pointer size-4" />-->
+<!--                            </div>-->
                         </div>
 
                         <!-- variable type -->
@@ -212,7 +203,7 @@ const getLabel = computed(() => {
                         ></div>
 
                         <div
-                            class="-mr-1 text-[0.68rem] !font-normal"
+                            class="-mr-1 text-[0.64rem] !font-normal"
                             v-if="payload.type !== `queries`"
                             :class="badgeClasses"
                         >

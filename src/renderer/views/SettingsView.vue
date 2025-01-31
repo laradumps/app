@@ -31,6 +31,11 @@ const saveSettings = async () => {
 };
 
 const saveTheme = () => {
+    if (settingsStore.settings.theme === "system") {
+        window.ipcRenderer.send("native-theme");
+
+        return;
+    }
     document.documentElement.setAttribute("data-theme", settingsStore.settings.theme);
     nextTick(() => saveSettings());
 };
@@ -60,11 +65,11 @@ const saveAutoLaunch = () => {
 
 const saveScrollDirection = () => {
     nextTick(() => saveSettings());
-}
+};
 
 const saveReverse = () => {
     nextTick(() => saveSettings());
-}
+};
 
 const getSavedLocalShortcuts = () => {
     window.ipcRenderer.send("local-shortcut:get");

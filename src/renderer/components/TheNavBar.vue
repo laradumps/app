@@ -46,7 +46,7 @@ const hasColor = computed(() => {
                     <ClearAll />
 
                     <!-- pause -->
-                    <NavBarPause v-bind:is-saved-dumps-window="inSavedDumpsWindow" />
+                    <NavBarPause />
                 </div>
             </div>
         </div>

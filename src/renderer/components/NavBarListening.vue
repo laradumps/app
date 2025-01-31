@@ -114,12 +114,12 @@ const setActiveProject = () => {
 };
 
 const countSelectedEnvironment = computed(() => {
-    return selectedEnvironment.value.filter((environment) => environment.selected).length
-})
+    return selectedEnvironment.value.filter((environment) => environment.selected).length;
+});
 
 const countManySelectedEnvironment = computed(() => {
-    return selectedEnvironment.value.filter((environment) => environment.selected).length
-})
+    return selectedEnvironment.value.filter((environment) => environment.selected).length;
+});
 </script>
 
 <template>
@@ -129,11 +129,17 @@ const countManySelectedEnvironment = computed(() => {
             role="button"
             class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         >
-            <span v-show="countSelectedEnvironment > 0 && countManySelectedEnvironment <= 4" class="absolute -left-0.5 top-1 text-[11px] badge badge-warning p-0.5 h-[14px]">
+            <span
+                v-show="countSelectedEnvironment > 0 && countManySelectedEnvironment <= 4"
+                class="absolute -left-0.5 top-1 text-[11px] badge badge-warning p-0.5 h-[14px]"
+            >
                 {{ countSelectedEnvironment }}
             </span>
 
-            <span v-show="countManySelectedEnvironment > 4" class="absolute animate-pulse -left-0.5 top-1 text-[11px] badge badge-error p-0.5 h-[14px]">
+            <span
+                v-show="countManySelectedEnvironment > 4"
+                class="absolute animate-pulse -left-0.5 top-1 text-[11px] badge badge-error p-0.5 h-[14px]"
+            >
                 {{ countSelectedEnvironment }}
             </span>
 
@@ -186,7 +192,7 @@ const countManySelectedEnvironment = computed(() => {
                     v-for="env in environments"
                 >
                     <label
-                        class="text-base-content label !justify-start !text-left p-1.5 my-0.5"
+                        class="text-base-content label !justify-start !text-left p-1.5"
                         :class="{ 'bg-base-200': env.selected }"
                     >
                         <input
@@ -201,7 +207,7 @@ const countManySelectedEnvironment = computed(() => {
                 </li>
             </div>
 
-            <div v-if="environments.length > 0">
+            <div>
                 <button
                     class="btn btn-warning text-warning-content mt-6 w-auto btn-sm text-xs"
                     @click="remove"
