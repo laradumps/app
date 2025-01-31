@@ -55,7 +55,7 @@ const allRequests = computed(() => {
 </script>
 
 <template>
-    <div class="absolute top-[2.8rem] bg-base-100 space-y-1 px-4 pb-3 z-100 h-auto w-full">
+    <div class="absolute top-[2.8rem] gap-2 flex flex-col bg-base-100 px-4 z-100 h-auto w-full">
         <div
             v-if="timeStore.groups.length > 0"
             class="justify-between items-center gap-4 text-base-content"
@@ -100,7 +100,6 @@ const allRequests = computed(() => {
                     </label>
 
                     <div>
-                        <span class="text-[11px] uppercase">Order</span>
                         <div>
                             <SelectMenu
                                 @selected="timeStore.setOrder($event.id)"
@@ -115,7 +114,6 @@ const allRequests = computed(() => {
 
         <div class="flex w-full text-sm items-center justify-between">
             <div class="w-full">
-                <span class="text-[11px] uppercase">Request</span>
                 <div>
                     <SelectMenu
                         v-if="allRequests.length > 0"

@@ -179,20 +179,20 @@ const getLabel = computed(() => {
                             >
                                 <CopyToClick />
                             </div>
-<!--                            <div-->
-<!--                                :title="$t('menu.saved_dumps')"-->
-<!--                                @click="saveDump"-->
-<!--                                v-if="!inSavedDumpsWindow"-->
-<!--                            >-->
-<!--                                <SaveDump />-->
-<!--                            </div>-->
-<!--                            <div-->
-<!--                                :title="$t('menu.remove')"-->
-<!--                                @click="removeSaveDump"-->
-<!--                                v-if="inSavedDumpsWindow"-->
-<!--                            >-->
-<!--                                <IconTrash class="cursor-pointer size-4" />-->
-<!--                            </div>-->
+                            <!--                            <div-->
+                            <!--                                :title="$t('menu.saved_dumps')"-->
+                            <!--                                @click="saveDump"-->
+                            <!--                                v-if="!inSavedDumpsWindow"-->
+                            <!--                            >-->
+                            <!--                                <SaveDump />-->
+                            <!--                            </div>-->
+                            <!--                            <div-->
+                            <!--                                :title="$t('menu.remove')"-->
+                            <!--                                @click="removeSaveDump"-->
+                            <!--                                v-if="inSavedDumpsWindow"-->
+                            <!--                            >-->
+                            <!--                                <IconTrash class="cursor-pointer size-4" />-->
+                            <!--                            </div>-->
                         </div>
 
                         <!-- variable type -->

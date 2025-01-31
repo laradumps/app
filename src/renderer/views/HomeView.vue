@@ -351,7 +351,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
                         <div
                             :class="{
-                                'mt-[7.6rem]': screenStore.screen === 'Queries',
+                                'mt-[5rem]': screenStore.screen === 'Queries',
                                 'w-auto p-6 pb-8 items-center': payloadStore.payload.length === 0,
                                 'h-[100vh] w-[100vw] flex': payloadStore.payload.length === 0
                             }"
