@@ -81,7 +81,9 @@ export const useSettingsStore = defineStore("settings", () => {
                 keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K",
                 label: "settings.shortcut.clear"
             }
-        }
+        },
+        window_width: 760,
+        window_height: 620
     };
 
     const settings = ref<Settings>(defaultSettings);
@@ -93,28 +95,8 @@ export const useSettingsStore = defineStore("settings", () => {
         window.ipcRenderer.send("settings.store", serializablePayload);
     };
 
-    const setSettings = (s: any) => {
-        settings.value = {
-            theme: s.theme || "dark",
-            language: s.language || "en",
-            check_for_updates: s.check_for_updates || "auto_download",
-            ide_handler: s.ide_handler || "phpstorm://open?file={filepath}&line={line}",
-            auto_launch: s.auto_launch || "disabled",
-            scroll_direction: s.scroll_direction || "top",
-            dump_order: s.reverse || "normal",
-            shortcuts: s.shortcuts || {
-                always_on_top: {
-                    originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
-                    keys: process.platform === "darwin" ? "Alt+Shift+T" : "Ctrl+Shift+T",
-                    label: "settings.shortcut.alwaysOnTop"
-                },
-                clear_all: {
-                    originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
-                    keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K",
-                    label: "settings.shortcut.clear"
-                }
-            }
-        };
+    const setSettings = (settings: any) => {
+        settings.value = settings;
     };
 
     return { settings, update, themes, languageOptions, ideHandlerOptions, autoLaunchOptions, dumpOrder, scrollDirection, checkForUpdateOptions, setSettings };
