@@ -20,9 +20,6 @@ jobs:
               with:
                   node-version: "22.x"
 
-            - name: Remove package.lock
-              run: rm -rf package-lock.json
-
             - name: Install dependencies
               run: npm install --force
 
