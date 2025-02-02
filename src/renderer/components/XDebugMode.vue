@@ -629,7 +629,12 @@ onBeforeUnmount(() => {
                             <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
                         </div>
 
-                        <button @click="disconnect" class="select-none inline-flex h-6 text-sm w-max min-w-max items-center justify-center badge-outline badge badge-warning p-1 transition hover:bg-opacity-50 disabled:opacity-25 !px-2" ><span class="text-xs">Disconnect</span></button>
+                        <button
+                            @click="disconnect"
+                            class="select-none inline-flex h-6 text-sm w-max min-w-max items-center justify-center badge-outline badge badge-warning p-1 transition hover:bg-opacity-50 disabled:opacity-25 !px-2"
+                        >
+                            <span class="text-xs">Disconnect</span>
+                        </button>
                     </div>
                 </div>
 

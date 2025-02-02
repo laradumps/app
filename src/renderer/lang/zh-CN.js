@@ -26,9 +26,7 @@ export default {
     },
     menu: {
         clear: "清除",
-        language: "语言",
         settings: "设置",
-        reorder: "重新排序",
         saved_dumps: "已保存的转储",
         toggle_menu: "显示菜单"
     },
@@ -53,15 +51,10 @@ export default {
         run_to_add_your_project_here: "运行 vendor/bin/laradumps configure 以在此处添加你的项目",
         projects: "项目",
         no_project_here: "此处没有项目",
-        reset_data: "重置数据",
-        reset_data_description: "此操作将清除LaraDumps中保存的所有数据（项目和已保存的转储）",
-        clear_all_settings_dialog_message: "确定要清除所有设置吗？",
-        deleted_message: "设置已成功删除！",
-        system: "系统",
-        appearance: "外观",
         check_for_updates: "检查更新",
         update_available: "有可用更新",
-        enable: "Enable"
+        enable: "Enable",
+        changes_saved: "Changes Saved"
     },
     click_to_copy: "点击复制",
     please_select_a_component: "请选择一个组件",
@@ -100,5 +93,19 @@ export default {
     pause: "Pause",
     is_paused: "LaraDumps is paused.",
     remove: "Remove",
-    collapse: "Collapse all dumps"
+    collapse: "Collapse all dumps",
+    ssh: {
+        add_connection: "Add Connection",
+        edit_connection: "Edit Connection",
+        remove_connection: "Remove Connection",
+        remove_connection_confirm: "Are you sure you want to remove this connection?",
+        name: "Name",
+        host: "Host",
+        port: "Port",
+        username: "Username",
+        password: "Password",
+        auth_type: "Authentication Type",
+        private_key: "Private Key Path",
+        connect: "Connect"
+    }
 };

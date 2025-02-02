@@ -6,4 +6,5 @@ export interface IdeHandle {
     class_name: string;
     separator: string;
     wsl_config: string;
+    base_path: string;
 }

@@ -11,8 +11,9 @@ body {
     padding-bottom: 3rem;
 }
 
-.movable-container {
+.nav-bar {
     -webkit-app-region: drag;
+    height: 39px;
 }
 
 ::-webkit-scrollbar {
@@ -33,11 +34,6 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background-color: #9d9a9a;
-}
-
-.btn {
-    min-height: unset !important;
-    @apply py-1 px-3 h-[38px];
 }
 
 /* daisyui */

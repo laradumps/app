@@ -10,9 +10,6 @@ defineProps({
     hasColor: {
         type: Boolean,
         required: true
-    },
-    payload: {
-        type: Object
     }
 });
 
@@ -43,7 +40,7 @@ const isOrange = computed(() => ({
 
 <template>
     <div
-        class="space-x-2 flex justify-end items-center border-r border-base-content/50 pr-5 mr-5"
+        class="space-x-2 flex justify-end items-center"
         v-if="screenStore.screen !== 'Queries' && hasColor"
     >
         <div class="h-full flex gap-2 px-2">
@@ -52,7 +49,7 @@ const isOrange = computed(() => ({
                 @click="selectedColors.add('black')"
                 value="black"
                 type="button"
-                class="p-1.5 badge badge-xs bg-black/50 hover:bg-black"
+                class="p-1.2 badge badge-xs bg-black/50 hover:bg-black"
             ></button>
 
             <button
@@ -60,35 +57,35 @@ const isOrange = computed(() => ({
                 @click="selectedColors.add('red')"
                 value="red"
                 type="button"
-                class="p-1.5 badge badge-xs bg-error/50 hover:bg-error"
+                class="p-1.2 badge badge-xs bg-error/50 hover:bg-error"
             ></button>
 
             <button
                 :class="isOrange"
                 @click="selectedColors.add('orange')"
                 type="button"
-                class="p-1.5 badge badge-xs bg-warning/50 hover:bg-warning"
+                class="p-1.2 badge badge-xs bg-warning/50 hover:bg-warning"
             ></button>
 
             <button
                 :class="isBlue"
                 @click="selectedColors.add('blue')"
                 type="button"
-                class="p-1.5 badge badge-xs bg-info/50 hover:bg-info"
+                class="p-1.2 badge badge-xs bg-info/50 hover:bg-info"
             ></button>
 
             <button
                 :class="isGreen"
                 @click="selectedColors.add('green')"
                 type="button"
-                class="p-1.5 badge badge-xs bg-success/50 hover:bg-success"
+                class="p-1.2 badge badge-xs bg-success/50 hover:bg-success"
             ></button>
 
             <button
                 :class="isGray"
                 @click="selectedColors.add('gray')"
                 type="button"
-                class="p-1.5 badge badge-xs bg-gray-500/50 hover:bg-gray-500"
+                class="p-1.2 badge badge-xs bg-gray-500/50 hover:bg-gray-500"
             ></button>
         </div>
     </div>

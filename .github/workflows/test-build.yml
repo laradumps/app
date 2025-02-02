@@ -1,0 +1,54 @@
+name: Test-Build
+
+on:
+    push:
+        branches:
+            - main
+        paths-ignore:
+            - "README.md"
+    pull_request:
+
+jobs:
+    test-build:
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [macos-latest, ubuntu-latest, windows-latest]
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22.x"
+
+            - name: Install NPM Dependencies
+              run: npm install --force
+
+            - name: Install Snapcraft
+              if: matrix.os == 'ubuntu-latest'
+              run: |
+                  sudo snap install snapcraft --classic
+
+            - name:  Build Mac
+              if: matrix.os == 'macos-latest'
+              run: npm run build-mac
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: 🐧 Build Linux
+              if: matrix.os == 'ubuntu-latest'
+              run: npm run build-linux
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+                  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+
+            - name: 💻 Build Windows
+              if: matrix.os == 'windows-latest'
+              run: npm run build-win
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}

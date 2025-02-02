@@ -26,11 +26,8 @@ export default {
     },
     menu: {
         clear: "Clear",
-        language: "Language",
-        settings: "Settings",
-        reorder: "Reorder",
         saved_dumps: "Saved Dumps",
-        toggle_menu: "Show menu"
+        ssh: "SSH"
     },
     settings: {
         settings: "Settings",
@@ -53,15 +50,10 @@ export default {
         run_to_add_your_project_here: "Run vendor/bin/laradumps configure to add your project here",
         projects: "Projects",
         no_project_here: "No Project here",
-        reset_data: "Reset Data",
-        reset_data_description: "This action will clear all data saved in LaraDumps as 'Projects and Saved Dumps'",
-        clear_all_settings_dialog_message: "Are you sure you want to clear all settings?",
-        deleted_message: "Settings deleted successfully!",
-        system: "System",
-        appearance: "Appearance",
         check_for_updates: "Check for updates",
         update_available: "Update Available",
-        enable: "Enable"
+        enable: "Enable",
+        changes_saved: "Changes Saved"
     },
     click_to_copy: "Click to copy",
     please_select_a_component: "Please select a component",
@@ -100,5 +92,19 @@ export default {
     pause: "Pause",
     is_paused: "LaraDumps is paused.",
     remove: "Remove",
-    collapse: "Collapse all dumps"
+    collapse: "Collapse all dumps",
+    ssh: {
+        add_connection: "Add Connection",
+        edit_connection: "Edit Connection",
+        remove_connection: "Remove Connection",
+        remove_connection_confirm: "Are you sure you want to remove this connection?",
+        name: "Name",
+        host: "Host",
+        port: "Port",
+        username: "Username",
+        password: "Password",
+        auth_type: "Authentication Type",
+        private_key: "Private Key Path",
+        connect: "Connect"
+    }
 };

@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import App from "@/App.vue";
 import "@/styles.css";
+import router from "./router/index";
 
 import hljs from "highlight.js/lib/core";
 import php from "highlight.js/lib/languages/php";
@@ -55,6 +56,7 @@ app.use(hljsVuePlugin);
 app.use(pinia);
 app.use(i18n);
 app.use(clipboard);
+app.use(router);
 
 app.mount("#app");
 

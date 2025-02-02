@@ -1,9 +1,8 @@
-import { BrowserWindow, ipcMain, IpcMainEvent, Notification } from "electron";
+import { ipcMain, IpcMainEvent, Notification } from "electron";
 import path from "path";
 import Store from "electron-store";
-
-const store = new Store();
-
+import yaml from "js-yaml";
+import fs from "fs";
 interface DataStructure {
     app: {
         primary_host: string;
@@ -25,136 +24,132 @@ interface DataStructure {
     };
 }
 
-export const init = async (mainWindow: BrowserWindow) => {
-    ipcMain.on("environment::get", async () => {
-        try {
-            const environments = store.get("environments", {});
-            mainWindow.webContents.send("app-setting:set-environment", environments);
-        } catch (error) {
-            console.error("Error getting storage:", error);
+const store = new Store();
+
+export const init = async () => {
+    ipcMain.on("storage.get", getEnvironments);
+    ipcMain.on("storage.check", checkEnvironment);
+    ipcMain.on("storage.get-environments", getEnvironmentFileContents);
+    ipcMain.on("storage.remove", removeEnvironment);
+    ipcMain.on("storage.update", updateEnvironment);
+};
+
+const getEnvironments = (event) => {
+    try {
+        const environments = store.get("environments", {});
+        event.reply("storage.get.reply", environments);
+    } catch (error) {
+        console.error("Error getting storage:", error);
+    }
+};
+
+const checkEnvironment = (event, value) => {
+    const store = new Store();
+    let applicationPath = value.applicationPath;
+
+    if (!applicationPath) {
+        new Notification({
+            title: "LaraDumps Info",
+            body: 'The file: "laradumps.yaml" is not found in the project root'
+        }).show();
+        return;
+    }
+
+    if (applicationPath.endsWith("/")) {
+        applicationPath = applicationPath.slice(0, -1);
+    }
+
+    const project = path.basename(applicationPath);
+
+    try {
+        const environments = store.get("environments", {});
+        if (!environments[project]) {
+            environments[project] = applicationPath;
+            store.set("environments", environments);
+            event.reply("app-setting:project-added");
         }
-    });
+        ipcMain.emit("storage.get");
+        setTimeout(() => event.reply("storage.set-active.reply", environments[project]), 200);
+    } catch (error) {
+        console.error("Error updating environments in storage:", error);
+    }
+};
 
-    ipcMain.on("environment::check", (event, value) => {
-        let applicationPath = value.applicationPath;
+const getEnvironmentFileContents = (event: IpcMainEvent, value: string) => {
+    const file = value + "/laradumps.yaml";
 
-        if (!applicationPath) {
-            new Notification({
-                title: "LaraDumps Info",
-                body: 'The file: "laradumps.yaml" is not found in the project root'
-            }).show();
+    try {
+        const readFile = yaml.load(fs.readFileSync(file, "utf8"));
+
+        const parseYaml = Object.entries({ ...readFile.observers }).map(([key, val], index) => {
+            return {
+                id: index,
+                value: key,
+                name: key.replace(/_/g, " "),
+                selected: val
+            };
+        });
+
+        event.reply("storage.get-environments.reply", parseYaml);
+    } catch (e) {
+        console.error(e);
+        event.reply("storage.get-environments.reply", []);
+    }
+};
+
+const removeEnvironment = (event: IpcMainEvent, value: string) => {
+    const store = new Store();
+
+    let applicationPath = value;
+
+    if (applicationPath.endsWith("/")) {
+        applicationPath = applicationPath.slice(0, -1);
+    }
+
+    const project = path.basename(applicationPath);
+
+    try {
+        const environments = store.get("environments", {});
+        if (!environments || !environments[project]) {
+            console.error(`Project "${project}" not found in environments.`);
             return;
         }
 
-        if (applicationPath.endsWith("/")) {
-            applicationPath = applicationPath.slice(0, -1);
-        }
+        delete environments[project];
+        store.set("environments", environments);
+        ipcMain.emit("storage.get");
+    } catch (error) {
+        console.error("Error updating storage:", error);
+    }
+};
 
-        const project = path.basename(applicationPath);
+const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; project: string }) => {
+    const { selected, project } = value;
+    const filePath = `${project}/laradumps.yaml`;
 
-        try {
-            const environments = store.get("environments", {});
-            if (!environments[project]) {
-                environments[project] = applicationPath;
-                store.set("environments", environments);
-                mainWindow.webContents.send("app-setting:project-added");
-            }
+    const yaml = require("js-yaml");
+    const fs = require("fs");
 
-            ipcMain.emit("environment::get");
+    let data: DataStructure;
 
-            setTimeout(() => mainWindow.webContents.send("app-setting:set-active", environments[project]), 200);
-        } catch (error) {
-            console.error("Error updating environments in storage:", error);
-        }
-    });
+    try {
+        const fileContents = fs.readFileSync(filePath, "utf8");
+        data = yaml.load(fileContents);
 
-    ipcMain.on("main:setting-get-environments", (event: IpcMainEvent, applicationPath: string): void => {
-        const file = applicationPath + "/laradumps.yaml";
+        selected.forEach((item: { value: string; selected: boolean }) => {
+            data.observers[item.value] = item.selected;
+        });
 
-        const environments = store.get("environments", {});
+        const yamlData = yaml.dump(data);
 
-        const projectName = Object.entries(environments).find(([key, value]) => value === applicationPath)?.[0];
-
-        try {
-            const yaml = require("js-yaml");
-            const fs = require("fs");
-
-            const readFile = yaml.load(fs.readFileSync(file, "utf8"));
-
-            const parseYaml = Object.entries({ ...readFile.observers }).map(([key, val], index) => {
-                return {
-                    id: index,
-                    value: key,
-                    name: key.replace(/_/g, " "),
-                    selected: val
-                };
-            });
-
-            mainWindow.webContents.send("settings:env-file-contents", {
-                projectName,
-                environmentYmlList: parseYaml
-            });
-        } catch (e) {
-            console.error(e);
-            mainWindow.webContents.send("settings:env-file-contents", {
-                projectName,
-                environmentYmlList: {}
-            });
-        }
-    });
-
-    ipcMain.on("main:setting-remove-environments", (event, value) => {
-        let applicationPath = value;
-
-        if (applicationPath.endsWith("/")) {
-            applicationPath = applicationPath.slice(0, -1);
-        }
-
-        const project = path.basename(applicationPath);
-
-        try {
-            const environments = store.get("environments", {});
-            if (!environments || !environments[project]) {
-                console.error(`Project "${project}" not found in environments.`);
+        fs.writeFile(filePath, yamlData, (err: NodeJS.ErrnoException | null): void => {
+            if (err) {
+                console.error("Error writing to file:", err);
                 return;
             }
-
-            delete environments[project];
-            store.set("environments", environments);
-            ipcMain.emit("environment::get");
-        } catch (error) {
-            console.error("Error updating storage:", error);
-        }
-    });
-
-    ipcMain.on("main:settings-update-environment", (event: Electron.IpcMainEvent, value): void => {
-        const { selected, project } = value;
-        const filePath = `${project}/laradumps.yaml`;
-
-        const yaml = require("js-yaml");
-        const fs = require("fs");
-
-        let data: DataStructure;
-
-        try {
-            const fileContents = fs.readFileSync(filePath, "utf8");
-            data = yaml.load(fileContents);
-
-            selected.forEach((item: { value: string; selected: boolean }) => {
-                data.observers[item.value] = item.selected;
-            });
-
-            const yamlData = yaml.dump(data);
-
-            fs.writeFile(filePath, yamlData, (err: NodeJS.ErrnoException | null): void => {
-                if (err) {
-                    console.error("Error writing to file:", err);
-                    return;
-                }
-                console.log("laradumps.yaml has been updated successfully.");
-            });
-        } catch (err) {
-            console.error(err);
-        }
-    });
+            console.log("laradumps.yaml has been updated successfully.");
+        });
+    } catch (err) {
+        console.error(err);
+    }
 };

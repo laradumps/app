@@ -1,85 +1,80 @@
 <script setup>
-import { defineProps, defineEmits, ref } from "vue";
+import { defineProps, defineEmits, computed, onMounted, ref } from "vue";
 import { TrashIcon } from "@heroicons/vue/24/outline";
 import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
-import { useSettingStore } from "@/store/setting";
 import NavBarGlobalSearch from "@/components/NavBarGlobalSearch.vue";
 import NavBarListening from "@/components/NavBarListening.vue";
-import HeaderGlobalFilter from "@/components/HeaderColorsFilter.vue";
 import NavBarPause from "@/components/NavBarPause.vue";
 import NavBarCollapse from "@/components/NavBarCollapse.vue";
+import NavBarSSH from "@/components/NavBarSSH.vue";
+import NavBarSettings from "@/components/NavBarSettings.vue";
+import { usePayloadStore } from "@/store/payload";
+import ClearAll from "@/components/ClearAll.vue";
+import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
 
+const platform = ref("");
 defineProps({
-    hasColor: {
-        type: Boolean,
-        required: true
-    },
-    xdebugMode: {
-        type: Boolean,
-        required: true,
-        default: false
-    },
-    payloadCount: {
-        type: Number,
-        default: 0
-    },
     inSavedDumpsWindow: {
         type: Boolean,
         default: false
     }
 });
 
-const settingStore = useSettingStore();
+onMounted(() => {
+    window.ipcRenderer.send("platform");
+    window.ipcRenderer.on("platform.reply", (event, args) => {
+        platform.value = args;
+    });
+});
 
-const emit = defineEmits(["clearAll"]);
+const payloadStore = usePayloadStore();
 
-const xdebugConnected = ref(false);
-const clear = () => {
-    emit("clearAll");
-};
-
-window.ipcRenderer.on("xdebug-connection-status", (event, args) => {
-    console.log(args);
-    xdebugConnected.value = args.connected;
+const hasColor = computed(() => {
+    return payloadStore.payload.filter((payload) => payload.hasOwnProperty("color")).length > 0;
 });
 </script>
 
 <template>
-    <div class="flex justify-between items-center pb-0.5 px-2 text-center z-100">
-        <div class="ml-8 w-full select-none movable-container">&nbsp;</div>
+    <div class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10">
+        <div
+            v-if="payloadStore.payload.length > 0"
+            :class="{ 'ml-8': platform === 'darwin' }"
+        >
+            <div class="ml-10 w-auto h-full">
+                <div class="flex gap-1 items-center">
+                    <!-- clear -->
+                    <ClearAll />
 
-        <div class="flex gap-2 items-center">
-            <span v-if="xdebugConnected" class="select-none inline-flex h-6 text-sm w-max min-w-max items-center justify-center badge-outline badge badge-success p-1 transition hover:bg-opacity-50 disabled:opacity-25 !px-2" ><span class="text-xs">xdebug connected</span></span>
+                    <!-- pause -->
+                    <NavBarPause />
+                </div>
+            </div>
+        </div>
 
-            <HeaderGlobalFilter v-bind:has-color="hasColor && !xdebugMode" />
+        <div class="w-full nav-bar">&nbsp;</div>
 
-            <!-- clear -->
-            <a
-                v-show="payloadCount > 0 && !inSavedDumpsWindow && !settingStore.setting && !xdebugMode"
-                :title="$t('menu.clear')"
-                class="w-[32px] tab px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer transition-all duration-100 ease-in rounded-md"
-                @click="clear()"
-            >
-                <TrashIcon class="size-4" />
-            </a>
+        <HeaderColorsFilter v-bind:has-color="hasColor" />
 
-            <!-- pause -->
-            <NavBarPause
-                v-if="!xdebugMode"
-                v-bind:is-saved-dumps-window="inSavedDumpsWindow"
-            />
+        <div class="w-full nav-bar">&nbsp;</div>
 
+        <div class="flex gap-1 items-center m-0.5">
             <!-- global search -->
-            <NavBarGlobalSearch v-if="payloadCount > 0" />
+            <NavBarGlobalSearch v-if="payloadStore.payload.length > 0" />
 
             <!-- collapse -->
-            <NavBarCollapse v-if="payloadCount > 0" />
+            <NavBarCollapse v-if="payloadStore.payload.length > 0" />
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />
 
+            <!-- ssh -->
+            <NavBarSSH />
+
             <!-- listening -->
             <NavBarListening v-if="!inSavedDumpsWindow" />
+
+            <!-- always on top -->
+            <NavBarSettings />
         </div>
     </div>
 </template>

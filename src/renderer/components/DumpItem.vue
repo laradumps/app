@@ -27,20 +27,11 @@ const duplicatesStore = useQueryDuplicated();
 const timeStore = useTimeStore();
 const collapseStore = useCollapse();
 
-const saveDump = () => window.ipcRenderer.send("main:save-dumps", JSON.stringify(props.payload));
-
 const open = ref(true);
 const openOptions = ref(false);
 
-const removeSaveDump = () => {
-    const payloadId = props.payload.id;
-    window.ipcRenderer.send("saved-dumps:remove", payloadId);
-    document.getElementById(payloadId).remove();
-};
-
 const props = defineProps<{
     payload: Payload;
-    inSavedDumpsWindow?: boolean;
 }>();
 
 const copyDump = () => {
@@ -114,9 +105,10 @@ const isDuplicated = (sql) => {
 };
 
 const badgeClasses = computed(() => {
-    const { label, color } = props.payload;
+    const { color } = props.payload;
+    const { label } = props.payload.with_label;
 
-    const baseClass = "badge font-medium text-xs text-neutral-content bg-neutral border border-neutral-content/20 shadow-lg rounded-box w-auto";
+    const baseClass = "badge uppercase font-semibold text-xs text-base-content bg-base-100 border border-neutral-content/20 shadow-sm rounded-box w-auto";
 
     const dynamicClass = {
         "!bg-error !text-error-content": ["error", "emergency"].includes(label) || color === "red",
@@ -138,10 +130,19 @@ const badgeClasses = computed(() => {
 watch(collapseStore, (value) => {
     open.value = value.open;
 });
+
+const getLabel = computed(() => {
+    console.log(props.payload);
+    if (Object.values(props.payload.with_label).length > 0 && props.payload.with_label.label !== "") {
+        return props.payload.with_label.label;
+    }
+
+    return props.payload.type;
+});
 </script>
 <template>
     <div class="group text-sm pt-2">
-        <div class="px-3 w-full">
+        <div class="px-2 w-full">
             <div
                 :class="{
                     [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
@@ -149,22 +150,22 @@ watch(collapseStore, (value) => {
                     'collapse-open': open
                 }"
                 id=""
-                class="collapse bg-base-200/70 bg-laravel border border-base-content/5"
+                class="collapse bg-base-300/70 bg-laravel border border-base-content/5"
             >
                 <div
                     @dblclick="open = !open"
                     title="Double click to collapse"
-                    class="select-none !cursor-default collapse-title gap-2 text-base-content justify-between items-center font-light flex text-[12px]"
+                    class="select-none !cursor-default collapse-title text-base-content justify-between items-center font-light flex text-xs"
                 >
                     <ul
                         class="flex items-center gap-6 whitespace-nowrap"
                         v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
                     >
                         <li class="list-none">
-                            {{ props.payload.date_time }}
+                            {{ payload.date_time }}
                         </li>
                         <li>
-                            <DumpLink :ide-handler="props.payload.ide_handle" />
+                            <DumpLink :ide-handler="payload.ide_handle" />
                         </li>
                     </ul>
                     <div class="group flex justify-center items-center gap-2">
@@ -178,34 +179,35 @@ watch(collapseStore, (value) => {
                             >
                                 <CopyToClick />
                             </div>
-                            <div
-                                :title="$t('menu.saved_dumps')"
-                                @click="saveDump"
-                                v-if="!inSavedDumpsWindow"
-                            >
-                                <SaveDump />
-                            </div>
-                            <div
-                                :title="$t('menu.remove')"
-                                @click="removeSaveDump"
-                                v-if="inSavedDumpsWindow"
-                            >
-                                <IconTrash class="cursor-pointer size-4" />
-                            </div>
+                            <!--                            <div-->
+                            <!--                                :title="$t('menu.saved_dumps')"-->
+                            <!--                                @click="saveDump"-->
+                            <!--                                v-if="!inSavedDumpsWindow"-->
+                            <!--                            >-->
+                            <!--                                <SaveDump />-->
+                            <!--                            </div>-->
+                            <!--                            <div-->
+                            <!--                                :title="$t('menu.remove')"-->
+                            <!--                                @click="removeSaveDump"-->
+                            <!--                                v-if="inSavedDumpsWindow"-->
+                            <!--                            >-->
+                            <!--                                <IconTrash class="cursor-pointer size-4" />-->
+                            <!--                            </div>-->
                         </div>
 
                         <!-- variable type -->
                         <div
-                            v-show="props.payload.dump?.variable_type !== undefined"
+                            v-show="payload.dump?.variable_type !== undefined"
                             class="text-[0.70rem] opacity-70"
-                            v-text="`(${props.payload.dump?.variable_type})`"
+                            v-text="`(${payload.dump?.variable_type})`"
                         ></div>
 
                         <div
-                            v-if="props.payload.type !== `queries`"
+                            class="-mr-1 text-[0.64rem] !font-normal"
+                            v-if="payload.type !== `queries`"
                             :class="badgeClasses"
                         >
-                            {{ props.payload.label ?? props.payload.type }}
+                            {{ getLabel }}
                         </div>
 
                         <div

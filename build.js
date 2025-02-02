@@ -3,10 +3,14 @@ const { copyFileSync } = require("fs");
 const options = {
     platform: "node",
     bundle: true,
-    external: ["electron"],
+    target: "node20",
+    external: ["electron", "cpu-features"],
     define: {
         "process.env.NODE_ENV": `"${process.argv[2] === "--dev" ? "development" : "production"}"`,
         "process.platform": `"${process.platform}"`
+    },
+    loader: {
+        ".node": "file"
     }
 };
 buildSync({
@@ -27,4 +31,3 @@ buildSync({
 });
 copyFileSync("build/icon.png", "dist/icon.png");
 copyFileSync("build/icon.icns", "dist/icon.icns");
-copyFileSync("src/renderer/coffee.html", "dist/app/coffee.html");

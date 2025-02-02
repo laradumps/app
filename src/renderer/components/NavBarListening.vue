@@ -2,10 +2,9 @@
 import { SignalIcon, SignalSlashIcon } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref, watch } from "vue";
 import JSConfetti from "js-confetti";
+import { useCurrentProject } from "@/store/current-project";
 import { useXDebug } from "@/store/xdebug";
 import { XDebugYml } from "@/types/XDebug";
-import IconPlus from "@/components/Icons/IconPlus.vue";
-import IconTrash from "@/components/Icons/IconTrash.vue";
 
 const xDebugStore = useXDebug();
 
@@ -26,66 +25,56 @@ const newProject = ref<boolean>(false);
 const projects = ref<Project[]>([]);
 const environments = ref<Environment[]>([]);
 
+const currentProjectStore = useCurrentProject();
+
+const handleProjectAdded = () => {
+    window.ipcRenderer.send("storage.get");
+    const jsConfetti = new JSConfetti();
+    jsConfetti.addConfetti();
+    newProject.value = true;
+    setTimeout(() => (newProject.value = false), 5000);
+};
+
+const handleSetActiveProject = (event, value) => {
+    if (value.length > 0) {
+        selectedProject.value = value;
+        currentProjectStore.set(selectedProject.value);
+        window.ipcRenderer.send("storage.get-environments", selectedProject.value);
+    }
+};
+
+const handleStorageGet = (event, value: object) => {
+    const projectsArray = Object.keys(value).map((key) => ({ project: key, path: value[key] }));
+
+    projects.value = projectsArray;
+
+    if (projectsArray.length > 0) {
+        selectedProject.value = projectsArray[0].path;
+        currentProjectStore.set(selectedProject.value);
+        window.ipcRenderer.send("storage.get-environments", selectedProject.value);
+    }
+};
+
+const handleGetEnvironments = (event, value) => {
+    if (value != null) {
+        environments.value = [];
+        value.forEach((entry: Environment) => {
+            environments.value.push({
+                id: entry.id,
+                value: entry.value,
+                selected: entry.selected
+            });
+        });
+    }
+};
+
 onMounted(async () => {
     projects.value = [];
-
-    window.ipcRenderer.on("app-setting:project-added", () => {
-        window.ipcRenderer.send("environment::get");
-
-        const jsConfetti = new JSConfetti();
-
-        jsConfetti.addConfetti();
-
-        newProject.value = true;
-        setTimeout(() => (newProject.value = false), 5000);
-    });
-
-    window.ipcRenderer.on("app-setting:set-active", (event, value) => {
-        if (value.length > 0) {
-            selectedProject.value = value;
-            setActiveProject();
-        }
-    });
-
-    window.ipcRenderer.on("app-setting:set-environment", (event, value: object) => {
-        const projectsArray = Object.keys(value).map((key) => ({ project: key, path: value[key] }));
-
-        projects.value = projectsArray;
-
-        if (projectsArray.length > 0) {
-            selectedProject.value = projectsArray[0].path;
-            setActiveProject();
-        }
-    });
-
-    window.ipcRenderer.on("settings:env-file-contents", (event, contents: { environmentYmlList: null | Environment[]; projectName: string }) => {
-        if (contents.environmentYmlList && contents.environmentYmlList.length > 0) {
-            environments.value = [];
-
-            contents.environmentYmlList.forEach((entry: Environment) => {
-                environments.value.push({
-                    id: entry.id,
-                    value: entry.value,
-                    selected: entry.selected
-                });
-            });
-
-            window.ipcRenderer.send("main:tray-update-context-menu", {
-                environmentYmlList: JSON.parse(JSON.stringify(environments.value)),
-                projectName: contents.projectName
-            });
-        }
-    });
-
-    window.ipcRenderer.on("main:tray-updated-environment-options", (event, value) => {
-        window.ipcRenderer.send("main:settings-update-environment", {
-            selected: value,
-            project: selectedProject.value
-        });
-    });
-
+    window.ipcRenderer.on("app-setting:project-added", handleProjectAdded);
+    window.ipcRenderer.on("storage.set-active.reply", handleSetActiveProject);
+    window.ipcRenderer.on("storage.get.reply", handleStorageGet);
+    window.ipcRenderer.on("storage.get-environments.reply", handleGetEnvironments);
     window.ipcRenderer.on("xdebug-error", handleError);
-
     window.ipcRenderer.on("xdebug-connector::disconnect", () => {
         disconnectFromXdebug();
     });
@@ -111,26 +100,22 @@ const selectedEnvironment = computed(() => {
 });
 
 const save = async (): Promise<void> => {
-    window.ipcRenderer.send("main:settings-update-environment", {
+    window.ipcRenderer.send("storage.update", {
         selected: selectedEnvironment.value,
         project: selectedProject.value
     });
-
-    window.ipcRenderer.send("main:tray-update-context-menu", {
-        environmentYmlList: JSON.parse(JSON.stringify(environments.value))
-    });
 };
 
-const removeEnvironment = () => {
+const remove = () => {
     if (selectedProject.value !== "") {
         window.ipcRenderer.on("main:dialog-choice", (event, arg) => {
             if (arg === 0) {
-                window.ipcRenderer.send("main:setting-remove-environments", selectedProject.value);
+                window.ipcRenderer.send("storage.remove", selectedProject.value);
 
                 selectedProject.value = "";
                 environments.value = [];
 
-                window.ipcRenderer.emit("environment::get");
+                window.ipcRenderer.emit("storage.get");
             }
         });
 
@@ -143,11 +128,11 @@ const removeEnvironment = () => {
 };
 
 const setActiveProject = () => {
-    window.ipcRenderer.send("main:setting-get-environments", selectedProject.value);
+    currentProjectStore.set(selectedProject.value);
+    window.ipcRenderer.send("storage.get-environments", selectedProject.value);
 };
 
 const connectToXdebug = () => {
-    console.log(selectedProject.value);
     window.ipcRenderer.send("main:setting-get-xdebug-environments", selectedProject.value);
 };
 
@@ -159,12 +144,12 @@ window.ipcRenderer.on("xdebug-file-parser-error", (event, args) => {
     console.log("error", args);
 });
 
-const addProject = () => {
-    window.ipcRenderer.send("main:choose-directory");
-};
+const countSelectedEnvironment = computed(() => {
+    return selectedEnvironment.value.filter((environment) => environment.selected).length;
+});
 
-window.ipcRenderer.on("choose-directory", (event, args) => {
-    console.log(args);
+const countManySelectedEnvironment = computed(() => {
+    return selectedEnvironment.value.filter((environment) => environment.selected).length;
 });
 
 watch(xdebug, (value) => {
@@ -183,111 +168,113 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
 </script>
 
 <template>
-    <div>
-        <div class="flex gap-3">
-            <div class="dropdown dropdown-left z-[400]">
-                <div
-                    tabindex="0"
-                    role="button"
-                    class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
-                >
-                    <SignalSlashIcon
-                        v-if="selectedProject.length === 0"
-                        class="size-4 text-error"
-                    />
+    <div class="dropdown dropdown-left">
+        <div
+            tabindex="0"
+            role="button"
+            class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+        >
+            <span
+                v-show="countSelectedEnvironment > 0 && countManySelectedEnvironment <= 4"
+                class="absolute -left-0.5 top-1 text-[11px] badge badge-warning p-0.5 h-[14px]"
+            >
+                {{ countSelectedEnvironment }}
+            </span>
 
-                    <SignalIcon
-                        v-else
-                        :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
-                        class="size-4"
-                    />
-                </div>
-                <ul
-                    tabindex="0"
-                    :class="{ 'h-[calc(100vh-3.5rem)]': selectedProject && !xdebug }"
-                    class="dropdown-content min-w-[280px] space-y-3 gap-4 overflow-y-auto z-200 menu p-4 bg-base-200 block border border-base-content/20 shadow-lg rounded-box mt-[35px] !right-0"
-                >
-                    <button
-                        class="btn btn-info  w-full text-xs"
-                        @click="addProject"
-                    >
-                        <IconPlus class="w-5" />
+            <span
+                v-show="countManySelectedEnvironment > 4"
+                class="absolute animate-pulse -left-0.5 top-1 text-[11px] badge badge-error p-0.5 h-[14px]"
+            >
+                {{ countSelectedEnvironment }}
+            </span>
 
-                        Add New Project
-                    </button>
+            <SignalSlashIcon
+                v-if="selectedProject.length === 0"
+                class="size-4 text-error"
+            />
 
-                    <div class="flex gap-2 items-center">
-                        <select
-                            v-model="selectedProject"
-                            @change="setActiveProject()"
-                            class="select select-bordered text-xs select-xs w-full h-[1.85rem] font-semibold max-w-xs"
-                        >
-                            <option value="">Select a project</option>
-
-                            <option
-                                v-for="project in projects"
-                                :ref="project.project"
-                                :value="project.path"
-                            >
-                                {{ project.project }} - {{ project.path }}
-                            </option>
-                        </select>
-                        <div
-                            @click="removeEnvironment"
-                            v-if="selectedProject"
-                            class="cursor-pointer w-6"
-                        >
-                            <IconTrash class="w-4 danger text-error" />
-                        </div>
-                    </div>
-
-                    <div
-                        v-if="environments.length === 0"
-                        class="text-[11px] text-neutral-content"
-                    >
-                        No laradumps.yaml found in this project
-                    </div>
-
-                    <div
-                        class="overflow-auto"
-                        v-if="selectedProject"
-                    >
-                        <li>
-                            <label
-                                class="label !justify-start !text-left p-1.5"
-                                :class="{ 'bg-base-200': false }"
-                            >
-                                <input
-                                    type="checkbox"
-                                    :name="`xdebug`"
-                                    class="toggle toggle-xs toggle-accent"
-                                    v-model="xdebug"
-                                />
-                                <span class="text-[11px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
-                            </label>
-                        </li>
-
-                        <li
-                            :key="env.value"
-                            v-for="env in environments"
-                        >
-                            <label
-                                class="label !justify-start !text-left p-1 mt-1"
-                            >
-                                <input
-                                    type="checkbox"
-                                    :name="`env-` + env.id"
-                                    v-model="env.selected"
-                                    class="toggle toggle-xs toggle-accent"
-                                    @change="save"
-                                    :disabled="xdebug"
-                                />
-                                <span class="text-[11px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
-                            </label>
-                        </li>
-                    </div>
-                </ul>
-            </div>
+            <SignalIcon
+                v-else
+                :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
+                class="size-4"
+            />
         </div>
+        <ul
+            tabindex="0"
+            class="dropdown-content min-w-64 overflow-y-auto z-200 menu p-2 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-10"
+        >
+            <select
+                v-model="selectedProject"
+                @change="setActiveProject()"
+                class="mb-3 select select-bordered select-xs text-base-content w-full h-[1.85rem] font-semibold max-w-xs"
+            >
+                <option value="">Select a project</option>
+
+                <option
+                    v-for="project in projects"
+                    :ref="project.project"
+                    :value="project.path"
+                >
+                    {{ project.project }} - {{ project.path }}
+                </option>
+            </select>
+
+            <div
+                v-if="environments.length === 0"
+                class="text-xs text-base-content"
+            >
+                No laradumps.yaml found in this project
+            </div>
+
+            <div
+                class="overflow-auto"
+                :class="{
+                    'h-[calc(100vh-11rem)] p-0': environments.length > 0
+                }"
+            >
+                <li>
+                    <label
+                        class="label !justify-start !text-left p-1.5"
+                        :class="{ 'bg-base-200': false }"
+                    >
+                        <input
+                            type="checkbox"
+                            :name="`xdebug`"
+                            class="toggle toggle-xs toggle-accent"
+                            v-model="xdebug"
+                        />
+                        <span class="text-[11px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
+                    </label>
+                </li>
+
+                <li
+                    :key="env.value"
+                    v-for="env in environments"
+                >
+                    <label
+                        class="text-base-content label !justify-start !text-left p-1.5"
+                        :class="{ 'bg-base-200': env.selected }"
+                    >
+                        <input
+                            type="checkbox"
+                            :name="`env-` + env.id"
+                            v-model="env.selected"
+                            class="toggle toggle-xs toggle-accent"
+                            @change="save"
+                        />
+                        <span class="text-[11px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
+                    </label>
+                </li>
+            </div>
+
+            <div>
+                <button
+                    class="btn btn-warning text-warning-content mt-6 w-auto btn-sm text-xs"
+                    @click="remove"
+                >
+                    Remove Project
+                </button>
+            </div>
+        </ul>
     </div>
 </template>

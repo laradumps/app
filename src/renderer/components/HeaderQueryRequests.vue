@@ -1,5 +1,61 @@
+<script setup>
+import { useTimeStore } from "@/store/time";
+import SelectMenu from "@/components/SelectMenu.vue";
+import { computed } from "vue";
+import { useFormattedQueriesStore } from "@/store/formatted-queries";
+import { useQueryDuplicated } from "@/store/query-duplicated";
+
+const timeStore = useTimeStore();
+const formattedQueriesStore = useFormattedQueriesStore();
+const duplicatesStore = useQueryDuplicated();
+
+const props = defineProps({
+    total: {
+        type: Number,
+        default: 0
+    },
+    totalFiltered: {
+        type: Number,
+        default: 0
+    },
+    inScreenWindow: {
+        type: Boolean,
+        default: false
+    }
+});
+
+const queryOrder = computed(() => {
+    return [
+        {
+            id: false,
+            label: "default"
+        },
+        {
+            id: true,
+            label: "desc"
+        },
+        {
+            id: false,
+            label: "asc"
+        }
+    ];
+});
+
+const allRequests = computed(() => {
+    let requests = timeStore.groups.map((group, index) => ({
+        index: index + 1,
+        id: group,
+        label: `#${index + 1} - <b>${timeStore.getTotal(group).toFixed(2)}ms</b> - ${timeStore.getUri(group)} (${timeStore.getMethod(group)})`
+    }));
+
+    requests.sort((a, b) => b.index - a.index);
+
+    return requests;
+});
+</script>
+
 <template>
-    <div class="absolute top-[2.8rem] bg-base-100 space-y-1 px-4 pb-3 z-100 h-auto w-full">
+    <div class="absolute top-[2.8rem] gap-2 flex flex-col bg-base-100 px-4 z-100 h-auto w-full">
         <div
             v-if="timeStore.groups.length > 0"
             class="justify-between items-center gap-4 text-base-content"
@@ -44,7 +100,6 @@
                     </label>
 
                     <div>
-                        <span class="text-[11px] uppercase">Order</span>
                         <div>
                             <SelectMenu
                                 @selected="timeStore.setOrder($event.id)"
@@ -59,7 +114,6 @@
 
         <div class="flex w-full text-sm items-center justify-between">
             <div class="w-full">
-                <span class="text-[11px] uppercase">Request</span>
                 <div>
                     <SelectMenu
                         v-if="allRequests.length > 0"
@@ -72,62 +126,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { useTimeStore } from "@/store/time";
-import SelectMenu from "@/components/SelectMenu.vue";
-import { computed } from "vue";
-import { useFormattedQueriesStore } from "@/store/formatted-queries";
-import { useQueryDuplicated } from "@/store/query-duplicated";
-
-const timeStore = useTimeStore();
-const formattedQueriesStore = useFormattedQueriesStore();
-const duplicatesStore = useQueryDuplicated();
-
-const props = defineProps({
-    total: {
-        type: Number,
-        default: 0
-    },
-    payload: {
-        type: Object
-    },
-    totalFiltered: {
-        type: Number,
-        default: 0
-    },
-    inScreenWindow: {
-        type: Boolean,
-        default: false
-    }
-});
-
-const queryOrder = computed(() => {
-    return [
-        {
-            id: false,
-            label: "default"
-        },
-        {
-            id: true,
-            label: "desc"
-        },
-        {
-            id: false,
-            label: "asc"
-        }
-    ];
-});
-
-const allRequests = computed(() => {
-    let requests = timeStore.groups.map((group, index) => ({
-        index: index + 1,
-        id: group,
-        label: `#${index + 1} - <b>${timeStore.getTotal(group).toFixed(2)}ms</b> - ${timeStore.getUri(group)} (${timeStore.getMethod(group)})`
-    }));
-
-    requests.sort((a, b) => b.index - a.index);
-
-    return requests;
-});
-</script>

@@ -26,9 +26,7 @@ export default {
     },
     menu: {
         clear: "مسح",
-        language: "اللغة",
         settings: "الإعدادات",
-        reorder: "إعادة الترتيب",
         saved_dumps: "المحفوظات",
         toggle_menu: "إظهار القائمة"
     },
@@ -53,15 +51,10 @@ export default {
         run_to_add_your_project_here: "قم بتنفيذ الأمر vendor/bin/laradumps لإعداد مشروعك هنا",
         projects: "المشاريع",
         no_project_here: "لا يوجد مشروع هنا",
-        reset_data: "إعادة ضبط البيانات",
-        reset_data_description: "هذا الإعداد سيقوم بمسح جميع البيانات الموجودة في LaraDumps.",
-        clear_all_settings_dialog_message: "هل أنت واثق أنك تريد حذف جميع الإعدادات ؟",
-        deleted_message: "تم حذف الإعدادات بنجاح!",
-        system: "النظام",
-        appearance: "المظهر",
         check_for_updates: "التحقق من وجود تحديثات",
         update_available: "هناك تحديث متاح",
-        enable: "تفعيل"
+        enable: "تفعيل",
+        changes_saved: "Changes Saved"
     },
     click_to_copy: "اضغط للنسخ",
     please_select_a_component: "يرجى إختيار مكون",
@@ -100,5 +93,19 @@ export default {
     pause: "Pause",
     is_paused: "LaraDumps is paused.",
     remove: "Remove",
-    collapse: "Collapse all dumps"
+    collapse: "Collapse all dumps",
+    ssh: {
+        add_connection: "Add Connection",
+        edit_connection: "Edit Connection",
+        remove_connection: "Remove Connection",
+        remove_connection_confirm: "Are you sure you want to remove this connection?",
+        name: "Name",
+        host: "Host",
+        port: "Port",
+        username: "Username",
+        password: "Password",
+        auth_type: "Authentication Type",
+        private_key: "Private Key Path",
+        connect: "Connect"
+    }
 };

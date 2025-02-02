@@ -117,7 +117,7 @@ function nextRandom() {
 
 <template>
     <div>
-        <div class="carousel1 -mt-10">
+        <div class="carousel1 w-full">
             <button
                 v-if="currentIndex > 0"
                 class="arrow left hidden group-hover:block"
@@ -150,11 +150,11 @@ function nextRandom() {
 
 <style>
 .carousel1 {
-    @apply h-[200px] flex items-center justify-center relative;
+    @apply h-[250px] flex items-center justify-center relative;
 }
 
 .carousel1 .content {
-    @apply left-[15px] absolute w-full top-0;
+    @apply max-w-sm absolute w-full top-0;
 }
 
 .carousel1 > div.active {

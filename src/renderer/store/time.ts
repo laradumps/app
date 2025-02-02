@@ -115,8 +115,5 @@ export const useTimeStore = defineStore("timeStore", {
             this.dumpIds = [];
             this.groups = [];
         }
-    },
-    persist: {
-        enable: true
     }
 });

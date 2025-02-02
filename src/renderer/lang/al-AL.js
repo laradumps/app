@@ -26,9 +26,7 @@ export default {
     },
     menu: {
         clear: "Pastro",
-        language: "Gjuha",
         settings: "Cilësimet",
-        reorder: "Rendit",
         saved_dumps: "Dhëmbëzat e ruajtura",
         toggle_menu: "Shfaq menu"
     },
@@ -53,15 +51,10 @@ export default {
         run_to_add_your_project_here: "Ekzekuto vendor/bin/laradumps configure për të shtuar projektin tënd këtu",
         projects: "Projektet",
         no_project_here: "Nuk ka projekt këtu",
-        reset_data: "Rivendos të dhënat",
-        reset_data_description: "Ky veprim do të fshijë të gjitha të dhënat e ruajtura në LaraDumps (projektet dhe dhëmbëzat e ruajtura)",
-        clear_all_settings_dialog_message: "A jeni i sigurt që dëshironi të fshini të gjitha cilësimet?",
-        deleted_message: "Cilësimet u fshinë me sukses!",
-        system: "Sistemi",
-        appearance: "Paraqitja",
         check_for_updates: "Kontrollo për përditësime",
         update_available: "Ka përditësim të disponueshëm",
-        enable: "Enable"
+        enable: "Enable",
+        changes_saved: "Changes Saved"
     },
     click_to_copy: "Kliko për kopjim",
     please_select_a_component: "Ju lutemi zgjidhni një komponent",
@@ -100,5 +93,19 @@ export default {
     pause: "Pause",
     is_paused: "LaraDumps is paused.",
     remove: "Remove",
-    collapse: "Collapse all dumps"
+    collapse: "Collapse all dumps",
+    ssh: {
+        add_connection: "Add Connection",
+        edit_connection: "Edit Connection",
+        remove_connection: "Remove Connection",
+        remove_connection_confirm: "Are you sure you want to remove this connection?",
+        name: "Name",
+        host: "Host",
+        port: "Port",
+        username: "Username",
+        password: "Password",
+        auth_type: "Authentication Type",
+        private_key: "Private Key Path",
+        connect: "Connect"
+    }
 };

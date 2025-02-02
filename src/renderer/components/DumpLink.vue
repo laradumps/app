@@ -3,14 +3,19 @@ import { computed, defineProps, onMounted, ref, watch } from "vue";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import { IdeHandle } from "@/types/IdeHandle";
 import IconPencil from "@/components/Icons/IconPencil.vue";
+import { useCurrentProject } from "@/store/current-project";
 
 const props = defineProps<{
-    ideHandler?: IdeHandle;
+    ideHandler: IdeHandle;
     label?: string;
-    showIcon: boolean;
+    showIcon: {
+        type: boolean;
+        required: false;
+    };
 }>();
 
 const IDEHandler = useIDEHandlerStore();
+const currentProjectStore = useCurrentProject();
 
 const link = ref();
 
@@ -19,9 +24,7 @@ onMounted(() => {
 });
 
 watch(IDEHandler.value, (value) => {
-    const ide = value;
-
-    generateLink(ide);
+    generateLink(value);
 });
 
 const generateLink = (ide: string) => {
@@ -29,10 +32,15 @@ const generateLink = (ide: string) => {
     const realPath = props.ideHandler.real_path;
     const workdir = props.ideHandler.workdir;
     const wsl_config = props.ideHandler.wsl_config;
+    const base_path = props.ideHandler.base_path;
 
     const relativePath = realPath?.replace(workdir, "").replace(projectPath, "");
 
-    const linkPath = projectPath + relativePath;
+    let linkPath = projectPath + relativePath;
+
+    if (base_path) {
+        linkPath = linkPath.replace(base_path, currentProjectStore.value);
+    }
 
     if (realPath != null) {
         if (IDEHandler.value.includes("wsl_config")) {
@@ -47,6 +55,11 @@ const generateLink = (ide: string) => {
             return;
         }
 
+        if (base_path && currentProjectStore.value) {
+            link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
+            return;
+        }
+
         link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
     }
 };
@@ -56,12 +69,16 @@ const label = computed(() => {
         return props.label;
     }
 
-    if (props.ideHandler.line?.toString() !== "") {
-        return props.ideHandler.class_name + ":" + props.ideHandler.line;
+    if (props.ideHandler.class_name === "empty") {
+        return "Tinker";
     }
 
-    if (props.ideHandler.real_path == null) {
+    if (props.ideHandler.real_path == null || props.ideHandler.real_path.includes("ExecutionLoopClosure")) {
         return "Tinker";
+    }
+
+    if (props.ideHandler.line?.toString() !== "") {
+        return props.ideHandler.class_name + ":" + props.ideHandler.line;
     }
 
     return "";
@@ -72,10 +89,10 @@ const label = computed(() => {
     <div>
         <a
             v-if="!showIcon"
-            :href="link"
+            :href="label === 'Tinker' ? '#' : link"
             :title="label"
-            :class="{ 'cursor-pointer': link }"
-            class="flex items-center group cursor-pointer"
+            :class="{ 'cursor-pointer': link && label !== 'Tinker' }"
+            class="flex items-center group"
         >
             <span class="break-all tracking-wider hover:opacity-75 flex items-center">
                 <span
@@ -94,7 +111,7 @@ const label = computed(() => {
             <div class="break-all h-[32px] tracking-wider hover:opacity-75 flex items-center">
                 <span
                     class="whitespace-nowrap"
-                    :class="{ '!text-base-content/70 font-semibold': props.label }"
+                    :class="{ '!text-base-content/70 font-semibold': label }"
                     >{{ label }}</span
                 >
                 <a

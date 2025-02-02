@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { defineProps, onUpdated, nextTick, computed, watch, ref, reactive, onMounted } from "vue";
+import { defineProps, onUpdated, nextTick, computed, watch } from "vue";
 import DumpItem from "@/components/DumpItem.vue";
 import { Payload } from "@/types/Payload";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
-import { useReorder } from "@/store/reorder";
 import { useTimeStore } from "@/store/time";
 import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
+import { useSettingsStore } from "@/store/settings";
 
-const reorderStore = useReorder();
+const settingsStore = useSettingsStore();
 const timeStore = useTimeStore();
 
 const props = defineProps<{
@@ -106,7 +106,7 @@ watch(timeStore.groups, () => {
                 class="w-full mt-1 mb-[40px]"
                 :class="{
                     'mt-[7.6rem]': screen == 'Queries',
-                    'flex flex-col-reverse': reorderStore.reverse && screen !== 'Queries'
+                    'flex flex-col-reverse': settingsStore.settings.dump_order === 'reversed' && screen !== 'Queries'
                 }"
             >
                 <div
@@ -126,4 +126,8 @@ watch(timeStore.groups, () => {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.nav-bar {
+    height: auto !important;
+}
+</style>

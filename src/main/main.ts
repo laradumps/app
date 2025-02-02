@@ -1,34 +1,32 @@
 import { app, nativeTheme, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell } from "electron";
 import windowStateKeeper from "electron-window-state";
+import { autoUpdater } from "electron-updater";
+import { download } from "electron-dl";
+
 import path, { join, resolve } from "path";
 import * as url from "url";
 import fs from "fs";
+import * as ssh from "./ssh";
 
 import storage from "electron-json-storage";
-
-import { initSavedDumps } from "./window/saved-dumps";
-import { initCoffeeWindow } from "./window/coffee";
-
-import { configureLocalShortcut, registerShortcuts } from "./shortcut";
-
-import { createMenu } from "./main-menu";
 import "./watcher";
 
-import { chooseDirectory } from "./choose-directory";
-
-import * as xdebug from "./xdebug";
+import * as electronStore from "./storage";
+import * as electronAutoUpdate from "./auto-update";
+import * as electronTray from "./tray";
 import * as customWindow from "./custom-window";
-import * as autoUpdate from "./auto-update";
-import * as storageManager from "./storage";
-import * as macosTray from "./macos-tray";
-import * as autoLauncher from "./auto-launcher";
-import * as screenWindow from "./screen-window";
+import * as electronAutoLaunch from "./auto-launch";
+import * as settings from "./settings";
+import * as xdebug from "./xdebug";
 
-export const isDev: boolean = process.env.NODE_ENV === "development";
-export const isMac: boolean = process.platform === "darwin";
+import { CompletedInfo } from "@/types/Updater";
+import { createMenu } from "./main-menu";
+import { createScreenWindow } from "./window/screen";
+
+const isDev: boolean = process.env.NODE_ENV === "development";
+const isMac: boolean = process.platform === "darwin";
 
 let mainWindow: BrowserWindow;
-let savedDumpWindow: BrowserWindow;
 
 const windowsMap = new Map();
 
@@ -36,24 +34,25 @@ const electronLocalShortcut = require("electron-localshortcut");
 
 function createWindow(): BrowserWindow {
     const winState: windowStateKeeper.State = windowStateKeeper({
-        defaultWidth: 670,
-        defaultHeight: 660
+        defaultWidth: 680,
+        defaultHeight: 620
     });
 
     const browserWindowOptions: BrowserWindowConstructorOptions = {
         fullscreen: false,
         fullscreenable: false,
-        width: isDev ? 1080 : 690,
-        height: 640,
+        width: isDev ? 1280 : 760,
+        height: 620,
         resizable: true,
         alwaysOnTop: false,
         center: true,
+        titleBarStyle: "hiddenInset",
         webPreferences: {
             contextIsolation: false,
             preload: resolve(__dirname, "preload.js"),
             nodeIntegration: true
         },
-        show: true,
+        show: false,
         icon: path.join(__dirname, "icon.png")
     };
 
@@ -62,67 +61,122 @@ function createWindow(): BrowserWindow {
     }
 
     if (isMac) {
-        browserWindowOptions.titleBarStyle = "hiddenInset";
         browserWindowOptions.trafficLightPosition = { x: 12, y: 11 };
     }
 
-    const win: BrowserWindow = new BrowserWindow(browserWindowOptions);
+    const window: BrowserWindow = new BrowserWindow(browserWindowOptions);
 
-    winState.manage(win);
+    window.setMenuBarVisibility(false);
 
-    if (isDev) {
-        win.loadURL(`http://localhost:4999`);
-    }
+    winState.manage(window);
 
-    if (!isDev) {
-        win.loadURL(
-            url.format({
-                pathname: join(__dirname, "app", "index.html"),
-                protocol: "file:",
-                slashes: true
-            })
-        );
-    }
+    window.loadURL(
+        isDev
+            ? `http://localhost:4999`
+            : url.format({
+                  pathname: join(__dirname, "app", "index.html"),
+                  protocol: "file:",
+                  slashes: true
+              })
+    );
+
+    window.webContents.on("did-finish-load", async () => {
+        try {
+            window.webContents.send("init.reply", {
+                settings: settings.getSettings()
+            });
+
+            window.show();
+        } catch (error) {}
+    });
+
+    !isDev && electronAutoUpdate.init(window);
 
     electronLocalShortcut.register("CommandOrControl+Shift+X", (): void => {
         mainWindow.webContents.send("xdebug-connector::disconnect");
-
-        setTimeout(() => mainWindow.reload(), 300);
+        mainWindow.reload();
     });
 
-    win.once("ready-to-show", (): void => {
-        win.show();
-        win.focus();
-
-        mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
+    window.once("ready-to-show", (): void => {
+        window.show();
+        window.focus();
 
         if (isDev) {
-            win.webContents.openDevTools();
+            window.webContents.openDevTools();
         }
     });
 
-    win.webContents.on("did-finish-load", () => {
-        // const breakpoints = getBreakpoints();
-        // console.log(breakpoints)
-    });
-
-    return win;
+    return window;
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
-    if (!Object.prototype.hasOwnProperty.call(arg.content, "meta")) {
-        return;
+    mainWindow.webContents.send("new.dumps");
+    event.sender.send(arg.type, arg);
+});
+
+function sendScreenWindowUpdate(screen, payload) {
+    const screenWindow = windowsMap.get(screen);
+    if (screenWindow && screenWindow.webContents) {
+        screenWindow.webContents.send("app:screen-window-update", {
+            payload: payload
+        });
+    }
+}
+
+ipcMain.on("send-screen-window-update", (event, args) => {
+    const payload = args.payload;
+
+    sendScreenWindowUpdate(args.screen, payload);
+});
+
+ipcMain.on("screen-window:show", (event, arg) => {
+    let screenWindow: BrowserWindow;
+    const screenExist = windowsMap.has(arg.screen);
+
+    if (!screenExist) {
+        screenWindow = createScreenWindow(mainWindow, arg.screen);
+        if (arg.position.length > 0) {
+            screenWindow.setPosition(arg.position.x, arg.position.y);
+        }
+    } else {
+        screenWindow = windowsMap.get(arg.screen);
     }
 
-    event.sender.send(arg.type, arg);
+    if (!screenWindow.isVisible()) {
+        screenWindow.show();
+    }
+
+    if (isDev) {
+        screenWindow.webContents.openDevTools();
+    }
+
+    windowsMap.set(arg.screen, screenWindow);
+
+    const sendEnableMessage = () => {
+        screenWindow.webContents.send("app:screen-window-enable", {
+            screen: arg.screen,
+            payload: arg.payload
+        });
+    };
+
+    screenExist ? sendEnableMessage() : screenWindow.webContents.once("did-finish-load", () => sendEnableMessage());
+
+    screenWindow.on("closed", () => {
+        windowsMap.delete(arg.screen);
+    });
 });
 
 app.whenReady().then(async (): Promise<void> => {
     mainWindow = createWindow();
-    initCoffeeWindow();
-    savedDumpWindow = initSavedDumps();
 
-    await createMenu(mainWindow, windowsMap);
+    await xdebug.init(mainWindow);
+    await settings.init();
+    await customWindow.init();
+    await electronAutoLaunch.init();
+    await electronStore.init();
+    await ssh.init();
+
+    await createMenu();
 
     mainWindow.on("minimize", (event: Event): void => {
         event.preventDefault();
@@ -144,25 +198,13 @@ app.whenReady().then(async (): Promise<void> => {
         app.exit(0);
     });
 
-    // @ts-ignore
-    savedDumpWindow.on("close", (event: Event): void => {
-        event.preventDefault();
-        savedDumpWindow.hide();
-    });
-
-    configureLocalShortcut(mainWindow);
+    await autoUpdater.checkForUpdates();
 
     const userDataPath = app.getPath("userData");
 
     storage.setDataPath(path.join(userDataPath, "storage"));
 
-    await screenWindow.init(mainWindow, windowsMap);
-    await xdebug.init(mainWindow);
-    await customWindow.init();
-    await autoUpdate.init(mainWindow);
-    await storageManager.init(mainWindow);
-    await macosTray.init(mainWindow);
-    await autoLauncher.init(mainWindow);
+    await electronTray.init(mainWindow);
 });
 
 app.on("window-all-closed", (): void => {
@@ -173,10 +215,6 @@ app.on("activate", (): void => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
-});
-
-app.on("browser-window-focus", (): void => {
-    registerShortcuts(mainWindow);
 });
 
 ipcMain.on("main:get-ide-handler", (): void => {
@@ -220,7 +258,11 @@ ipcMain.on("main:update-zoom-level", (event, value): void => {
     storage.set("zoomLevel", { value: value });
 });
 
-ipcMain.on("main:os-temp-dir", (): void => {
+ipcMain.on("get-icon", (event, args) => {
+    event.reply("icon", resolve(__dirname, "icon.png"));
+});
+
+ipcMain.on("zoom-level", (): void => {
     let zoomFactor = 1.0;
 
     const storageZoomValue = () => storage.getSync("zoomLevel");
@@ -231,7 +273,7 @@ ipcMain.on("main:os-temp-dir", (): void => {
         zoomFactor = storageZoomValue().value;
     }
 
-    mainWindow.webContents.send("app:os-temp-dir", zoomFactor);
+    mainWindow.webContents.send("zoom-level.reply", zoomFactor);
 });
 
 ipcMain.on("main:openLink", (event: Electron.IpcMainEvent, url: any): void => {
@@ -243,13 +285,12 @@ ipcMain.on("main:toggle-always-on-top", (event, arg) => {
     setTimeout(() => mainWindow.setAlwaysOnTop(arg), 200);
 });
 
-ipcMain.on("main:is-always-on-top", (): void => {
-    mainWindow.webContents.send("main:is-always-on-top", { is_always_on_top: mainWindow.isAlwaysOnTop() });
+ipcMain.on("main:is-always-on-top", (event): void => {
+    event.reply("main:is-always-on-top", { is_always_on_top: mainWindow.isAlwaysOnTop() });
 });
 
-ipcMain.on("main:get-app-version", (): void => {
-    mainWindow.webContents.send("main:app-version", { version: app.getVersion() });
-    mainWindow.webContents.send("assetsPath", path.join(app.getAppPath(), "src/assets"));
+ipcMain.on("main:app-version", (event): void => {
+    event.reply("main:app-version.reply", { version: app.getVersion() });
 });
 
 ipcMain.on("main:show", (): void => {
@@ -264,7 +305,43 @@ ipcMain.on("main:dialog", async (event, arg): void => {
         message: arg.message
     });
 
-    mainWindow.webContents.send("main:dialog-choice", choice);
+    await mainWindow.webContents.send("main:dialog-choice", choice);
+});
+
+ipcMain.on("main:download-progress-info", async (event, args) => {
+    const properties: any = {
+        onProgress: (progress: number) => {
+            mainWindow.webContents.send("autoUpdater:download-progress", progress);
+        },
+        onCompleted: (item: CompletedInfo) => {
+            mainWindow.webContents.send("autoUpdater:download-complete", item);
+        }
+    };
+
+    await download(mainWindow, args, properties);
+});
+
+ipcMain.on("main:check-upload", async (): Promise<void> => {
+    if (!isMac) {
+        await autoUpdater.downloadUpdate();
+    } else {
+        await shell.openExternal("https://github.com/laradumps/app/releases/latest");
+    }
+});
+
+ipcMain.on("main:download-complete", async (event, args) => {
+    const result = await dialog.showMessageBox({
+        type: "info",
+        title: "Update completed!",
+        message: "The download was completed successfully!, do you want to install now?",
+        buttons: ["Yes", "No"]
+    });
+
+    if (result.response === 0) {
+        await shell.openPath(args);
+
+        setTimeout(() => app.quit(), 1000);
+    }
 });
 
 ipcMain.on("native-theme", () => {
@@ -279,6 +356,6 @@ ipcMain.on("main:pause-dumps", (event, args) => {
     mainWindow.webContents.send("app:pause-dumps", args);
 });
 
-ipcMain.on("main:choose-directory", async (event, args) => {
-    await chooseDirectory(mainWindow, event, args);
+ipcMain.on("platform", (event, args) => {
+    event.reply("platform.reply", process.platform);
 });

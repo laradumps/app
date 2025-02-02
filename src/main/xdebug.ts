@@ -30,7 +30,6 @@ export const init = async (mainWindow: BrowserWindow) => {
     ipcMain.on("connect-xdebug", (event) => {
         try {
             mainWindow.setSize(isDev ? 1200 : 1100, 720);
-            mainWindow.webContents.send("xdebug-connected");
 
             event.reply("xdebug-connected", true);
         } catch (error) {
@@ -43,9 +42,7 @@ export const init = async (mainWindow: BrowserWindow) => {
             mainWindow.setSize(isDev ? 1300 : 680, 640);
 
             xdebugServer.closeClient();
-
-            event.sender.send("xdebug-disconnected", "Disconnected from Xdebug server");
-            mainWindow.webContents.send("xdebug-disconnected");
+            event.reply("xdebug-disconnected");
         }
     });
 
@@ -69,7 +66,7 @@ export const init = async (mainWindow: BrowserWindow) => {
 
             xdebugServer.startClient(mainWindow, parseYaml);
 
-            mainWindow.webContents.send("settings:env-xdebug-file-contents", parseYaml);
+            event.reply("settings:env-xdebug-file-contents", parseYaml);
         } catch (e) {
             console.error(e);
             const parseYaml = {
@@ -83,7 +80,7 @@ export const init = async (mainWindow: BrowserWindow) => {
 
             xdebugServer.startClient(mainWindow, parseYaml);
 
-            mainWindow.webContents.send("settings:env-xdebug-file-contents");
+            event.reply("settings:env-xdebug-file-contents");
         }
     });
 };
