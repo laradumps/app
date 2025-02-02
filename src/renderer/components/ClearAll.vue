@@ -23,9 +23,9 @@ const clearAll = (): void => {
 
     // screenStore
     screenStore.clearAll();
-    screenStore.activeScreen("screen 1");
+    screenStore.activeScreen("home");
     screenStore.add({
-        screen_name: "screen 1",
+        screen_name: "home",
         visible: true,
         pinned: false,
         raise_in: 0,
