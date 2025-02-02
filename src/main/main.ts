@@ -33,16 +33,11 @@ const windowsMap = new Map();
 const electronLocalShortcut = require("electron-localshortcut");
 
 function createWindow(): BrowserWindow {
-    const winState: windowStateKeeper.State = windowStateKeeper({
-        defaultWidth: 680,
-        defaultHeight: 620
-    });
-
     const browserWindowOptions: BrowserWindowConstructorOptions = {
         fullscreen: false,
         fullscreenable: false,
-        width: isDev ? 1280 : 760,
-        height: 620,
+        width: settings.getSettings().window_width,
+        height: settings.getSettings().window_height,
         resizable: true,
         alwaysOnTop: false,
         center: true,
@@ -68,8 +63,6 @@ function createWindow(): BrowserWindow {
 
     window.setMenuBarVisibility(false);
 
-    winState.manage(window);
-
     window.loadURL(
         isDev
             ? `http://localhost:4999`
@@ -79,6 +72,15 @@ function createWindow(): BrowserWindow {
                   slashes: true
               })
     );
+
+    window.on("resize", (): void => {
+        const [width, height] = window.getSize();
+        settings.setSettings({
+            ...settings.getSettings(),
+            window_width: width,
+            window_height: height
+        });
+    });
 
     window.webContents.on("did-finish-load", async () => {
         try {

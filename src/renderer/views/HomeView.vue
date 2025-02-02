@@ -38,7 +38,7 @@ const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
 
 const defaultScreen = ref({
-    screen_name: "screen 1",
+    screen_name: "home",
     raise_in: 0,
     visible: true,
     pinned: false,
@@ -102,7 +102,7 @@ onMounted(() => {
     dumpListeners();
 
     window.ipcRenderer.send("storage.get");
-    toggleScreen("screen 1");
+    toggleScreen("home");
 });
 
 const dumpListeners = () => {
@@ -294,7 +294,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         payloadStore.add(content);
     }
 
-    let screenName = content.to_screen.screen_name ?? "screen 1";
+    let screenName = content.to_screen.screen_name ?? "home";
 
     if (!["Logs", "Queries"].includes(screenName)) {
         maximizeApp(content.auto_invoke_app);
