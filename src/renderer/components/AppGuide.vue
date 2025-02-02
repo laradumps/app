@@ -7,6 +7,7 @@ const i18n = useI18n();
 
 const currentIndex = ref(0);
 const currentTipKey = ref(0);
+const iconPath = ref();
 
 const tips = ref([
     `<div class="space-y-3 text-base-content">
@@ -46,7 +47,7 @@ const tips = ref([
     `<div>
         <div class="space-y-3 text-base-content">
             <div class="font-semibold text-base">${i18n.t("doc.select_your_preferred_theme")}</div>
-            <li><span>Menu -> Theme</span></li>
+            <li><span>Settings -> Theme</span></li>
             <li><span>light, dark, dracula, dim, laravel ...</span></li>
         </div>
     </div>`,
@@ -77,6 +78,10 @@ function stopTimer() {
 onMounted(() => {
     startTimer();
     document.addEventListener("keydown", handleKeyboardEvents);
+    window.ipcRenderer.send("get-icon");
+    window.ipcRenderer.on("icon", (event, args) => {
+        iconPath.value = args;
+    });
 });
 
 onUnmounted(() => {
@@ -125,8 +130,15 @@ function nextRandom() {
             >
                 <ChevronLeftIcon class="w-5" />
             </button>
-            <div class="content">
-                <div class="font-semibold text-lg">💡 {{ $t("doc.tips") }}</div>
+            <div class="content space-y-10">
+                <div class="w-full flex justify-start items-left text-lg">
+                    <img
+                        :src="iconPath"
+                        alt=""
+                        class="size-7 mr-2"
+                    />
+                    LaraDumps
+                </div>
 
                 <div
                     :key="currentTipKey"

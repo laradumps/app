@@ -6,11 +6,12 @@ type Current = {
 };
 
 export const useXDebug = defineStore("xdebug", {
-    state: (): Current => ({
-        current: {}
-    }),
+    state: (): Current =>
+        <Current>{
+            current: {}
+        },
     actions: {
-        setCurrent(config) {
+        setCurrent(config: any) {
             this.current = config;
         }
     }

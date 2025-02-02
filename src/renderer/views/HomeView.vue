@@ -21,9 +21,11 @@ import { usePayloadStore } from "@/store/payload";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useSettingsStore } from "@/store/settings";
 import XDebugMode from "@/components/XDebugMode.vue";
+import { useXDebug } from "@/store/xdebug";
 
 markRaw(TheUpdateModalInfo);
 
+const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
@@ -47,7 +49,6 @@ const appVersion = ref("");
 
 const payload = ref([]);
 const dumpsBag = ref([]);
-const xdebugMode = ref(false);
 const inScreenWindow = ref(false);
 const payloadScreen = ref([]);
 
@@ -56,12 +57,14 @@ const livewireRequests = ref([]);
 const isPaused = ref(false);
 
 const allRequests = ref([]);
+const xdebugMode = ref(false);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
 });
 
 onMounted(() => {
+    xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
     IDEHandler.setValue(localStorage.IDEHandler);
 
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
