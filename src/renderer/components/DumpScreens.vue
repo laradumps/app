@@ -28,7 +28,7 @@ const onDragEnd = (event, screen) => {
 };
 
 const openScreenWindow = (screen, mouseX, mouseY) => {
-    if (screen === "screen 1") return;
+    if (screen === "home") return;
 
     screenStore.toggleVisible(screen);
 
@@ -44,13 +44,9 @@ const openScreenWindow = (screen, mouseX, mouseY) => {
     });
 
     setTimeout(() => {
-        let screen1;
-        if (screen === "screen 1") {
-            screen1 = screenStore.getNext("screen 1");
-            emit("toggleScreen", screen1.screen_name);
-        } else {
-            emit("toggleScreen", "screen 1");
-        }
+        emit("toggleScreen", screen === "home"
+            ? screenStore.getNext("home").screen_name
+            : "home");
     }, 200);
 };
 
@@ -58,13 +54,9 @@ window.ipcRenderer.on("screen-window:closed", (event, args) => {
     screenStore.toggleVisible(args.screen);
 
     setTimeout(() => {
-        let screen1;
-        if (args.screen === "screen 1") {
-            screen1 = screenStore.getNext("screen 1");
-            emit("toggleScreen", screen1.screen_name);
-        } else {
-            emit("toggleScreen", "screen 1");
-        }
+        emit("toggleScreen", screen === "home"
+            ? screenStore.getNext("home").screen_name
+            : "home");
     }, 200);
 });
 </script>
@@ -75,7 +67,7 @@ window.ipcRenderer.on("screen-window:closed", (event, args) => {
             v-for="(screen, index) in screenStore.allVisible()"
             :key="screen.screen_name"
             :class="{ dragging: isDraggingIndex === index }"
-            v-bind:draggable="!['screen 1', 'Livewire'].includes(screen.screen_name)"
+            v-bind:draggable="!['home', 'Livewire'].includes(screen.screen_name)"
             @dragstart="onDragStart(index)"
             @dragover.prevent
             @dragend="onDragEnd($event, screen)"
