@@ -18,4 +18,6 @@ export interface Settings {
     ide_handler: string;
     shortcuts: Shortcuts;
     dump_order: "normal" | "reversed";
+    window_width: number;
+    window_height: number;
 }

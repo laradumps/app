@@ -20,7 +20,7 @@ const defaultSettings: Settings = {
     ide_handler: "phpstorm://open?file={filepath}&line={line}",
     auto_launch: "disabled",
     scroll_direction: "top",
-    reverse: false,
+    dump_order: "normal",
     shortcuts: {
         always_on_top: {
             originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
@@ -32,15 +32,19 @@ const defaultSettings: Settings = {
             keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K",
             label: "settings.shortcut.clear"
         }
-    }
+    },
+    window_width: 760,
+    window_height: 620
 };
 
 export const init = async () => {
-    ipcMain.on("settings.store", storeSettings);
+    ipcMain.on("settings.store", async (_event: any, data: Settings) => {
+        setSettings(data);
+    });
     ipcMain.on("settings.init-shortcuts", initShortcuts);
 };
 
-export const storeSettings = async (_event: any, data: Settings) => {
+export const setSettings = async (data: Settings) => {
     fs.writeFileSync(settingsPath, JSON.stringify(data));
 };
 
@@ -76,11 +80,13 @@ export const getSettings = () => {
             auto_launch: settingsJson.auto_launch || defaultSettings.auto_launch,
             scroll_direction: settingsJson.scroll_direction || defaultSettings.scroll_direction,
             shortcuts: settingsJson.shortcuts || defaultSettings.shortcuts,
-            reverse: settingsJson.reverse || defaultSettings.reverse
+            dump_order: settingsJson.dump_order || defaultSettings.dump_order,
+            window_width: settingsJson.window_width || defaultSettings.window_width,
+            window_height: settingsJson.window_height || defaultSettings.window_height
         };
     } else {
         settings = defaultSettings;
-        storeSettings(null, settings);
+        setSettings(settings);
     }
 
     return settings;
