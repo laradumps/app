@@ -44,9 +44,7 @@ const openScreenWindow = (screen, mouseX, mouseY) => {
     });
 
     setTimeout(() => {
-        emit("toggleScreen", screen === "home"
-            ? screenStore.getNext("home").screen_name
-            : "home");
+        emit("toggleScreen", screen === "home" ? screenStore.getNext("home").screen_name : "home");
     }, 200);
 };
 
@@ -58,9 +56,7 @@ window.ipcRenderer.on("screen-window:closed", (event, args) => {
     screenStore.toggleVisible(args.screen);
 
     setTimeout(() => {
-        emit("toggleScreen", screen === "home"
-            ? screenStore.getNext("home").screen_name
-            : "home");
+        emit("toggleScreen", screen === "home" ? screenStore.getNext("home").screen_name : "home");
     }, 200);
 });
 </script>

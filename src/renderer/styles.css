@@ -68,7 +68,7 @@ body {
 }
 
 .hljs {
-    @apply !bg-transparent font-normal text-xs leading-8;
+    @apply !bg-transparent font-light text-sm leading-8 tracking-wider;
 }
 
 .hljs,

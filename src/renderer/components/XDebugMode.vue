@@ -459,7 +459,7 @@ const getHighlightedCode = (lineContent) => {
             tooltipContent = `${variable.type}: ${variable.value}`;
         }
 
-        return `<span class="text-xs text-primary highlight cursor-pointer font-normal" data-variable="${match}" onclick="modal_property_get.showModal()" data-tippy-content="${tooltipContent}">${match}</span>`;
+        return `<span class="text-primary highlight cursor-pointer font-normal" data-variable="${match}" onclick="modal_property_get.showModal()" data-tippy-content="${tooltipContent}">${match}</span>`;
     });
 };
 
@@ -538,8 +538,8 @@ onBeforeUnmount(() => {
 </script>
 <template>
     <div>
-        <div class="w-full space-y-2">
-            <div class="w-full absolute z-300 top-0 bg-base-100 flex px-3 py-1 lex-row gap-1 items-center uppercase text-xs">
+        <div class="w-full">
+            <div class="w-full z-300 top-0 bg-base-100 flex px-3 py-1 flex-row gap-1 items-center uppercase text-xs">
                 <div class="flex w-full gap-1 items-center justify-between">
                     <div class="flex w-full gap-1 items-center">
                         <button
@@ -597,7 +597,7 @@ onBeforeUnmount(() => {
                 </div>
             </div>
 
-            <div class="!mt-[36px] text-xs border-t border-base-content/10">
+            <div class="text-xs border-t border-base-content/10">
                 <input
                     type="text"
                     v-show="variablesNames.length > 0"
@@ -654,7 +654,7 @@ onBeforeUnmount(() => {
                                 <div
                                     v-for="(lineContent, lineNumber) in fileContent"
                                     :key="`${lineNumber}-${currentFileName}`"
-                                    class="flex tracking-widest leading-6 hover:!bg-red-500/10 px-3 group/line"
+                                    class="flex hover:!bg-red-500/10 px-3 group/line"
                                     :class="{ 'bg-red-500/20 shadow-lg font-semibold': parseInt(lineNumber) === currentLine }"
                                     :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
                                 >
@@ -843,6 +843,10 @@ onBeforeUnmount(() => {
 
 [data-theme="white"].splitpanes {
     @apply bg-base-content/40 bg-base-100;
+}
+
+.splitpanes .pane-code {
+    @apply !bg-base-300;
 }
 
 .splitpanes--vertical > .splitpanes__splitter {

@@ -40,7 +40,7 @@ const hasColor = computed(() => {
             v-if="payloadStore.payload.length > 0"
             :class="{ 'ml-8': platform === 'darwin' }"
         >
-            <div class="ml-10 w-auto h-full">
+            <div class="w-auto h-full">
                 <div class="flex gap-1 items-center">
                     <!-- clear -->
                     <ClearAll />

@@ -159,7 +159,7 @@ const editConnection = (id: number) => {
 
         <ul
             tabindex="0"
-            class="dropdown-content min-w-80 overflow-y-auto z-200 menu p-3 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-[4.8rem]"
+            class="dropdown-content min-w-80 overflow-y-auto z-[350] menu p-3 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-[4.8rem]"
         >
             <div class="flex justify-between items-center">
                 <span>SSH</span>
