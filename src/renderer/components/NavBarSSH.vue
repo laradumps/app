@@ -7,7 +7,7 @@ import { Ref } from "vue";
 import { ConnectionConfig } from "@/types/ssh.type";
 import { onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
-import IconPlus from "@/components/Icons/IconPlus.vue";
+import { PlusIcon } from "@heroicons/vue/24/outline";
 import Divider from "@/components/Divider.vue";
 
 const i18n = useI18n();
@@ -167,7 +167,7 @@ const editConnection = (id: number) => {
                     class="flex btn-sm btn btn-warning text-warning-content w-auto text-xs !px-3"
                     @click="addConnection"
                 >
-                    <IconPlus class="w-4" />
+                    <PlusIcon class="w-4" />
                     {{ $t("ssh.add_connection") }}
                 </button>
             </div>

@@ -49,7 +49,7 @@ const chooseDirectory = async (mainWindow: BrowserWindow, event, args) => {
 
         fs.writeFileSync(configFilePath, yaml.dump(config), "utf8");
 
-        ipcMain.emit("environment::check", event, {
+        ipcMain.emit("storage.check", event, {
             applicationPath: selectedDir
         });
 

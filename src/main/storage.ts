@@ -68,7 +68,7 @@ const checkEnvironment = (event, value) => {
             store.set("environments", environments);
             event.reply("app-setting:project-added");
         }
-        ipcMain.emit("storage.get");
+        ipcMain.emit("storage.get", event);
         setTimeout(() => event.reply("storage.set-active.reply", environments[project]), 200);
     } catch (error) {
         console.error("Error updating environments in storage:", error);

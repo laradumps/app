@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { SignalIcon, SignalSlashIcon } from "@heroicons/vue/24/outline";
+import { SignalIcon, SignalSlashIcon, TrashIcon, PlusIcon } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref, watch } from "vue";
 import JSConfetti from "js-confetti";
 import { useCurrentProject } from "@/store/current-project";
 import { useXDebug } from "@/store/xdebug";
 import { XDebugYml } from "@/types/XDebug";
+import SelectInput from "@/components/SelectInput.vue";
 
 const xDebugStore = useXDebug();
 
@@ -19,6 +20,7 @@ interface Environment {
     selected: boolean;
 }
 
+let open = ref<boolean>(false);
 let xdebug = ref<boolean>(false);
 const selectedProject = ref<string>("");
 const newProject = ref<boolean>(false);
@@ -43,14 +45,16 @@ const handleSetActiveProject = (event, value) => {
     }
 };
 
-const handleStorageGet = (event, value: object) => {
+const handleStorageGet = (event, value) => {
     const projectsArray = Object.keys(value).map((key) => ({ project: key, path: value[key] }));
 
     projects.value = projectsArray;
 
     if (projectsArray.length > 0) {
-        selectedProject.value = projectsArray[0].path;
-        currentProjectStore.set(selectedProject.value);
+        const foundProject = projectsArray.find(p => p.path === currentProjectStore.value);
+        if (foundProject) {
+            selectedProject.value = foundProject.path;
+        }
         window.ipcRenderer.send("storage.get-environments", selectedProject.value);
     }
 };
@@ -69,7 +73,8 @@ const handleGetEnvironments = (event, value) => {
 };
 
 onMounted(async () => {
-    projects.value = [];
+    window.ipcRenderer.send("storage.get");
+
     window.ipcRenderer.on("app-setting:project-added", handleProjectAdded);
     window.ipcRenderer.on("storage.set-active.reply", handleSetActiveProject);
     window.ipcRenderer.on("storage.get.reply", handleStorageGet);
@@ -165,15 +170,44 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
     xDebugStore.setCurrent(arg);
     window.ipcRenderer.send("connect-xdebug", arg);
 });
+
+window.ipcRenderer.on("choose-directory", (event, args) => {
+    if (args.hasOwnProperty('error')) {
+        my_modal_1.showModal()
+    }
+    console.log(args);
+});
+
+const addProject = () => {
+    window.ipcRenderer.send("main:choose-directory");
+};
 </script>
 
 <template>
-    <div class="dropdown dropdown-left">
-        <div
-            tabindex="0"
-            role="button"
-            class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
-        >
+    <div>
+        <dialog id="my_modal_1" class="modal">
+            <div class="modal-box">
+                <h3 class="text-lg font-bold">Install Failure <span class="text-error">⚠️</span></h3>
+                <p class="py-4 space-y-2 text-sm">
+                    <div>Install laradumps in the project before:</div>
+                    <div>
+                        <span class="px-2 bg-base-300 p-1 rounded">composer require laradumps/laradumps --dev</span>
+                    </div>
+                </p>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn">Done</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
+
+        <div class="dropdown dropdown-left" :class="{'dropdown-open' : open }">
+            <div
+                tabindex="0"
+                role="button"
+                class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+            >
             <span
                 v-show="countSelectedEnvironment > 0 && countManySelectedEnvironment <= 4"
                 class="absolute -left-0.5 top-1 text-[11px] badge badge-warning p-0.5 h-[14px]"
@@ -181,100 +215,97 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
                 {{ countSelectedEnvironment }}
             </span>
 
-            <span
-                v-show="countManySelectedEnvironment > 4"
-                class="absolute animate-pulse -left-0.5 top-1 text-[11px] badge badge-error p-0.5 h-[14px]"
-            >
+                <span
+                    v-show="countManySelectedEnvironment > 4"
+                    class="absolute animate-pulse -left-0.5 top-1 text-[11px] badge badge-error p-0.5 h-[14px]"
+                >
                 {{ countSelectedEnvironment }}
             </span>
 
-            <SignalSlashIcon
-                v-if="selectedProject.length === 0"
-                class="size-4 text-error"
-            />
+                <SignalSlashIcon
+                    v-if="selectedProject.length === 0"
+                    class="size-4 text-error"
+                />
 
-            <SignalIcon
-                v-else
-                :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
-                class="size-4"
-            />
-        </div>
-        <ul
-            tabindex="0"
-            class="dropdown-content min-w-64 overflow-y-auto z-[350] menu p-2 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-10"
-        >
-            <select
-                v-model="selectedProject"
-                @change="setActiveProject()"
-                class="mb-3 select select-bordered select-xs text-base-content w-full h-[1.85rem] font-semibold max-w-xs"
-            >
-                <option value="">Select a project</option>
-
-                <option
-                    v-for="project in projects"
-                    :ref="project.project"
-                    :value="project.path"
-                >
-                    {{ project.project }} - {{ project.path }}
-                </option>
-            </select>
-
-            <div
-                v-if="environments.length === 0"
-                class="text-xs text-base-content"
-            >
-                No laradumps.yaml found in this project
+                <SignalIcon
+                    v-else
+                    :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
+                    class="size-4"
+                />
             </div>
+            <ul
+                tabindex="0"
+                class="dropdown-content space-y-3 min-w-64 z-[350] menu p-2 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-10"
+            >
+                <SelectInput
+                    id="projects"
+                    v-model="selectedProject"
+                    @change="setActiveProject()"
+                    placeholder="Select a project"
+                    class="w-full"
+                >
+                    <option
+                        v-for="project in projects"
+                        :key="project.project"
+                        :value="project.path"
+                    >
+                        {{ project.project }}
+                    </option>
+                </SelectInput>
 
-            <div
-                class="overflow-auto"
-                :class="{
+                <div class="text-xs flex justify-end gap-4">
+                    <PlusIcon class="size-4 text-info cursor-pointer" @click="addProject"/>
+                    <TrashIcon class="size-4 text-error cursor-pointer" @click="remove"/>
+                </div>
+
+                <div
+                    v-if="environments.length === 0"
+                    class="text-xs text-base-content text-left p-2"
+                >
+                    No laradumps.yaml found in this project
+                </div>
+
+                <div
+                    class="overflow-auto border-t border-base-content/30"
+                    :class="{
                     'h-[calc(100vh-11rem)] p-0': environments.length > 0
                 }"
-            >
-                <li>
-                    <label
-                        class="label !justify-start !text-left p-1.5"
-                        :class="{ 'bg-base-200': false }"
-                    >
-                        <input
-                            type="checkbox"
-                            :name="`xdebug`"
-                            class="toggle toggle-xs toggle-accent"
-                            v-model="xdebug"
-                        />
-                        <span class="text-[11px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
-                    </label>
-                </li>
-
-                <li
-                    :key="env.value"
-                    v-for="env in environments"
                 >
-                    <label
-                        class="text-base-content label !justify-start !text-left p-1.5"
-                        :class="{ 'bg-base-200': env.selected }"
-                    >
-                        <input
-                            type="checkbox"
-                            :name="`env-` + env.id"
-                            v-model="env.selected"
-                            class="toggle toggle-xs toggle-accent"
-                            @change="save"
-                        />
-                        <span class="text-[11px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
-                    </label>
-                </li>
-            </div>
+                    <li>
+                        <label
+                            class="label !justify-start !text-left p-1.5"
+                            :class="{ 'bg-base-200': false }"
+                        >
+                            <input
+                                type="checkbox"
+                                :name="`xdebug`"
+                                class="toggle toggle-xs toggle-accent"
+                                v-model="xdebug"
+                            />
+                            <span class="text-[11px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
+                        </label>
+                    </li>
 
-            <div>
-                <button
-                    class="btn btn-warning text-warning-content mt-6 w-auto btn-sm text-xs"
-                    @click="remove"
-                >
-                    Remove Project
-                </button>
-            </div>
-        </ul>
+                    <li
+                        :key="env.value"
+                        v-for="env in environments"
+                    >
+                        <label
+                            class="text-base-content label !justify-start !text-left p-1.5"
+                            :class="{ 'bg-base-200': env.selected }"
+                        >
+                            <input
+                                type="checkbox"
+                                :name="`env-` + env.id"
+                                v-model="env.selected"
+                                class="toggle toggle-xs toggle-accent"
+                                @change="save"
+                            />
+                            <span class="text-[11px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
+                        </label>
+                    </li>
+                </div>
+            </ul>
+        </div>
     </div>
 </template>

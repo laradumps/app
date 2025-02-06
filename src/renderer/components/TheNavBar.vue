@@ -44,7 +44,6 @@ const hasColor = computed(() => {
                 <div class="flex gap-1 items-center">
                     <!-- clear -->
                     <ClearAll />
-
                     <!-- pause -->
                     <NavBarPause />
                 </div>
