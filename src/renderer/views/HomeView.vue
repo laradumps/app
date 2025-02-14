@@ -20,9 +20,12 @@ import ScreenWindow from "@/components/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useSettingsStore } from "@/store/settings";
+import XDebugMode from "@/components/XDebugMode.vue";
+import { useXDebug } from "@/store/xdebug";
 
 markRaw(TheUpdateModalInfo);
 
+const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
@@ -46,7 +49,6 @@ const appVersion = ref("");
 
 const payload = ref([]);
 const dumpsBag = ref([]);
-const inSavedDumpsWindow = ref(false);
 const inScreenWindow = ref(false);
 const payloadScreen = ref([]);
 
@@ -55,12 +57,14 @@ const livewireRequests = ref([]);
 const isPaused = ref(false);
 
 const allRequests = ref([]);
+const xdebugMode = ref(false);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
 });
 
 onMounted(() => {
+    xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
     IDEHandler.setValue(localStorage.IDEHandler);
 
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
@@ -86,10 +90,42 @@ onMounted(() => {
 
     window.ipcRenderer.send("local-shortcut:get");
 
+    window.ipcRenderer.on("xdebug-connected", (event, arg) => {
+        xdebugMode.value = true;
+    });
+    window.ipcRenderer.on("xdebug-disconnected", (event, arg) => {
+        xdebugMode.value = false;
+    });
+
+    window.ipcRenderer.on("xdebug", (event, { content }) => dispatch("xdebug", event, content));
+
     dumpListeners();
 
     window.ipcRenderer.send("storage.get");
+
     toggleScreen("home");
+
+    window.addEventListener("add-screen", (event: Event) => {
+        const detail = (event as CustomEvent).detail as string[];
+
+        const normalizedDetail = detail.map((name) => name.replace("_", " "));
+
+        const existingScreens = screenStore.screens.map((screen) => screen.screen_name);
+
+        normalizedDetail.forEach((name) => {
+            if (!existingScreens.includes(name)) {
+                addScreen({
+                    screen_name: name,
+                    raise_in: 0,
+                    visible: true,
+                    pinned: false,
+                    new_window: false
+                });
+            }
+        });
+
+        screenStore.screens = screenStore.screens.filter((screen) => screen.screen_name === "home" || normalizedDetail.includes(screen.screen_name));
+    });
 });
 
 const dumpListeners = () => {
@@ -155,10 +191,6 @@ const dumpListeners = () => {
     });
 };
 
-window.addEventListener("update-payload", (event) => {
-    console.log(payloadStore.get(inScreenWindow.value));
-});
-
 const dumpsBagFiltered = computed(() => {
     const reverseTimeOrder = (reversed) => {
         return function () {
@@ -218,28 +250,29 @@ const maximizeApp = (autoInvokeApp: string | boolean): void => {
     autoInvokeApp && window.ipcRenderer.send("main:show");
 };
 
-const toggleScreen = async (value: string): Promise<void> => {
+const toggleScreen = async (value: string, shouldActivate = false): Promise<void> => {
     if (screenStore.get(value) && !screenStore.get(value).visible) {
         return;
     }
 
-    screenStore.activeScreen(value);
+    if (shouldActivate) {
+        screenStore.activeScreen(value);
+        await nextTick();
+    }
 
-    dumpsBag.value = payloadStore.payload.filter((payload) => payload.type !== "screen" && payload.to_screen.screen_name === value);
+    if (screenStore.screen === value) {
+        dumpsBag.value = payloadStore.payload.filter((payload) => payload.type !== "screen" && payload.to_screen.screen_name === value);
+    }
 
     await nextTick(() => {
         if (settingsStore.settings.scroll_direction === "top") {
-            document.getElementById("top").scrollIntoView({
-                behavior: "smooth"
-            });
+            document.getElementById("top")?.scrollIntoView({ behavior: "smooth" });
         } else {
-            document.getElementById("bottom").scrollIntoView({
-                behavior: "smooth"
-            });
+            document.getElementById("bottom")?.scrollIntoView({ behavior: "smooth" });
         }
     });
 
-    if (screenStore.screen === "Queries") {
+    if (screenStore.screen === "queries") {
         setTimeout(() => {
             const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
             if (lastPayload) timeStore.selected = lastPayload.request_id;
@@ -283,7 +316,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     let screenName = content.to_screen.screen_name ?? "home";
 
-    if (!["Logs", "Queries"].includes(screenName)) {
+    if (!["logs", "queries"].includes(screenName)) {
         maximizeApp(content.auto_invoke_app);
     }
 
@@ -304,7 +337,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         });
     }
 
-    setTimeout(() => toggleScreen(content.to_screen.screen_name), 10);
+    setTimeout(() => toggleScreen(content.to_screen.screen_name, content.type === "screen"), 30);
 };
 </script>
 <template>
@@ -323,43 +356,35 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             :data-theme="settingsStore.settings.theme"
             class="absolute w-full h-full min-h-full"
         >
-            <div>
+            <XDebugMode v-if="xdebugMode" />
+
+            <div v-else>
                 <TheAppUpdateInfo />
 
                 <!-- content -->
-                <div class="flex overflow-hidden flex-col flex-1 right-0 absolute left-0 h-fill-available">
-                    <!-- main -->
+                <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                     <main
-                        :class="{
-                            'overflow-auto': payloadStore.payload.length > 0
-                        }"
-                        class="flex-1 flex flex-col shrink-0 left-16 right-0 min-h-full"
+                        :class="{ 'overflow-auto': payloadStore.payload.length > 0 }"
+                        class="flex flex-col flex-1 min-h-full"
                     >
                         <!-- screen buttons -->
-                        <div
-                            v-if="screenStore.screens.length > 1"
-                            class="flex"
-                        >
-                            <div class="flex-1 px-3">
-                                <div class="flex items-center justify-between overflow-x-auto">
-                                    <div class="flex">
-                                        <DumpScreens @toggleScreen="toggleScreen" />
-                                    </div>
-                                </div>
+                        <div class="flex px-3">
+                            <div class="flex items-center justify-between w-full overflow-x-auto">
+                                <DumpScreens @toggleScreen="toggleScreen" />
                             </div>
                         </div>
 
                         <div
                             :class="{
-                                'mt-[5rem]': screenStore.screen === 'Queries',
-                                'w-auto p-6 pb-8 items-center': payloadStore.payload.length === 0,
-                                'h-[100vh] w-[100vw] flex': payloadStore.payload.length === 0
+                                'mt-[5rem]': screenStore.screen === 'queries' && payloadStore.payload.length > 0,
+                                'p-6 items-center': payloadStore.payload.length === 0,
+                                flex: dumpsBagFiltered.length === 0
                             }"
-                            class="rounded-sm text-base overflow-auto"
+                            class="rounded-sm text-base overflow-auto h-[100vh] w-[100vw]"
                         >
                             <div id="top"></div>
 
-                            <div v-if="screenStore.screen === 'Queries'">
+                            <div v-if="screenStore.screen === 'queries'">
                                 <HeaderQueryRequests
                                     :in-screen-window="inScreenWindow ? 'true' : 'false'"
                                     :all-requests="allRequests"
@@ -370,46 +395,51 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
                             <div
                                 :class="{
-                                    flex: screenStore.screen === 'Queries'
+                                    flex: screenStore.screen === 'queries',
+                                    'w-full -mt-[44px]': dumpsBagFiltered.length === 0 && screenStore.screen !== 'home'
                                 }"
                             >
                                 <div
                                     id="dumps-base"
-                                    class="mb-[40px] w-full"
-                                    :class="{
-                                        'flex flex-col-reverse': settingsStore.settings.dump_order === 'reversed' && screenStore.screen !== 'Queries'
-                                    }"
+                                    class="w-full mb-[40px]"
                                     v-if="payloadStore.payload.length > 0"
+                                    :class="{ 'flex flex-col-reverse': settingsStore.settings.dump_order === 'reversed' && screenStore.screen !== 'queries' }"
                                 >
                                     <div
-                                        class="w-full"
-                                        :id="payload.id"
                                         v-for="(payload, index) in dumpsBagFiltered"
                                         :key="payload.sf_dump_id"
+                                        :id="payload.id"
+                                        class="w-full"
                                     >
                                         <DumpItem
-                                            v-show="screenStore.screen === 'Queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'Livewire'"
+                                            class="group text-sm"
+                                            :class="{ 'pt-2': index > 0 }"
+                                            v-show="screenStore.screen === 'queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'livewire'"
                                             :payload="payload"
                                         />
                                     </div>
 
-                                    <div
+                                    <DumpLivewire
+                                        v-if="screenStore.screen === 'livewire'"
                                         class="pt-2"
-                                        v-if="screenStore.screen === 'Livewire'"
-                                    >
-                                        <DumpLivewire v-model:livewire-requests="livewireRequests" />
-                                    </div>
+                                        v-model:livewire-requests="livewireRequests"
+                                    />
+                                </div>
+
+                                <div
+                                    class="w-full h-full p-4 text-center"
+                                    v-if="dumpsBagFiltered.length === 0 && screenStore.screen !== 'home'"
+                                >
+                                    No dumps here
                                 </div>
                             </div>
 
                             <div id="bottom"></div>
 
-                            <div
-                                class="w-full h-full -mt-6"
-                                v-if="payloadStore.payload.length === 0"
-                            >
-                                <WelcomePage />
-                            </div>
+                            <WelcomePage
+                                v-if="payloadStore.payload.length === 0 && screenStore.screen === 'home'"
+                                class="w-full h-full"
+                            />
                         </div>
                     </main>
                 </div>

@@ -34,7 +34,11 @@ const defaultSettings: Settings = {
         }
     },
     window_width: 760,
-    window_height: 620
+    window_height: 620,
+    show_ssh_button: true,
+    show_collapse_button: false,
+    show_pause_button: false,
+    show_variable_type: true
 };
 
 export const init = async () => {
@@ -71,19 +75,7 @@ export const getSettings = () => {
     }
 
     if (settingsRaw) {
-        let settingsJson = JSON.parse(settingsRaw);
-        settings = {
-            theme: settingsJson.theme || defaultSettings.theme,
-            language: settingsJson.language || defaultSettings.language,
-            ide_handler: settingsJson.ide_handler || defaultSettings.ide_handler,
-            check_for_updates: settingsJson.check_for_updates || defaultSettings.check_for_updates,
-            auto_launch: settingsJson.auto_launch || defaultSettings.auto_launch,
-            scroll_direction: settingsJson.scroll_direction || defaultSettings.scroll_direction,
-            shortcuts: settingsJson.shortcuts || defaultSettings.shortcuts,
-            dump_order: settingsJson.dump_order || defaultSettings.dump_order,
-            window_width: settingsJson.window_width || defaultSettings.window_width,
-            window_height: settingsJson.window_height || defaultSettings.window_height
-        };
+        settings = JSON.parse(settingsRaw);
     } else {
         settings = defaultSettings;
         setSettings(settings);

@@ -3,12 +3,12 @@ import App from "@/App.vue";
 import "@/styles.css";
 import router from "./router/index";
 
-import "highlight.js/styles/xcode.css";
 import hljs from "highlight.js/lib/core";
 import php from "highlight.js/lib/languages/php";
 import hljsVuePlugin from "@highlightjs/vue-plugin";
 import { createPinia } from "pinia";
 import { createI18n } from "vue-i18n";
+
 import en from "@/lang/en";
 import ptBR from "@/lang/pt-BR";
 import esES from "@/lang/es-ES";

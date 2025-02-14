@@ -52,7 +52,7 @@ const getZoomLevel = (value: number): void => {
 
 onMounted(() => {
     window.ipcRenderer.on("init.reply", async (e: any, args) => {
-        settingsStore.setSettings(args.settings);
+        settingsStore.settings = args.settings;
         readyToLoad.value = true;
         window.ipcRenderer.send("settings.init-shortcuts");
     });

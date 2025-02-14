@@ -46,6 +46,7 @@ onUpdated(() => {
     >
         <div class="relative">
             <ListboxButton
+                :title="selected?.label.replaceAll('<b>', '').replace('</b>', '')"
                 class="relative w-full h-[34px] text-left cursor-default rounded-md border border-base-content/15 py-1.5 pl-3 pr-10 shadow-sm focus:border-base-700 focus:outline-none focus:ring-1 focus:ring-base-500 sm:text-sm"
             >
                 <span

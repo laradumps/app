@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Divider from "../components/Divider.vue";
-import { nextTick, onMounted, ref } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 import { useSettingsStore } from "@/store/settings";
 import SelectInput from "@/components/SelectInput.vue";
 import { useI18n } from "vue-i18n";
@@ -20,6 +20,8 @@ const localeStore = useI18nStore();
 onMounted(() => {
     getSavedLocalShortcuts();
     detectHotKeysPress();
+
+    console.log(settingsStore.settings);
 });
 
 const saveSettings = async () => {
@@ -30,45 +32,45 @@ const saveSettings = async () => {
     }, 2000);
 };
 
-const saveTheme = () => {
+const saveTheme = async () => {
     if (settingsStore.settings.theme === "system") {
         window.ipcRenderer.send("native-theme");
 
         return;
     }
     document.documentElement.setAttribute("data-theme", settingsStore.settings.theme);
-    nextTick(() => saveSettings());
+    await nextTick(() => saveSettings());
 };
 
-const saveLanguage = () => {
+const saveLanguage = async () => {
     localeStore.set(settingsStore.settings.language);
     locale.value = localeStore.value;
 
-    nextTick(() => saveSettings());
+    await nextTick(() => saveSettings());
 };
 
-const saveIDEHandler = () => {
+const saveIDEHandler = async () => {
     IDEHandler.setValue(settingsStore.settings.ide_handler);
 
-    nextTick(() => saveSettings());
+    await nextTick(() => saveSettings());
 };
 
-const saveCheckForUpdates = () => {
-    nextTick(() => saveSettings());
+const saveCheckForUpdates = async () => {
+    await nextTick(() => saveSettings());
 };
 
-const saveAutoLaunch = () => {
+const saveAutoLaunch = async () => {
     window.ipcRenderer.send("set-auto-launch", { value: settingsStore.settings.auto_launch });
 
-    nextTick(() => saveSettings());
+    await nextTick(() => saveSettings());
 };
 
-const saveScrollDirection = () => {
-    nextTick(() => saveSettings());
+const saveScrollDirection = async () => {
+    await nextTick(() => saveSettings());
 };
 
-const saveReverse = () => {
-    nextTick(() => saveSettings());
+const saveReverse = async () => {
+    await nextTick(() => saveSettings());
 };
 
 const getSavedLocalShortcuts = () => {
@@ -137,7 +139,6 @@ const saveShortcuts = async () => {
 
             settingsStore.settings.shortcuts[element.name] = shortcut;
 
-            console.log(element.name);
             window.ipcRenderer.send("local-shortcut:set", shortcut);
         }
     });
@@ -150,6 +151,10 @@ const saveShortcuts = async () => {
 
     editMode.value = "disabled";
 };
+
+watch(settingsStore.settings, async () => {
+    await saveSettings();
+});
 
 const editShortcut = () => {
     editMode.value = "";
@@ -269,6 +274,11 @@ const editShortcut = () => {
                     </SelectInput>
                 </div>
             </div>
+
+            <div class="mt-10 flex items-center justify-between">
+                <h1 class="text-lg font-semibold">Layout</h1>
+            </div>
+
             <Divider class="mt-3" />
             <div class="mt-3 grid grid-cols-2 items-center">
                 <div>Scroll Direction</div>
@@ -311,6 +321,62 @@ const editShortcut = () => {
                 </div>
             </div>
 
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Show Collapse Button</div>
+                <div class="flex items-center justify-end">
+                    <div class="p-1.5">
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-sm toggle-accent"
+                            v-model="settingsStore.settings.show_collapse_button"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Show Pause Button</div>
+                <div class="flex items-center justify-end">
+                    <div class="p-1.5">
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-sm toggle-accent"
+                            v-model="settingsStore.settings.show_pause_button"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Show SSH Button</div>
+                <div class="flex items-center justify-end">
+                    <div class="p-1.5">
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-sm toggle-accent"
+                            v-model="settingsStore.settings.show_ssh_button"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Show variable type</div>
+                <div class="flex items-center justify-end">
+                    <div class="p-1.5">
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-sm toggle-accent"
+                            v-model="settingsStore.settings.show_variable_type"
+                        />
+                    </div>
+                </div>
+            </div>
+
             <div class="mt-10 flex items-center justify-between">
                 <h1 class="text-lg font-semibold">{{ $t("settings.shortcuts") }}</h1>
             </div>
@@ -336,6 +402,7 @@ const editShortcut = () => {
                     />
                 </div>
             </div>
+
             <div class="mt-4 flex gap-2 justify-end">
                 <button
                     @click="editShortcut"

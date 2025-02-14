@@ -1,8 +1,9 @@
 <script setup>
-import { defineEmits, ref } from "vue";
+import { computed, defineEmits, ref } from "vue";
 import { useScreenStore } from "@/store/screen";
 import { usePayloadStore } from "@/store/payload";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
+import { XMarkIcon } from "@heroicons/vue/24/solid";
 
 const emit = defineEmits(["toggleScreen"]);
 
@@ -28,8 +29,6 @@ const onDragEnd = (event, screen) => {
 };
 
 const openScreenWindow = (screen, mouseX, mouseY) => {
-    if (screen === "home") return;
-
     screenStore.toggleVisible(screen);
 
     const serializablePayload = JSON.parse(JSON.stringify(payloadStore.get(screen)));
@@ -44,21 +43,26 @@ const openScreenWindow = (screen, mouseX, mouseY) => {
     });
 
     setTimeout(() => {
-        emit("toggleScreen", screen === "home"
-            ? screenStore.getNext("home").screen_name
-            : "home");
+        const screenName = screen === "home" ? screenStore.getNext("home").screen_name : "home";
+        emit("toggleScreen", screenName, true);
     }, 200);
 };
+
+window.ipcRenderer.on("screen-window:xdebug-closed", (event, args) => {
+    screenStore.remove("xdebug_inspector");
+});
 
 window.ipcRenderer.on("screen-window:closed", (event, args) => {
     screenStore.toggleVisible(args.screen);
 
     setTimeout(() => {
-        emit("toggleScreen", screen === "home"
-            ? screenStore.getNext("home").screen_name
-            : "home");
+        emit("toggleScreen", screen === "home" ? screenStore.getNext("home").screen_name : "home");
     }, 200);
 });
+
+const getPayloadScreenCount = (screenName) => {
+    return payloadStore.get(screenName).length;
+};
 </script>
 <template>
     <div class="flex mb-1">
@@ -67,7 +71,7 @@ window.ipcRenderer.on("screen-window:closed", (event, args) => {
             v-for="(screen, index) in screenStore.allVisible()"
             :key="screen.screen_name"
             :class="{ dragging: isDraggingIndex === index }"
-            v-bind:draggable="!['home', 'Livewire'].includes(screen.screen_name)"
+            v-bind:draggable="!['home', 'livewire'].includes(screen.screen_name)"
             @dragstart="onDragStart(index)"
             @dragover.prevent
             @dragend="onDragEnd($event, screen)"
@@ -75,17 +79,20 @@ window.ipcRenderer.on("screen-window:closed", (event, args) => {
         >
             <div
                 class="tabs"
-                @click="$emit('toggleScreen', screen.screen_name)"
+                @click="$emit('toggleScreen', screen.screen_name, true)"
                 :class="{
                     'ml-1': index > 0,
                     'tabs-bordered': screen.screen_name === screenStore.screen && screenStore.screens.length > 1
                 }"
             >
-                <input
-                    type="radio"
-                    class="tab uppercase font-normal tracking-wider text-[0.65rem]"
-                    :aria-label="screen.screen_name"
-                />
+                <span class="tab uppercase text-[0.70rem] flex gap-1">
+                    {{ screen.screen_name }}
+                    <span
+                        v-if="getPayloadScreenCount(screen.screen_name) > 0"
+                        class="text-[11px] badge badge-ghost p-0.5 h-[14px]"
+                        >({{ getPayloadScreenCount(screen.screen_name) }})</span
+                    >
+                </span>
             </div>
         </div>
 

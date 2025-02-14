@@ -7,6 +7,7 @@ const i18n = useI18n();
 
 const currentIndex = ref(0);
 const currentTipKey = ref(0);
+const iconPath = ref();
 
 const tips = ref([
     `<div class="space-y-3 text-base-content">
@@ -27,6 +28,14 @@ const tips = ref([
         <div>❤️ <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/sponsors/luanfreitasdev')" class="text-blue-500 text-sm underline cursor-pointer">${i18n.t("doc.buy_me_a_coffee")}</span></div>
     </div>`,
 
+    `<div class="space-y-3 text-base-content">
+        <div class="font-semibold text-base">Xdebug step debugging</div>
+        <li>${i18n.t("doc.install_php_extension")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-blue-500 underline cursor-pointer ml-1">download</span></li>
+        <li>${i18n.t("doc.in_any_project_toggle")}</li>
+        <li>${i18n.t("doc.add")} <code class="bg-base-300 p-1 rounded">xdebug_break()</code> ${i18n.t("doc.in_any_line_of_code")}</li>
+        <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
+    </div>`,
+
     `<div>
         <div class="space-y-3 text-base-content">
             <div class="font-semibold text-base">${i18n.t("doc.global_shortcuts")}</div>
@@ -38,7 +47,7 @@ const tips = ref([
     `<div>
         <div class="space-y-3 text-base-content">
             <div class="font-semibold text-base">${i18n.t("doc.select_your_preferred_theme")}</div>
-            <li><span>Menu -> Theme</span></li>
+            <li><span>Settings -> Theme</span></li>
             <li><span>light, dark, dracula, dim, laravel ...</span></li>
         </div>
     </div>`,
@@ -69,6 +78,10 @@ function stopTimer() {
 onMounted(() => {
     startTimer();
     document.addEventListener("keydown", handleKeyboardEvents);
+    window.ipcRenderer.send("get-icon");
+    window.ipcRenderer.on("icon", (event, args) => {
+        iconPath.value = args;
+    });
 });
 
 onUnmounted(() => {
@@ -117,8 +130,15 @@ function nextRandom() {
             >
                 <ChevronLeftIcon class="w-5" />
             </button>
-            <div class="content">
-                <div class="font-semibold text-lg">💡 {{ $t("doc.tips") }}</div>
+            <div class="content space-y-10">
+                <div class="w-full flex justify-start items-left text-lg">
+                    <img
+                        :src="iconPath"
+                        alt=""
+                        class="size-7 mr-2"
+                    />
+                    LaraDumps
+                </div>
 
                 <div
                     :key="currentTipKey"

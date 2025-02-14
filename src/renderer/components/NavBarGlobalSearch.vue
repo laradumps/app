@@ -2,7 +2,6 @@
 import { ref, nextTick, onMounted, onUnmounted } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import { useGlobalSearchStore } from "@/store/global-search";
-import IconPin from "@/components/Icons/IconPin.vue";
 
 const showInput = ref(false);
 const globalSearch = useGlobalSearchStore();

@@ -14,10 +14,14 @@ export interface Settings {
     language: string;
     check_for_updates: string;
     auto_launch: string;
-    scroll_direction: string;
+    scroll_direction: "top" | "bottom";
     ide_handler: string;
     shortcuts: Shortcuts;
     dump_order: "normal" | "reversed";
     window_width: number;
     window_height: number;
+    show_collapse_button: boolean;
+    show_pause_button: boolean;
+    show_ssh_button: boolean;
+    show_variable_type: boolean;
 }

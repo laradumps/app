@@ -1,0 +1,19 @@
+<template>
+    <svg
+        viewBox="0 0 76 76"
+        xmlns="http://www.w3.org/2000/svg"
+        xml:space="preserve"
+        stroke="currentColor"
+    >
+        <rect
+            x="20"
+            y="16"
+            fill="currentColor"
+            fill-opacity="1"
+            stroke-width="0.2"
+            stroke-linejoin="round"
+            width="40"
+            height="40"
+        />
+    </svg>
+</template>

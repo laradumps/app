@@ -67,7 +67,7 @@ export const useSettingsStore = defineStore("settings", () => {
         language: "en",
         check_for_updates: "auto_download",
         ide_handler: "phpstorm://open?file={filepath}&line={line}",
-        scroll_direction: "todo",
+        scroll_direction: "top",
         auto_launch: "disabled",
         dump_order: "normal",
         shortcuts: {
@@ -83,7 +83,11 @@ export const useSettingsStore = defineStore("settings", () => {
             }
         },
         window_width: 760,
-        window_height: 620
+        window_height: 620,
+        show_collapse_button: false,
+        show_pause_button: false,
+        show_ssh_button: true,
+        show_variable_type: true
     };
 
     const settings = ref<Settings>(defaultSettings);

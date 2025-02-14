@@ -41,7 +41,7 @@ const isOrange = computed(() => ({
 <template>
     <div
         class="space-x-2 flex justify-end items-center"
-        v-if="screenStore.screen !== 'Queries' && hasColor"
+        v-if="screenStore.screen !== 'queries' && hasColor"
     >
         <div class="h-full flex gap-2 px-2">
             <button

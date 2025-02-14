@@ -19,7 +19,10 @@ export default {
         support: "Support LaraDumps!",
         buy_me_a_coffee: "Buy me a coffee",
         give_us_start: "Give us stars",
-        contribute_code: "Contribute code and help us grow"
+        contribute_code: "Contribute code and help us grow",
+        install_php_extension: "Install PHP extension",
+        in_any_line_of_code: "in any line of code",
+        in_any_project_toggle: "in any project, toggle xdebug"
     },
     menu: {
         clear: "Cancella",

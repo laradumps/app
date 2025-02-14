@@ -119,6 +119,7 @@ export interface Payload {
     type: string;
     request_id: never;
     ide_handle: IdeHandle;
+    xdebug: any; // todo
     date_time: string;
     application_path: string;
     sf_dump_id: string;

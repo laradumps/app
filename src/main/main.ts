@@ -1,5 +1,4 @@
 import { app, nativeTheme, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell } from "electron";
-import windowStateKeeper from "electron-window-state";
 import { autoUpdater } from "electron-updater";
 import { download } from "electron-dl";
 
@@ -9,6 +8,7 @@ import fs from "fs";
 import * as ssh from "./ssh";
 
 import storage from "electron-json-storage";
+import "./watcher";
 
 import * as electronStore from "./storage";
 import * as electronAutoUpdate from "./auto-update";
@@ -16,6 +16,8 @@ import * as electronTray from "./tray";
 import * as customWindow from "./custom-window";
 import * as electronAutoLaunch from "./auto-launch";
 import * as settings from "./settings";
+import * as xdebug from "./xdebug";
+import { chooseDirectory } from "./choose-directory";
 
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
@@ -93,6 +95,7 @@ function createWindow(): BrowserWindow {
     !isDev && electronAutoUpdate.init(window);
 
     electronLocalShortcut.register("CommandOrControl+Shift+X", (): void => {
+        mainWindow.webContents.send("xdebug-connector::disconnect");
         mainWindow.reload();
     });
 
@@ -109,6 +112,7 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
+    console.log(arg);
     mainWindow.webContents.send("new.dumps");
     event.sender.send(arg.type, arg);
 });
@@ -126,6 +130,11 @@ ipcMain.on("send-screen-window-update", (event, args) => {
     const payload = args.payload;
 
     sendScreenWindowUpdate(args.screen, payload);
+});
+
+ipcMain.on("reload", () => {
+    mainWindow.webContents.send("xdebug-connector::disconnect");
+    mainWindow.reload();
 });
 
 ipcMain.on("screen-window:show", (event, arg) => {
@@ -168,6 +177,13 @@ ipcMain.on("screen-window:show", (event, arg) => {
 app.whenReady().then(async (): Promise<void> => {
     mainWindow = createWindow();
 
+    await xdebug.init(mainWindow);
+    await settings.init();
+    await customWindow.init();
+    await electronAutoLaunch.init();
+    await electronStore.init();
+    await ssh.init();
+
     await createMenu();
 
     mainWindow.on("minimize", (event: Event): void => {
@@ -182,7 +198,7 @@ app.whenReady().then(async (): Promise<void> => {
     });
 
     // @ts-ignore
-    mainWindow.on("close", function (event: Event): void {
+    mainWindow.on("close", function (): void {
         mainWindow.webContents.send("server:close", {});
     });
 
@@ -352,8 +368,6 @@ ipcMain.on("platform", (event, args) => {
     event.reply("platform.reply", process.platform);
 });
 
-settings.init();
-customWindow.init();
-electronAutoLaunch.init();
-electronStore.init();
-ssh.init();
+ipcMain.on("main:choose-directory", async (event, args) => {
+    await chooseDirectory(mainWindow, event, args);
+});

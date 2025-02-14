@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { nextTick, onMounted } from "vue";
 import { useScreenStore } from "@/store/screen";
 import { useTimeStore } from "@/store/time";
 import { useColorStore } from "@/store/colors";
@@ -14,22 +14,25 @@ const globalSearchStore = useGlobalSearchStore();
 const payloadStore = usePayloadStore();
 
 const clearAll = (): void => {
-    // store
-    payloadStore.clearAll();
-    timeStore.clear();
-    globalSearchStore.clear();
-    colorStore.clear();
-    payloadStore.clearAll();
+    nextTick(() => {
+        // store
+        payloadStore.clearAll();
+        timeStore.clear();
+        globalSearchStore.clear();
+        colorStore.clear();
+        payloadStore.clearAll();
 
-    // screenStore
-    screenStore.clearAll();
-    screenStore.activeScreen("home");
-    screenStore.add({
-        screen_name: "home",
-        visible: true,
-        pinned: false,
-        raise_in: 0,
-        new_window: false
+        // screenStore
+        screenStore.clearAll();
+        screenStore.activeScreen("home");
+        screenStore.add({
+            screen_name: "home",
+            visible: true,
+            pinned: false,
+            raise_in: 0,
+            new_window: false
+        });
+        window.ipcRenderer.send("reload");
     });
 };
 

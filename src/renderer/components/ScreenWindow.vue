@@ -63,7 +63,7 @@ const duplicatedQueriesCount = computed(() => {
 });
 
 watch(timeStore.groups, () => {
-    if (props.screen === "Queries") {
+    if (props.screen === "queries") {
         setTimeout(() => {
             const lastRequest = Object.values(timeStore.requests)[Object.values(timeStore.requests).length - 1];
 
@@ -78,7 +78,7 @@ watch(timeStore.groups, () => {
         <div id="top"></div>
 
         <div class="flex justify-end items-center bg-base text-center z-100">
-            <div class="ml-12 select-none w-full nav-bar text-[11px] uppercase font-medium tracking-wide">{{ screen }}</div>
+            <div class="ml-12 select-none w-full text-[11px] uppercase font-medium tracking-wide">{{ screen }}</div>
 
             <!-- always on top -->
             <NavBarAlwaysOnTop
@@ -87,7 +87,7 @@ watch(timeStore.groups, () => {
             />
         </div>
 
-        <div v-if="screen === 'Queries'">
+        <div v-if="screen === 'queries'">
             <HeaderQueryRequests
                 :payload="dumpsBag"
                 :total="dumpsBagFiltered.length"
@@ -98,15 +98,15 @@ watch(timeStore.groups, () => {
 
         <div
             class="flex mt-2 flex-col overflow-auto h-[calc(100vh-1rem)]"
-            :class="{ 'flex mt-3': screen === 'Queries' }"
+            :class="{ 'flex mt-3': screen === 'queries' }"
         >
             <div id="top"></div>
 
             <div
                 class="w-full mt-1 mb-[40px]"
                 :class="{
-                    'mt-[7.6rem]': screen == 'Queries',
-                    'flex flex-col-reverse': settingsStore.settings.dump_order === 'reversed' && screen !== 'Queries'
+                    'mt-[7.6rem]': screen == 'queries',
+                    'flex flex-col-reverse': settingsStore.settings.dump_order === 'reversed' && screen !== 'queries'
                 }"
             >
                 <div
@@ -118,7 +118,7 @@ watch(timeStore.groups, () => {
                     <DumpItem
                         :index="index"
                         :payload="payload"
-                        v-show="screen === 'Queries' ? payload.request_id === timeStore.selected : screen !== 'Livewire'"
+                        v-show="screen === 'queries' ? payload.request_id === timeStore.selected : screen !== 'livewire'"
                     />
                 </div>
             </div>

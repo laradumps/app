@@ -8,10 +8,7 @@ import { useCurrentProject } from "@/store/current-project";
 const props = defineProps<{
     ideHandler: IdeHandle;
     label?: string;
-    showIcon: {
-        type: boolean;
-        required: false;
-    };
+    showIcon?: boolean;
 }>();
 
 const IDEHandler = useIDEHandlerStore();
@@ -108,9 +105,9 @@ const label = computed(() => {
             :title="label"
             class="flex items-center group"
         >
-            <div class="break-all h-[32px] tracking-wider hover:opacity-75 flex items-center">
+            <div class="text-right w-16 tracking-wider hover:opacity-75 flex items-center">
                 <span
-                    class="whitespace-nowrap"
+                    class="whitespace-nowrap w-full"
                     :class="{ '!text-base-content/70 font-semibold': label }"
                     >{{ label }}</span
                 >
