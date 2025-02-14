@@ -104,6 +104,15 @@ const selectedEnvironment = computed(() => {
     });
 });
 
+watch(selectedEnvironment, (value) => {
+    const selected = value
+        .filter((item) => item.selected)
+        .filter((item) => !['dump', 'enabled_in_testing', 'original_dump'].includes(item.value))
+        .map((item) => item.value)
+
+    window.dispatchEvent(new CustomEvent('add-screen', { detail: selected }))
+})
+
 const save = async (): Promise<void> => {
     window.ipcRenderer.send("storage.update", {
         selected: selectedEnvironment.value,
@@ -175,12 +184,12 @@ window.ipcRenderer.on("choose-directory", (event, args) => {
     if (args.hasOwnProperty('error')) {
         my_modal_1.showModal()
     }
-    console.log(args);
 });
 
 const addProject = () => {
     window.ipcRenderer.send("main:choose-directory");
 };
+
 </script>
 
 <template>
@@ -217,10 +226,9 @@ const addProject = () => {
 
                 <span
                     v-show="countManySelectedEnvironment > 4"
-                    class="absolute animate-pulse -left-0.5 top-1 text-[11px] badge badge-error p-0.5 h-[14px]"
-                >
-                {{ countSelectedEnvironment }}
-            </span>
+                    class="absolute -left-0.5 top-1 text-[11px] badge badge-error p-0.5 h-[14px]"
+                    v-text="countSelectedEnvironment"
+                ></span>
 
                 <SignalSlashIcon
                     v-if="selectedProject.length === 0"

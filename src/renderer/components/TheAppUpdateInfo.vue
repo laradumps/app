@@ -24,7 +24,6 @@ const progressPercentage = computed(() => Math.round(progress.value * 100));
 window.ipcRenderer.on("update-available", (event, arg) => {
     modal.value.showModal();
     updateInfo.value = arg;
-    console.log(arg);
 });
 
 window.ipcRenderer.on("autoUpdater:update-info", (event, args: UpdateInfo) => {

@@ -11,6 +11,9 @@ import NavBarSettings from "@/components/NavBarSettings.vue";
 import { usePayloadStore } from "@/store/payload";
 import ClearAll from "@/components/ClearAll.vue";
 import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
+import { useSettingsStore } from "@/store/settings";
+
+const settingsStore = useSettingsStore();
 
 const platform = ref("");
 defineProps({
@@ -38,14 +41,14 @@ const hasColor = computed(() => {
     <div class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10">
         <div
             v-if="payloadStore.payload.length > 0"
-            :class="{ 'ml-8': platform === 'darwin' }"
+            :class="{ 'ml-[4.6rem]': platform === 'darwin' }"
         >
             <div class="w-auto h-full">
-                <div class="flex gap-1 items-center">
+                <div class="flex items-center">
                     <!-- clear -->
                     <ClearAll />
                     <!-- pause -->
-                    <NavBarPause />
+                    <NavBarPause v-if="settingsStore.settings.show_pause_button" />
                 </div>
             </div>
         </div>
@@ -61,13 +64,13 @@ const hasColor = computed(() => {
             <NavBarGlobalSearch v-if="payloadStore.payload.length > 0" />
 
             <!-- collapse -->
-            <NavBarCollapse v-if="payloadStore.payload.length > 0" />
+            <NavBarCollapse v-if="settingsStore.settings.show_collapse_button && payloadStore.payload.length > 0" />
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />
 
             <!-- ssh -->
-            <NavBarSSH />
+            <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
 
             <!-- listening -->
             <NavBarListening v-if="!inSavedDumpsWindow" />

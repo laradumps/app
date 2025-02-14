@@ -59,6 +59,7 @@ export const usePayloadStore = defineStore("payload", {
                 debug: "gray"
             };
             const index = this.findPayloadIndex(content.id);
+            console.log(content.id);
             if (index !== -1) {
                 this.payload[index] = {
                     ...this.payload[index],

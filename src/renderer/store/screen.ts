@@ -9,7 +9,7 @@ type State = {
 
 export const useScreenStore = defineStore("screen", {
     state: (): State => ({
-        screen: "",
+        screen: "home",
         screens: []
     }),
     actions: {

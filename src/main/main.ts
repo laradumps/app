@@ -112,6 +112,7 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
+    console.log(arg);
     mainWindow.webContents.send("new.dumps");
     event.sender.send(arg.type, arg);
 });
@@ -129,6 +130,11 @@ ipcMain.on("send-screen-window-update", (event, args) => {
     const payload = args.payload;
 
     sendScreenWindowUpdate(args.screen, payload);
+});
+
+ipcMain.on("reload", () => {
+    mainWindow.webContents.send("xdebug-connector::disconnect");
+    mainWindow.reload();
 });
 
 ipcMain.on("screen-window:show", (event, arg) => {

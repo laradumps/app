@@ -119,8 +119,6 @@ const loadChildren = (): void => {
 
 const propertyGet = (variableName): void => {
     const id = props.transitionId;
-    console.log(`Sending property_get for: ${variableName}`);
-
     sendCommand(`feature_set -i ${id} -n max_children -v 100`);
     sendCommand(`property_get -i ${id} -n ${variableName} -m 0`);
 };

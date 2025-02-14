@@ -22,10 +22,12 @@ import IconTrash from "@/components/Icons/IconTrash.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useTimeStore } from "@/store/time";
 import { useCollapse } from "@/store/collapse";
+import { useSettingsStore } from "@/store/settings";
 
 const duplicatesStore = useQueryDuplicated();
 const timeStore = useTimeStore();
 const collapseStore = useCollapse();
+const settingsStore = useSettingsStore();
 
 const open = ref(true);
 const openOptions = ref(false);
@@ -132,7 +134,6 @@ watch(collapseStore, (value) => {
 });
 
 const getLabel = computed(() => {
-    console.log(props.payload);
     if (Object.values(props.payload.with_label).length > 0 && props.payload.with_label.label !== "") {
         return props.payload.with_label.label;
     }
@@ -141,231 +142,229 @@ const getLabel = computed(() => {
 });
 </script>
 <template>
-    <div class="group text-sm pt-2">
-        <div class="px-2 w-full">
+    <div class="px-2 w-full">
+        <div
+            :class="{
+                [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
+                [bgColor]: typeof bgColor !== 'undefined',
+                'collapse-open': open
+            }"
+            id=""
+            class="collapse bg-base-300/70 bg-laravel border border-base-content/5"
+        >
             <div
-                :class="{
-                    [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
-                    [bgColor]: typeof bgColor !== 'undefined',
-                    'collapse-open': open
-                }"
-                id=""
-                class="collapse bg-base-300/70 bg-laravel border border-base-content/5"
+                @dblclick="open = !open"
+                title="Double click to collapse"
+                class="select-none !cursor-default collapse-title text-base-content justify-between items-center font-light flex text-xs"
             >
-                <div
-                    @dblclick="open = !open"
-                    title="Double click to collapse"
-                    class="select-none !cursor-default collapse-title text-base-content justify-between items-center font-light flex text-xs"
+                <ul
+                    class="flex items-center gap-6 whitespace-nowrap"
+                    v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
                 >
-                    <ul
-                        class="flex items-center gap-6 whitespace-nowrap"
-                        v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
+                    <li class="list-none">
+                        {{ payload.date_time }}
+                    </li>
+                    <li>
+                        <DumpLink :ide-handler="payload.ide_handle" />
+                    </li>
+                </ul>
+                <div class="group flex justify-center items-center gap-2">
+                    <div
+                        v-show="open"
+                        class="mr-1 group flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
                     >
-                        <li class="list-none">
-                            {{ payload.date_time }}
-                        </li>
-                        <li>
-                            <DumpLink :ide-handler="payload.ide_handle" />
-                        </li>
-                    </ul>
-                    <div class="group flex justify-center items-center gap-2">
                         <div
+                            :title="$t('click_to_copy')"
+                            @click="copyDump"
+                        >
+                            <CopyToClick />
+                        </div>
+                        <!--                            <div-->
+                        <!--                                :title="$t('menu.saved_dumps')"-->
+                        <!--                                @click="saveDump"-->
+                        <!--                                v-if="!inSavedDumpsWindow"-->
+                        <!--                            >-->
+                        <!--                                <SaveDump />-->
+                        <!--                            </div>-->
+                        <!--                            <div-->
+                        <!--                                :title="$t('menu.remove')"-->
+                        <!--                                @click="removeSaveDump"-->
+                        <!--                                v-if="inSavedDumpsWindow"-->
+                        <!--                            >-->
+                        <!--                                <IconTrash class="cursor-pointer size-4" />-->
+                        <!--                            </div>-->
+                    </div>
+
+                    <!-- variable type -->
+                    <div
+                        v-show="settingsStore.settings.show_variable_type && payload.dump?.variable_type !== undefined"
+                        class="text-[0.70rem] opacity-70"
+                        v-text="`(${payload.dump?.variable_type})`"
+                    ></div>
+
+                    <div
+                        class="-mr-1 !text-[0.7rem] !font-normal"
+                        v-if="payload.type !== `queries`"
+                        :class="badgeClasses"
+                    >
+                        {{ getLabel }}
+                    </div>
+
+                    <div
+                        v-if="isDuplicated(payload.queries?.sql)"
+                        class="badge font-semibold badge-warning text-warning-content uppercase text-xs"
+                    >
+                        Duplicated
+                    </div>
+
+                    <div class="flex items-center -mr-2 text-base-content/70 p-2">
+                        <button
+                            v-show="!open"
+                            v-on:click="open = true"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="size-4"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                />
+                            </svg>
+                        </button>
+                        <button
                             v-show="open"
-                            class="mr-1 group flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
+                            v-on:click="open = false"
                         >
-                            <div
-                                :title="$t('click_to_copy')"
-                                @click="copyDump"
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="size-4"
                             >
-                                <CopyToClick />
-                            </div>
-                            <!--                            <div-->
-                            <!--                                :title="$t('menu.saved_dumps')"-->
-                            <!--                                @click="saveDump"-->
-                            <!--                                v-if="!inSavedDumpsWindow"-->
-                            <!--                            >-->
-                            <!--                                <SaveDump />-->
-                            <!--                            </div>-->
-                            <!--                            <div-->
-                            <!--                                :title="$t('menu.remove')"-->
-                            <!--                                @click="removeSaveDump"-->
-                            <!--                                v-if="inSavedDumpsWindow"-->
-                            <!--                            >-->
-                            <!--                                <IconTrash class="cursor-pointer size-4" />-->
-                            <!--                            </div>-->
-                        </div>
-
-                        <!-- variable type -->
-                        <div
-                            v-show="payload.dump?.variable_type !== undefined"
-                            class="text-[0.70rem] opacity-70"
-                            v-text="`(${payload.dump?.variable_type})`"
-                        ></div>
-
-                        <div
-                            class="-mr-1 text-[0.64rem] !font-normal"
-                            v-if="payload.type !== `queries`"
-                            :class="badgeClasses"
-                        >
-                            {{ getLabel }}
-                        </div>
-
-                        <div
-                            v-if="isDuplicated(payload.queries?.sql)"
-                            class="badge font-semibold badge-warning text-warning-content uppercase text-xs"
-                        >
-                            Duplicated
-                        </div>
-
-                        <div class="flex items-center -mr-2 text-base-content/70 p-2">
-                            <button
-                                v-show="!open"
-                                v-on:click="open = true"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="size-4"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                                    />
-                                </svg>
-                            </button>
-                            <button
-                                v-show="open"
-                                v-on:click="open = false"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="size-4"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                                />
+                            </svg>
+                        </button>
                     </div>
                 </div>
+            </div>
+            <div
+                class="collapse-content"
+                v-on:click.right="openOptions = true"
+                v-on:click="openOptions = false"
+            >
                 <div
-                    class="collapse-content"
-                    v-on:click.right="openOptions = true"
-                    v-on:click="openOptions = false"
+                    class="relative"
+                    :class="{ 'overflow-auto w-[calc(100vw-70px)]': ['queries', 'table', 'table_v2'].includes(props.payload.type) }"
                 >
-                    <div
-                        class="relative"
-                        :class="{ 'overflow-auto w-[calc(100vw-70px)]': ['queries', 'table', 'table_v2'].includes(props.payload.type) }"
-                    >
-                        <DumpDump
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            class="text-base-content break-all"
-                            v-if="props.payload.type === `dump`"
-                            :payload="payload"
-                        />
+                    <DumpDump
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        class="text-base-content break-all"
+                        v-if="props.payload.type === `dump`"
+                        :payload="payload"
+                    />
 
-                        <DumpModel
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            class="text-base-content break-all"
-                            v-if="props.payload.type === `model`"
-                            :payload="payload"
-                        />
+                    <DumpModel
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        class="text-base-content break-all"
+                        v-if="props.payload.type === `model`"
+                        :payload="payload"
+                    />
 
-                        <DumpTimeTrack
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            v-if="props.payload.type === `time_track`"
-                            :payload="payload"
-                        />
+                    <DumpTimeTrack
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        v-if="props.payload.type === `time_track`"
+                        :payload="payload"
+                    />
 
-                        <!-- dump mailable -->
-                        <DumpMailable
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            v-if="props.payload.type === `mailable`"
-                            :payload="payload"
-                        />
+                    <!-- dump mailable -->
+                    <DumpMailable
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        v-if="props.payload.type === `mailable`"
+                        :payload="payload"
+                    />
 
-                        <!-- dump html -->
-                        <DumpHTML
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            v-if="props.payload.type === `html`"
-                            :payload="payload"
-                        />
+                    <!-- dump html -->
+                    <DumpHTML
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        v-if="props.payload.type === `html`"
+                        :payload="payload"
+                    />
 
-                        <!-- dump notification -->
-                        <DumpMail
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            v-if="props.payload.type === `mail`"
-                            :payload="payload"
-                        />
+                    <!-- dump notification -->
+                    <DumpMail
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        v-if="props.payload.type === `mail`"
+                        :payload="payload"
+                    />
 
-                        <!-- dump table -->
-                        <DumpTable
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            class="w-full"
-                            v-if="props.payload.type === `table`"
-                            :payload="payload"
-                        />
+                    <!-- dump table -->
+                    <DumpTable
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        class="w-full"
+                        v-if="props.payload.type === `table`"
+                        :payload="payload"
+                    />
 
-                        <!-- dump table v2 -->
-                        <DumpTableV2
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            class="w-full"
-                            v-if="['table_v2', 'http_client'].includes(props.payload.type)"
-                            :payload="payload"
-                        />
+                    <!-- dump table v2 -->
+                    <DumpTableV2
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        class="w-full"
+                        v-if="['table_v2', 'http_client'].includes(props.payload.type)"
+                        :payload="payload"
+                    />
 
-                        <!-- dump model -->
-                        <DumpJson
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            class="w-full"
-                            v-if="props.payload.type === `json`"
-                            :payload="payload"
-                        />
+                    <!-- dump model -->
+                    <DumpJson
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        class="w-full"
+                        v-if="props.payload.type === `json`"
+                        :payload="payload"
+                    />
 
-                        <!-- dump log -->
-                        <DumpLog
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            class="w-full"
-                            v-if="props.payload.type === `log_application`"
-                            :payload="payload"
-                        />
+                    <!-- dump log -->
+                    <DumpLog
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        class="w-full"
+                        v-if="props.payload.type === `log_application`"
+                        :payload="payload"
+                    />
 
-                        <!-- dump queries -->
-                        <DumpQueries
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            class="w-full"
-                            v-if="props.payload.type === `queries`"
-                            :payload="payload"
-                        />
+                    <!-- dump queries -->
+                    <DumpQueries
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        class="w-full"
+                        v-if="props.payload.type === `queries`"
+                        :payload="payload"
+                    />
 
-                        <!-- dump query -->
-                        <DumpQuery
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            v-if="props.payload.type === `query`"
-                            :query="payload.query"
-                        />
+                    <!-- dump query -->
+                    <DumpQuery
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        v-if="props.payload.type === `query`"
+                        :query="payload.query"
+                    />
 
-                        <DumpContains
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            :payload="payload"
-                        />
+                    <DumpContains
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        :payload="payload"
+                    />
 
-                        <DumpIsJson
-                            :id="`dump-content-${props.payload.sf_dump_id}`"
-                            :payload="payload"
-                        />
-                    </div>
+                    <DumpIsJson
+                        :id="`dump-content-${props.payload.sf_dump_id}`"
+                        :payload="payload"
+                    />
                 </div>
             </div>
         </div>

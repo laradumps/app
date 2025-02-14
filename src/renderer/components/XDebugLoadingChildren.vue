@@ -18,7 +18,6 @@ onMounted(() => {
 
 const propertyGet = (variableName) => {
     const id = props.transitionId;
-    console.log(`Children: Sending property_get for: ${variableName}`);
 
     // sendCommand(`feature_set -i ${id} -n max_children -v 100`);
     sendCommand(`property_get -i ${id} -n ${variableName} -m 0`);
@@ -29,7 +28,6 @@ const sendCommand = (cmd) => {
 };
 
 const parseResponse = (xml) => {
-    console.log(xml);
     const parser = new DOMParser();
     const doc = parser.parseFromString(xml, "text/xml");
     const responseElement = doc.getElementsByTagName("response")[0];

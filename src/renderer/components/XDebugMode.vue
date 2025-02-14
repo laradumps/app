@@ -165,8 +165,6 @@ const handleContextGet = (responseElement) => {
     });
 
     nextTick(() => tippy("[data-tippy-content]", { allowHTML: true, theme: "light-border", placement: "right-end" }));
-
-    // console.log("Context:", variablesNames.value);
 };
 
 const formatValue = (property) => {
@@ -263,10 +261,6 @@ const handlePropertyGet = (responseElement, evaluate) => {
 
         propertiesTree.value.push(list);
     });
-
-    // console.log("Properties Tree (property_get):", propertiesTree.value);
-    // console.log("Properties Tree Eval (property_get):", propertiesEvalTree.value);
-    // console.log("Properties Context Tree (property_get):", propertiesContextTree.value);
 };
 
 const handleFileContent = (messageElement) => {
@@ -376,7 +370,6 @@ const parseResponse = async (xml) => {
         const messageElement = doc.getElementsByTagName("xdebug:message");
 
         if (messageElement.length > 0) {
-            console.log("<< xdebug:message >>");
             handleFileContent(messageElement[0]);
         }
 
@@ -432,7 +425,6 @@ const parseResponse = async (xml) => {
             const status = responseElement.getAttribute("status");
 
             if (command === "context_get" && status === "stopping") {
-                console.log("stopping");
                 handleStop();
             }
         }
@@ -539,7 +531,7 @@ onBeforeUnmount(() => {
 <template>
     <div>
         <div class="w-full">
-            <div class="w-full z-300 top-0 bg-base-100 flex px-3 py-1 flex-row gap-1 items-center uppercase text-xs">
+            <div class="w-full z-300 top-0 bg-base-100 flex px-3 py-2 flex-row gap-1 items-center uppercase text-xs">
                 <div class="flex w-full gap-1 items-center justify-between">
                     <div class="flex w-full gap-1 items-center">
                         <button
@@ -597,14 +589,14 @@ onBeforeUnmount(() => {
                 </div>
             </div>
 
-            <div class="text-xs border-t border-base-content/10">
+            <div class="text-xs">
                 <input
                     type="text"
                     v-show="variablesNames.length > 0"
                     @keydown.enter="evaluateExpression"
                     v-model="evaluate"
                     placeholder="evaluate expression"
-                    class="input placeholder-opacity-75 h-[40px] text-xs tracking-wider border-base-content/10 rounded-none input-sm w-full"
+                    class="input placeholder-opacity-75 text-xs tracking-wider border-base-content/10 rounded-none input-sm w-full"
                 />
 
                 <div
@@ -659,7 +651,7 @@ onBeforeUnmount(() => {
                                     :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
                                 >
                                     <DumpLink
-                                        class="font-normal h-full text-[11px]"
+                                        class="flex font-normal h-full text-[11px]"
                                         :label="lineNumber"
                                         :show-icon="true"
                                         :ide-handler="{
