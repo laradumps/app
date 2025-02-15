@@ -96,12 +96,12 @@ observeContainer("dumps-base");
     >
         <div
             :class="{ '!font-semibold': activeFileIndex === index }"
-            class="text-base-content tracking-wide !font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
+            class="text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
             @click="toggleFileVisibility(index)"
         >
             <IconArrowLight
                 v-if="activeFileIndex === index"
-                class="size-4"
+                class="size-4 font-light"
             />
             {{ getFileLineDisplay(codeSnippet) }}
         </div>
@@ -125,7 +125,7 @@ observeContainer("dumps-base");
                     :ide-handler="getIdeHandleFromStack(codeSnippet, lineNumber)"
                 />
                 <span
-                    class="language-php py-1.5 highlight whitespace-pre hljs h-full text-xs text-primary font-normal"
+                    class="language-php highlight whitespace-pre hljs h-full text-xs text-primary font-normal"
                     v-html="getLineContent(lineContent)"
                 ></span>
             </div>

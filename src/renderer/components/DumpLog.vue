@@ -26,12 +26,12 @@ onMounted(() => {
 <template>
     <div
         id="log"
-        class="space-y-2"
+        class="space-y-1"
     >
         <div
             @dblclick="toggleCompletedMessage"
             title="Double click to expand"
-            class="prose my-3 mb-6 tracking-wide"
+            class="prose my-2 mb-8 tracking-wide"
             :class="{
                 '!my-2': Object.values(payload.code_snippet || {}).length === 0
             }"
@@ -40,7 +40,7 @@ onMounted(() => {
                 :class="{
                     'max-h-[400px] overflow-auto': showCompletedMessage,
                     'line-clamp-5': !showCompletedMessage,
-                    'text-sm font-semibold break-all': true
+                    'text-sm font-normal break-all': true
                 }"
             >
                 {{ payload.log_application?.message }}

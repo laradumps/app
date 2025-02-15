@@ -145,7 +145,7 @@ const getLabel = computed(() => {
     <div class="px-2 w-full">
         <div
             :class="{
-                [`!border-l-4 ` + borderColor]: typeof borderColor !== 'undefined',
+                [`!border-l-2 ` + borderColor]: typeof borderColor !== 'undefined',
                 [bgColor]: typeof bgColor !== 'undefined',
                 'collapse-open': open
             }"

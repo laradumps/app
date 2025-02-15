@@ -107,7 +107,12 @@ const selectedEnvironment = computed(() => {
 watch(selectedEnvironment, (value) => {
     const selected = value
         .filter((item) => item.selected)
-        .filter((item) => !['dump', 'enabled_in_testing', 'original_dump'].includes(item.value))
+        .filter((item) => ![
+            'dump',
+            'enabled_in_testing',
+            'original_dump',
+            'auto_invoke_app'
+        ].includes(item.value))
         .map((item) => item.value)
 
     window.dispatchEvent(new CustomEvent('add-screen', { detail: selected }))

@@ -617,7 +617,7 @@ onBeforeUnmount(() => {
                         </span>
 
                         <div class="space-y-3 text-base-content text-sm font-normal">
-                            <li>{{ i18n.t("doc.add") }} <code class="bg-base-300 p-2 rounded">xdebug_break()</code> {{ i18n.t("doc.in_any_line_of_code") }}</li>
+                            <li>{{ i18n.t("doc.add") }} <span class="font-semibold">xdebug_break()</span> {{ i18n.t("doc.in_any_line_of_code") }}</li>
                             <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
                         </div>
 

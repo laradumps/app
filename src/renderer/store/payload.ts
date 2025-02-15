@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { Payload, ScreenPayload, LogApplicationPayload, TimeTrackPayload, ValidatePayload } from "@/types/Payload";
+import { LogApplicationPayload, Payload, ScreenPayload, TimeTrackPayload, ValidatePayload } from "@/types/Payload";
 import * as Helper from "@/helpers";
 import moment from "moment";
 import humanizeDuration from "humanize-duration";
@@ -22,6 +22,9 @@ export const usePayloadStore = defineStore("payload", {
         get(screen: String) {
             return this.payload.filter((payload) => payload.to_screen.screen_name === screen);
         },
+        findById(id: string) {
+            return this.payload.findIndex((payload) => payload.id === id);
+        },
         clear(screen: String) {
             this.payload = this.payload.filter((payload) => payload.to_screen.screen_name !== screen);
         },
@@ -31,10 +34,6 @@ export const usePayloadStore = defineStore("payload", {
         updatePayload(content: { id: string; [key: string]: any }, field: string, transform?: (value: any) => any) {
             const index = this.findPayloadIndex(content.id);
             if (index !== -1) {
-                console.log({
-                    // ...this.payload[index],
-                    [field]: transform ? transform(content[field]) : content[field]
-                });
                 this.payload[index] = {
                     ...this.payload[index],
                     [field]: transform ? transform(content[field]) : content[field]
@@ -59,7 +58,7 @@ export const usePayloadStore = defineStore("payload", {
                 debug: "gray"
             };
             const index = this.findPayloadIndex(content.id);
-            console.log(content.id);
+
             if (index !== -1) {
                 this.payload[index] = {
                     ...this.payload[index],
@@ -88,12 +87,18 @@ export const usePayloadStore = defineStore("payload", {
                 });
             }
         },
-        updateTimeTrackPayload(content: { id: string; time_track: TimeTrackPayload }) {
-            const exist = this.payload.find((payload) => payload.with_label.label === content.time_track.label);
-            const index = this.findPayloadIndex(content.id);
-            if (index !== -1 && exist) {
-                const duration = moment.duration(moment.unix(exist.time_track.time).diff(moment.unix(content.time_track.end_time)));
-                this.payload[index].elapsed_time = humanizeDuration(duration.asMilliseconds());
+        updateTimeTrackPayload(content: { id: string; with_label: { label: string }; time_track: TimeTrackPayload }) {
+            const exist = this.payload.find((payload) => payload.with_label.label === content.with_label.label);
+
+            if (exist) {
+                const index = this.findById(exist.id);
+
+                if (index !== -1) {
+                    const _end = moment.unix(Number(content.time_track.end_time));
+                    const _start = moment.unix(Number(exist.time_track?.time));
+                    const duration = moment.duration(_start.diff(_end));
+                    this.payload[index].time_track.elapsed_time = humanizeDuration(duration.asMilliseconds());
+                }
             }
         },
         updateLabelPayload(content: { id: string; label: any }) {

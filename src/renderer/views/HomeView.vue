@@ -179,7 +179,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on("queries", (event, { content }) => dispatch("queries", event, content));
     window.ipcRenderer.on("query", (event, { content }) => dispatch("query", event, content));
     window.ipcRenderer.on("time_track", (event, { content }) => {
-        const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.with_label.label === content.time_track.label);
+        const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.with_label.label === content.with_label.label);
 
         if (exist.length === 0) {
             dispatch("time-track", event, content);
@@ -403,7 +403,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                                     id="dumps-base"
                                     class="w-full mb-[40px]"
                                     v-if="payloadStore.payload.length > 0"
-                                    :class="{ 'flex flex-col-reverse': settingsStore.settings.dump_order === 'reversed' && screenStore.screen !== 'queries' }"
+                                    :class="{ 'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal' && screenStore.screen !== 'queries' }"
                                 >
                                     <div
                                         v-for="(payload, index) in dumpsBagFiltered"
@@ -412,8 +412,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                                         class="w-full"
                                     >
                                         <DumpItem
-                                            class="group text-sm"
-                                            :class="{ 'pt-2': index > 0 }"
+                                            class="group text-sm pb-2"
                                             v-show="screenStore.screen === 'queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'livewire'"
                                             :payload="payload"
                                         />
@@ -427,7 +426,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                                 </div>
 
                                 <div
-                                    class="w-full h-full p-4 text-center"
+                                    class="w-full h-full p-4 text-center text-xs uppercase"
                                     v-if="dumpsBagFiltered.length === 0 && screenStore.screen !== 'home'"
                                 >
                                     No dumps here

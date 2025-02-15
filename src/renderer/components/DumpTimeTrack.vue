@@ -12,7 +12,12 @@ const props = defineProps<{
         &#8987; {{ $t("elapsed_time") }}:
 
         <div class="mt-3 px-5 font-semibold">
-            <div v-if="props.payload.time_track?.elapsed_time">{{ props.payload.time_track?.elapsed_time }}</div>
+            <div
+                class="text-base"
+                v-if="payload.time_track?.elapsed_time"
+            >
+                {{ payload.time_track?.elapsed_time }}
+            </div>
             <div
                 class="animate-pulse"
                 v-else
