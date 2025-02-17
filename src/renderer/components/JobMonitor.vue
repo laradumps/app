@@ -1,14 +1,54 @@
 <script setup lang="ts">
 import { useJobStore } from "@/store/jobs";
-import { computed, nextTick, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
 import moment from "moment";
 import { EyeIcon } from "@heroicons/vue/24/outline";
-import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
+import { CheckIcon, TrashIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
+import tippy from "tippy.js";
+import "tippy.js/dist/tippy.css";
+import { useIDEHandlerStore } from "@/store/ide-handler";
+import { IdeHandle } from "@/types/IdeHandle";
+import { useCurrentProject } from "@/store/current-project";
 
 const jobStore = useJobStore();
 
+const IDEHandlerStore = useIDEHandlerStore();
+const currentProjectStore = useCurrentProject();
+
 const selectedJobDetail = ref();
 const search = ref("");
+
+const generateLink = (ideHandler: IdeHandle) => {
+    const projectPath = ideHandler.project_path;
+    const realPath = ideHandler.real_path;
+    const workdir = ideHandler.workdir;
+    const wsl_config = ideHandler.wsl_config;
+    const base_path = ideHandler.base_path;
+
+    const relativePath = realPath?.replace(workdir, "").replace(projectPath, "");
+
+    let linkPath = projectPath + relativePath;
+
+    if (base_path) {
+        linkPath = linkPath.replace(base_path, currentProjectStore.value);
+    }
+
+    if (realPath != null) {
+        if (IDEHandlerStore.value.includes("wsl_config")) {
+            if (wsl_config != undefined) {
+                return IDEHandlerStore.value.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", ideHandler.line);
+            }
+
+            return IDEHandlerStore.value.replace("{filepath}", linkPath).replace("{line}", ideHandler.line);
+        }
+
+        if (base_path && currentProjectStore.value) {
+            return IDEHandlerStore.value.replace("{filepath}", linkPath).replace("{line}", ideHandler.line);
+        }
+
+        return IDEHandlerStore.value.replace("{filepath}", linkPath).replace("{line}", ideHandler.line);
+    }
+};
 
 const jobs = computed(() => {
     return Object.values(jobStore.jobs)
@@ -55,7 +95,7 @@ const clear = () => {
 
 const duration = (startTime: any, endTime: any) => {
     if (!startTime || !endTime) {
-        return "N/A";
+        return "-";
     }
 
     const jobStartTime = new Date(startTime);
@@ -68,6 +108,10 @@ const duration = (startTime: any, endTime: any) => {
     const durationSeconds = (durationMs / 1000).toFixed(2);
     return `${durationSeconds} s`;
 };
+
+onMounted(() => {
+    nextTick(() => tippy("[data-tippy-content]", { placement: "right-end" }));
+});
 </script>
 
 <template>
@@ -112,17 +156,18 @@ const duration = (startTime: any, endTime: any) => {
             </form>
         </dialog>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3 justify-between">
             <input
                 v-model="search"
                 type="text"
-                class="grow input-sm rounded-md font-normal font-sans p-2"
+                class="w-full mt-0.5 input-sm rounded-md font-normal font-sans p-2"
                 :placeholder="$t('search')"
             />
             <button
                 @click="clear()"
-                class="btn btn-error btn-outline btn-xs"
+                class="btn btn-error mt-0.5 btn-outline btn-sm"
             >
+                <TrashIcon class="w-4" />
                 {{ $t("clear") }}
             </button>
         </div>
@@ -130,11 +175,11 @@ const duration = (startTime: any, endTime: any) => {
         <table class="table table-zebra">
             <thead>
                 <tr class="bg-base-200">
-                    <th>Status</th>
+                    <th class="w-4">Status</th>
                     <th>Job</th>
                     <th>Duration</th>
                     <th>Date</th>
-                    <th></th>
+                    <th class="w-6"></th>
                 </tr>
             </thead>
             <tbody>
@@ -142,7 +187,7 @@ const duration = (startTime: any, endTime: any) => {
                     v-for="job in jobs"
                     :key="job.job_id"
                 >
-                    <td class="flex justify-center">
+                    <td :data-tippy-content="job.status">
                         <CheckIcon
                             class="w-5 text-success"
                             v-if="job.status === 'Processed'"
@@ -160,12 +205,20 @@ const duration = (startTime: any, endTime: any) => {
                             v-if="job.status === 'Queued'"
                         />
                     </td>
-                    <td class="break-all">{{ job.display_name }}</td>
+                    <td class="break-all">
+                        <div>{{ job.display_name }}</div>
+                        <a
+                            :href="generateLink(job.ide_handle)"
+                            v-text="`${job.ide_handle.class_name}:${job.ide_handle.line}`"
+                            class="link text-xs opacity-60"
+                        >
+                        </a>
+                    </td>
                     <td class="whitespace-nowrap">{{ duration(job.start_time, job.end_time) }}</td>
                     <td class="w-[120px] whitespace-nowrap">
-                        {{ job?.start_time ? moment(job?.start_time).format("hh:mm:ss a") : "N/A" }}
+                        {{ moment(job.pushed_time ?? job.start_time).format("hh:mm:ss a") }}
                     </td>
-                    <td class="w-[64px] ma-w-[64px] flex items-center">
+                    <td class="w-[64px] ma-w-[64px]">
                         <button @click="openModal(job.job_id)">
                             <EyeIcon class="w-5 text-primary" />
                         </button>

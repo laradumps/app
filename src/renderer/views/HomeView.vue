@@ -138,7 +138,7 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("jobs", (event, { content }) => {
-        jobStore.addOrUpdateJob(content.jobs);
+        jobStore.addOrUpdateJob(content.jobs, content.ide_handle);
     });
 
     window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));

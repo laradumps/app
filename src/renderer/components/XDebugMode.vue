@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import hljs from "highlight.js/lib/core";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";

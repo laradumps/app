@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { JobPayload } from "@/types/Payload";
+import { IdeHandle } from "@/types/IdeHandle";
 
 type Job = {
     job_id: string;
@@ -10,6 +11,7 @@ type Job = {
     start_time: Date | null;
     end_time: Date | null;
     display_name: string;
+    ide_handle: IdeHandle;
 };
 
 type State = {
@@ -21,9 +23,9 @@ export const useJobStore = defineStore("jobStore", {
         jobs: {}
     }),
     actions: {
-        addOrUpdateJob(jobs: JobPayload) {
+        addOrUpdateJob(jobs: JobPayload, ide_handle: IdeHandle) {
             if (!this.jobs[jobs.job_id] && jobs.status === "Queued") {
-                this._initializeJob(jobs);
+                this._initializeJob(jobs, ide_handle);
             }
 
             this.jobs[jobs.job_id].status = this.jobs[jobs.job_id].status !== "Failed" ? jobs.status : "Failed";
@@ -36,7 +38,7 @@ export const useJobStore = defineStore("jobStore", {
                 this.jobs[jobs.job_id].end_time = new Date();
             }
         },
-        _initializeJob(jobs: JobPayload) {
+        _initializeJob(jobs: JobPayload, ide_handle: IdeHandle) {
             this.jobs[jobs.job_id] = {
                 job_id: jobs.job_id,
                 status: jobs.status,
@@ -45,7 +47,8 @@ export const useJobStore = defineStore("jobStore", {
                 job: jobs.job,
                 pushed_time: new Date(),
                 start_time: null,
-                end_time: null
+                end_time: null,
+                ide_handle
             };
         }
     }
