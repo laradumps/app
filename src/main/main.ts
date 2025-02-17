@@ -116,19 +116,21 @@ ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
     event.sender.send(arg.type, arg);
 });
 
-function sendScreenWindowUpdate(screen, payload) {
+function sendScreenWindowUpdate(screen, payload, jobs) {
     const screenWindow = windowsMap.get(screen);
     if (screenWindow && screenWindow.webContents) {
         screenWindow.webContents.send("app:screen-window-update", {
-            payload: payload
+            payload: payload,
+            jobs: jobs
         });
     }
 }
 
 ipcMain.on("send-screen-window-update", (event, args) => {
     const payload = args.payload;
+    const jobs = args.jobs;
 
-    sendScreenWindowUpdate(args.screen, payload);
+    sendScreenWindowUpdate(args.screen, payload, jobs);
 });
 
 ipcMain.on("reload", () => {
@@ -162,7 +164,8 @@ ipcMain.on("screen-window:show", (event, arg) => {
     const sendEnableMessage = () => {
         screenWindow.webContents.send("app:screen-window-enable", {
             screen: arg.screen,
-            payload: arg.payload
+            payload: arg.payload,
+            jobs: arg.jobs
         });
     };
 

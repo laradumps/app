@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useJobStore } from "@/store/jobs";
-import { computed, nextTick, onMounted, ref } from "vue";
+import { Job, useJobStore } from "@/store/jobs";
+import { computed, defineProps, nextTick, onMounted, ref } from "vue";
 import moment from "moment";
 import { EyeIcon } from "@heroicons/vue/24/outline";
 import { CheckIcon, TrashIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
@@ -17,6 +17,10 @@ const currentProjectStore = useCurrentProject();
 
 const selectedJobDetail = ref();
 const search = ref("");
+
+const props = defineProps<{
+    items: Record<string, Job>;
+}>();
 
 const generateLink = (ideHandler: IdeHandle) => {
     const projectPath = ideHandler.project_path;
@@ -51,7 +55,9 @@ const generateLink = (ideHandler: IdeHandle) => {
 };
 
 const jobs = computed(() => {
-    return Object.values(jobStore.jobs)
+    const items = props.items ? props.items : jobStore.jobs;
+
+    return Object.values(items)
         .filter((job) => {
             const searchTerm = search.value.toLowerCase();
             return job.display_name.toLowerCase().includes(searchTerm) || job.job_id.includes(searchTerm) || job.job[0].includes(searchTerm);
@@ -97,6 +103,9 @@ const duration = (startTime: any, endTime: any) => {
     if (!startTime || !endTime) {
         return "-";
     }
+
+    startTime = new Date(startTime);
+    endTime = new Date(endTime);
 
     const jobStartTime = new Date(startTime);
     const durationMs = endTime.getTime() - jobStartTime.getTime();

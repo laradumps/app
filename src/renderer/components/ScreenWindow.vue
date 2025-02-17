@@ -11,7 +11,7 @@ const settingsStore = useSettingsStore();
 const timeStore = useTimeStore();
 
 const props = defineProps<{
-    dumpsBag: Object;
+    dumpsItems: Object;
     screen: String;
 }>();
 
@@ -46,7 +46,7 @@ const dumpsBagFiltered = computed(() => {
 
     const sort = reverseTimeOrder(timeStore.order);
 
-    props.dumpsBag.map((dump) => {
+    props.dumpsItems.map((dump) => {
         if (dump.type === "queries") {
             const { time, uri, method } = dump.queries;
             timeStore.increment(dump.request_id, dump.id, time, uri, method);
@@ -55,7 +55,7 @@ const dumpsBagFiltered = computed(() => {
         return dump;
     });
 
-    return props.dumpsBag.sort(sort());
+    return props.dumpsItems.sort(sort());
 });
 
 const duplicatedQueriesCount = computed(() => {
@@ -77,19 +77,9 @@ watch(timeStore.groups, () => {
     <div class="flex flex-col">
         <div id="top"></div>
 
-        <div class="flex justify-end items-center bg-base text-center z-100">
-            <div class="ml-12 select-none w-full text-[11px] uppercase font-medium tracking-wide">{{ screen }}</div>
-
-            <!-- always on top -->
-            <NavBarAlwaysOnTop
-                window="screen-window"
-                class="mt-1 mr-1"
-            />
-        </div>
-
         <div v-if="screen === 'queries'">
             <HeaderQueryRequests
-                :payload="dumpsBag"
+                :payload="dumpsItems"
                 :total="dumpsBagFiltered.length"
                 :total-duplicated-filtered="duplicatedQueriesCount"
                 :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"

@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { JobPayload } from "@/types/Payload";
 import { IdeHandle } from "@/types/IdeHandle";
 
-type Job = {
+export type Job = {
     job_id: string;
     status: string;
     duration: string;

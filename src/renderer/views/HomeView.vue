@@ -52,8 +52,9 @@ const appVersion = ref("");
 
 const payload = ref([]);
 const dumpsBag = ref([]);
-const inScreenWindow = ref(false);
+const inScreenWindow = ref("");
 const payloadScreen = ref([]);
+const jobScreen = ref({});
 
 const applicationPath = ref("");
 const livewireRequests = ref([]);
@@ -83,12 +84,14 @@ onMounted(() => {
     window.ipcRenderer.on("app:screen-window-enable", async (event, args) => {
         inScreenWindow.value = args.screen;
         payloadScreen.value = args.payload;
+        jobScreen.value = args.jobs;
 
         setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
     });
 
     window.ipcRenderer.on("app:screen-window-update", async (event, args) => {
         payloadScreen.value = args.payload;
+        jobScreen.value = args.jobs;
     });
 
     window.ipcRenderer.send("local-shortcut:get");
@@ -139,6 +142,25 @@ const dumpListeners = () => {
 
     window.ipcRenderer.on("jobs", (event, { content }) => {
         jobStore.addOrUpdateJob(content.jobs, content.ide_handle);
+
+        const serializableJobs = JSON.parse(JSON.stringify(jobStore.jobs));
+
+        if (content.to_screen.new_window) {
+            screenStore.hidden(content.to_screen.screen_name);
+
+            window.ipcRenderer.send("screen-window:show", {
+                screen: content.to_screen.screen_name,
+                payload: {},
+                jobs: serializableJobs,
+                position: {}
+            });
+        } else {
+            window.ipcRenderer.send("send-screen-window-update", {
+                screen: content.to_screen.screen_name,
+                payload: {},
+                jobs: serializableJobs
+            });
+        }
     });
 
     window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));
@@ -352,11 +374,19 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         :class="{ absolute: !inScreenWindow }"
         class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
     >
-        <ScreenWindow
-            v-if="inScreenWindow"
-            :dumps-bag="payloadScreen"
-            v-model:screen="inScreenWindow"
-        />
+        <div v-if="inScreenWindow">
+            <ScreenWindow
+                v-if="inScreenWindow !== 'jobs'"
+                :dumps-items="payloadScreen"
+                v-model:screen="inScreenWindow"
+            />
+
+            <JobMonitor
+                v-if="inScreenWindow === 'jobs'"
+                :items="jobScreen"
+                class="mt-3 h-[calc(100vh-95px)] w-[100vw] text-base overflow-auto"
+            />
+        </div>
 
         <div
             v-else

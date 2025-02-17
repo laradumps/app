@@ -34,10 +34,12 @@ const openScreenWindow = (screen, mouseX, mouseY) => {
     screenStore.toggleVisible(screen);
 
     const serializablePayload = JSON.parse(JSON.stringify(payloadStore.get(screen)));
+    const serializableJobPayload = JSON.parse(JSON.stringify(jobStore.jobs));
 
     window.ipcRenderer.send("screen-window:show", {
         screen: screen,
         payload: serializablePayload,
+        jobs: serializableJobPayload,
         position: {
             x: mouseX,
             y: mouseY
