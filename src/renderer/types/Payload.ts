@@ -114,6 +114,13 @@ export interface MailPayload {
     messageId: string;
 }
 
+export interface JobPayload {
+    job_id: string;
+    status: string;
+    job: any;
+    display_name: string;
+}
+
 export interface Payload {
     id: string;
     type: string;
@@ -143,6 +150,6 @@ export interface Payload {
     log_application?: LogApplicationPayload;
     to_screen: ScreenPayload;
     with_label: LabelPayload;
-    meta: Meta;
     code_snippet: CodeSnippet[];
+    jobs: JobPayload[];
 }

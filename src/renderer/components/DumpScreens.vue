@@ -4,11 +4,13 @@ import { useScreenStore } from "@/store/screen";
 import { usePayloadStore } from "@/store/payload";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import { XMarkIcon } from "@heroicons/vue/24/solid";
+import { useJobStore } from "@/store/jobs";
 
 const emit = defineEmits(["toggleScreen"]);
 
 const screenStore = useScreenStore();
 const payloadStore = usePayloadStore();
+const jobStore = useJobStore();
 
 const showTooltip = ref(false);
 const isDraggingIndex = ref(null);
@@ -61,6 +63,10 @@ window.ipcRenderer.on("screen-window:closed", (event, args) => {
 });
 
 const getPayloadScreenCount = (screenName) => {
+    if (screenName === "jobs") {
+        return Object.entries(jobStore.jobs).length;
+    }
+
     return payloadStore.get(screenName).length;
 };
 </script>
