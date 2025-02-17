@@ -24,8 +24,8 @@ export default {
         in_any_line_of_code: "in any line of code",
         in_any_project_toggle: "in any project, toggle xdebug"
     },
+    clear: "Cancella",
     menu: {
-        clear: "Cancella",
         settings: "Impostazioni",
         saved_dumps: "Dumps salvati",
         toggle_menu: "Mostra il menù"
@@ -108,5 +108,6 @@ export default {
         auth_type: "Authentication Type",
         private_key: "Private Key Path",
         connect: "Connect"
-    }
+    },
+    search: "Search"
 };

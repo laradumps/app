@@ -24,8 +24,8 @@ export default {
         in_any_line_of_code: "in any line of code",
         in_any_project_toggle: "in any project, toggle xdebug"
     },
+    clear: "Temizle",
     menu: {
-        clear: "Temizle",
         settings: "Ayarlar",
         saved_dumps: "Kaydedilen Dumps",
         toggle_menu: "Menüyü göster"
@@ -107,5 +107,6 @@ export default {
         auth_type: "Authentication Type",
         private_key: "Private Key Path",
         connect: "Connect"
-    }
+    },
+    search: "Search"
 };

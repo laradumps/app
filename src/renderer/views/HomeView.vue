@@ -22,6 +22,8 @@ import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useSettingsStore } from "@/store/settings";
 import XDebugMode from "@/components/XDebugMode.vue";
 import { useXDebug } from "@/store/xdebug";
+import JobMonitor from "@/components/JobMonitor.vue";
+import { useJobStore } from "@/store/jobs";
 
 markRaw(TheUpdateModalInfo);
 
@@ -36,6 +38,7 @@ const settingsStore = useSettingsStore();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
+const jobStore = useJobStore();
 
 const defaultScreen = ref({
     screen_name: "home",
@@ -132,6 +135,10 @@ const dumpListeners = () => {
     window.ipcRenderer.on("livewire", (event, { content }) => {
         livewireRequests.value.push(content);
         dispatch("livewire", event, content);
+    });
+
+    window.ipcRenderer.on("jobs", (event, { content }) => {
+        jobStore.addOrUpdateJob(content.jobs);
     });
 
     window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));
@@ -363,10 +370,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
                 <!-- content -->
                 <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
-                    <main
-                        :class="{ 'overflow-auto': payloadStore.payload.length > 0 }"
-                        class="flex flex-col flex-1 min-h-full"
-                    >
+                    <main class="flex flex-col flex-1 min-h-full">
                         <!-- screen buttons -->
                         <div class="flex px-3">
                             <div class="flex items-center justify-between w-full overflow-x-auto">
@@ -374,7 +378,12 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                             </div>
                         </div>
 
+                        <div v-if="screenStore.screen === 'jobs'">
+                            <JobMonitor class="h-[calc(100vh-95px)] w-[100vw] text-base overflow-auto" />
+                        </div>
+
                         <div
+                            v-else
                             :class="{
                                 'mt-[5rem]': screenStore.screen === 'queries' && payloadStore.payload.length > 0,
                                 'p-6 items-center': payloadStore.payload.length === 0,

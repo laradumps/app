@@ -24,8 +24,8 @@ export default {
         in_any_line_of_code: "em qualquer linha de código.",
         in_any_project_toggle: "em qualquer projeto, habilite o xdebug"
     },
+    clear: "Limpar",
     menu: {
-        clear: "Limpar",
         saved_dumps: "Dumps salvos",
         settings: "Configurações",
         toggle_menu: "Mostrar menu"
@@ -105,5 +105,6 @@ export default {
         auth_type: "Authentication Type",
         private_key: "Private Key Path",
         connect: "Connect"
-    }
+    },
+    search: "Buscar"
 };
