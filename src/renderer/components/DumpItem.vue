@@ -23,6 +23,7 @@ import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useTimeStore } from "@/store/time";
 import { useCollapse } from "@/store/collapse";
 import { useSettingsStore } from "@/store/settings";
+import moment from "moment";
 
 const duplicatesStore = useQueryDuplicated();
 const timeStore = useTimeStore();
@@ -110,7 +111,7 @@ const badgeClasses = computed(() => {
     const { color } = props.payload;
     const { label } = props.payload.with_label;
 
-    const baseClass = "badge uppercase font-semibold text-xs text-base-content bg-base-100 border border-neutral-content/20 shadow-sm rounded-box w-auto";
+    const baseClass = "badge uppercase font-semibold text-[11px] text-base-content/80 bg-base-content/10 shadow-sm rounded-box w-auto";
 
     const dynamicClass = {
         "!bg-error !text-error-content": ["error", "emergency"].includes(label) || color === "red",
@@ -150,7 +151,7 @@ const getLabel = computed(() => {
                 'collapse-open': open
             }"
             id=""
-            class="collapse bg-base-300/70 bg-laravel border border-base-content/5"
+            class="collapse bg-base-300/60 bg-laravel border border-base-content/5"
         >
             <div
                 @dblclick="open = !open"
@@ -158,11 +159,11 @@ const getLabel = computed(() => {
                 class="select-none !cursor-default collapse-title text-base-content justify-between items-center font-light flex text-xs"
             >
                 <ul
-                    class="flex items-center gap-6 whitespace-nowrap"
+                    class="flex items-center gap-5 whitespace-nowrap"
                     v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
                 >
                     <li class="list-none">
-                        {{ payload.date_time }}
+                        {{ moment(payload.date_time).format("hh:mm:ss a") }}
                     </li>
                     <li>
                         <DumpLink :ide-handler="payload.ide_handle" />
@@ -203,7 +204,7 @@ const getLabel = computed(() => {
                     ></div>
 
                     <div
-                        class="-mr-1 !text-[0.7rem] !font-normal"
+                        class="-mr-1 !text-[0.68rem] p-2.5 !font-semibold"
                         v-if="payload.type !== `queries`"
                         :class="badgeClasses"
                     >

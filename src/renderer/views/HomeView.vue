@@ -141,10 +141,8 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("jobs", (event, { content }) => {
-        const clearDumps = settingsStore.settings.limit_dumps + 1;
-
         // Clear the oldest job if the limit is reached
-        if (Object.keys(jobStore.jobs).length == clearDumps) {
+        if (Object.keys(jobStore.jobs).length == settingsStore.settings.limit_dumps + 1) {
             const oldestJobKey = Object.keys(jobStore.jobs).reduce((oldestKey, currentKey) => {
                 return jobStore.jobs[currentKey].pushed_time < jobStore.jobs[oldestKey].pushed_time ? currentKey : oldestKey;
             }, Object.keys(jobStore.jobs)[0]);
@@ -282,6 +280,7 @@ const dumpsBagFiltered = computed(() => {
 
 const addScreen = (param) => {
     param.visible = true;
+    param.pinned = false;
     screenStore.add(param);
 };
 
@@ -326,6 +325,10 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         return;
     }
 
+    if (typeof content.date_time == "undefined") {
+        content.date_time = new Date();
+    }
+
     if (applicationPath.value != content.application_path) {
         window.ipcRenderer.send("storage.check", {
             applicationPath: content.application_path
@@ -335,19 +338,15 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     content.rendered = false;
 
-    if (typeof content.to_screen.screen_name == "string") {
+    if (typeof content.to_screen.screen_name == "string" && content.type !== "screen") {
         addScreen(content.to_screen);
     }
 
     if (content.type === "screen") {
-        addScreen({
-            ...content.to_screen,
-            pinned: false,
-            visible: true
-        });
+        addScreen(content.to_screen);
     } else {
-        if (typeof content.date_time == "undefined") {
-            content.date_time = moment().format("hh:mm:ss a");
+        if (payloadStore.payload.length >= settingsStore.settings.limit_dumps) {
+            payloadStore.payload.shift();
         }
 
         payloadStore.add(content);
@@ -376,7 +375,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         });
     }
 
-    setTimeout(() => toggleScreen(content.to_screen.screen_name, content.type === "screen"), 30);
+    setTimeout(() => toggleScreen(content.to_screen.screen_name, content.type === "screen"), 10);
 };
 </script>
 <template>

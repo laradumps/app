@@ -20,7 +20,7 @@ type State = {
 
 export const useJobStore = defineStore("jobStore", {
     state: (): State => ({
-        jobs: {},
+        jobs: {}
     }),
     actions: {
         addOrUpdateJob(jobs: JobPayload, ide_handle: IdeHandle) {
