@@ -73,6 +73,14 @@ const saveReverse = async () => {
     await nextTick(() => saveSettings());
 };
 
+const savePayloadLimit = async () => {
+    await nextTick(() => saveSettings());
+};
+
+const saveClearOldDumps = async () => {
+    await nextTick(() => saveSettings());
+};
+
 const getSavedLocalShortcuts = () => {
     window.ipcRenderer.send("local-shortcut:get");
 
@@ -214,6 +222,7 @@ const editShortcut = () => {
                     </SelectInput>
                 </div>
             </div>
+
             <Divider class="mt-3" />
             <div class="mt-3 grid grid-cols-2 items-center">
                 <div>IDE Handler</div>
@@ -272,6 +281,19 @@ const editShortcut = () => {
                             {{ value }}
                         </option>
                     </SelectInput>
+                </div>
+            </div>
+
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Limit dumps</div>
+                <div class="flex items-center justify-between">
+                    <input
+                        type="number"
+                        class="grow input input-bordered input-sm w-full"
+                        v-model="settingsStore.settings.limit_dumps"
+                        @change="saveClearOldDumps()"
+                    />
                 </div>
             </div>
 

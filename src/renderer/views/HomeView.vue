@@ -141,6 +141,16 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("jobs", (event, { content }) => {
+        const clearDumps = settingsStore.settings.limit_dumps + 1;
+
+        // Clear the oldest job if the limit is reached
+        if (Object.keys(jobStore.jobs).length == clearDumps) {
+            const oldestJobKey = Object.keys(jobStore.jobs).reduce((oldestKey, currentKey) => {
+                return jobStore.jobs[currentKey].pushed_time < jobStore.jobs[oldestKey].pushed_time ? currentKey : oldestKey;
+            }, Object.keys(jobStore.jobs)[0]);
+            delete jobStore.jobs[oldestJobKey];
+        }
+
         jobStore.addOrUpdateJob(content.jobs, content.ide_handle);
 
         const serializableJobs = JSON.parse(JSON.stringify(jobStore.jobs));

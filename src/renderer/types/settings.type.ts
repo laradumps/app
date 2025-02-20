@@ -24,4 +24,5 @@ export interface Settings {
     show_pause_button: boolean;
     show_ssh_button: boolean;
     show_variable_type: boolean;
+    limit_dumps: number;
 }

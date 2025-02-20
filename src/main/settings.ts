@@ -38,7 +38,8 @@ const defaultSettings: Settings = {
     show_ssh_button: true,
     show_collapse_button: false,
     show_pause_button: false,
-    show_variable_type: true
+    show_variable_type: true,
+    limit_dumps: 100
 };
 
 export const init = async () => {

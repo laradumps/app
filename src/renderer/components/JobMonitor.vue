@@ -3,17 +3,20 @@ import { Job, useJobStore } from "@/store/jobs";
 import { computed, defineProps, nextTick, onMounted, ref } from "vue";
 import moment from "moment";
 import { EyeIcon } from "@heroicons/vue/24/outline";
-import { CheckIcon, TrashIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
+import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
+import { TrashIcon } from "@heroicons/vue/24/outline";
+
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
+import { useSettingsStore } from "@/store/settings";
 
 const jobStore = useJobStore();
-
 const IDEHandlerStore = useIDEHandlerStore();
 const currentProjectStore = useCurrentProject();
+const settingsStore = useSettingsStore();
 
 const selectedJobDetail = ref();
 const search = ref("");
@@ -23,34 +26,20 @@ const props = defineProps<{
 }>();
 
 const generateLink = (ideHandler: IdeHandle) => {
-    const projectPath = ideHandler.project_path;
-    const realPath = ideHandler.real_path;
-    const workdir = ideHandler.workdir;
-    const wsl_config = ideHandler.wsl_config;
-    const base_path = ideHandler.base_path;
-
-    const relativePath = realPath?.replace(workdir, "").replace(projectPath, "");
-
-    let linkPath = projectPath + relativePath;
+    const { project_path, real_path, workdir, wsl_config, base_path, line } = ideHandler;
+    const relativePath = real_path?.replace(workdir, "").replace(project_path, "");
+    let linkPath = project_path + relativePath;
 
     if (base_path) {
         linkPath = linkPath.replace(base_path, currentProjectStore.value);
     }
 
-    if (realPath != null) {
-        if (IDEHandlerStore.value.includes("wsl_config")) {
-            if (wsl_config != undefined) {
-                return IDEHandlerStore.value.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", ideHandler.line);
-            }
-
-            return IDEHandlerStore.value.replace("{filepath}", linkPath).replace("{line}", ideHandler.line);
+    if (real_path) {
+        let link = IDEHandlerStore.value.replace("{filepath}", linkPath).replace("{line}", line);
+        if (IDEHandlerStore.value.includes("wsl_config") && wsl_config) {
+            link = link.replace("{wsl_config}", wsl_config);
         }
-
-        if (base_path && currentProjectStore.value) {
-            return IDEHandlerStore.value.replace("{filepath}", linkPath).replace("{line}", ideHandler.line);
-        }
-
-        return IDEHandlerStore.value.replace("{filepath}", linkPath).replace("{line}", ideHandler.line);
+        return link;
     }
 };
 
@@ -124,13 +113,13 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="px-3 space-y-3">
+    <div class="px-3">
         <dialog
             id="modal"
             class="modal"
             v-if="selectedJobDetail"
         >
-            <div class="modal-box">
+            <div class="modal-box max-w-2xl">
                 <h3
                     class="text-lg font-bold"
                     v-text="selectedJobDetail.display_name"
@@ -165,75 +154,77 @@ onMounted(() => {
             </form>
         </dialog>
 
-        <div class="flex items-center gap-3 justify-between">
-            <input
-                v-model="search"
-                type="text"
-                class="w-full mt-0.5 input-sm rounded-md font-normal font-sans p-2"
-                :placeholder="$t('search')"
-            />
-            <button
-                @click="clear()"
-                class="btn btn-error mt-0.5 btn-outline btn-sm"
-            >
-                <TrashIcon class="w-4" />
-                {{ $t("clear") }}
-            </button>
-        </div>
-
-        <table class="table table-zebra">
-            <thead>
-                <tr class="bg-base-200">
-                    <th class="w-4">Status</th>
-                    <th>Job</th>
-                    <th>Duration</th>
-                    <th>Date</th>
-                    <th class="w-6"></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr
-                    v-for="job in jobs"
-                    :key="job.job_id"
+        <div class="space-y-3">
+            <div class="flex items-center gap-2 justify-between">
+                <input
+                    v-model="search"
+                    type="text"
+                    class="w-full mt-0.5 input-sm rounded-md font-normal font-sans p-2"
+                    :placeholder="$t('search')"
+                />
+                <button
+                    @click="clear()"
+                    class="btn btn-error mt-0.5 btn-ghost btn-sm"
                 >
-                    <td :data-tippy-content="job.status">
-                        <CheckIcon
-                            class="w-5 text-success"
-                            v-if="job.status === 'Processed'"
-                        />
-                        <XMarkIcon
-                            class="w-5 text-error"
-                            v-if="job.status === 'Failed'"
-                        />
-                        <ArrowPathIcon
-                            class="w-5 text-info"
-                            v-if="job.status === 'Processing'"
-                        />
-                        <InformationCircleIcon
-                            class="w-5 text-warning"
-                            v-if="job.status === 'Queued'"
-                        />
-                    </td>
-                    <td class="break-all">
-                        <div>{{ job.display_name }}</div>
-                        <a
-                            :href="generateLink(job.ide_handle)"
-                            v-text="`${job.ide_handle.class_name}:${job.ide_handle.line}`"
-                            class="link text-xs opacity-60"
-                        >
-                        </a>
-                    </td>
-                    <td class="whitespace-nowrap">{{ duration(job.start_time, job.end_time) }}</td>
-                    <td class="w-[120px] whitespace-nowrap">
-                        {{ moment(job.pushed_time ?? job.start_time).format("hh:mm:ss a") }}
-                    </td>
-                    <td class="w-[64px] ma-w-[64px]">
-                        <button @click="openModal(job.job_id)">
-                            <EyeIcon class="w-5 text-primary" />
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                    <TrashIcon class="w-4" />
+                    <span class="text-xs">{{ $t("clear") }}</span>
+                </button>
+            </div>
+
+            <table class="table table-zebra">
+                <thead>
+                    <tr class="bg-base-200">
+                        <th class="w-4">Status</th>
+                        <th>Job</th>
+                        <th>Duration</th>
+                        <th>Date</th>
+                        <th class="w-6"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="job in jobs"
+                        :key="job.job_id"
+                    >
+                        <td :data-tippy-content="job.status">
+                            <CheckIcon
+                                class="w-5 text-success"
+                                v-if="job.status === 'Processed'"
+                            />
+                            <XMarkIcon
+                                class="w-5 text-error"
+                                v-if="job.status === 'Failed'"
+                            />
+                            <ArrowPathIcon
+                                class="w-5 text-info"
+                                v-if="job.status === 'Processing'"
+                            />
+                            <InformationCircleIcon
+                                class="w-5 text-warning"
+                                v-if="job.status === 'Queued'"
+                            />
+                        </td>
+                        <td class="break-all">
+                            <div>{{ job.display_name }}</div>
+                            <a
+                                :href="generateLink(job.ide_handle)"
+                                v-text="`${job.ide_handle.class_name}:${job.ide_handle.line}`"
+                                class="link text-xs opacity-60"
+                            >
+                            </a>
+                        </td>
+                        <td class="whitespace-nowrap">{{ duration(job.start_time, job.end_time) }}</td>
+                        <td class="w-[120px] whitespace-nowrap">
+                            {{ moment(job.pushed_time ?? job.start_time).format("hh:mm:ss a") }}
+                        </td>
+                        <td class="w-[64px] ma-w-[64px]">
+                            <button @click="openModal(job.job_id)">
+                                <EyeIcon class="w-5 text-primary" />
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>

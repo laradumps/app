@@ -20,28 +20,30 @@ type State = {
 
 export const useJobStore = defineStore("jobStore", {
     state: (): State => ({
-        jobs: {}
+        jobs: {},
     }),
     actions: {
         addOrUpdateJob(jobs: JobPayload, ide_handle: IdeHandle) {
-            if (!this.jobs[jobs.job_id] && jobs.status === "Queued") {
+            if (!this.jobs[jobs.job_id]) {
                 this._initializeJob(jobs, ide_handle);
             }
 
-            this.jobs[jobs.job_id].status = this.jobs[jobs.job_id].status !== "Failed" ? jobs.status : "Failed";
+            if (this.jobs[jobs.job_id]) {
+                this.jobs[jobs.job_id].status = this.jobs[jobs.job_id].status !== "Failed" ? jobs.status : "Failed";
 
-            if (jobs.status === "Processing") {
-                this.jobs[jobs.job_id].start_time = new Date();
-            }
+                if (jobs.status === "Processing") {
+                    this.jobs[jobs.job_id].start_time = new Date();
+                }
 
-            if (["Processed", "Failed"].includes(jobs.status)) {
-                this.jobs[jobs.job_id].end_time = new Date();
+                if (["Processed", "Failed"].includes(jobs.status)) {
+                    this.jobs[jobs.job_id].end_time = new Date();
+                }
             }
         },
         _initializeJob(jobs: JobPayload, ide_handle: IdeHandle) {
             this.jobs[jobs.job_id] = {
                 job_id: jobs.job_id,
-                status: jobs.status,
+                status: jobs.status ?? jobs.status === "Queued",
                 duration: "0s",
                 display_name: jobs.display_name,
                 job: jobs.job,

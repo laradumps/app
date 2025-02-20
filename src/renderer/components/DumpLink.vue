@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, onMounted, ref, watch } from "vue";
+import { computed, defineProps, onMounted, ref } from "vue";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import { IdeHandle } from "@/types/IdeHandle";
 import IconPencil from "@/components/Icons/IconPencil.vue";
@@ -11,72 +11,41 @@ const props = defineProps<{
     showIcon?: boolean;
 }>();
 
-const IDEHandler = useIDEHandlerStore();
+const IDEHandlerStore = useIDEHandlerStore();
 const currentProjectStore = useCurrentProject();
 
 const link = ref();
 
 onMounted(() => {
-    generateLink(IDEHandler.value);
+    link.value = generateLink();
 });
 
-watch(IDEHandler.value, (value) => {
-    generateLink(value);
-});
-
-const generateLink = (ide: string) => {
-    const projectPath = props.ideHandler.project_path;
-    const realPath = props.ideHandler.real_path;
-    const workdir = props.ideHandler.workdir;
-    const wsl_config = props.ideHandler.wsl_config;
-    const base_path = props.ideHandler.base_path;
-
-    const relativePath = realPath?.replace(workdir, "").replace(projectPath, "");
-
-    let linkPath = projectPath + relativePath;
+const generateLink = () => {
+    const { value: ide } = IDEHandlerStore;
+    const { project_path, real_path, workdir, wsl_config, base_path, line } = props.ideHandler;
+    const relativePath = real_path?.replace(workdir, "").replace(project_path, "");
+    let linkPath = project_path + relativePath;
 
     if (base_path) {
         linkPath = linkPath.replace(base_path, currentProjectStore.value);
     }
 
-    if (realPath != null) {
-        if (IDEHandler.value.includes("wsl_config")) {
-            if (wsl_config != undefined) {
-                link.value = ide.replace("{wsl_config}", wsl_config).replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
-
-                return;
-            }
-
-            link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
-
-            return;
+    if (real_path) {
+        let link = ide.replace("{filepath}", linkPath).replace("{line}", line);
+        if (ide.includes("wsl_config") && wsl_config) {
+            link = link.replace("{wsl_config}", wsl_config);
         }
-
-        if (base_path && currentProjectStore.value) {
-            link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
-            return;
-        }
-
-        link.value = ide.replace("{filepath}", linkPath).replace("{line}", props.ideHandler.line);
+        return link;
     }
 };
 
 const label = computed(() => {
-    if (props.label) {
-        return props.label;
-    }
+    const { label, ideHandler } = props;
+    const { class_name, real_path, line } = ideHandler;
 
-    if (props.ideHandler.class_name === "empty") {
-        return "Tinker";
-    }
-
-    if (props.ideHandler.real_path == null || props.ideHandler.real_path.includes("ExecutionLoopClosure")) {
-        return "Tinker";
-    }
-
-    if (props.ideHandler.line?.toString() !== "") {
-        return props.ideHandler.class_name + ":" + props.ideHandler.line;
-    }
+    if (label) return label;
+    if (class_name === "empty" || !real_path || real_path.includes("ExecutionLoopClosure")) return "Tinker";
+    if (line?.toString() !== "") return `${class_name}:${line}`;
 
     return "";
 });

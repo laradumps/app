@@ -87,7 +87,8 @@ export const useSettingsStore = defineStore("settings", () => {
         show_collapse_button: false,
         show_pause_button: false,
         show_ssh_button: true,
-        show_variable_type: true
+        show_variable_type: true,
+        limit_dumps: 100
     };
 
     const settings = ref<Settings>(defaultSettings);
