@@ -97,7 +97,7 @@ const getPayloadScreenCount = (screenName) => {
                     {{ screen.screen_name }}
                     <span
                         v-if="getPayloadScreenCount(screen.screen_name) > 0"
-                        class="text-[11px] badge badge-ghost p-0.5 h-[14px]"
+                        class="text-[11px] badge !bg-transparent !border-0 p-0.5 h-[14px]"
                         >({{ getPayloadScreenCount(screen.screen_name) }})</span
                     >
                 </span>
