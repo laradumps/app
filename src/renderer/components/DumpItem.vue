@@ -143,7 +143,7 @@ const getLabel = computed(() => {
 });
 </script>
 <template>
-    <div class="px-2 w-full">
+    <div>
         <div
             :class="{
                 [`!border-l-2 ` + borderColor]: typeof borderColor !== 'undefined',

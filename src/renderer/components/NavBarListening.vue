@@ -63,11 +63,20 @@ const handleGetEnvironments = (event, value) => {
     if (value != null) {
         environments.value = [];
         value.forEach((entry: Environment) => {
-            environments.value.push({
+            const env = {
                 id: entry.id,
                 value: entry.value,
                 selected: entry.selected
-            });
+            }
+
+            environments.value.push(env);
+
+            if (!['dump',
+                'enabled_in_testing',
+                'original_dump',
+                'auto_invoke_app'].includes(env.value) && env.selected) {
+                window.dispatchEvent(new CustomEvent('add-screen', { detail: env }))
+            }
         });
     }
 };
@@ -104,25 +113,13 @@ const selectedEnvironment = computed(() => {
     });
 });
 
-watch(selectedEnvironment, (value) => {
-    const selected = value
-        .filter((item) => item.selected)
-        .filter((item) => ![
-            'dump',
-            'enabled_in_testing',
-            'original_dump',
-            'auto_invoke_app'
-        ].includes(item.value))
-        .map((item) => item.value)
-
-    window.dispatchEvent(new CustomEvent('add-screen', { detail: selected }))
-})
-
-const save = async (): Promise<void> => {
+const save = async (env): Promise<void> => {
     window.ipcRenderer.send("storage.update", {
         selected: selectedEnvironment.value,
         project: selectedProject.value
     });
+
+    window.dispatchEvent(new CustomEvent('add-screen', { detail: env }))
 };
 
 const remove = () => {
@@ -186,7 +183,6 @@ window.ipcRenderer.on("choose-directory", (event, args) => {
 const addProject = () => {
     window.ipcRenderer.send("main:choose-directory");
 };
-
 </script>
 
 <template>
@@ -291,7 +287,7 @@ const addProject = () => {
                                 :name="`env-` + env.id"
                                 v-model="env.selected"
                                 class="toggle toggle-xs toggle-accent"
-                                @change="save"
+                                @change.stop="save(env)"
                             />
                             <span class="text-[11px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
                         </label>

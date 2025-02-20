@@ -7,8 +7,7 @@ import { useTimeStore } from "@/store/time";
 import { useGlobalSearchStore } from "@/store/global-search";
 import { useI18n } from "vue-i18n";
 import { useColorStore } from "@/store/colors";
-import { Payload } from "@/types/Payload";
-import moment from "moment/moment";
+import { Payload, ScreenPayload } from "@/types/Payload";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
@@ -114,23 +113,17 @@ onMounted(() => {
     window.addEventListener("add-screen", (event: Event) => {
         const detail = (event as CustomEvent).detail as string[];
 
-        const normalizedDetail = detail.map((name) => name.replace("_", " "));
-
-        const existingScreens = screenStore.screens.map((screen) => screen.screen_name);
-
-        normalizedDetail.forEach((name) => {
-            if (!existingScreens.includes(name)) {
-                addScreen({
-                    screen_name: name,
-                    raise_in: 0,
-                    visible: true,
-                    pinned: false,
-                    new_window: false
-                });
-            }
-        });
-
-        screenStore.screens = screenStore.screens.filter((screen) => screen.screen_name === "home" || normalizedDetail.includes(screen.screen_name));
+        if (detail.selected) {
+            addScreen({
+                screen_name: detail.value.replace("_", " "),
+                raise_in: 0,
+                visible: true,
+                pinned: false,
+                new_window: false
+            });
+        } else {
+            screenStore.remove(detail.value);
+        }
     });
 });
 
@@ -203,8 +196,13 @@ const dumpListeners = () => {
         payloadStore.updateColorPayload(content);
     });
     window.ipcRenderer.on("screen", (event, { content }) => {
-        dispatch("screen", event, content);
         payloadStore.updateScreenPayload(content);
+        const screen: ScreenPayload = content.to_screen;
+        addScreen(screen);
+
+        if (screenStore.get(screen.screen_name)?.pinned) {
+            toggleScreen(screen.screen_name, true);
+        }
     });
     window.ipcRenderer.on("json_validate", (event, { content }) => {
         payloadStore.updateJSONValidatePayload(content);
@@ -325,6 +323,8 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         return;
     }
 
+    content.rendered = false;
+
     if (typeof content.date_time == "undefined") {
         content.date_time = new Date();
     }
@@ -336,21 +336,15 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         applicationPath.value = content.application_path;
     }
 
-    content.rendered = false;
-
-    if (typeof content.to_screen.screen_name == "string" && content.type !== "screen") {
+    if (typeof content.to_screen.screen_name == "string") {
         addScreen(content.to_screen);
     }
 
-    if (content.type === "screen") {
-        addScreen(content.to_screen);
-    } else {
-        if (payloadStore.payload.length >= settingsStore.settings.limit_dumps) {
-            payloadStore.payload.shift();
-        }
-
-        payloadStore.add(content);
+    if (payloadStore.payload.length >= settingsStore.settings.limit_dumps) {
+        payloadStore.payload.shift();
     }
+
+    payloadStore.add(content);
 
     let screenName = content.to_screen.screen_name ?? "home";
 
@@ -375,7 +369,11 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         });
     }
 
-    setTimeout(() => toggleScreen(content.to_screen.screen_name, content.type === "screen"), 10);
+    if (screenStore.get(content.to_screen.screen_name)?.pinned) {
+        nextTick(() => toggleScreen(content.to_screen.screen_name, true));
+    } else {
+        setTimeout(() => toggleScreen(content.to_screen.screen_name, false), 10);
+    }
 };
 </script>
 <template>
@@ -424,7 +422,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                         <div
                             v-else
                             :class="{
-                                'mt-[5rem]': screenStore.screen === 'queries' && payloadStore.payload.length > 0,
                                 'p-6 items-center': payloadStore.payload.length === 0,
                                 flex: dumpsBagFiltered.length === 0
                             }"
@@ -460,7 +457,11 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                                         class="w-full"
                                     >
                                         <DumpItem
-                                            class="group text-sm pb-2"
+                                            :class="{
+                                                'pl-3': screenStore.screen === 'queries',
+                                                'px-3': screenStore.screen !== 'queries'
+                                            }"
+                                            class="w-full group text-sm mb-2"
                                             v-show="screenStore.screen === 'queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'livewire'"
                                             :payload="payload"
                                         />

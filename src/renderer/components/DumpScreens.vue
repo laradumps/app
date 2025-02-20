@@ -3,8 +3,9 @@ import { computed, defineEmits, ref } from "vue";
 import { useScreenStore } from "@/store/screen";
 import { usePayloadStore } from "@/store/payload";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
-import { XMarkIcon } from "@heroicons/vue/24/solid";
+import { MapPinIcon } from "@heroicons/vue/24/solid";
 import { useJobStore } from "@/store/jobs";
+import IconPin from "@/components/Icons/IconPin.vue";
 
 const emit = defineEmits(["toggleScreen"]);
 
@@ -71,6 +72,10 @@ const getPayloadScreenCount = (screenName) => {
 
     return payloadStore.get(screenName).length;
 };
+
+const pinScreen = (screen) => {
+    screenStore.pin(screen);
+};
 </script>
 <template>
     <div class="flex mb-1">
@@ -88,18 +93,19 @@ const getPayloadScreenCount = (screenName) => {
             <div
                 class="tabs"
                 @click="$emit('toggleScreen', screen.screen_name, true)"
+                @dblclick="pinScreen(screen.screen_name)"
                 :class="{
                     'ml-1': index > 0,
                     'tabs-bordered': screen.screen_name === screenStore.screen && screenStore.screens.length > 1
                 }"
             >
-                <span class="tab uppercase text-[0.70rem] flex gap-1">
+                <span class="tab !px-2.5 text-xs tracking-wider capitalize flex gap-1">
                     {{ screen.screen_name }}
-                    <span
-                        v-if="getPayloadScreenCount(screen.screen_name) > 0"
-                        class="text-[11px] badge !bg-transparent !border-0 p-0.5 h-[14px]"
-                        >({{ getPayloadScreenCount(screen.screen_name) }})</span
-                    >
+                    <span class="text-[11px] text-base-content/70 badge !bg-transparent !border-0 p-0.5 h-[14px]">({{ getPayloadScreenCount(screen.screen_name) }})</span>
+                    <IconPin
+                        v-if="screen.pinned"
+                        class="w-3 text-secondary"
+                    />
                 </span>
             </div>
         </div>

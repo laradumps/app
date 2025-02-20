@@ -4,17 +4,28 @@ import { ScreenPayload } from "@/types/Payload";
 type State = {
     screen: string;
     screens: ScreenPayload[];
-    pinned?: string | null;
+    pinned: string;
 };
 
 export const useScreenStore = defineStore("screen", {
     state: (): State => ({
         screen: "home",
-        screens: []
+        screens: [],
+        pinned: ""
     }),
     actions: {
         activeScreen(value: string) {
             this.screen = value;
+        },
+        remove(screenName: string) {
+            this.screens = this.screens.filter((screenPayload: ScreenPayload) => screenPayload.screen_name !== screenName);
+        },
+        pin(screen: string) {
+            this.screens = this.screens.map((screenPayload: ScreenPayload) => ({
+                ...screenPayload,
+                pinned: screenPayload.screen_name === screen && screen !== this.pinned
+            }));
+            this.pinned = screen;
         },
         add(screen: ScreenPayload) {
             const exists = this.screens.some((screenPayload: ScreenPayload) => screenPayload.screen_name === screen.screen_name);

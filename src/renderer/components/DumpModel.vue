@@ -1,18 +1,14 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onMounted } from "vue";
+import { defineProps, nextTick, onMounted } from "vue";
 import { Payload } from "@/types/Payload";
 
 const props = defineProps<{
     payload: Payload;
 }>();
 
-const hasRelation = computed(() => {
-    return props.payload.model?.relations && props.payload.model?.relations.length > 0;
-});
-
 onMounted(() => {
     window.Sfdump(`sf-dump-${props.payload.model?.attributes[1]}`);
-    if (hasRelation) {
+    if (props.payload.model?.relations && props.payload.model?.relations.length > 0) {
         window.Sfdump(`sf-dump-${props.payload.model?.relations[1]}`);
     }
 });
@@ -25,7 +21,7 @@ onMounted(() => {
             v-text="payload.model?.className"
         ></span>
         <div v-html="payload.model?.attributes[0]"></div>
-        <div v-show="hasRelation">
+        <div v-show="payload.model?.relations.length > 0">
             <div class="py-3">Relations</div>
             <div v-html="payload.model?.relations[0]"></div>
         </div>

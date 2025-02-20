@@ -12,8 +12,6 @@ hljs.registerLanguage("sql", sql);
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
 
-const copied = ref(false);
-
 const props = defineProps<{
     payload: Payload;
 }>();

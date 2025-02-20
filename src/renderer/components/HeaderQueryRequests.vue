@@ -55,7 +55,7 @@ const allRequests = computed(() => {
 </script>
 
 <template>
-    <div class="absolute top-[2.8rem] gap-2 flex flex-col bg-base-100 px-4 z-100 h-auto w-full">
+    <div class="mb-2 gap-2 flex flex-col bg-base-100 px-3 z-100 h-auto w-full">
         <div
             v-if="timeStore.groups.length > 0"
             class="justify-between items-center gap-4 text-base-content"
