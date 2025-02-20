@@ -73,11 +73,7 @@ const saveReverse = async () => {
     await nextTick(() => saveSettings());
 };
 
-const savePayloadLimit = async () => {
-    await nextTick(() => saveSettings());
-};
-
-const saveClearOldDumps = async () => {
+const saveLimitDumps = async () => {
     await nextTick(() => saveSettings());
 };
 
@@ -292,7 +288,7 @@ const editShortcut = () => {
                         type="number"
                         class="grow input input-bordered input-sm w-full"
                         v-model="settingsStore.settings.limit_dumps"
-                        @change="saveClearOldDumps()"
+                        @change="saveLimitDumps()"
                     />
                 </div>
             </div>
