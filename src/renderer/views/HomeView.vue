@@ -23,6 +23,8 @@ import XDebugMode from "@/components/XDebugMode.vue";
 import { useXDebug } from "@/store/xdebug";
 import JobMonitor from "@/components/JobMonitor.vue";
 import { useJobStore } from "@/store/jobs";
+import { useMailStore } from "@/store/mail";
+import MailView from "@/components/MailView.vue";
 
 markRaw(TheUpdateModalInfo);
 
@@ -38,6 +40,7 @@ const settingsStore = useSettingsStore();
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
 const jobStore = useJobStore();
+const mailStore = useMailStore();
 
 const defaultScreen = ref({
     screen_name: "home",
@@ -168,18 +171,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on("mailable", (event, { content }) => dispatch("mailable", event, content));
     window.ipcRenderer.on("table_v2", (event, { content }) => dispatch("table_v2", event, content));
     window.ipcRenderer.on("mail", (event, { content }) => {
-        const filterPayload: boolean =
-            payloadStore.payload.filter((payload: Payload) => {
-                if (payload.hasOwnProperty("mail")) {
-                    return payload.mail.messageId == content.mail.messageId;
-                }
-
-                return false;
-            }).length > 0;
-
-        if (!filterPayload) {
-            dispatch("mail", event, content);
-        }
+        mailStore.addOrUpdateMail(content.mail, content.ide_handle);
     });
 
     window.ipcRenderer.on("label", (event, { content }) => {
@@ -393,6 +385,11 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                 :items="jobScreen"
                 class="mt-3 h-[calc(100vh-95px)] w-[100vw] text-base overflow-auto"
             />
+
+            <MailView
+                v-if="inScreenWindow === 'mail'"
+                class="mt-3 h-[calc(100vh-95px)] w-[100vw] text-base overflow-auto"
+            />
         </div>
 
         <div
@@ -417,6 +414,10 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
                         <div v-if="screenStore.screen === 'jobs'">
                             <JobMonitor class="h-[calc(100vh-95px)] w-[100vw] text-base overflow-auto" />
+                        </div>
+
+                        <div v-if="screenStore.screen === 'mail'">
+                            <MailView class="h-[calc(100vh-95px)] w-[100vw] text-base" />
                         </div>
 
                         <div

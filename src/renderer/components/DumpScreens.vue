@@ -3,15 +3,16 @@ import { computed, defineEmits, ref } from "vue";
 import { useScreenStore } from "@/store/screen";
 import { usePayloadStore } from "@/store/payload";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
-import { MapPinIcon } from "@heroicons/vue/24/solid";
 import { useJobStore } from "@/store/jobs";
 import IconPin from "@/components/Icons/IconPin.vue";
+import { useMailStore } from "@/store/mail";
 
 const emit = defineEmits(["toggleScreen"]);
 
 const screenStore = useScreenStore();
 const payloadStore = usePayloadStore();
 const jobStore = useJobStore();
+const mailStore = useMailStore();
 
 const showTooltip = ref(false);
 const isDraggingIndex = ref(null);
@@ -68,6 +69,10 @@ window.ipcRenderer.on("screen-window:closed", (event, args) => {
 const getPayloadScreenCount = (screenName) => {
     if (screenName === "jobs") {
         return Object.entries(jobStore.jobs).length;
+    }
+
+    if (screenName === "mail") {
+        return Object.entries(mailStore.mails).length;
     }
 
     return payloadStore.get(screenName).length;

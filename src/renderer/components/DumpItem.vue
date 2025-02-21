@@ -7,7 +7,6 @@ import DumpLog from "@/components/DumpLog.vue";
 import DumpModel from "@/components/DumpModel.vue";
 import DumpTable from "@/components/DumpTable.vue";
 import DumpHTML from "@/components/DumpHTML.vue";
-import SaveDump from "@/components/SaveDump.vue";
 import DumpTimeTrack from "@/components/DumpTimeTrack.vue";
 import DumpContains from "@/components/DumpContains.vue";
 import DumpMailable from "@/components/DumpMailable.vue";
@@ -300,13 +299,6 @@ const getLabel = computed(() => {
                     <DumpHTML
                         :id="`dump-content-${props.payload.sf_dump_id}`"
                         v-if="props.payload.type === `html`"
-                        :payload="payload"
-                    />
-
-                    <!-- dump notification -->
-                    <DumpMail
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        v-if="props.payload.type === `mail`"
                         :payload="payload"
                     />
 
