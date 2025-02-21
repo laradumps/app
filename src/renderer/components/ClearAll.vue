@@ -14,31 +14,29 @@ const globalSearchStore = useGlobalSearchStore();
 const payloadStore = usePayloadStore();
 
 const clearAll = (): void => {
-    nextTick(() => {
-        // store
-        payloadStore.clearAll();
-        timeStore.clear();
-        globalSearchStore.clear();
-        colorStore.clear();
-        payloadStore.clearAll();
+    // store
+    payloadStore.clearAll();
+    timeStore.clear();
+    globalSearchStore.clear();
+    colorStore.clear();
+    payloadStore.clearAll();
 
-        // screenStore
-        screenStore.clearAll();
-        screenStore.activeScreen("home");
-        screenStore.add({
-            screen_name: "home",
-            visible: true,
-            pinned: false,
-            raise_in: 0,
-            new_window: false
-        });
-        window.ipcRenderer.send("reload");
+    // screenStore
+    screenStore.clearAll();
+    screenStore.activeScreen("home");
+    screenStore.add({
+        screen_name: "home",
+        visible: true,
+        pinned: false,
+        raise_in: 0,
+        new_window: false
     });
+    window.ipcRenderer.send("reload");
 };
 
 onMounted(() => {
     window.ipcRenderer.on("clear", () => clearAll());
-    window.ipcRenderer.on("app:local-shortcut-execute::clearAll", () => clearAll());
+    window.ipcRenderer.on("app:local-shortcut-execute::clear_all", () => clearAll());
 });
 </script>
 
