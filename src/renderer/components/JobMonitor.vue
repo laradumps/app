@@ -16,7 +16,6 @@ import { useSettingsStore } from "@/store/settings";
 const jobStore = useJobStore();
 const IDEHandlerStore = useIDEHandlerStore();
 const currentProjectStore = useCurrentProject();
-const settingsStore = useSettingsStore();
 
 const selectedJobDetail = ref();
 const search = ref("");
