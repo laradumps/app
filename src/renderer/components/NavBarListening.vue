@@ -74,7 +74,7 @@ const handleGetEnvironments = (event, value) => {
             if (!['dump',
                 'enabled_in_testing',
                 'original_dump',
-                'auto_invoke_app'].includes(env.value) && env.selected) {
+                'auto_invoke_app'].includes(env.value)) {
                 window.dispatchEvent(new CustomEvent('add-screen', { detail: env }))
             }
         });
