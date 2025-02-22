@@ -4,12 +4,13 @@ import { createScreenWindow } from "./window/screen";
 import { isDev } from "./main";
 
 export const init = async (mainWindow: BrowserWindow, windowsMap) => {
-    function sendScreenWindowUpdate(screen: string, payload: Payload, jobs: any) {
+    function sendScreenWindowUpdate(screen: string, payload: Payload, jobs: any, mails: any) {
         const screenWindow = windowsMap.get(screen);
         if (screenWindow && screenWindow.webContents) {
             screenWindow.webContents.send("app:screen-window-update", {
                 payload: payload,
-                jobs: jobs
+                jobs: jobs,
+                mails: mails
             });
         }
     }
@@ -17,8 +18,9 @@ export const init = async (mainWindow: BrowserWindow, windowsMap) => {
     ipcMain.on("send-screen-window-update", (event, args) => {
         const payload = args.payload;
         const jobs = args.jobs;
+        const mails = args.mails;
 
-        sendScreenWindowUpdate(args.screen, payload, jobs);
+        sendScreenWindowUpdate(args.screen, payload, jobs, mails);
     });
 
     ipcMain.on("screen-window:show", (event, arg) => {
@@ -48,7 +50,8 @@ export const init = async (mainWindow: BrowserWindow, windowsMap) => {
             screenWindow.webContents.send("app:screen-window-enable", {
                 screen: arg.screen,
                 payload: arg.payload,
-                jobs: arg.jobs
+                jobs: arg.jobs,
+                mails: arg.mails
             });
         };
 

@@ -11,7 +11,6 @@ import "tippy.js/dist/tippy.css";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
-import { useSettingsStore } from "@/store/settings";
 
 const jobStore = useJobStore();
 const IDEHandlerStore = useIDEHandlerStore();
@@ -153,7 +152,7 @@ onMounted(() => {
             </form>
         </dialog>
 
-        <div class="space-y-3">
+        <div class="space-y-3 h-[calc(100vh-140px)]">
             <div class="flex items-center gap-2 justify-between">
                 <input
                     v-model="search"
@@ -170,7 +169,18 @@ onMounted(() => {
                 </button>
             </div>
 
-            <table class="table table-zebra">
+            <div
+                v-if="jobs.length === 0"
+                class="flex items-center justify-center w-full h-full"
+                style="height: -webkit-fill-available"
+            >
+                <span class="text-sm uppercase">No jobs</span>
+            </div>
+
+            <table
+                v-else
+                class="table table-zebra"
+            >
                 <thead>
                     <tr class="bg-base-200">
                         <th class="w-4">Status</th>

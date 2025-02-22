@@ -57,6 +57,7 @@ const dumpsBag = ref([]);
 const inScreenWindow = ref("");
 const payloadScreen = ref([]);
 const jobScreen = ref({});
+const mailScreen = ref([]);
 
 const applicationPath = ref("");
 const livewireRequests = ref([]);
@@ -87,6 +88,7 @@ onMounted(() => {
         inScreenWindow.value = args.screen;
         payloadScreen.value = args.payload;
         jobScreen.value = args.jobs;
+        mailScreen.value = args.mails;
 
         setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
     });
@@ -293,10 +295,8 @@ const toggleScreen = async (value: string, shouldActivate = false): Promise<void
     }
 
     await nextTick(() => {
-        if (settingsStore.settings.scroll_direction === "top") {
-            document.getElementById("top")?.scrollIntoView({ behavior: "smooth" });
-        } else {
-            document.getElementById("bottom")?.scrollIntoView({ behavior: "smooth" });
+        if (!["jobs", "mail"].includes(screenStore.screen)) {
+            document.getElementById(settingsStore.settings.scroll_direction)?.scrollIntoView({ behavior: "smooth" });
         }
     });
 
@@ -383,19 +383,19 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             <JobMonitor
                 v-if="inScreenWindow === 'jobs'"
                 :items="jobScreen"
-                class="mt-3 h-[calc(100vh-95px)] w-[100vw] text-base overflow-auto"
+                class="mt-3 h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto"
             />
 
             <MailView
                 v-if="inScreenWindow === 'mail'"
-                class="mt-3 h-[calc(100vh-95px)] w-[100vw] text-base overflow-auto"
+                :items="mailScreen"
+                class="mt-3 h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto"
             />
         </div>
 
         <div
             v-else
             :data-theme="settingsStore.settings.theme"
-            class="absolute w-full h-full min-h-full"
         >
             <XDebugMode v-if="xdebugMode" />
 
@@ -413,20 +413,20 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                         </div>
 
                         <div v-if="screenStore.screen === 'jobs'">
-                            <JobMonitor class="h-[calc(100vh-95px)] w-[100vw] text-base overflow-auto" />
+                            <JobMonitor class="h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto" />
                         </div>
 
                         <div v-if="screenStore.screen === 'mail'">
-                            <MailView class="h-[calc(100vh-95px)] w-[100vw] text-base" />
+                            <MailView class="h-[calc(100vh-85px)] w-[100vw] text-base" />
                         </div>
 
                         <div
                             v-else
                             :class="{
-                                'p-6 items-center': payloadStore.payload.length === 0,
+                                'px-3 items-center': payloadStore.payload.length === 0,
                                 flex: dumpsBagFiltered.length === 0
                             }"
-                            class="rounded-sm text-base overflow-auto h-[100vh] w-[100vw]"
+                            class="rounded-sm text-base overflow-auto h-[calc(100vh-85px)] w-[100vw]"
                         >
                             <div id="top"></div>
 
@@ -442,7 +442,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                             <div
                                 :class="{
                                     flex: screenStore.screen === 'queries',
-                                    'w-full -mt-[44px]': dumpsBagFiltered.length === 0 && screenStore.screen !== 'home'
+                                    'w-full': dumpsBagFiltered.length === 0 && screenStore.screen !== 'home'
                                 }"
                             >
                                 <div
@@ -476,10 +476,11 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                                 </div>
 
                                 <div
-                                    class="w-full h-full p-4 text-center text-xs uppercase"
+                                    class="flex items-center justify-center w-full h-full"
+                                    style="height: -webkit-fill-available"
                                     v-if="dumpsBagFiltered.length === 0 && screenStore.screen !== 'home'"
                                 >
-                                    No dumps here
+                                    <span class="text-sm uppercase">No {{ screenStore.screen }}</span>
                                 </div>
                             </div>
 

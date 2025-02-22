@@ -39,18 +39,26 @@ export const mimeTypeMap: { [key: string]: string } = {
 
 export const useMailStore = defineStore("mailStore", {
     state: (): State => ({
-        mails: []
+        mails: JSON.parse(localStorage.getItem("emails") || "[]")
     }),
     actions: {
         addOrUpdateMail(payload: MailPayload, ide_handle: IdeHandle) {
             const existingMailIndex = this.mails.findIndex((mail) => mail.message_id === payload.messageId);
             if (existingMailIndex === -1) {
                 this._initialize(payload, ide_handle);
+                this.store();
 
                 return;
             }
 
             this.mails[existingMailIndex] = { ...this.mails[existingMailIndex], ...payload };
+        },
+        store() {
+            localStorage.setItem("emails", JSON.stringify(this.mails));
+        },
+        clear() {
+            this.mails = [];
+            this.store();
         },
         _initialize(payload: MailPayload, ide_handle: IdeHandle) {
             const date = new Date();
