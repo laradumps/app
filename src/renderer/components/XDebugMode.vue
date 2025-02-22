@@ -821,6 +821,8 @@ onBeforeUnmount(() => {
     </div>
 </template>
 <style>
+@reference "./../styles.css";
+
 .variable-name {
     @apply text-primary;
 }

@@ -84,6 +84,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
+@reference "./../styles.css";
+
 code * {
     @apply !font-light !text-base-content tracking-wider;
 }

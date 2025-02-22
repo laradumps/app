@@ -134,6 +134,8 @@ observeContainer("dumps-base");
 </template>
 
 <style>
+@reference "./../styles.css";
+
 .code-snippet {
     @apply bg-base-300 border border-base-content/20;
 }
@@ -198,7 +200,7 @@ observeContainer("dumps-base");
 .hljs-template-variable,
 .hljs-type,
 .hljs-variable {
-    @apply text-rose-400  !important;
+    @apply text-rose-400;
 }
 
 .hljs-bullet,
@@ -207,13 +209,13 @@ observeContainer("dumps-base");
 .hljs-selector-id,
 .hljs-symbol,
 .hljs-title {
-    @apply text-blue-400  !important;
+    @apply text-blue-400 ;
 }
 
 .hljs-built_in,
 .hljs-class,
 .hljs-title.class_ {
-    @apply text-orange-400  !important;
+    @apply text-orange-400  ;
 }
 
 .hljs-emphasis {

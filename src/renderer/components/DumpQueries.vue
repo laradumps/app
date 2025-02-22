@@ -81,6 +81,8 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
 </template>
 
 <style>
+@reference "./../styles.css";
+
 code * {
     @apply !font-light !text-base-content tracking-wider;
 }

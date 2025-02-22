@@ -54,6 +54,8 @@ const shouldCollapse = computed(() => countNodes(value.value) >= 4);
     </div>
 </template>
 <style>
+@reference "./../styles.css";
+
 .vjs-tree-node:hover {
     background-color: transparent !important;
 }

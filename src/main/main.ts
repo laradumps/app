@@ -44,7 +44,7 @@ function createWindow(): BrowserWindow {
         titleBarStyle: "hiddenInset",
         webPreferences: {
             contextIsolation: false,
-            preload: resolve(__dirname, "preload.js"),
+            preload: resolve(__dirname, "preload.cjs"),
             nodeIntegration: true
         },
         show: false,
