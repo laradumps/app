@@ -209,13 +209,13 @@ observeContainer("dumps-base");
 .hljs-selector-id,
 .hljs-symbol,
 .hljs-title {
-    @apply text-blue-400 ;
+    @apply text-blue-400;
 }
 
 .hljs-built_in,
 .hljs-class,
 .hljs-title.class_ {
-    @apply text-orange-400  ;
+    @apply text-orange-400;
 }
 
 .hljs-emphasis {

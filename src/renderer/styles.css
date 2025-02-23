@@ -3,7 +3,25 @@
 
 @import "tailwindcss";
 @plugin "daisyui" {
-    themes: light --default, dark --prefersdark, nord, silk, luxury, cyberpunk, retro, cyberpunk, valentine, aqua, dracula, halloween, lemonade, dim, cupcake, emerald, forest, midnight;
+    themes:
+        light --default,
+        dark --prefersdark,
+        nord,
+        silk,
+        luxury,
+        cyberpunk,
+        retro,
+        cyberpunk,
+        valentine,
+        aqua,
+        dracula,
+        halloween,
+        lemonade,
+        dim,
+        cupcake,
+        emerald,
+        forest,
+        midnight;
 }
 
 @config "../../tailwind.config.js";

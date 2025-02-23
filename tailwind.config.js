@@ -68,6 +68,5 @@ export default {
             }
         ]
     },
-    plugins: [
-    ]
+    plugins: []
 };

@@ -169,7 +169,6 @@ const editShortcut = () => {
 
 <template>
     <div class="overflow-auto text-base-content">
-
         <div class="max-w-lg mx-auto p-10">
             <div class="flex items-center justify-between">
                 <h1 class="text-lg font-semibold">{{ $t("settings.settings") }}</h1>

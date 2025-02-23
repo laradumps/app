@@ -84,8 +84,10 @@ const pinScreen = (screen) => {
 </script>
 <template>
     <div class="flex mb-1">
-
-        <div role="tablist" class="tabs tabs-border">
+        <div
+            role="tablist"
+            class="tabs tabs-border"
+        >
             <div
                 role="tab"
                 class="select-none gap-1 flex py-1"
