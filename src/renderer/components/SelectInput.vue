@@ -31,7 +31,7 @@ watch(
         <select
             v-model="selectedValue"
             @change="emitChange"
-            class="select select-bordered select-sm w-full max-w-xs"
+            class="select select-bordered select-md w-full max-w-xs"
         >
             <option
                 value=""

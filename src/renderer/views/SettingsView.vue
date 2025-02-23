@@ -169,6 +169,7 @@ const editShortcut = () => {
 
 <template>
     <div class="overflow-auto text-base-content">
+
         <div class="max-w-lg mx-auto p-10">
             <div class="flex items-center justify-between">
                 <h1 class="text-lg font-semibold">{{ $t("settings.settings") }}</h1>
@@ -286,7 +287,7 @@ const editShortcut = () => {
                 <div class="flex items-center justify-between">
                     <input
                         type="number"
-                        class="grow input input-bordered input-sm w-full"
+                        class="grow input input-bordered input-md w-full"
                         v-model="settingsStore.settings.limit_dumps"
                         @change="saveLimitDumps()"
                     />
@@ -415,7 +416,7 @@ const editShortcut = () => {
                         :name="key"
                         :data-label="shortcut.label"
                         :id="key"
-                        class="js-shortcut grow input input-bordered input-sm w-full"
+                        class="js-shortcut grow input input-bordered input-md w-full"
                         :value="shortcut.originalValue"
                     />
                 </div>

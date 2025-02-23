@@ -68,5 +68,6 @@ export default {
             }
         ]
     },
-    plugins: [require("postcss-import"), require("daisyui"), require("@tailwindcss/typography")]
+    plugins: [
+    ]
 };

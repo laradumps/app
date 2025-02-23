@@ -153,16 +153,16 @@ onMounted(() => {
         </dialog>
 
         <div class="space-y-3 h-[calc(100vh-140px)]">
-            <div class="flex items-center gap-2 justify-between">
+            <div class="flex items-center gap-2 justify-between mt-1">
                 <input
                     v-model="search"
                     type="text"
-                    class="w-full mt-0.5 input-sm rounded-md font-normal font-sans p-2"
+                    class="w-full input input-sm"
                     :placeholder="$t('search')"
                 />
                 <button
                     @click="clear()"
-                    class="btn btn-error mt-0.5 btn-ghost btn-sm"
+                    class="btn btn-ghost btn-sm"
                 >
                     <TrashIcon class="w-4" />
                     <span class="text-xs">{{ $t("clear") }}</span>

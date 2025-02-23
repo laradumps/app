@@ -34,7 +34,7 @@ const toggleAlwaysOnTop = () => {
 <template>
     <button
         :title="$t('always_on_top')"
-        class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+        class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         @click="toggleAlwaysOnTop()"
     >
         <IconPin

@@ -25,7 +25,7 @@ onMounted(() => {
             <RouterLink
                 :to="inSettingPage ? '/' : '/settings'"
                 @click="togglePage"
-                class="py-2 px-1.5 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+                class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
             >
                 <component
                     :is="inSettingPage ? HomeIcon : CogIcon"

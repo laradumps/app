@@ -149,16 +149,16 @@ const openInBrowser = (attachment: Attachment) => {
         </dialog>
 
         <div class="space-y-3 h-[calc(100vh-140px)]">
-            <div class="flex items-center gap-2 justify-between">
+            <div class="mt-1 flex items-center gap-2 justify-between">
                 <input
                     v-model="search"
                     type="text"
-                    class="w-full mt-0.5 input-sm rounded-md font-normal font-sans p-2"
+                    class="w-full input input-sm"
                     :placeholder="$t('search')"
                 />
                 <button
                     @click="clear()"
-                    class="btn btn-error mt-0.5 btn-ghost btn-sm"
+                    class="btn btn-ghost btn-sm"
                 >
                     <TrashIcon class="w-4" />
                     <span class="text-xs">{{ $t("clear") }}</span>
@@ -219,14 +219,14 @@ const openInBrowser = (attachment: Attachment) => {
                                 <div class="flex gap-2">
                                     <button
                                         @click="openDumps"
-                                        class="btn btn-xs btn-ghost"
+                                        class="btn btn-sm btn-ghost"
                                     >
                                         Dumps
                                         <IconExternalLink class="w-4" />
                                     </button>
                                     <button
                                         @click="openHeaders"
-                                        class="btn btn-xs btn-ghost"
+                                        class="btn btn-sm btn-ghost"
                                     >
                                         Headers
                                         <IconExternalLink class="w-4" />

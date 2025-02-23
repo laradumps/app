@@ -84,34 +84,38 @@ const pinScreen = (screen) => {
 </script>
 <template>
     <div class="flex mb-1">
-        <div
-            class="select-none gap-1 flex py-1"
-            v-for="(screen, index) in screenStore.allVisible()"
-            :key="screen.screen_name"
-            :class="{ dragging: isDraggingIndex === index }"
-            v-bind:draggable="!['home', 'livewire'].includes(screen.screen_name)"
-            @dragstart="onDragStart(index)"
-            @dragover.prevent
-            @dragend="onDragEnd($event, screen)"
-            title="drag and drop to open in new window"
-        >
+
+        <div role="tablist" class="tabs tabs-border">
             <div
-                class="tabs"
-                @click="$emit('toggleScreen', screen.screen_name, true)"
-                @dblclick="pinScreen(screen.screen_name)"
-                :class="{
-                    'ml-1': index > 0,
-                    'tabs-bordered': screen.screen_name === screenStore.screen && screenStore.screens.length > 1
-                }"
+                role="tab"
+                class="select-none gap-1 flex py-1"
+                v-for="(screen, index) in screenStore.allVisible()"
+                :key="screen.screen_name"
+                :class="{ dragging: isDraggingIndex === index }"
+                v-bind:draggable="!['home', 'livewire'].includes(screen.screen_name)"
+                @dragstart="onDragStart(index)"
+                @dragover.prevent
+                @dragend="onDragEnd($event, screen)"
+                title="drag and drop to open in new window"
             >
-                <span class="tab !px-2.5 text-xs tracking-wider capitalize flex gap-1">
-                    {{ screen.screen_name }}
-                    <span class="text-[11px] text-base-content/70 badge !bg-transparent !border-0 p-0.5 h-[14px]">({{ getPayloadScreenCount(screen.screen_name) }})</span>
-                    <IconPin
-                        v-if="screen.pinned"
-                        class="w-3 text-secondary"
-                    />
-                </span>
+                <div
+                    class="tab"
+                    @click="$emit('toggleScreen', screen.screen_name, true)"
+                    @dblclick="pinScreen(screen.screen_name)"
+                    :class="{
+                        'ml-1': index > 0,
+                        'tab-active': screen.screen_name === screenStore.screen && screenStore.screens.length > 1
+                    }"
+                >
+                    <span class="flex items-center capitalize gap-1">
+                        {{ screen.screen_name }}
+                        <span class="text-[11px] text-base-content/70 badge !bg-transparent !border-0 p-0.5 h-[14px]">({{ getPayloadScreenCount(screen.screen_name) }})</span>
+                        <IconPin
+                            v-if="screen.pinned"
+                            class="w-3 text-secondary"
+                        />
+                    </span>
+                </div>
             </div>
         </div>
 

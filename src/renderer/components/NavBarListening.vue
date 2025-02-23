@@ -205,10 +205,8 @@ const addProject = () => {
         </dialog>
 
         <div class="dropdown dropdown-left" :class="{'dropdown-open' : open }">
-            <div
-                tabindex="0"
-                role="button"
-                class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+            <button
+                class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
             >
                 <SignalSlashIcon
                     v-if="selectedProject.length === 0"
@@ -220,7 +218,7 @@ const addProject = () => {
                     :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
                     class="size-4"
                 />
-            </div>
+            </button>
             <ul
                 tabindex="0"
                 class="dropdown-content space-y-3 min-w-64 z-[350] menu p-2 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-10"

@@ -406,7 +406,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                 <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                     <main class="flex flex-col flex-1 min-h-full">
                         <!-- screen buttons -->
-                        <div class="flex px-3">
+                        <div class="flex px-2">
                             <div class="flex items-center justify-between w-full overflow-x-auto">
                                 <DumpScreens @toggleScreen="toggleScreen" />
                             </div>
