@@ -65,7 +65,7 @@
         "@vitejs/plugin-vue": "5.0.4",
         "concurrently": "^9.1.2",
         "daisyui": "^5.0.0-beta.8",
-        "electron": "^34.2.0",
+        "electron": "^32.1.0",
         "electron-builder": "^25.1.8",
         "esbuild": "^0.24.2",
         "eslint-plugin-prettier": "5.1.3",
