@@ -91,7 +91,6 @@ export default {
         release_date: "تاريخ الإصدار"
     },
     pause: "Pause",
-    is_paused: "LaraDumps is paused.",
     remove: "Remove",
     collapse: "Collapse all dumps",
     ssh: {

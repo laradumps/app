@@ -119,7 +119,9 @@ const save = async (env): Promise<void> => {
         project: selectedProject.value
     });
 
-    window.dispatchEvent(new CustomEvent("add-screen", { detail: env }));
+    if (!["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(env.value)) {
+        window.dispatchEvent(new CustomEvent("add-screen", { detail: env }));
+    }
 };
 
 const remove = () => {

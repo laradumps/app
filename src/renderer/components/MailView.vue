@@ -234,10 +234,7 @@ const openInBrowser = (attachment: Attachment) => {
                                 </div>
                             </div>
                             <div class="flex gap-3 items-center">
-                                <span
-                                    class="opacity-80"
-                                    v-text="visited.headers[0]"
-                                ></span>
+                                <span v-text="visited.headers[0]"></span>
                             </div>
                             <div class="flex gap-3 items-center"><span v-text="visited.headers[1]"></span></div>
                             <div

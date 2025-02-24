@@ -71,7 +71,10 @@ onBeforeMount(() => {
 });
 
 onMounted(() => {
-    xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
+    if (xDebugStore.current) {
+        xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
+    }
+
     IDEHandler.setValue(localStorage.IDEHandler);
 
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
@@ -105,7 +108,9 @@ onMounted(() => {
     });
 
     window.ipcRenderer.on("xdebug-disconnected", (event, arg) => {
-        xDebugStore.current.project_path = "";
+        if (xDebugStore.current) {
+            xDebugStore.current.project_path = "";
+        }
         xdebugMode.value = false;
     });
 
@@ -330,7 +335,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         applicationPath.value = content.application_path;
     }
 
-    if (typeof content.to_screen.screen_name == "string") {
+    if (content.to_screen && typeof content.to_screen.screen_name == "string") {
         addScreen(content.to_screen);
     }
 
@@ -399,7 +404,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             v-else
             :data-theme="settingsStore.settings.theme"
         >
-            <XDebugMode v-if="xdebugMode && xDebugStore.current.project_path" />
+            <XDebugMode v-if="xdebugMode && xDebugStore.current && xDebugStore.current.project_path" />
 
             <div v-else>
                 <TheAppUpdateInfo />

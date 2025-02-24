@@ -91,7 +91,6 @@ export default {
         release_date: "Yayınlanma Tarihi"
     },
     pause: "Duraklat",
-    is_paused: "LaraDumps duraklatıldı.",
     remove: "Kaldır",
     collapse: "Collapse all dumps",
     ssh: {

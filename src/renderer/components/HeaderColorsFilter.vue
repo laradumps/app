@@ -49,7 +49,7 @@ const isOrange = computed(() => ({
                 @click="selectedColors.add('black')"
                 value="black"
                 type="button"
-                class="p-1.2 badge badge-xs bg-black/50 hover:bg-black"
+                class="badge badge-xs bg-black/50 hover:bg-black"
             ></button>
 
             <button
@@ -57,14 +57,14 @@ const isOrange = computed(() => ({
                 @click="selectedColors.add('red')"
                 value="red"
                 type="button"
-                class="p-1.2 badge badge-xs bg-error/50 hover:bg-error"
+                class="badge badge-xs bg-error/50 hover:bg-error"
             ></button>
 
             <button
                 :class="isOrange"
                 @click="selectedColors.add('orange')"
                 type="button"
-                class="p-1.2 badge badge-xs bg-warning/50 hover:bg-warning"
+                class="badge badge-xs bg-warning/50 hover:bg-warning"
             ></button>
 
             <button

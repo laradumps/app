@@ -39,7 +39,7 @@ const hasColor = computed(() => {
 });
 
 const xDebugMode = computed(() => {
-    return xDebugStore.current.project_path !== "";
+    return xDebugStore.current && xDebugStore.current.project_path !== "";
 });
 </script>
 
