@@ -103,7 +103,9 @@ onMounted(() => {
     window.ipcRenderer.on("xdebug-connected", (event, arg) => {
         xdebugMode.value = true;
     });
+
     window.ipcRenderer.on("xdebug-disconnected", (event, arg) => {
+        xDebugStore.current.project_path = "";
         xdebugMode.value = false;
     });
 
@@ -397,7 +399,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             v-else
             :data-theme="settingsStore.settings.theme"
         >
-            <XDebugMode v-if="xdebugMode" />
+            <XDebugMode v-if="xdebugMode && xDebugStore.current.project_path" />
 
             <div v-else>
                 <TheAppUpdateInfo />

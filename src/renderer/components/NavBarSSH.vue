@@ -185,7 +185,7 @@ const editConnection = (id: number) => {
                                 type="checkbox"
                                 :checked="connection.id === listenId"
                                 @change="listen(connection.id, $event)"
-                                class="toggle toggle-xs toggle-accent mr-1"
+                                class="toggle toggle-sm toggle-primary mr-1"
                                 :value="connection.id"
                             />
                             <span class="text-[10px] whitespace-nowrap font-semibold uppercase truncate max-w-[100px]">{{ connection.name }}</span>
@@ -238,7 +238,7 @@ const editConnection = (id: number) => {
                         id="name"
                         v-model="form.name"
                         placeholder="production-server"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -249,7 +249,7 @@ const editConnection = (id: number) => {
                         id="host"
                         v-model="form.host"
                         placeholder="1.2.3.4"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -259,7 +259,7 @@ const editConnection = (id: number) => {
                         type="number"
                         id="port"
                         v-model="form.port"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -269,7 +269,7 @@ const editConnection = (id: number) => {
                         id="auth-type"
                         v-model="form.auth_type"
                         :placeholder="$t('ssh.auth_type')"
-                        class="grow select select-bordered select-sm w-full"
+                        class="grow select select-bordered select-base w-full"
                     >
                         <option value="key">Private Key (Recommended)</option>
                         <option value="password">Password</option>
@@ -282,7 +282,7 @@ const editConnection = (id: number) => {
                         type="text"
                         id="username"
                         v-model="form.username"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -295,7 +295,7 @@ const editConnection = (id: number) => {
                         type="password"
                         id="password"
                         v-model="form.password"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <div
@@ -307,7 +307,7 @@ const editConnection = (id: number) => {
                         type="text"
                         id="key"
                         v-model="form.private_key"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -316,13 +316,13 @@ const editConnection = (id: number) => {
                     <input
                         type="checkbox"
                         v-model="form.new_window"
-                        class="toggle toggle-xs toggle-accent"
+                        class="toggle toggle-primary"
                     />
                 </div>
                 <Divider />
                 <div class="flex items-center justify-end">
                     <button
-                        class="btn btn-warning text-warning-content mt-6 w-[100px] text-xs"
+                        class="btn btn-primary mt-6 w-[100px] text-xs"
                         @click="connect"
                     >
                         <ArrowPathIcon

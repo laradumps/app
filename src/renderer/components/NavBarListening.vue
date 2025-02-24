@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { SignalIcon, SignalSlashIcon, TrashIcon, PlusIcon } from "@heroicons/vue/24/outline";
+import { SignalSlashIcon, TrashIcon, PlusIcon } from "@heroicons/vue/24/outline";
+import { SignalIcon } from "@heroicons/vue/24/solid";
+
 import { computed, onMounted, ref, watch } from "vue";
 import JSConfetti from "js-confetti";
 import { useCurrentProject } from "@/store/current-project";
@@ -51,7 +53,7 @@ const handleStorageGet = (event, value) => {
     projects.value = projectsArray;
 
     if (projectsArray.length > 0) {
-        const foundProject = projectsArray.find(p => p.path === currentProjectStore.value);
+        const foundProject = projectsArray.find((p) => p.path === currentProjectStore.value);
         if (foundProject) {
             selectedProject.value = foundProject.path;
         }
@@ -67,21 +69,19 @@ const handleGetEnvironments = (event, value) => {
                 id: entry.id,
                 value: entry.value,
                 selected: entry.selected
-            }
+            };
 
             environments.value.push(env);
 
-            if (!['dump',
-                'enabled_in_testing',
-                'original_dump',
-                'auto_invoke_app'].includes(env.value)) {
-                window.dispatchEvent(new CustomEvent('add-screen', { detail: env }))
+            if (!["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(env.value)) {
+                window.dispatchEvent(new CustomEvent("add-screen", { detail: env }));
             }
         });
     }
 };
 
 onMounted(async () => {
+    xdebug.value = xDebugStore.current.project_path !== "";
     window.ipcRenderer.send("storage.get");
 
     window.ipcRenderer.on("app-setting:project-added", handleProjectAdded);
@@ -119,7 +119,7 @@ const save = async (env): Promise<void> => {
         project: selectedProject.value
     });
 
-    window.dispatchEvent(new CustomEvent('add-screen', { detail: env }))
+    window.dispatchEvent(new CustomEvent("add-screen", { detail: env }));
 };
 
 const remove = () => {
@@ -175,8 +175,8 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYm
 });
 
 window.ipcRenderer.on("choose-directory", (event, args) => {
-    if (args.hasOwnProperty('error')) {
-        my_modal_1.showModal()
+    if (args.hasOwnProperty("error")) {
+        my_modal_1.showModal();
     }
 });
 
@@ -187,15 +187,18 @@ const addProject = () => {
 
 <template>
     <div>
-        <dialog id="my_modal_1" class="modal">
+        <dialog
+            id="my_modal_1"
+            class="modal"
+        >
             <div class="modal-box">
                 <h3 class="text-lg font-bold">Install Failure <span class="text-error">⚠️</span></h3>
-                <p class="py-4 space-y-2 text-sm">
+                <div class="py-4 space-y-2 text-sm">
                     <div>Install laradumps in the project before:</div>
                     <div>
                         <span class="px-2 bg-base-300 p-1 rounded">composer require laradumps/laradumps --dev</span>
                     </div>
-                </p>
+                </div>
                 <div class="modal-action">
                     <form method="dialog">
                         <button class="btn">Done</button>
@@ -204,10 +207,11 @@ const addProject = () => {
             </div>
         </dialog>
 
-        <div class="dropdown dropdown-left" :class="{'dropdown-open' : open }">
-            <button
-                class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
-            >
+        <div
+            class="dropdown dropdown-left"
+            :class="{ 'dropdown-open': open }"
+        >
+            <button class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md">
                 <SignalSlashIcon
                     v-if="selectedProject.length === 0"
                     class="size-4 text-error"
@@ -240,8 +244,14 @@ const addProject = () => {
                 </SelectInput>
 
                 <div class="text-xs flex justify-end gap-4">
-                    <PlusIcon class="size-4 text-info cursor-pointer" @click="addProject"/>
-                    <TrashIcon class="size-4 text-error cursor-pointer" @click="remove"/>
+                    <PlusIcon
+                        class="size-4 text-info cursor-pointer"
+                        @click="addProject"
+                    />
+                    <TrashIcon
+                        class="size-4 text-error cursor-pointer"
+                        @click="remove"
+                    />
                 </div>
 
                 <div
@@ -254,18 +264,18 @@ const addProject = () => {
                 <div
                     class="overflow-auto border-t border-base-content/30"
                     :class="{
-                    'h-[calc(100vh-11rem)] p-0': environments.length > 0
-                }"
+                        'h-[calc(100vh-11rem)] p-0': environments.length > 0
+                    }"
                 >
-                    <li>
+                    <li class="mt-2">
                         <label
-                            class="label !justify-start !text-left p-1.5"
+                            class="!justify-start !text-left p-1.5"
                             :class="{ 'bg-base-200': false }"
                         >
                             <input
                                 type="checkbox"
                                 :name="`xdebug`"
-                                class="toggle toggle-xs toggle-accent"
+                                class="toggle toggle-sm toggle-primary"
                                 v-model="xdebug"
                             />
                             <span class="text-[11px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
@@ -277,14 +287,14 @@ const addProject = () => {
                         v-for="env in environments"
                     >
                         <label
-                            class="text-base-content label !justify-start !text-left p-1.5"
+                            class="text-base-content !justify-start !text-left p-1.5"
                             :class="{ 'bg-base-200': env.selected }"
                         >
                             <input
                                 type="checkbox"
                                 :name="`env-` + env.id"
                                 v-model="env.selected"
-                                class="toggle toggle-xs toggle-accent"
+                                class="toggle toggle-sm toggle-primary"
                                 @change.stop="save(env)"
                             />
                             <span class="text-[11px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>

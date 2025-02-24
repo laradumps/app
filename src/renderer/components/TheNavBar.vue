@@ -12,8 +12,10 @@ import { usePayloadStore } from "@/store/payload";
 import ClearAll from "@/components/ClearAll.vue";
 import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
 import { useSettingsStore } from "@/store/settings";
+import { useXDebug } from "@/store/xdebug.js";
 
 const settingsStore = useSettingsStore();
+const xDebugStore = useXDebug();
 
 const platform = ref("");
 defineProps({
@@ -34,6 +36,10 @@ const payloadStore = usePayloadStore();
 
 const hasColor = computed(() => {
     return payloadStore.payload.filter((payload) => payload.hasOwnProperty("color")).length > 0;
+});
+
+const xDebugMode = computed(() => {
+    return xDebugStore.current.project_path !== "";
 });
 </script>
 
@@ -61,16 +67,16 @@ const hasColor = computed(() => {
 
         <div class="flex gap-1 items-center m-0.5">
             <!-- global search -->
-            <NavBarGlobalSearch v-if="payloadStore.payload.length > 0" />
+            <NavBarGlobalSearch v-if="!xDebugMode && payloadStore.payload.length > 0" />
 
             <!-- collapse -->
-            <NavBarCollapse v-if="settingsStore.settings.show_collapse_button && payloadStore.payload.length > 0" />
+            <NavBarCollapse v-if="!xDebugMode && settingsStore.settings.show_collapse_button && payloadStore.payload.length > 0" />
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />
 
             <!-- ssh -->
-            <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
+            <NavBarSSH v-if="!xDebugMode && settingsStore.settings.show_ssh_button" />
 
             <!-- listening -->
             <NavBarListening v-if="!inSavedDumpsWindow" />
