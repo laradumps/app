@@ -129,6 +129,8 @@ const sendCommand = (cmd): void => {
 </script>
 
 <style scoped>
+@reference "./../styles.css";
+
 .property-node {
     @apply p-1.5 text-sm rounded-md whitespace-nowrap;
 }

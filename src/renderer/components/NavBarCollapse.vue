@@ -9,7 +9,7 @@ const collapseStore = useCollapse();
 <template>
     <button
         :title="$t('collapse')"
-        class="w-[32px] h-[34px] flex items-center px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+        class="p-2 px-3 flex items-center hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         @click="collapseStore.toggle()"
     >
         <IconCollapseClose v-if="!collapseStore.open" />

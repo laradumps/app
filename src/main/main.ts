@@ -44,7 +44,7 @@ function createWindow(): BrowserWindow {
         titleBarStyle: "hiddenInset",
         webPreferences: {
             contextIsolation: false,
-            preload: resolve(__dirname, "preload.js"),
+            preload: resolve(__dirname, "preload.cjs"),
             nodeIntegration: true
         },
         show: false,
@@ -102,16 +102,23 @@ function createWindow(): BrowserWindow {
     window.once("ready-to-show", (): void => {
         window.show();
         window.focus();
-
-        if (isDev) {
-            window.webContents.openDevTools();
-        }
     });
+
+    if (isDev) {
+        window.webContents.openDevTools();
+    }
 
     return window;
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
+    console.log(typeof arg.content.to_screen);
+    if (typeof arg.content.to_screen === "undefined") {
+        event.sender.send("composer.invalid.version");
+
+        return;
+    }
+
     mainWindow.webContents.send("new.dumps");
     event.sender.send(arg.type, arg);
 });

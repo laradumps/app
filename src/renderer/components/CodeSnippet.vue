@@ -119,7 +119,7 @@ observeContainer("dumps-base");
                 class="flex items-center tracking-widest leading-6 hover:!bg-red-500/20 px-2 group/line"
             >
                 <DumpLink
-                    class="font-normal h-full text-base-content text-[11px]"
+                    class="font-normal h-full text-base-content text-xs"
                     :label="lineNumber"
                     :show-icon="true"
                     :ide-handler="getIdeHandleFromStack(codeSnippet, lineNumber)"
@@ -134,11 +134,14 @@ observeContainer("dumps-base");
 </template>
 
 <style>
+@reference "./../styles.css";
+
 .code-snippet {
     @apply bg-base-300 border border-base-content/20;
 }
 
-[data-theme="light"] .code-snippet {
+[data-theme="light"] .code-snippet,
+[data-theme="nord"] .code-snippet {
     @apply !bg-white border border-base-content/10;
 }
 
@@ -198,7 +201,7 @@ observeContainer("dumps-base");
 .hljs-template-variable,
 .hljs-type,
 .hljs-variable {
-    @apply text-rose-400  !important;
+    @apply text-rose-400;
 }
 
 .hljs-bullet,
@@ -207,13 +210,13 @@ observeContainer("dumps-base");
 .hljs-selector-id,
 .hljs-symbol,
 .hljs-title {
-    @apply text-blue-400  !important;
+    @apply text-blue-400;
 }
 
 .hljs-built_in,
 .hljs-class,
 .hljs-title.class_ {
-    @apply text-orange-400  !important;
+    @apply text-orange-400;
 }
 
 .hljs-emphasis {

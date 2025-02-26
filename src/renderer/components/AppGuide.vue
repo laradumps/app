@@ -161,6 +161,8 @@ function nextRandom() {
 </template>
 
 <style>
+@reference "./../styles.css";
+
 .carousel1 {
     @apply h-[250px] flex items-center justify-center relative;
 }

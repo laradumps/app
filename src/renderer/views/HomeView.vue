@@ -65,17 +65,27 @@ const isPaused = ref(false);
 
 const allRequests = ref([]);
 const xdebugMode = ref(false);
+const composerInvalidVersion = ref(false);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
 });
 
 onMounted(() => {
-    xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
+    if (xDebugStore.current) {
+        xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
+    }
+
     IDEHandler.setValue(localStorage.IDEHandler);
 
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
     addScreen(defaultScreen.value);
+
+    window.ipcRenderer.on("composer.invalid.version", (event, arg) => {
+        nextTick(() => {
+            modal_composer_version.showModal();
+        });
+    });
 
     window.ipcRenderer.on("app:pause-dumps", (event, arg) => (isPaused.value = arg));
 
@@ -103,7 +113,11 @@ onMounted(() => {
     window.ipcRenderer.on("xdebug-connected", (event, arg) => {
         xdebugMode.value = true;
     });
+
     window.ipcRenderer.on("xdebug-disconnected", (event, arg) => {
+        if (xDebugStore.current) {
+            xDebugStore.current.project_path = "";
+        }
         xdebugMode.value = false;
     });
 
@@ -328,7 +342,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         applicationPath.value = content.application_path;
     }
 
-    if (typeof content.to_screen.screen_name == "string") {
+    if (content.to_screen && typeof content.to_screen.screen_name == "string") {
         addScreen(content.to_screen);
     }
 
@@ -373,6 +387,29 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         :class="{ absolute: !inScreenWindow }"
         class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
     >
+        <dialog
+            id="modal_composer_version"
+            class="modal"
+        >
+            <div class="modal-box max-w-2xl space-y-3">
+                <h3 class="text-lg font-bold">Needs package updates 👋</h3>
+                <div class="space-y-3">
+                    <p class="text-base-content">
+                        {{ $t("composer_invalid_version") }}
+                    </p>
+                    <div class="mockup-code">
+                        <pre><code>composer require laradumps/laradumps-core ^3.0 --dev -W</code></pre>
+                    </div>
+                </div>
+            </div>
+            <form
+                method="dialog"
+                class="modal-backdrop"
+            >
+                <button>close</button>
+            </form>
+        </dialog>
+
         <div v-if="inScreenWindow">
             <ScreenWindow
                 v-if="inScreenWindow !== 'jobs'"
@@ -383,13 +420,13 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             <JobMonitor
                 v-if="inScreenWindow === 'jobs'"
                 :items="jobScreen"
-                class="mt-3 h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto"
+                class="mt-3 h-[calc(100vh-105px)] w-[100vw] text-base overflow-auto"
             />
 
             <MailView
                 v-if="inScreenWindow === 'mail'"
                 :items="mailScreen"
-                class="mt-3 h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto"
+                class="mt-3 h-[calc(100vh-105px)] w-[100vw] text-base overflow-auto"
             />
         </div>
 
@@ -397,7 +434,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             v-else
             :data-theme="settingsStore.settings.theme"
         >
-            <XDebugMode v-if="xdebugMode" />
+            <XDebugMode v-if="xdebugMode && xDebugStore.current && xDebugStore.current.project_path" />
 
             <div v-else>
                 <TheAppUpdateInfo />
@@ -406,14 +443,14 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                 <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                     <main class="flex flex-col flex-1 min-h-full">
                         <!-- screen buttons -->
-                        <div class="flex px-3">
+                        <div class="flex px-2">
                             <div class="flex items-center justify-between w-full overflow-x-auto">
                                 <DumpScreens @toggleScreen="toggleScreen" />
                             </div>
                         </div>
 
                         <div v-if="screenStore.screen === 'jobs'">
-                            <JobMonitor class="h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto" />
+                            <JobMonitor class="h-[calc(100vh-91px)] w-[100vw] text-base overflow-auto" />
                         </div>
 
                         <div v-if="screenStore.screen === 'mail'">
@@ -458,11 +495,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                                         class="w-full"
                                     >
                                         <DumpItem
-                                            :class="{
-                                                'pl-3': screenStore.screen === 'queries',
-                                                'px-3': screenStore.screen !== 'queries'
-                                            }"
-                                            class="w-full group text-sm mb-2"
+                                            class="w-full px-3 group text-sm mb-2"
                                             v-show="screenStore.screen === 'queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'livewire'"
                                             :payload="payload"
                                         />

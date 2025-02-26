@@ -92,7 +92,6 @@ export default {
         release_date: "Release Date"
     },
     pause: "Pause",
-    is_paused: "LaraDumps is paused.",
     remove: "Remove",
     collapse: "Collapse all dumps",
     ssh: {
@@ -109,5 +108,6 @@ export default {
         private_key: "Private Key Path",
         connect: "Connect"
     },
-    search: "Search"
+    search: "Search",
+    composer_invalid_version: "App require laradumps/laradumps-core 3.0 or higher"
 };

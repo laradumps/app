@@ -153,16 +153,16 @@ onMounted(() => {
         </dialog>
 
         <div class="space-y-3 h-[calc(100vh-140px)]">
-            <div class="flex items-center gap-2 justify-between">
+            <div class="flex items-center gap-2 justify-between mt-1">
                 <input
                     v-model="search"
                     type="text"
-                    class="w-full mt-0.5 input-sm rounded-md font-normal font-sans p-2"
+                    class="w-full input input-sm"
                     :placeholder="$t('search')"
                 />
                 <button
                     @click="clear()"
-                    class="btn btn-error mt-0.5 btn-ghost btn-sm"
+                    class="btn btn-soft btn-sm"
                 >
                     <TrashIcon class="w-4" />
                     <span class="text-xs">{{ $t("clear") }}</span>
@@ -179,10 +179,10 @@ onMounted(() => {
 
             <table
                 v-else
-                class="table table-zebra"
+                class="table"
             >
                 <thead>
-                    <tr class="bg-base-200">
+                    <tr>
                         <th class="w-4">Status</th>
                         <th>Job</th>
                         <th>Duration</th>
@@ -216,13 +216,14 @@ onMounted(() => {
                         <td class="break-all">
                             <div>{{ job.display_name }}</div>
                             <a
+                                v-if="job.ide_handle.class_name !== 'empty'"
                                 :href="generateLink(job.ide_handle)"
                                 v-text="`${job.ide_handle.class_name}:${job.ide_handle.line}`"
                                 class="link text-xs opacity-60"
                             >
                             </a>
                         </td>
-                        <td class="whitespace-nowrap">{{ duration(job.start_time, job.end_time) }}</td>
+                        <td class="whitespace-nowrap text-right">{{ duration(job.start_time, job.end_time) }}</td>
                         <td class="w-[120px] whitespace-nowrap">
                             {{ moment(job.pushed_time ?? job.start_time).format("hh:mm:ss a") }}
                         </td>

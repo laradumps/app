@@ -20,18 +20,6 @@ const clearAll = (): void => {
     globalSearchStore.clear();
     colorStore.clear();
     payloadStore.clearAll();
-
-    // screenStore
-    screenStore.clearAll();
-    screenStore.activeScreen("home");
-    screenStore.add({
-        screen_name: "home",
-        visible: true,
-        pinned: false,
-        raise_in: 0,
-        new_window: false
-    });
-    window.ipcRenderer.send("reload");
 };
 
 onMounted(() => {
@@ -42,14 +30,14 @@ onMounted(() => {
 
 <template>
     <div>
-        <a
+        <button
             v-show="payloadStore.payload.length > 0"
             :title="$t('clear')"
-            class="w-[32px] tab px-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer transition-all duration-100 ease-in rounded-md"
+            class="p-2 flex hover:bg-base-200 rounded-md"
             @click="clearAll"
         >
             <TrashIcon class="size-4" />
-        </a>
+        </button>
     </div>
 </template>
 

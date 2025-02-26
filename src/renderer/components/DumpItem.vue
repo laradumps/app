@@ -21,11 +21,13 @@ import { useTimeStore } from "@/store/time";
 import { useCollapse } from "@/store/collapse";
 import { useSettingsStore } from "@/store/settings";
 import moment from "moment";
+import { useScreenStore } from "@/store/screen";
 
 const duplicatesStore = useQueryDuplicated();
 const timeStore = useTimeStore();
 const collapseStore = useCollapse();
 const settingsStore = useSettingsStore();
+const screenStore = useScreenStore();
 
 const open = ref(true);
 const openOptions = ref(false);
@@ -108,7 +110,7 @@ const badgeClasses = computed(() => {
     const { color } = props.payload;
     const { label } = props.payload.with_label;
 
-    const baseClass = "badge uppercase font-semibold text-[11px] text-base-content/80 bg-base-content/10 shadow-sm rounded-box w-auto";
+    const baseClass = "badge uppercase font-semibold text-xs text-base-content/80 bg-base-content/10 shadow-sm rounded-box w-auto";
 
     const dynamicClass = {
         "!bg-error !text-error-content": ["error", "emergency"].includes(label) || color === "red",
@@ -148,7 +150,7 @@ const getLabel = computed(() => {
                 'collapse-open': open
             }"
             id=""
-            class="collapse bg-base-300/60 bg-laravel border border-base-content/5"
+            class="collapse bg-base-200/80 bg-laravel border border-base-content/5"
         >
             <div
                 @dblclick="open = !open"
@@ -172,6 +174,7 @@ const getLabel = computed(() => {
                         class="mr-1 group flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
                     >
                         <div
+                            v-if="['table'].includes(screenStore.screen)"
                             :title="$t('click_to_copy')"
                             @click="copyDump"
                         >

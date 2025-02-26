@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { ArrowPathIcon, PencilIcon, ServerIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { ServerIcon as ServerIconOutline } from "@heroicons/vue/24/outline";
+
 import { useSSHStore } from "@/store/ssh";
 import Modal from "./Modal.vue";
 import { Ref } from "vue";
@@ -149,12 +151,13 @@ const editConnection = (id: number) => {
     <div class="dropdown dropdown-left">
         <button
             :title="$t('menu.ssh')"
-            class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+            class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         >
-            <ServerIcon
-                class="w-4"
-                :class="{ 'text-primary': connected }"
+            <ServerIconOutline
+                v-if="connected"
+                class="w-4 text-primary"
             />
+            <ServerIcon class="w-4" />
         </button>
 
         <ul
@@ -162,9 +165,9 @@ const editConnection = (id: number) => {
             class="dropdown-content min-w-80 overflow-y-auto z-[350] menu p-3 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-[4.8rem]"
         >
             <div class="flex justify-between items-center">
-                <span>SSH</span>
+                <span class="font-semibold">SSH</span>
                 <button
-                    class="flex btn-sm btn btn-warning text-warning-content w-auto text-xs !px-3"
+                    class="flex btn-sm btn btn-primary text-primary-content w-auto text-xs !px-3"
                     @click="addConnection"
                 >
                     <PlusIcon class="w-4" />
@@ -180,33 +183,33 @@ const editConnection = (id: number) => {
                     :key="`connection-${connection.id}`"
                 >
                     <div class="flex items-center justify-between px-0.5 my-1">
-                        <label class="bg-transparent text-base-content flex items-center cursor-pointer">
+                        <label class="bg-transparent gap-1 text-base-content flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
                                 :checked="connection.id === listenId"
                                 @change="listen(connection.id, $event)"
-                                class="toggle toggle-xs toggle-accent mr-1"
+                                class="toggle toggle-base toggle-primary mr-1"
                                 :value="connection.id"
                             />
-                            <span class="text-[10px] whitespace-nowrap font-semibold uppercase truncate max-w-[100px]">{{ connection.name }}</span>
+                            <span class="text-xs whitespace-nowrap font-semibold uppercase truncate max-w-[100px]">{{ connection.name }}</span>
                         </label>
                         <div class="flex gap-2 items-center justify-end">
                             <template v-if="sshStore.connecting && connection.id === listenId">
                                 <button class="p-1">
-                                    <ArrowPathIcon class="w-4 animate-spin" />
+                                    <ArrowPathIcon class="w-5 animate-spin" />
                                 </button>
                             </template>
                             <template v-else>
                                 <button class="p-1">
                                     <PencilIcon
                                         @click="editConnection(connection.id)"
-                                        class="w-4 hover:text-blue-500"
+                                        class="w-5 hover:text-blue-500"
                                     />
                                 </button>
                                 <button class="p-1">
                                     <TrashIcon
                                         @click="removeConnection(connection.id)"
-                                        class="w-4 hover:text-red-500"
+                                        class="w-5 hover:text-red-500"
                                     />
                                 </button>
                             </template>
@@ -238,7 +241,7 @@ const editConnection = (id: number) => {
                         id="name"
                         v-model="form.name"
                         placeholder="production-server"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -249,7 +252,7 @@ const editConnection = (id: number) => {
                         id="host"
                         v-model="form.host"
                         placeholder="1.2.3.4"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -259,7 +262,7 @@ const editConnection = (id: number) => {
                         type="number"
                         id="port"
                         v-model="form.port"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -269,7 +272,7 @@ const editConnection = (id: number) => {
                         id="auth-type"
                         v-model="form.auth_type"
                         :placeholder="$t('ssh.auth_type')"
-                        class="grow select select-bordered select-sm w-full"
+                        class="grow select select-bordered select-base w-full"
                     >
                         <option value="key">Private Key (Recommended)</option>
                         <option value="password">Password</option>
@@ -282,7 +285,7 @@ const editConnection = (id: number) => {
                         type="text"
                         id="username"
                         v-model="form.username"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -295,7 +298,7 @@ const editConnection = (id: number) => {
                         type="password"
                         id="password"
                         v-model="form.password"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <div
@@ -307,7 +310,7 @@ const editConnection = (id: number) => {
                         type="text"
                         id="key"
                         v-model="form.private_key"
-                        class="input input-bordered input-sm w-full"
+                        class="input input-bordered input-base w-full"
                     />
                 </div>
                 <Divider />
@@ -316,13 +319,13 @@ const editConnection = (id: number) => {
                     <input
                         type="checkbox"
                         v-model="form.new_window"
-                        class="toggle toggle-xs toggle-accent"
+                        class="toggle toggle-primary"
                     />
                 </div>
                 <Divider />
                 <div class="flex items-center justify-end">
                     <button
-                        class="btn btn-warning text-warning-content mt-6 w-[100px] text-xs"
+                        class="btn btn-primary mt-6 w-[100px] text-xs"
                         @click="connect"
                     >
                         <ArrowPathIcon

@@ -15,14 +15,17 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="space-y-3">
+    <div class="flex flex-col gap-3">
         <span
-            class="pb-1 sf-dump-key text-base-content"
+            class="text-base-content"
             v-text="payload.model?.className"
         ></span>
         <div v-html="payload.model?.attributes[0]"></div>
-        <div v-show="payload.model?.relations.length > 0">
-            <div class="py-3">Relations</div>
+        <div
+            class="flex flex-col gap-2"
+            v-show="payload.model?.relations.length > 0"
+        >
+            <span>Relations</span>
             <div v-html="payload.model?.relations[0]"></div>
         </div>
     </div>

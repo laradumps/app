@@ -18,24 +18,14 @@ const togglePause = () => {
     <div class="flex gap-3 items-center">
         <button
             :title="$t('pause')"
-            class="w-[32px] !h-[34px] tab p-1.5 py-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+            class="p-2 hover:bg-base-200 rounded-md"
             @click="togglePause()"
         >
-            <IconPause
-                v-if="!isPaused"
-                class="size-4"
-            />
+            <IconPause v-if="!isPaused" />
             <IconPlay
                 v-else
                 class="size-4 text-warning"
             />
         </button>
-
-        <span
-            v-if="isPaused"
-            class="badge badge-warning badge-sm whitespace-nowrap"
-        >
-            {{ $t("is_paused") }}</span
-        >
     </div>
 </template>

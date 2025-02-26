@@ -13,7 +13,16 @@ const themeColors = {
     cyberpunk: "Cyberpunk",
     laravel: "Laravel",
     lemonade: "Lemonade",
-    winter: "Winter"
+    winter: "Winter",
+    forest: "Forest",
+    valentine: "Valentine",
+    aqua: "Aqua",
+    emerald: "Emerald",
+    midnight: "Midnight",
+    nord: "Nord",
+    silk: "Silk",
+    luxury: "Luxury",
+    cupcake: "Cupcake"
 };
 
 const languageOptions = {

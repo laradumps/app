@@ -149,16 +149,16 @@ const openInBrowser = (attachment: Attachment) => {
         </dialog>
 
         <div class="space-y-3 h-[calc(100vh-140px)]">
-            <div class="flex items-center gap-2 justify-between">
+            <div class="mt-1 flex items-center gap-2 justify-between">
                 <input
                     v-model="search"
                     type="text"
-                    class="w-full mt-0.5 input-sm rounded-md font-normal font-sans p-2"
+                    class="w-full input input-sm"
                     :placeholder="$t('search')"
                 />
                 <button
                     @click="clear()"
-                    class="btn btn-error mt-0.5 btn-ghost btn-sm"
+                    class="btn btn-soft btn-sm"
                 >
                     <TrashIcon class="w-4" />
                     <span class="text-xs">{{ $t("clear") }}</span>
@@ -181,7 +181,10 @@ const openInBrowser = (attachment: Attachment) => {
                     size="28"
                     class="overflow-auto pb-1 text-sm"
                 >
-                    <div class="mr-2 overflow-auto flex flex-col gap-2">
+                    <div
+                        class="mr-2 overflow-auto flex flex-col gap-1"
+                        style="height: -webkit-fill-available"
+                    >
                         <div
                             v-for="mail in mails.slice().reverse()"
                             :key="mail.message_id"
@@ -219,14 +222,14 @@ const openInBrowser = (attachment: Attachment) => {
                                 <div class="flex gap-2">
                                     <button
                                         @click="openDumps"
-                                        class="btn btn-xs btn-ghost"
+                                        class="btn btn-xs btn-soft"
                                     >
                                         Dumps
                                         <IconExternalLink class="w-4" />
                                     </button>
                                     <button
                                         @click="openHeaders"
-                                        class="btn btn-xs btn-ghost"
+                                        class="btn btn-xs btn-soft"
                                     >
                                         Headers
                                         <IconExternalLink class="w-4" />
@@ -234,10 +237,7 @@ const openInBrowser = (attachment: Attachment) => {
                                 </div>
                             </div>
                             <div class="flex gap-3 items-center">
-                                <span
-                                    class="opacity-80"
-                                    v-text="visited.headers[0]"
-                                ></span>
+                                <span v-text="visited.headers[0]"></span>
                             </div>
                             <div class="flex gap-3 items-center"><span v-text="visited.headers[1]"></span></div>
                             <div
