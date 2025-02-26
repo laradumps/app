@@ -162,7 +162,7 @@ onMounted(() => {
                 />
                 <button
                     @click="clear()"
-                    class="btn btn-ghost btn-sm"
+                    class="btn btn-soft btn-sm"
                 >
                     <TrashIcon class="w-4" />
                     <span class="text-xs">{{ $t("clear") }}</span>
@@ -216,13 +216,14 @@ onMounted(() => {
                         <td class="break-all">
                             <div>{{ job.display_name }}</div>
                             <a
+                                v-if="job.ide_handle.class_name !== 'empty'"
                                 :href="generateLink(job.ide_handle)"
                                 v-text="`${job.ide_handle.class_name}:${job.ide_handle.line}`"
                                 class="link text-xs opacity-60"
                             >
                             </a>
                         </td>
-                        <td class="whitespace-nowrap">{{ duration(job.start_time, job.end_time) }}</td>
+                        <td class="whitespace-nowrap text-right">{{ duration(job.start_time, job.end_time) }}</td>
                         <td class="w-[120px] whitespace-nowrap">
                             {{ moment(job.pushed_time ?? job.start_time).format("hh:mm:ss a") }}
                         </td>

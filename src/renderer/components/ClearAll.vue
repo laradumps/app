@@ -20,18 +20,6 @@ const clearAll = (): void => {
     globalSearchStore.clear();
     colorStore.clear();
     payloadStore.clearAll();
-
-    // screenStore
-    screenStore.clearAll();
-    screenStore.activeScreen("home");
-    screenStore.add({
-        screen_name: "home",
-        visible: true,
-        pinned: false,
-        raise_in: 0,
-        new_window: false
-    });
-    window.ipcRenderer.send("reload");
 };
 
 onMounted(() => {

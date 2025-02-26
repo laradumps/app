@@ -158,7 +158,7 @@ const openInBrowser = (attachment: Attachment) => {
                 />
                 <button
                     @click="clear()"
-                    class="btn btn-ghost btn-sm"
+                    class="btn btn-soft btn-sm"
                 >
                     <TrashIcon class="w-4" />
                     <span class="text-xs">{{ $t("clear") }}</span>
@@ -181,7 +181,10 @@ const openInBrowser = (attachment: Attachment) => {
                     size="28"
                     class="overflow-auto pb-1 text-sm"
                 >
-                    <div class="mr-2 overflow-auto flex flex-col gap-2">
+                    <div
+                        class="mr-2 overflow-auto flex flex-col gap-1"
+                        style="height: -webkit-fill-available"
+                    >
                         <div
                             v-for="mail in mails.slice().reverse()"
                             :key="mail.message_id"
@@ -219,14 +222,14 @@ const openInBrowser = (attachment: Attachment) => {
                                 <div class="flex gap-2">
                                     <button
                                         @click="openDumps"
-                                        class="btn btn-sm btn-ghost"
+                                        class="btn btn-xs btn-soft"
                                     >
                                         Dumps
                                         <IconExternalLink class="w-4" />
                                     </button>
                                     <button
                                         @click="openHeaders"
-                                        class="btn btn-sm btn-ghost"
+                                        class="btn btn-xs btn-soft"
                                     >
                                         Headers
                                         <IconExternalLink class="w-4" />

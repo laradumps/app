@@ -228,7 +228,7 @@ const addProject = () => {
             </button>
             <ul
                 tabindex="0"
-                class="dropdown-content space-y-3 min-w-64 z-[350] menu p-2 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-10"
+                class="dropdown-content space-y-3 min-w-64 z-[350] menu p-2 bg-base-200 border border-base-content/10 shadow-lg rounded-md w-auto mt-[44px] !-right-10"
             >
                 <SelectInput
                     id="projects"

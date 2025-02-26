@@ -106,11 +106,11 @@ const pinScreen = (screen) => {
                     @dblclick="pinScreen(screen.screen_name)"
                     :class="{
                         'ml-1': index > 0,
-                        'tab-active': screen.screen_name === screenStore.screen && screenStore.screens.length > 1
+                        'tab-active font-semibold': screen.screen_name === screenStore.screen && screenStore.screens.length > 1
                     }"
                 >
-                    <span class="flex items-center capitalize gap-1">
-                        <span class="font-semibold">{{ screen.screen_name }}</span>
+                    <span class="flex font-normal items-center capitalize gap-1">
+                        <span>{{ screen.screen_name }}</span>
                         <span class="text-[11px] text-base-content/70 badge !bg-transparent !border-0 p-0.5 h-[14px]">({{ getPayloadScreenCount(screen.screen_name) }})</span>
                         <IconPin
                             v-if="screen.pinned"

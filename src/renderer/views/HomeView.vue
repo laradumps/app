@@ -420,13 +420,13 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             <JobMonitor
                 v-if="inScreenWindow === 'jobs'"
                 :items="jobScreen"
-                class="mt-3 h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto"
+                class="mt-3 h-[calc(100vh-105px)] w-[100vw] text-base overflow-auto"
             />
 
             <MailView
                 v-if="inScreenWindow === 'mail'"
                 :items="mailScreen"
-                class="mt-3 h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto"
+                class="mt-3 h-[calc(100vh-105px)] w-[100vw] text-base overflow-auto"
             />
         </div>
 
@@ -450,7 +450,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                         </div>
 
                         <div v-if="screenStore.screen === 'jobs'">
-                            <JobMonitor class="h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto" />
+                            <JobMonitor class="h-[calc(100vh-91px)] w-[100vw] text-base overflow-auto" />
                         </div>
 
                         <div v-if="screenStore.screen === 'mail'">
