@@ -1,5 +1,9 @@
 .sf-dump {
-    @apply !leading-6;
+    @apply !leading-6 text-sm;
+}
+
+samp {
+    @apply !font-mono !text-sm;
 }
 
 .sf-js-enabled pre.sf-dump .sf-dump-compact,
@@ -100,7 +104,6 @@ pre.sf-dump .sf-dump-search-wrapper > * {
 pre.sf-dump .sf-dump-search-wrapper > input.sf-dump-search-input {
     padding: 3px;
     height: 21px;
-    font-size: 0.75rem;
     border-right: none;
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
@@ -132,7 +135,7 @@ pre.sf-dump .sf-dump-search-wrapper > .sf-dump-search-count {
     margin: 0;
     border-left: none;
     line-height: 21px;
-    font-size: 0.75rem;
+    @apply text-sm;
 }
 pre.sf-dump,
 pre.sf-dump .sf-dump-default {
@@ -144,22 +147,17 @@ pre.sf-dump .sf-dump-default {
     position: relative;
     word-break: break-all;
     padding: 0;
-    font-size: 0.75rem;
+    @apply text-sm;
 }
 pre.sf-dump .sf-dump-num {
     font-weight: bold;
     color: #1299da;
 }
-.sf-dump-str {
-    font-size: 0.75rem !important;
-}
+
 pre.sf-dump .sf-dump-const {
-    @apply font-normal;
+    @apply font-semibold text-secondary;
 }
-pre.sf-dump .sf-dump-str {
-    font-weight: bold;
-    color: #56db3a;
-}
+
 pre.sf-dump .sf-dump-note {
     @apply font-semibold text-primary;
 }
@@ -182,7 +180,7 @@ pre.sf-dump .sf-dump-meta {
     @apply text-primary;
 }
 pre.sf-dump .sf-dump-key {
-    @apply text-base-content;
+    @apply text-base-content/90 tracking-wide leading-5;
 }
 
 pre.sf-dump .sf-dump-index {
@@ -197,31 +195,35 @@ pre.sf-dump .sf-dump-ns {
 pre.sf-dump .sf-dump-ellipsis-note {
     @apply text-primary opacity-90;
 }
+
 [data-theme="light"] pre.sf-dump .sf-dump-default {
     color: #ff8400;
 }
-[data-theme="light"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-primary;
-}
-[data-theme="dracula"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-secondary;
-}
-[data-theme="retro"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-primary;
-}
-[data-theme="halloween"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-primary;
-}
+
+[data-theme="light"] pre.sf-dump .sf-dump-str,
+[data-theme="nord"] pre.sf-dump .sf-dump-str,
+[data-theme="retro"] pre.sf-dump .sf-dump-str,
+[data-theme="halloween"] pre.sf-dump .sf-dump-str,
+[data-theme="aqua"] pre.sf-dump .sf-dump-str,
+[data-theme="silk"] pre.sf-dump .sf-dump-str,
+[data-theme="luxury"] pre.sf-dump .sf-dump-str,
+[data-theme="valentine"] pre.sf-dump .sf-dump-str,
+[data-theme="cupcake"] pre.sf-dump .sf-dump-str,
+[data-theme="emerald"] pre.sf-dump .sf-dump-str,
+[data-theme="forest"] pre.sf-dump .sf-dump-str,
+[data-theme="midnight"] pre.sf-dump .sf-dump-str,
 [data-theme="dark"] pre.sf-dump .sf-dump-str {
-    @apply font-normal text-primary;
+    @apply font-normal text-primary tracking-wide;
 }
+
+[data-theme="dracula"] pre.sf-dump .sf-dump-str {
+    @apply font-normal text-primary tracking-wide;
+}
+
 [data-theme="dim"] pre.sf-dump .sf-dump-str {
     @apply font-normal text-secondary;
 }
-[data-theme="laravel"] pre.sf-dump .sf-dump-str {
-    font-weight: bold;
-    color: #56db3a;
-}
+
 [data-theme="cyberpunk"] pre.sf-dump .sf-dump-str {
     @apply font-semibold text-primary;
 }

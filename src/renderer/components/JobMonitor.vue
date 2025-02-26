@@ -179,10 +179,10 @@ onMounted(() => {
 
             <table
                 v-else
-                class="table table-zebra"
+                class="table"
             >
                 <thead>
-                    <tr class="bg-base-200">
+                    <tr>
                         <th class="w-4">Status</th>
                         <th>Job</th>
                         <th>Duration</th>

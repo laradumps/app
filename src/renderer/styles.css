@@ -33,6 +33,10 @@
     }
 }
 
+* {
+    font-family: "Inter", sans-serif;
+}
+
 body {
     color: #18171b;
     margin: 0;

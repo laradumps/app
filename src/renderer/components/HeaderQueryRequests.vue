@@ -60,18 +60,18 @@ const allRequests = computed(() => {
             v-if="timeStore.groups.length > 0"
             class="justify-between items-center gap-4 text-base-content"
         >
-            <div class="flex justify-between">
+            <div class="flex justify-between mt-0.5">
                 <div class="flex w-full items-center">
-                    <div class="flex flex-row-reverse gap-3">
+                    <div class="flex flex-row-reverse gap-3 items-center">
                         <span class="text-primary text-base whitespace-nowrap">{{ timeStore.get(timeStore.selected)?.total.toFixed(2) }} ms</span>
-                        <span class="text-[11px] uppercase">time</span>
+                        <span class="text-xs uppercase">time</span>
                     </div>
 
                     <div class="divider divider-horizontal !mx-1.5"></div>
 
-                    <div class="flex flex-row-reverse gap-3">
+                    <div class="flex flex-row-reverse gap-3 items-center">
                         <span class="text-primary text-base whitespace-nowrap">{{ totalFiltered }}</span>
-                        <span class="text-[11px] uppercase">queries</span>
+                        <span class="text-xs uppercase">queries</span>
                     </div>
 
                     <div
@@ -81,22 +81,22 @@ const allRequests = computed(() => {
 
                     <div
                         v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
-                        class="flex flex-row-reverse gap-3"
+                        class="flex flex-row-reverse gap-3 items-center"
                     >
                         <span class="text-primary text-base">{{ duplicatesStore.totalByRequestId(timeStore.selected) }}</span>
-                        <span class="text-[11px] uppercase badge badge-warning font-semibold">duplicated</span>
+                        <span class="text-xs uppercase badge badge-warning font-semibold">duplicated</span>
                     </div>
                 </div>
 
                 <div class="flex gap-3 items-end">
-                    <label class="label gap-2 !justify-end !text-left p-1.5">
+                    <label class="flex items-center gap-2 !justify-end !text-left p-1.5">
                         <input
                             type="checkbox"
                             v-model="formattedQueriesStore.formatted"
                             class="toggle toggle-xs toggle-primary"
                             @click="formattedQueriesStore.toggle()"
                         />
-                        <span class="text-[11px] whitespace-nowrap font-normal uppercase">Prettify</span>
+                        <span class="text-xs whitespace-nowrap font-normal uppercase">Prettify</span>
                     </label>
 
                     <div>

@@ -119,7 +119,7 @@ observeContainer("dumps-base");
                 class="flex items-center tracking-widest leading-6 hover:!bg-red-500/20 px-2 group/line"
             >
                 <DumpLink
-                    class="font-normal h-full text-base-content text-[11px]"
+                    class="font-normal h-full text-base-content text-xs"
                     :label="lineNumber"
                     :show-icon="true"
                     :ide-handler="getIdeHandleFromStack(codeSnippet, lineNumber)"
@@ -140,7 +140,8 @@ observeContainer("dumps-base");
     @apply bg-base-300 border border-base-content/20;
 }
 
-[data-theme="light"] .code-snippet {
+[data-theme="light"] .code-snippet,
+[data-theme="nord"] .code-snippet {
     @apply !bg-white border border-base-content/10;
 }
 

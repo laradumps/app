@@ -651,7 +651,7 @@ onBeforeUnmount(() => {
                                     :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
                                 >
                                     <DumpLink
-                                        class="flex font-normal h-full text-[11px]"
+                                        class="flex font-normal h-full text-xs"
                                         :label="lineNumber"
                                         :show-icon="true"
                                         :ide-handler="{

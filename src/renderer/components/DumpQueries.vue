@@ -37,7 +37,7 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
 </script>
 
 <template>
-    <div class="rounded-sm dump-queries overflow-auto">
+    <div class="rounded-sm dump-queries overflow-scroll">
         <div class="flex justify-between gap-3 items-center mb-3">
             <div class="flex items-center gap-3">
                 <span class="text-base font-semibold text-base-content"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>

@@ -65,6 +65,7 @@ const isPaused = ref(false);
 
 const allRequests = ref([]);
 const xdebugMode = ref(false);
+const composerInvalidVersion = ref(false);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
@@ -79,6 +80,12 @@ onMounted(() => {
 
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
     addScreen(defaultScreen.value);
+
+    window.ipcRenderer.on("composer.invalid.version", (event, arg) => {
+        nextTick(() => {
+            modal_composer_version.showModal();
+        });
+    });
 
     window.ipcRenderer.on("app:pause-dumps", (event, arg) => (isPaused.value = arg));
 
@@ -380,6 +387,29 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         :class="{ absolute: !inScreenWindow }"
         class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
     >
+        <dialog
+            id="modal_composer_version"
+            class="modal"
+        >
+            <div class="modal-box max-w-2xl space-y-3">
+                <h3 class="text-lg font-bold">Needs package updates 👋</h3>
+                <div class="space-y-3">
+                    <p class="text-base-content">
+                        {{ $t("composer_invalid_version") }}
+                    </p>
+                    <div class="mockup-code">
+                        <pre><code>composer require laradumps/laradumps-core ^3.0 --dev -W</code></pre>
+                    </div>
+                </div>
+            </div>
+            <form
+                method="dialog"
+                class="modal-backdrop"
+            >
+                <button>close</button>
+            </form>
+        </dialog>
+
         <div v-if="inScreenWindow">
             <ScreenWindow
                 v-if="inScreenWindow !== 'jobs'"
@@ -465,11 +495,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                                         class="w-full"
                                     >
                                         <DumpItem
-                                            :class="{
-                                                'pl-3': screenStore.screen === 'queries',
-                                                'px-3': screenStore.screen !== 'queries'
-                                            }"
-                                            class="w-full group text-sm mb-2"
+                                            class="w-full px-3 group text-sm mb-2"
                                             v-show="screenStore.screen === 'queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'livewire'"
                                             :payload="payload"
                                         />

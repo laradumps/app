@@ -107,5 +107,6 @@ export default {
         private_key: "Private Key Path",
         connect: "Connect"
     },
-    search: "Search"
+    search: "Search",
+    composer_invalid_version: "App require laradumps/laradumps-core 3.0 or higher"
 };

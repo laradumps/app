@@ -20,8 +20,6 @@ const localeStore = useI18nStore();
 onMounted(() => {
     getSavedLocalShortcuts();
     detectHotKeysPress();
-
-    console.log(settingsStore.settings);
 });
 
 const saveSettings = async () => {

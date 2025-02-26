@@ -81,7 +81,8 @@ const handleGetEnvironments = (event, value) => {
 };
 
 onMounted(async () => {
-    xdebug.value = xDebugStore.current.project_path !== "";
+    xdebug.value = typeof xDebugStore.current.project_path !== "undefined";
+
     window.ipcRenderer.send("storage.get");
 
     window.ipcRenderer.on("app-setting:project-added", handleProjectAdded);
@@ -280,7 +281,7 @@ const addProject = () => {
                                 class="toggle toggle-sm toggle-primary"
                                 v-model="xdebug"
                             />
-                            <span class="text-[11px] whitespace-nowrap font-semibold uppercase"> xdebug </span>
+                            <span class="text-xs whitespace-nowrap font-semibold uppercase"> xdebug </span>
                         </label>
                     </li>
 
@@ -299,7 +300,7 @@ const addProject = () => {
                                 class="toggle toggle-sm toggle-primary"
                                 @change.stop="save(env)"
                             />
-                            <span class="text-[11px] whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
+                            <span class="text-xs whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
                         </label>
                     </li>
                 </div>
