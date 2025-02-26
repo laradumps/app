@@ -110,7 +110,7 @@ const pinScreen = (screen) => {
                     }"
                 >
                     <span class="flex items-center capitalize gap-1">
-                        {{ screen.screen_name }}
+                        <span class="font-semibold">{{ screen.screen_name }}</span>
                         <span class="text-[11px] text-base-content/70 badge !bg-transparent !border-0 p-0.5 h-[14px]">({{ getPayloadScreenCount(screen.screen_name) }})</span>
                         <IconPin
                             v-if="screen.pinned"

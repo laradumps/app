@@ -162,7 +162,7 @@ pre.sf-dump .sf-dump-note {
     @apply font-semibold text-primary;
 }
 pre.sf-dump .sf-dump-ref {
-    color: #a0a0a0;
+    @apply text-base-content/40;
 }
 pre.sf-dump .sf-dump-public {
     @apply text-base-content;
