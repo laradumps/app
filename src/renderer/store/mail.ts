@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { MailPayload } from "@/types/Payload";
 import { IdeHandle } from "@/types/IdeHandle";
+import { useSettingsStore } from "@/store/settings";
 
 export type Mail = {
     message_id: string;

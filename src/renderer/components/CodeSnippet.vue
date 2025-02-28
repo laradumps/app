@@ -3,7 +3,6 @@ import { computed, defineProps, onMounted, onUnmounted, ref } from "vue";
 import { CodeSnippet, Payload } from "@/types/Payload";
 import hljs from "highlight.js/lib/core";
 import DumpLink from "@/components/DumpLink.vue";
-import { useAppearanceStore } from "@/store/appearance";
 import { IdeHandle } from "@/types/IdeHandle";
 import IconArrowLight from "@/components/Icons/IconArrowLight.vue";
 
@@ -11,7 +10,8 @@ const containerSize = ref(0);
 const activeFileIndex = ref(0);
 
 const props = defineProps<{
-    payload: Payload;
+    code_snippet: CodeSnippet[];
+    ide_handle: IdeHandle;
 }>();
 
 onMounted(() => {
@@ -22,7 +22,7 @@ onUnmounted(() => {
     window.removeEventListener("keydown", handleKeydown);
 });
 
-const totalFiles = computed(() => props.payload.code_snippet.length);
+const totalFiles = computed(() => props.code_snippet.length);
 
 const toggleFileVisibility = (index: number) => {
     activeFileIndex.value = activeFileIndex.value === index ? null : index;
@@ -62,13 +62,13 @@ const getLineContent = (lineContent: string) => {
 
 const getIdeHandleFromStack = (codeSnippet: CodeSnippet, lineNumber: string): IdeHandle => {
     return {
-        workdir: props.payload.ide_handle.workdir,
-        project_path: props.payload.ide_handle.project_path,
+        workdir: props.ide_handle.workdir,
+        project_path: props.ide_handle.project_path,
         real_path: codeSnippet.file,
         line: lineNumber,
-        class_name: props.payload.ide_handle.class_name,
-        separator: props.payload.ide_handle.separator,
-        wsl_config: props.payload.ide_handle.wsl_config
+        class_name: props.ide_handle.class_name,
+        separator: props.ide_handle.separator,
+        wsl_config: props.ide_handle.wsl_config
     };
 };
 
@@ -91,18 +91,19 @@ observeContainer("dumps-base");
 
 <template>
     <div
-        v-for="(codeSnippet, index) in props.payload.code_snippet"
+        v-for="(codeSnippet, index) in props.code_snippet"
         :key="index"
+        class="text-xs opacity-80 p-1.5 px-2"
+        :class="{ 'hover:rounded hover:bg-base-300': activeFileIndex !== index }"
     >
         <div
-            :class="{ '!font-semibold': activeFileIndex === index }"
+            :class="{
+                '!font-semibold text-sm !opacity-100 !text-accent': activeFileIndex === index
+            }"
             class="text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
             @click="toggleFileVisibility(index)"
         >
-            <IconArrowLight
-                v-if="activeFileIndex === index"
-                class="size-4 font-light"
-            />
+            <IconArrowLight v-if="activeFileIndex === index" />
             {{ getFileLineDisplay(codeSnippet) }}
         </div>
 
