@@ -90,7 +90,7 @@ observeContainer("dumps-base");
 
 onMounted(() => {
     activeFileIndex.value = 0;
-})
+});
 </script>
 
 <template>

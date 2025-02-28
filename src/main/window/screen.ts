@@ -18,7 +18,7 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
         webPreferences: {
             spellcheck: true,
             nodeIntegration: true,
-            preload: resolve(__dirname, "global-ipc-renderer.js"),
+            preload: resolve(__dirname, "global-ipc-renderer.cjs"),
             contextIsolation: false
         }
     };

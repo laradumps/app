@@ -61,6 +61,7 @@ const inScreenWindow = ref("");
 const payloadScreen = ref([]);
 const jobScreen = ref({});
 const mailScreen = ref([]);
+const logScreen = ref({});
 
 const applicationPath = ref("");
 const livewireRequests = ref([]);
@@ -68,7 +69,6 @@ const isPaused = ref(false);
 
 const allRequests = ref([]);
 const xdebugMode = ref(false);
-const composerInvalidVersion = ref(false);
 
 onBeforeMount(() => {
     locale.value = localeStore.value;
@@ -84,12 +84,6 @@ onMounted(() => {
     setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
     addScreen(defaultScreen.value);
 
-    window.ipcRenderer.on("composer.invalid.version", (event, arg) => {
-        nextTick(() => {
-            modal_composer_version.showModal();
-        });
-    });
-
     window.ipcRenderer.on("app:pause-dumps", (event, arg) => (isPaused.value = arg));
 
     window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
@@ -102,6 +96,7 @@ onMounted(() => {
         payloadScreen.value = args.payload;
         jobScreen.value = args.jobs;
         mailScreen.value = args.mails;
+        logScreen.value = args.logs;
 
         setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
     });
@@ -110,6 +105,7 @@ onMounted(() => {
         payloadScreen.value = args.payload;
         jobScreen.value = args.jobs;
         mailScreen.value = args.mails;
+        logScreen.value = args.logs;
     });
 
     window.ipcRenderer.send("local-shortcut:get");
@@ -195,6 +191,27 @@ const dumpListeners = () => {
     window.ipcRenderer.on("model", (event, { content }) => dispatch("model", event, content));
     window.ipcRenderer.on("log_application", (event, { content }) => {
         logStore.add(content.log_application, content.code_snippet, content.ide_handle);
+
+        const serializable = JSON.parse(JSON.stringify(logStore.logs));
+
+        if (content.to_screen.new_window) {
+            screenStore.hidden(content.to_screen.screen_name);
+
+            window.ipcRenderer.send("screen-window:show", {
+                screen: content.to_screen.screen_name,
+                payload: {},
+                jobs: {},
+                logs: serializable,
+                position: {}
+            });
+        } else {
+            window.ipcRenderer.send("send-screen-window-update", {
+                screen: content.to_screen.screen_name,
+                payload: {},
+                jobs: {},
+                logs: serializable
+            });
+        }
     });
     window.ipcRenderer.on("color", (event, { content }) => {
         payloadStore.updateColorPayload(content);
@@ -383,32 +400,9 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         :class="{ absolute: !inScreenWindow }"
         class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
     >
-        <dialog
-            id="modal_composer_version"
-            class="modal"
-        >
-            <div class="modal-box max-w-2xl space-y-3">
-                <h3 class="text-lg font-bold">Needs package updates 👋</h3>
-                <div class="space-y-3">
-                    <p class="text-base-content">
-                        {{ $t("composer_invalid_version") }}
-                    </p>
-                    <div class="mockup-code">
-                        <pre><code>composer require laradumps/laradumps-core ^3.0 --dev -W</code></pre>
-                    </div>
-                </div>
-            </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
-
         <div v-if="inScreenWindow">
             <ScreenWindow
-                v-if="inScreenWindow !== 'jobs'"
+                v-if="!['jobs', 'mail', 'logs'].includes(inScreenWindow)"
                 :dumps-items="payloadScreen"
                 v-model:screen="inScreenWindow"
             />
@@ -423,6 +417,12 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                 v-if="inScreenWindow === 'mail'"
                 :items="mailScreen"
                 class="mt-3 h-[calc(100vh-105px)] w-[100vw] text-base overflow-auto"
+            />
+
+            <LogView
+                v-if="inScreenWindow === 'logs'"
+                :items="logScreen"
+                class="mt-3 h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto"
             />
         </div>
 

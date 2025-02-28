@@ -23,7 +23,7 @@ const forceUpdate = ref(0);
 const selectedLogDetail = ref();
 
 const props = defineProps<{
-    items: Record<string, Job>;
+    items: Record<string, Log>;
 }>();
 
 const generateLink = (ideHandler: IdeHandle) => {

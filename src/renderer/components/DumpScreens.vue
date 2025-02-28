@@ -39,11 +39,15 @@ const openScreenWindow = (screen, mouseX, mouseY) => {
 
     const serializablePayload = JSON.parse(JSON.stringify(payloadStore.get(screen)));
     const serializableJobPayload = JSON.parse(JSON.stringify(jobStore.jobs));
+    const serializableMailPayload = JSON.parse(JSON.stringify(mailStore.mails));
+    const serializableLogPayload = JSON.parse(JSON.stringify(logStore.logs));
 
     window.ipcRenderer.send("screen-window:show", {
         screen: screen,
         payload: serializablePayload,
         jobs: serializableJobPayload,
+        mails: serializableMailPayload,
+        logs: serializableLogPayload,
         position: {
             x: mouseX,
             y: mouseY

@@ -10,7 +10,7 @@ export const init = async () => {
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,
-                preload: resolve(__dirname, "preload.js")
+                preload: resolve(__dirname, "preload.cjs")
             },
             alwaysOnTop: true,
             title: link.title
