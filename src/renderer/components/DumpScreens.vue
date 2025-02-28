@@ -6,6 +6,7 @@ import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import { useJobStore } from "@/store/jobs";
 import IconPin from "@/components/Icons/IconPin.vue";
 import { useMailStore } from "@/store/mail";
+import { useLogStore } from "@/store/logs.js";
 
 const emit = defineEmits(["toggleScreen"]);
 
@@ -13,6 +14,7 @@ const screenStore = useScreenStore();
 const payloadStore = usePayloadStore();
 const jobStore = useJobStore();
 const mailStore = useMailStore();
+const logStore = useLogStore();
 
 const showTooltip = ref(false);
 const isDraggingIndex = ref(null);
@@ -73,6 +75,10 @@ const getPayloadScreenCount = (screenName) => {
 
     if (screenName === "mail") {
         return Object.entries(mailStore.mails).length;
+    }
+
+    if (screenName === "logs") {
+        return Object.entries(logStore.logs).length;
     }
 
     return payloadStore.get(screenName).length;

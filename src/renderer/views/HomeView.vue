@@ -21,10 +21,12 @@ import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useSettingsStore } from "@/store/settings";
 import XDebugMode from "@/components/XDebugMode.vue";
 import { useXDebug } from "@/store/xdebug";
-import JobMonitor from "@/components/JobMonitor.vue";
+import JobView from "@/components/JobView.vue";
 import { useJobStore } from "@/store/jobs";
 import { useMailStore } from "@/store/mail";
 import MailView from "@/components/MailView.vue";
+import { useLogStore } from "@/store/logs";
+import LogView from "@/components/LogView.vue";
 
 markRaw(TheUpdateModalInfo);
 
@@ -36,6 +38,7 @@ const globalSearchStore = useGlobalSearchStore();
 const IDEHandler = useIDEHandlerStore();
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
+const logStore = useLogStore();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
@@ -106,6 +109,7 @@ onMounted(() => {
     window.ipcRenderer.on("app:screen-window-update", async (event, args) => {
         payloadScreen.value = args.payload;
         jobScreen.value = args.jobs;
+        mailScreen.value = args.mails;
     });
 
     window.ipcRenderer.send("local-shortcut:get");
@@ -153,14 +157,6 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("jobs", (event, { content }) => {
-        // Clear the oldest job if the limit is reached
-        if (Object.keys(jobStore.jobs).length == settingsStore.settings.limit_dumps + 1) {
-            const oldestJobKey = Object.keys(jobStore.jobs).reduce((oldestKey, currentKey) => {
-                return jobStore.jobs[currentKey].pushed_time < jobStore.jobs[oldestKey].pushed_time ? currentKey : oldestKey;
-            }, Object.keys(jobStore.jobs)[0]);
-            delete jobStore.jobs[oldestJobKey];
-        }
-
         jobStore.addOrUpdateJob(content.jobs, content.ide_handle);
 
         const serializableJobs = JSON.parse(JSON.stringify(jobStore.jobs));
@@ -193,12 +189,12 @@ const dumpListeners = () => {
     window.ipcRenderer.on("label", (event, { content }) => {
         payloadStore.updateLabelPayload(content);
     });
+
     window.ipcRenderer.on("table", (event, { content }) => dispatch("table", event, content));
     window.ipcRenderer.on("http-client", (event, { content }) => dispatch("http-client", event, content));
     window.ipcRenderer.on("model", (event, { content }) => dispatch("model", event, content));
     window.ipcRenderer.on("log_application", (event, { content }) => {
-        dispatch("log_application", event, content);
-        payloadStore.updateLogPayload(content);
+        logStore.add(content.log_application, content.code_snippet, content.ide_handle);
     });
     window.ipcRenderer.on("color", (event, { content }) => {
         payloadStore.updateColorPayload(content);
@@ -309,7 +305,7 @@ const toggleScreen = async (value: string, shouldActivate = false): Promise<void
     }
 
     await nextTick(() => {
-        if (!["jobs", "mail"].includes(screenStore.screen)) {
+        if (!["jobs", "mail", "logs"].includes(screenStore.screen)) {
             document.getElementById(settingsStore.settings.scroll_direction)?.scrollIntoView({ behavior: "smooth" });
         }
     });
@@ -354,7 +350,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     let screenName = content.to_screen.screen_name ?? "home";
 
-    if (!["logs", "queries"].includes(screenName)) {
+    if (!["queries"].includes(screenName)) {
         maximizeApp(content.auto_invoke_app);
     }
 
@@ -417,7 +413,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                 v-model:screen="inScreenWindow"
             />
 
-            <JobMonitor
+            <JobView
                 v-if="inScreenWindow === 'jobs'"
                 :items="jobScreen"
                 class="mt-3 h-[calc(100vh-105px)] w-[100vw] text-base overflow-auto"
@@ -450,11 +446,15 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                         </div>
 
                         <div v-if="screenStore.screen === 'jobs'">
-                            <JobMonitor class="h-[calc(100vh-91px)] w-[100vw] text-base overflow-auto" />
+                            <JobView class="h-[calc(100vh-91px)] w-[100vw] text-base" />
                         </div>
 
                         <div v-if="screenStore.screen === 'mail'">
                             <MailView class="h-[calc(100vh-85px)] w-[100vw] text-base" />
+                        </div>
+
+                        <div v-if="screenStore.screen === 'logs'">
+                            <LogView class="h-[calc(100vh-100px)] w-[100vw] text-base" />
                         </div>
 
                         <div

@@ -112,13 +112,6 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
-    console.log(typeof arg.content.to_screen);
-    if (typeof arg.content.to_screen === "undefined") {
-        event.sender.send("composer.invalid.version");
-
-        return;
-    }
-
     mainWindow.webContents.send("new.dumps");
     event.sender.send(arg.type, arg);
 });

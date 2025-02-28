@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { JobPayload } from "@/types/Payload";
 import { IdeHandle } from "@/types/IdeHandle";
+import { useSettingsStore } from "@/store/settings";
 
 export type Job = {
     job_id: string;
@@ -24,6 +25,8 @@ export const useJobStore = defineStore("jobStore", {
     }),
     actions: {
         addOrUpdateJob(jobs: JobPayload, ide_handle: IdeHandle) {
+            this._removeOldestIfExceedsLimit();
+
             if (!this.jobs[jobs.job_id]) {
                 this._initializeJob(jobs, ide_handle);
             }
@@ -52,6 +55,17 @@ export const useJobStore = defineStore("jobStore", {
                 end_time: null,
                 ide_handle
             };
+        },
+        _removeOldestIfExceedsLimit() {
+            const settingsStore = useSettingsStore();
+
+            if (Object.keys(this.jobs).length == settingsStore.settings.limit_dumps + 1) {
+                const oldestLogKey = Object.keys(this.jobs).reduce((oldestKey, currentKey) => {
+                    return this.jobs[currentKey].pushed_time < this.jobs[oldestKey].pushed_time ? currentKey : oldestKey;
+                }, Object.keys(this.jobs)[0]);
+
+                delete this.jobs[oldestLogKey];
+            }
         }
     }
 });

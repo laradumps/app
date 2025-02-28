@@ -6,8 +6,6 @@ import { EyeIcon } from "@heroicons/vue/24/outline";
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
 import { TrashIcon } from "@heroicons/vue/24/outline";
 
-import tippy from "tippy.js";
-import "tippy.js/dist/tippy.css";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
@@ -104,10 +102,6 @@ const duration = (startTime: any, endTime: any) => {
     const durationSeconds = (durationMs / 1000).toFixed(2);
     return `${durationSeconds} s`;
 };
-
-onMounted(() => {
-    nextTick(() => tippy("[data-tippy-content]", { placement: "right-end" }));
-});
 </script>
 
 <template>
@@ -177,64 +171,72 @@ onMounted(() => {
                 <span class="text-sm uppercase">No jobs</span>
             </div>
 
-            <table
+            <div
                 v-else
-                class="table"
+                class="overflow-auto"
+                style="height: -webkit-fill-available"
             >
-                <thead>
-                    <tr>
-                        <th class="w-4">Status</th>
-                        <th>Job</th>
-                        <th>Duration</th>
-                        <th>Date</th>
-                        <th class="w-6"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-for="job in jobs"
-                        :key="job.job_id"
-                    >
-                        <td :data-tippy-content="job.status">
-                            <CheckIcon
-                                class="w-5 text-success"
-                                v-if="job.status === 'Processed'"
-                            />
-                            <XMarkIcon
-                                class="w-5 text-error"
-                                v-if="job.status === 'Failed'"
-                            />
-                            <ArrowPathIcon
-                                class="w-5 text-info"
-                                v-if="job.status === 'Processing'"
-                            />
-                            <InformationCircleIcon
-                                class="w-5 text-warning"
-                                v-if="job.status === 'Queued'"
-                            />
-                        </td>
-                        <td class="break-all">
-                            <div>{{ job.display_name }}</div>
-                            <a
-                                v-if="job.ide_handle.class_name !== 'empty'"
-                                :href="generateLink(job.ide_handle)"
-                                v-text="`${job.ide_handle.class_name}:${job.ide_handle.line}`"
-                                class="link text-xs opacity-60"
-                            >
-                            </a>
-                        </td>
-                        <td class="whitespace-nowrap text-right">{{ duration(job.start_time, job.end_time) }}</td>
-                        <td class="w-[120px] whitespace-nowrap">
-                            {{ moment(job.pushed_time ?? job.start_time).format("hh:mm:ss a") }}
-                        </td>
-                        <td class="w-[64px] ma-w-[64px]">
-                            <button @click="openModal(job.job_id)">
-                                <EyeIcon class="w-5 text-primary" />
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                <table class="table table-zebra">
+                    <thead>
+                        <tr>
+                            <th class="w-4">#</th>
+                            <th>Job</th>
+                            <th>Duration</th>
+                            <th>Date</th>
+                            <th class="w-6"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            v-for="job in jobs"
+                            :key="job.job_id"
+                        >
+                            <td>
+                                <div class="flex items-center justify-center">
+                                    <ArrowPathIcon
+                                        class="w-6 text-primary"
+                                        v-if="job.status === 'Processing'"
+                                    />
+                                    <CheckIcon
+                                        class="w-6 text-success"
+                                        v-if="job.status === 'Processed'"
+                                    />
+                                    <XMarkIcon
+                                        class="w-6 text-error"
+                                        v-if="job.status === 'Failed'"
+                                    />
+                                    <InformationCircleIcon
+                                        class="w-6 text-warning"
+                                        v-if="job.status === 'Queued'"
+                                    />
+                                </div>
+                            </td>
+                            <td class="break-all">
+                                <div>{{ job.display_name }}</div>
+                                <a
+                                    v-if="job.ide_handle.class_name !== 'empty'"
+                                    :href="generateLink(job.ide_handle)"
+                                    v-text="`${job.ide_handle.class_name}:${job.ide_handle.line}`"
+                                    class="link text-xs opacity-60"
+                                >
+                                </a>
+                            </td>
+                            <td class="whitespace-nowrap text-right">{{ duration(job.start_time, job.end_time) }}</td>
+                            <td class="w-[120px] whitespace-nowrap">
+                                <div class="flex flex-col">
+                                    <span>{{ moment(job.pushed_time ?? job.start_time).fromNow() }}</span>
+                                    <span class="opacity-65 text-xs">{{ moment(job.pushed_time ?? job.start_time).format("HH:mm:ss") }}</span>
+                                </div>
+                            </td>
+                            <td class="w-[64px] ma-w-[64px]">
+                                <button @click="openModal(job.job_id)">
+                                    <EyeIcon class="w-5 text-primary" />
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </template>
