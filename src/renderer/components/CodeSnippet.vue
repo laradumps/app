@@ -87,6 +87,10 @@ const observeContainer = (id: string) => {
 const containerWidth = computed(() => containerSize.value - 58 + "px");
 
 observeContainer("dumps-base");
+
+onMounted(() => {
+    activeFileIndex.value = 0;
+})
 </script>
 
 <template>
