@@ -59,6 +59,7 @@ const label = computed(() => {
             :title="label"
             :class="{ 'cursor-pointer': link && label !== 'Tinker' }"
             class="flex items-center group"
+            @click.stop
         >
             <span class="break-all tracking-wider hover:opacity-75 flex items-center">
                 <span

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, nextTick, onMounted } from "vue";
+import { defineProps, onMounted } from "vue";
 import { Payload } from "@/types/Payload";
 
 const props = defineProps<{
@@ -16,10 +16,13 @@ onMounted(() => {
 
 <template>
     <div class="flex flex-col gap-3">
-        <span
-            class="text-base-content"
-            v-text="payload.model?.className"
-        ></span>
+        <div class="prose">
+            <h4
+                class="text-base-content"
+                v-text="payload.model?.className"
+            ></h4>
+        </div>
+
         <div v-html="payload.model?.attributes[0]"></div>
         <div
             class="flex flex-col gap-2"

@@ -1,9 +1,9 @@
 .sf-dump {
-    @apply !leading-6 text-sm;
+    @apply !leading-6 text-xs;
 }
 
 samp {
-    @apply !font-mono !text-sm;
+    @apply !font-mono !text-xs;
 }
 
 .sf-js-enabled pre.sf-dump .sf-dump-compact,
@@ -180,7 +180,7 @@ pre.sf-dump .sf-dump-meta {
     @apply text-primary;
 }
 pre.sf-dump .sf-dump-key {
-    @apply text-base-content/90 tracking-wide leading-5;
+    @apply text-base-content/90;
 }
 
 pre.sf-dump .sf-dump-index {

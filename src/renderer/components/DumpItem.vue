@@ -144,18 +144,13 @@ const getLabel = computed(() => {
 <template>
     <div>
         <div
-            :class="{
-                [`!border-l-2 ` + borderColor]: typeof borderColor !== 'undefined',
-                [bgColor]: typeof bgColor !== 'undefined',
-                'collapse-open': open
-            }"
-            id=""
-            class="collapse bg-base-200/80 bg-laravel border border-base-content/5"
+            :class="{ 'collapse-open': open }"
+            class="collapse bg-base-200/40 bg-laravel border border-base-content/5"
         >
             <div
-                @dblclick="open = !open"
+                @click="open = !open"
                 title="Double click to collapse"
-                class="select-none !cursor-default collapse-title text-base-content justify-between items-center font-light flex text-xs"
+                class="collapse-title text-base-content items-center justify-between flex text-xs"
             >
                 <ul
                     class="flex items-center gap-5 whitespace-nowrap"
@@ -168,15 +163,16 @@ const getLabel = computed(() => {
                         <DumpLink :ide-handler="payload.ide_handle" />
                     </li>
                 </ul>
+
                 <div class="group flex justify-center items-center gap-2">
                     <div
                         v-show="open"
                         class="mr-1 group flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
                     >
                         <div
-                            v-if="['table'].includes(screenStore.screen)"
+                            v-if="!['table'].includes(screenStore.screen)"
                             :title="$t('click_to_copy')"
-                            @click="copyDump"
+                            @click.stop="copyDump"
                         >
                             <CopyToClick />
                         </div>
@@ -216,47 +212,6 @@ const getLabel = computed(() => {
                         class="badge font-semibold badge-warning text-warning-content uppercase text-xs"
                     >
                         Duplicated
-                    </div>
-
-                    <div class="flex items-center -mr-2 text-base-content/70 p-2">
-                        <button
-                            v-show="!open"
-                            v-on:click="open = true"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                class="size-4"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                                />
-                            </svg>
-                        </button>
-                        <button
-                            v-show="open"
-                            v-on:click="open = false"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                class="size-4"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                                />
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </div>

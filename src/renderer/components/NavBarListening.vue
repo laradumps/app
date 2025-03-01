@@ -265,23 +265,22 @@ const addProject = () => {
                 </div>
 
                 <div
-                    class="overflow-auto border-t border-base-content/30"
+                    class="overflow-auto border-t border-base-content/10"
                     :class="{
-                        'h-[calc(100vh-11rem)] p-0': environments.length > 0
+                        'h-[calc(100vh-10rem)] p-0': environments.length > 0
                     }"
                 >
                     <li class="mt-2">
-                        <label
-                            class="!justify-start !text-left p-1.5"
-                            :class="{ 'bg-base-200': false }"
-                        >
+                        <label class="text-sm space-x-1">
                             <input
-                                type="checkbox"
                                 :name="`xdebug`"
-                                class="toggle toggle-sm toggle-primary"
+                                :class="{ 'checkbox-primary': xdebug }"
                                 v-model="xdebug"
+                                type="checkbox"
+                                @change.stop="save(env)"
+                                class="checkbox checkbox-sm"
                             />
-                            <span class="text-xs whitespace-nowrap font-semibold uppercase"> xdebug </span>
+                            <span>Xdebug (step debugging)</span>
                         </label>
                     </li>
 
@@ -289,18 +288,16 @@ const addProject = () => {
                         :key="env.value"
                         v-for="env in environments"
                     >
-                        <label
-                            class="text-base-content !justify-start !text-left p-1.5"
-                            :class="{ 'bg-base-200': env.selected }"
-                        >
+                        <label class="capitalize text-sm space-x-1">
                             <input
-                                type="checkbox"
                                 :name="`env-` + env.id"
+                                :class="{ 'checkbox-primary': env.selected }"
                                 v-model="env.selected"
-                                class="toggle toggle-sm toggle-primary"
+                                type="checkbox"
                                 @change.stop="save(env)"
+                                class="checkbox checkbox-sm"
                             />
-                            <span class="text-xs whitespace-nowrap font-semibold uppercase">{{ env.value.replaceAll("_", " ") }}</span>
+                            <span>{{ env.value.replaceAll("_", " ") }}</span>
                         </label>
                     </li>
                 </div>

@@ -2,8 +2,8 @@
     <!-- https://xdebug.org -->
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="180"
-        height="70"
+        width="120"
+        height="55"
         viewBox="0 0 351 181"
     >
         <title>Xdebug</title>

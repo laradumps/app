@@ -2,6 +2,7 @@
 @import "./custom.css";
 
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @plugin "daisyui" {
     themes:
         light --default,
@@ -21,7 +22,8 @@
         cupcake,
         emerald,
         forest,
-        midnight;
+        midnight,
+        caramellatte;
 }
 
 @config "../../tailwind.config.js";
@@ -64,10 +66,6 @@ body {
     background-color: #9d9a9a;
 }
 
-/* daisyui */
-.collapse {
-    @apply rounded-md;
-}
 .collapse-title,
 :where(.collapse > input[type="checkbox"]),
 :where(.collapse > input[type="radio"]) {
