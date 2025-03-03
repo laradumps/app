@@ -503,6 +503,8 @@ const handleSelectText = () => {
 };
 
 const disconnect = () => {
+    xDebugStore.current = {}
+
     window.ipcRenderer.send("disconnect-xdebug");
     modal_error.close();
 };

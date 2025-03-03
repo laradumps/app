@@ -115,6 +115,10 @@ const selectedEnvironment = computed(() => {
 });
 
 const save = async (env): Promise<void> => {
+    if (typeof env === "undefined") {
+        return;
+    }
+
     window.ipcRenderer.send("storage.update", {
         selected: selectedEnvironment.value,
         project: selectedProject.value
