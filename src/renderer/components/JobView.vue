@@ -119,22 +119,22 @@ const duration = (startTime: any, endTime: any) => {
                 <div class="py-4 space-y-2">
                     <div v-html="selectedJobDetail.html"></div>
                     <table class="table table-zebra">
+                        <thead>
                         <tr>
                             <td class="bg-base-200">Job ID</td>
-                            <td>{{ selectedJobDetail.id }}</td>
+                            <td>Start Time</td>
+                            <td>End Time</td>
+                            <td>Duration</td>
                         </tr>
+                        </thead>
+                        <tbody>
                         <tr>
-                            <td class="bg-base-200">Start Time</td>
+                            <td class="bg-base-200">{{ selectedJobDetail.id }}</td>
                             <td>{{ moment(selectedJobDetail.start_time).format("hh:mm:ss a") }}</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-base-200">End Time</td>
                             <td>{{ moment(selectedJobDetail.end_time).format("hh:mm:ss a") }}</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-base-200">Duration</td>
                             <td>{{ duration(selectedJobDetail.start_time, selectedJobDetail.end_time) }}</td>
                         </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
