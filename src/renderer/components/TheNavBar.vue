@@ -67,7 +67,7 @@ const xDebugMode = computed(() => {
 
         <div class="flex gap-1 items-center m-0.5">
             <!-- global search -->
-            <NavBarGlobalSearch v-if="!xDebugMode && payloadStore.payload.length > 0" />
+            <NavBarGlobalSearch v-if="payloadStore.payload.length > 0" />
 
             <!-- collapse -->
             <NavBarCollapse v-if="!xDebugMode || (settingsStore.settings.show_collapse_button && payloadStore.payload.length > 0)" />
