@@ -4,7 +4,7 @@ import "splitpanes/dist/splitpanes.css";
 import { Attachment, Mail, mimeTypeMap, useMailStore } from "@/store/mail";
 import moment from "moment";
 import { computed, defineProps, nextTick, ref } from "vue";
-import { CloudArrowDownIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { CloudArrowDownIcon, TrashIcon, DevicePhoneMobileIcon, DeviceTabletIcon, ComputerDesktopIcon } from "@heroicons/vue/24/outline";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import DumpLink from "@/components/DumpLink.vue";
 
@@ -13,6 +13,7 @@ const mailStore = useMailStore();
 const visited = ref<Mail>();
 const previewUrl = ref<string>("");
 const search = ref<string>("");
+const previewMode = ref<string>("desktop");
 
 const props = defineProps<{
     items: any;
@@ -103,6 +104,21 @@ const openInBrowser = (attachment: Attachment) => {
 
         setTimeout(() => URL.revokeObjectURL(url), 100);
     }
+};
+
+const previewStyle = computed(() => {
+    switch (previewMode.value) {
+        case "mobile":
+            return "width: 375px; height: 667px;";
+        case "tablet":
+            return "width: 768px; height: calc(100vh - 320px);";
+        default:
+            return "width: 1024px; height: calc(100vh - 320px);";
+    }
+});
+
+const setPreviewMode = (mode: string) => {
+    previewMode.value = mode;
 };
 </script>
 
@@ -205,68 +221,109 @@ const openInBrowser = (attachment: Attachment) => {
                     </div>
                 </pane>
 
-                <pane class="overflow-auto h-[calc(100vh-150px)] text-sm">
+                <pane
+                    class="overflow-auto text-sm"
+                    style="height: min-content"
+                >
                     <div
                         v-if="visited"
-                        class="w-full h-full space-y-2 p-2 pl-4"
-                        style="height: -webkit-fill-available"
+                        class="w-full space-y-2 !h-[calc(100vh-150px)]"
                     >
-                        <DumpLink
-                            :ide-handler="visited.ide_handle"
-                            class="text-xs opacity-80 link"
-                        />
+                        <div class="p-2 pl-4">
+                            <DumpLink
+                                :ide-handler="visited.ide_handle"
+                                class="text-xs opacity-80 link"
+                            />
 
-                        <div class="flex flex-col gap-2">
-                            <div class="flex items-center w-full justify-between">
-                                <span class="font-semibold">{{ visited.subject }}</span>
-                                <div class="flex gap-2">
-                                    <button
-                                        @click="openDumps"
-                                        class="btn btn-xs btn-soft"
-                                    >
-                                        Dumps
-                                        <IconExternalLink class="w-4" />
-                                    </button>
-                                    <button
-                                        @click="openHeaders"
-                                        class="btn btn-xs btn-soft"
-                                    >
-                                        Headers
-                                        <IconExternalLink class="w-4" />
-                                    </button>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center w-full justify-between">
+                                    <span class="font-semibold">{{ visited.subject }}</span>
+                                    <div class="flex gap-2">
+                                        <button
+                                            @click="openDumps"
+                                            class="btn btn-xs btn-soft"
+                                        >
+                                            Dumps
+                                            <IconExternalLink class="w-4" />
+                                        </button>
+                                        <button
+                                            @click="openHeaders"
+                                            class="btn btn-xs btn-soft"
+                                        >
+                                            Headers
+                                            <IconExternalLink class="w-4" />
+                                        </button>
+                                    </div>
                                 </div>
+                                <div class="flex gap-3 items-center">
+                                    <span v-text="visited.headers[0]"></span>
+                                </div>
+                                <div class="flex gap-3 items-center"><span v-text="visited.headers[1]"></span></div>
+                                <div
+                                    v-if="visited.attachments.length > 0"
+                                    class="flex gap-3 items-center"
+                                >
+                                    Attachments:
+                                </div>
+                                <button
+                                    v-if="visited.attachments.length > 0"
+                                    class="btn btn-primary flex gap-2 items-center"
+                                    v-for="(attachment, index) in visited.attachments"
+                                    :key="`attachment-${index}`"
+                                    @click.prevent="openInBrowser(attachment)"
+                                >
+                                    <CloudArrowDownIcon class="w-4 h-4" />
+                                    {{ attachment.filename }}
+                                </button>
                             </div>
-                            <div class="flex gap-3 items-center">
-                                <span v-text="visited.headers[0]"></span>
-                            </div>
-                            <div class="flex gap-3 items-center"><span v-text="visited.headers[1]"></span></div>
-                            <div
-                                v-if="visited.attachments.length > 0"
-                                class="flex gap-3 items-center"
-                            >
-                                Attachments:
-                            </div>
-                            <button
-                                v-if="visited.attachments.length > 0"
-                                class="btn btn-primary flex gap-2 items-center"
-                                v-for="(attachment, index) in visited.attachments"
-                                :key="`attachment-${index}`"
-                                @click.prevent="openInBrowser(attachment)"
-                            >
-                                <CloudArrowDownIcon class="w-4 h-4" />
-                                {{ attachment.filename }}
-                            </button>
                         </div>
 
                         <div
-                            class="w-full overflow-auto"
+                            class="px-3 w-full"
                             style="height: -webkit-fill-available"
                         >
-                            <iframe
-                                class="w-full h-full"
-                                style="height: -webkit-fill-available"
-                                :src="`http://localhost:9191/${previewUrl}.html`"
-                            />
+                            <div class="flex gap-2 mb-2 items-center justify-center text-xs">
+                                <button
+                                    @click="setPreviewMode('mobile')"
+                                    class="btn btn-xs btn-soft"
+                                    :class="{ 'btn-primary': previewMode === 'mobile' }"
+                                >
+                                    <DevicePhoneMobileIcon class="w-4" />
+                                    Mobile
+                                </button>
+                                <button
+                                    @click="setPreviewMode('tablet')"
+                                    class="btn btn-xs btn-soft"
+                                    :class="{ 'btn-primary': previewMode === 'tablet' }"
+                                >
+                                    <DeviceTabletIcon class="w-4" />
+                                    Tablet
+                                </button>
+                                <button
+                                    @click="setPreviewMode('desktop')"
+                                    class="btn btn-xs btn-soft"
+                                    :class="{ 'btn-primary': previewMode === 'desktop' }"
+                                >
+                                    <ComputerDesktopIcon class="w-4" />
+                                    Desktop
+                                </button>
+                            </div>
+
+                            <div
+                                v-if="visited"
+                                class="w-full h-full space-y-2 p-2 pl-4"
+                            >
+                                <div
+                                    class="w-full flex justify-center"
+                                    style="height: -webkit-fill-available"
+                                >
+                                    <iframe
+                                        class="border"
+                                        :style="previewStyle"
+                                        :src="`http://localhost:9191/${previewUrl}.html`"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
