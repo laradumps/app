@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { Settings } from "@/types/settings.type";
+import { DEFAULT_SETTINGS } from "@/default-settings";
 
 const themeColors = {
     system: "System",
@@ -72,36 +73,7 @@ const dumpOrder = {
 export const useSettingsStore = defineStore("settings", () => {
     const themes = ref(themeColors);
 
-    let defaultSettings: Settings = {
-        theme: "dark",
-        language: "en",
-        check_for_updates: "auto_download",
-        ide_handler: "phpstorm://open?file={filepath}&line={line}",
-        scroll_direction: "top",
-        auto_launch: "disabled",
-        dump_order: "normal",
-        shortcuts: {
-            always_on_top: {
-                originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
-                keys: process.platform === "darwin" ? "Alt+Shift+T" : "Ctrl+Shift+T",
-                label: "settings.shortcut.alwaysOnTop"
-            },
-            clear_all: {
-                originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
-                keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K",
-                label: "settings.shortcut.clear"
-            }
-        },
-        window_width: 760,
-        window_height: 620,
-        show_collapse_button: false,
-        show_pause_button: false,
-        show_ssh_button: true,
-        show_variable_type: true,
-        limit_dumps: 100
-    };
-
-    const settings = ref<Settings>(defaultSettings);
+    const settings = ref<Settings>(DEFAULT_SETTINGS);
 
     const update = () => {
         const serializablePayload = JSON.parse(JSON.stringify(settings.value));

@@ -3,6 +3,7 @@ import * as fs from "node:fs";
 import { app, ipcMain } from "electron";
 import os from "os";
 import { Settings, Shortcut } from "@/types/settings.type";
+import { DEFAULT_SETTINGS } from "@/default-settings";
 
 const homeDir = os.homedir();
 
@@ -13,38 +14,11 @@ if (app.isPackaged && !fs.existsSync(settingsDir)) {
 
 const settingsPath = app.isPackaged ? path.join(settingsDir, "settings.json") : path.join(__dirname, "settings.json");
 
-const defaultSettings: Settings = {
-    theme: "dark",
-    language: "en",
-    check_for_updates: "auto_download",
-    ide_handler: "phpstorm://open?file={filepath}&line={line}",
-    auto_launch: "disabled",
-    scroll_direction: "top",
-    dump_order: "normal",
-    shortcuts: {
-        always_on_top: {
-            originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
-            keys: process.platform === "darwin" ? "Alt+Shift+T" : "Ctrl+Shift+T",
-            label: "settings.shortcut.alwaysOnTop"
-        },
-        clear_all: {
-            originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
-            keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K",
-            label: "settings.shortcut.clear"
-        }
-    },
-    window_width: 760,
-    window_height: 620,
-    show_ssh_button: true,
-    show_collapse_button: false,
-    show_pause_button: false,
-    show_variable_type: true,
-    limit_dumps: 100
-};
+const defaultSettings = DEFAULT_SETTINGS
 
 export const init = async () => {
     ipcMain.on("settings.store", async (_event: any, data: Settings) => {
-        setSettings(data);
+        await setSettings(data);
     });
     ipcMain.on("settings.init-shortcuts", initShortcuts);
 };
@@ -66,21 +40,20 @@ export const initShortcuts = (event) => {
         });
     }
 };
-
-export const getSettings = () => {
-    let settingsRaw: string = "";
-    let settings: Settings;
+export const getSettings = (): Settings => {
+    let settings: Settings = defaultSettings;
 
     if (fs.existsSync(settingsPath)) {
-        settingsRaw = fs.readFileSync(settingsPath).toString();
+        try {
+            const settingsRaw = fs.readFileSync(settingsPath, "utf-8");
+            settings = { ...defaultSettings, ...JSON.parse(settingsRaw) };
+            settings.shortcuts = { ...defaultSettings.shortcuts, ...settings.shortcuts };
+        } catch (error) {
+            return settings;
+        }
     }
 
-    if (settingsRaw) {
-        settings = JSON.parse(settingsRaw);
-    } else {
-        settings = defaultSettings;
-        setSettings(settings);
-    }
-
+    setSettings(settings);
     return settings;
 };
+
