@@ -20,6 +20,8 @@ const clearAll = (): void => {
     globalSearchStore.clear();
     colorStore.clear();
     payloadStore.clearAll();
+
+    window.ipcRenderer.send("reload");
 };
 
 onMounted(() => {

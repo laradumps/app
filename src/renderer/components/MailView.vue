@@ -106,16 +106,26 @@ const openInBrowser = (attachment: Attachment) => {
     }
 };
 
+const openTmpBrowserPreview = () => {
+    window.ipcRenderer.send("main:openLink", `http://localhost:9191/${previewUrl.value}.html`);
+};
+
 const previewStyle = computed(() => {
-    switch (previewMode.value) {
-        case "mobile":
-            return "width: 375px; height: 667px;";
-        case "tablet":
-            return "width: 768px; height: calc(100vh - 320px);";
-        default:
-            return "width: 1024px; height: calc(100vh - 320px);";
-    }
+    return `
+        width: ${previewMode.value === "mobile" ? "375px" : previewMode.value === "tablet" ? "768px" : "1024px"};
+        height: ${previewMode.value === "mobile" ? "667px" : previewMode.value === "tablet" ? "1024px" : "768px"};
+        transform: scale(1);
+        transform-origin: top left;
+        overflow: hidden;
+    `;
 });
+
+// const createNewWindow = () => {
+//     window.ipcRenderer.send("main:open-custom-window", {
+//         title: '123123',
+//         url: `http://localhost:9191/${previewUrl.value}.html`
+//     });
+// };
 
 const setPreviewMode = (mode: string) => {
     previewMode.value = mode;
@@ -253,6 +263,13 @@ const setPreviewMode = (mode: string) => {
                                             Headers
                                             <IconExternalLink class="w-4" />
                                         </button>
+                                        <button
+                                            @click="openTmpBrowserPreview"
+                                            class="btn btn-xs btn-soft"
+                                        >
+                                            Browser
+                                            <IconExternalLink class="w-4" />
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="flex gap-3 items-center">
@@ -315,11 +332,13 @@ const setPreviewMode = (mode: string) => {
                             >
                                 <div
                                     class="w-full flex justify-center"
-                                    style="height: -webkit-fill-available"
+                                    style="height: -webkit-fill-available;"
                                 >
                                     <iframe
                                         class="border"
                                         :style="previewStyle"
+                                        allowfullscreen
+                                        frameborder="0"
                                         :src="`http://localhost:9191/${previewUrl}.html`"
                                     />
                                 </div>
@@ -339,5 +358,11 @@ const setPreviewMode = (mode: string) => {
         </div>
     </div>
 </template>
-
-<style scoped></style>
+<style>
+iframe {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border: none;
+}
+</style>

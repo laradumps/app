@@ -7,10 +7,12 @@ export const init = async () => {
             show: true,
             width: 830,
             height: 690,
+            resizable: true,
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,
-                preload: resolve(__dirname, "preload.cjs")
+                preload: resolve(__dirname, "preload.cjs"),
+                experimentalFeatures: true,
             },
             alwaysOnTop: true,
             title: link.title
