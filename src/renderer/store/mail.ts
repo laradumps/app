@@ -67,11 +67,21 @@ export const useMailStore = defineStore("mailStore", {
             const subjectHeader = payload.headers.find((header) => header.startsWith("Subject:")) ?? "";
             const toHeader = payload.headers.find((header) => header.startsWith("To:")) ?? "";
 
+            const decodeMimeEncodedWord = (encodedText: string) => {
+                return encodedText.replace(/=\?utf-8\?Q\?(.*?)\?=/gi, (match, content) => {
+                    const decoded = content.replace(/_/g, " ").replace(/=([A-Fa-f0-9]{2})/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+
+                    return decodeURIComponent(escape(decoded));
+                });
+            };
+
             const regex = /From:\s*(.*)\s*<(.+)>/;
             const matches = fromHeader.match(regex) ?? [];
             const from = matches[1] ?? "";
             const fromMail = matches[2] ?? "";
-            const subject = subjectHeader.replace("Subject: ", "").trim();
+            const subjectEncoded = subjectHeader.replace("Subject: ", "").trim();
+            const subject = decodeMimeEncodedWord(subjectEncoded);
+
             const to = toHeader.replace("To: ", "").trim();
 
             this.mails.push({

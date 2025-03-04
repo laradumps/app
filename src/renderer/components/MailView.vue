@@ -122,7 +122,7 @@ const previewStyle = computed(() => {
 
 // const createNewWindow = () => {
 //     window.ipcRenderer.send("main:open-custom-window", {
-//         title: '123123',
+//         title: 1,
 //         url: `http://localhost:9191/${previewUrl.value}.html`
 //     });
 // };
@@ -332,7 +332,7 @@ const setPreviewMode = (mode: string) => {
                             >
                                 <div
                                     class="w-full flex justify-center"
-                                    style="height: -webkit-fill-available;"
+                                    style="height: -webkit-fill-available"
                                 >
                                     <iframe
                                         class="border"

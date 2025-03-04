@@ -14,7 +14,7 @@ if (app.isPackaged && !fs.existsSync(settingsDir)) {
 
 const settingsPath = app.isPackaged ? path.join(settingsDir, "settings.json") : path.join(__dirname, "settings.json");
 
-const defaultSettings = DEFAULT_SETTINGS
+const defaultSettings = DEFAULT_SETTINGS;
 
 export const init = async () => {
     ipcMain.on("settings.store", async (_event: any, data: Settings) => {
@@ -56,4 +56,3 @@ export const getSettings = (): Settings => {
     setSettings(settings);
     return settings;
 };
-
