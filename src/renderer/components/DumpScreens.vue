@@ -1,5 +1,5 @@
 <script setup>
-import { computed, defineEmits, ref } from "vue";
+import { defineEmits, ref } from "vue";
 import { useScreenStore } from "@/store/screen";
 import { usePayloadStore } from "@/store/payload";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";

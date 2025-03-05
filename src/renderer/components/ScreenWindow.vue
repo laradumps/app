@@ -89,7 +89,7 @@ watch(timeStore.groups, () => {
 
         <div
             class="flex mt-2 flex-col overflow-auto h-[calc(100vh-1rem)]"
-            :class="{ 'flex': screen === 'queries' }"
+            :class="{ flex: screen === 'queries' }"
         >
             <div id="top"></div>
 

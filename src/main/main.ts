@@ -1,4 +1,4 @@
-import { app, nativeTheme, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell } from "electron";
+import { app, nativeTheme, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, screen } from "electron";
 import { autoUpdater } from "electron-updater";
 import { download } from "electron-dl";
 
@@ -64,13 +64,14 @@ function createWindow(): BrowserWindow {
 
     window.setMenuBarVisibility(false);
 
-    window.loadURL(isDev
+    window.loadURL(
+        isDev
             ? `http://localhost:4999?screen=default`
             : format({
-            pathname: join(__dirname, "app", "index.html"),
-            protocol: "file:",
-            slashes: true
-        }) + `?screen=default`
+                  pathname: join(__dirname, "app", "index.html"),
+                  protocol: "file:",
+                  slashes: true
+              }) + `?screen=default`
     );
 
     window.on("resize", (): void => {
@@ -102,11 +103,13 @@ function createWindow(): BrowserWindow {
     window.once("ready-to-show", (): void => {
         window.show();
         window.focus();
-    });
 
-    if (isDev) {
-        window.webContents.openDevTools();
-    }
+        if (isDev) {
+            setTimeout(() => {
+                window.webContents.openDevTools();
+            }, 1000);
+        }
+    });
 
     return window;
 }
@@ -150,6 +153,21 @@ ipcMain.on("screen-window:show", (event, arg) => {
         screenWindow = createScreenWindow(mainWindow, arg.screen);
         if (arg.position.length > 0) {
             screenWindow.setPosition(arg.position.x, arg.position.y);
+        } else {
+            const { screen } = require("electron");
+            const displays = screen.getAllDisplays();
+            const externalDisplay = displays.find((d) => d.id !== screen.getPrimaryDisplay().id);
+
+            if (externalDisplay) {
+                const { x, y, width, height } = externalDisplay.bounds;
+                const windowWidth = 670;
+                const windowHeight = 660;
+                const newX = x + (width - windowWidth) / 2;
+                const newY = y + (height - windowHeight) / 2;
+                screenWindow.setBounds({ x: newX, y: newY, width: windowWidth, height: windowHeight });
+            } else {
+                screenWindow.center();
+            }
         }
     } else {
         screenWindow = windowsMap.get(arg.screen);

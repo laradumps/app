@@ -8,7 +8,7 @@ const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 
 const readyToLoad = ref(false);
-const screen = ref<string|null>('');
+const screen = ref<string | null>("");
 
 //* * Convert shortcuts to Electron format **/
 Object.defineProperty(String.prototype, "beautifyShortcut", {
@@ -87,7 +87,10 @@ onMounted(() => {
             }"
             class="absolute w-full h-full min-h-full"
         >
-            <TheNavBar v-if="screen === 'default'" has-color />
+            <TheNavBar
+                v-if="screen === 'default'"
+                has-color
+            />
             <div v-else>
                 <div class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10">
                     <div class="w-full nav-bar">&nbsp;</div>
