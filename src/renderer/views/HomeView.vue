@@ -27,6 +27,7 @@ import { useMailStore } from "@/store/mail";
 import MailView from "@/components/MailView.vue";
 import { useLogStore } from "@/store/logs";
 import LogView from "@/components/LogView.vue";
+import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 
 markRaw(TheUpdateModalInfo);
 
@@ -394,6 +395,29 @@ const dispatch = (type: string, event: EventType, content: any): void => {
         setTimeout(() => toggleScreen(content.to_screen.screen_name, false), 10);
     }
 };
+
+const openScreenWindow = () => {
+    screenStore.toggleVisible(screenStore.screen);
+
+    const serializablePayload = JSON.parse(JSON.stringify(payloadStore.get(screenStore.screen)));
+    const serializableJobPayload = JSON.parse(JSON.stringify(jobStore.jobs));
+    const serializableMailPayload = JSON.parse(JSON.stringify(mailStore.mails));
+    const serializableLogPayload = JSON.parse(JSON.stringify(logStore.logs));
+
+    window.ipcRenderer.send("screen-window:show", {
+        screen: screenStore.screen,
+        payload: serializablePayload,
+        jobs: serializableJobPayload,
+        mails: serializableMailPayload,
+        logs: serializableLogPayload,
+        position: {}
+    });
+
+    setTimeout(() => {
+        const screenName = screenStore.screen === "home" ? screenStore.getNext("home").screen_name : "home";
+        toggleScreen(screenName);
+    }, 200);
+};
 </script>
 <template>
     <div
@@ -426,10 +450,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
             />
         </div>
 
-        <div
-            v-else
-            :data-theme="settingsStore.settings.theme"
-        >
+        <div v-else>
             <XDebugMode v-if="xdebugMode && xDebugStore.current && xDebugStore.current.project_path" />
 
             <div v-else>
@@ -442,6 +463,14 @@ const dispatch = (type: string, event: EventType, content: any): void => {
                         <div class="flex px-2">
                             <div class="flex items-center justify-between w-full overflow-x-auto">
                                 <DumpScreens @toggleScreen="toggleScreen" />
+
+                                <button
+                                    v-if="!['home', 'livewire'].includes(screenStore.screen)"
+                                    @click="openScreenWindow"
+                                    class="btn btn-xs btn-ghost"
+                                >
+                                    <IconExternalLink class="w-4 opacity-90" />
+                                </button>
                             </div>
                         </div>
 

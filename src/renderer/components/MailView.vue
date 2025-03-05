@@ -232,9 +232,7 @@ const setPreviewMode = (mode: string) => {
                     </div>
                 </pane>
 
-                <pane
-                    class="overflow-auto text-sm"
-                >
+                <pane class="overflow-auto text-sm">
                     <div
                         v-if="visited"
                         class="flex flex-col w-full space-y-2 !h-[calc(100vh-150px)]"

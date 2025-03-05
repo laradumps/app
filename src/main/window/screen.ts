@@ -35,13 +35,14 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
 
     window.setMenu(null);
 
-    window.loadURL(isDev
+    window.loadURL(
+        isDev
             ? `http://localhost:4999?screen=${screen}`
             : format({
-            pathname: join(__dirname, "app", "index.html"),
-            protocol: "file:",
-            slashes: true
-        }) + `?screen=${screen}`
+                  pathname: join(__dirname, "app", "index.html"),
+                  protocol: "file:",
+                  slashes: true
+              }) + `?screen=${screen}`
     );
 
     window.on("closed", () => {

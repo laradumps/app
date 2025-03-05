@@ -12,7 +12,7 @@ export const init = async () => {
                 nodeIntegration: true,
                 contextIsolation: false,
                 preload: resolve(__dirname, "preload.cjs"),
-                experimentalFeatures: true,
+                experimentalFeatures: true
             },
             alwaysOnTop: true,
             title: link.title

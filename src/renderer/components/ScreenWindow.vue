@@ -79,6 +79,7 @@ watch(timeStore.groups, () => {
 
         <div v-if="screen === 'queries'">
             <HeaderQueryRequests
+                class="mt-2 px-3"
                 :payload="dumpsItems"
                 :total="dumpsBagFiltered.length"
                 :total-duplicated-filtered="duplicatedQueriesCount"
@@ -88,14 +89,13 @@ watch(timeStore.groups, () => {
 
         <div
             class="flex mt-2 flex-col overflow-auto h-[calc(100vh-1rem)]"
-            :class="{ 'flex mt-3': screen === 'queries' }"
+            :class="{ flex: screen === 'queries' }"
         >
             <div id="top"></div>
 
             <div
-                class="w-full mt-1 mb-[40px]"
+                class="w-full"
                 :class="{
-                    'mt-[7.6rem]': screen == 'queries',
                     'flex flex-col-reverse': settingsStore.settings.dump_order === 'reversed' && screen !== 'queries'
                 }"
             >
@@ -106,6 +106,7 @@ watch(timeStore.groups, () => {
                     :key="payload.sf_dump_id"
                 >
                     <DumpItem
+                        class="w-full px-3 group text-sm mb-2"
                         :index="index"
                         :payload="payload"
                         v-show="screen === 'queries' ? payload.request_id === timeStore.selected : screen !== 'livewire'"

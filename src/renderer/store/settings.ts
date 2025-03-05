@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { Settings } from "@/types/settings.type";
 import { DEFAULT_SETTINGS } from "@/default-settings";
 
@@ -73,18 +73,40 @@ const dumpOrder = {
 export const useSettingsStore = defineStore("settings", () => {
     const themes = ref(themeColors);
 
-    const settings = ref<Settings>(DEFAULT_SETTINGS);
+    const savedSettings = localStorage.getItem("user-settings");
+    const settings = ref<Settings>(savedSettings ? JSON.parse(savedSettings) : DEFAULT_SETTINGS);
 
     const update = () => {
         const serializablePayload = JSON.parse(JSON.stringify(settings.value));
 
-        // clone settings json
+        localStorage.setItem("user-settings", JSON.stringify(serializablePayload));
+
         window.ipcRenderer.send("settings.store", serializablePayload);
     };
 
-    const setSettings = (settings: any) => {
-        settings.value = settings;
+    const setSettings = (newSettings: any) => {
+        settings.value = newSettings;
+        localStorage.setItem("user-settings", JSON.stringify(newSettings));
     };
 
-    return { settings, update, themes, languageOptions, ideHandlerOptions, autoLaunchOptions, dumpOrder, scrollDirection, checkForUpdateOptions, setSettings };
+    watch(
+        () => settings.value.theme,
+        (newTheme) => {
+            localStorage.setItem("user-settings", JSON.stringify(settings.value));
+            document.documentElement.setAttribute("data-theme", newTheme);
+        }
+    );
+
+    return {
+        settings,
+        update,
+        themes,
+        languageOptions,
+        ideHandlerOptions,
+        autoLaunchOptions,
+        dumpOrder,
+        scrollDirection,
+        checkForUpdateOptions,
+        setSettings
+    };
 });
