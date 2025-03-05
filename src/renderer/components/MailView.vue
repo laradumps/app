@@ -113,10 +113,11 @@ const openTmpBrowserPreview = () => {
 const previewStyle = computed(() => {
     return `
         width: ${previewMode.value === "mobile" ? "375px" : previewMode.value === "tablet" ? "768px" : "1024px"};
-        height: ${previewMode.value === "mobile" ? "667px" : previewMode.value === "tablet" ? "1024px" : "768px"};
+        height: 100%;
         transform: scale(1);
         transform-origin: top left;
         overflow: hidden;
+
     `;
 });
 
@@ -237,45 +238,74 @@ const setPreviewMode = (mode: string) => {
                 >
                     <div
                         v-if="visited"
-                        class="w-full space-y-2 !h-[calc(100vh-150px)]"
+                        class="flex flex-col w-full space-y-2 !h-[calc(100vh-150px)]"
                     >
-                        <div class="p-2 pl-4">
+                        <!-- header -->
+                        <div class="px-2 pl-4">
                             <DumpLink
                                 :ide-handler="visited.ide_handle"
                                 class="text-xs opacity-80 link"
                             />
 
-                            <div class="flex flex-col gap-2">
-                                <div class="flex items-center w-full justify-between">
+                            <div class="mt-1 flex flex-col gap-2">
+                                <div class="flex flex-wrap gap-2 items-center w-full justify-between">
                                     <span class="font-semibold">{{ visited.subject }}</span>
-                                    <div class="flex gap-2">
+                                    <div class="flex gap-2 flex-wrap">
                                         <button
                                             @click="openDumps"
-                                            class="btn btn-xs btn-soft"
+                                            class="btn btn-xs btn-outline border-base-content/10"
                                         >
                                             Dumps
                                             <IconExternalLink class="w-4" />
                                         </button>
                                         <button
                                             @click="openHeaders"
-                                            class="btn btn-xs btn-soft"
+                                            class="btn btn-xs btn-outline border-base-content/10"
                                         >
                                             Headers
                                             <IconExternalLink class="w-4" />
                                         </button>
                                         <button
                                             @click="openTmpBrowserPreview"
-                                            class="btn btn-xs btn-soft"
+                                            class="btn btn-xs btn-outline border-base-content/10"
                                         >
                                             Browser
                                             <IconExternalLink class="w-4" />
                                         </button>
                                     </div>
                                 </div>
-                                <div class="flex gap-3 items-center">
-                                    <span v-text="visited.headers[0]"></span>
+                                <div class="flex flex-wrap justify-between gap-3">
+                                    <div class="flex gap-3 items-center">
+                                        <span v-text="visited.headers[0]"></span>
+                                    </div>
+                                    <div class="flex flex-row gap-3 items-center">
+                                        <span v-text="visited.headers[1]"></span>
+                                    </div>
+
+                                    <div class="flex gap-2 mb-2 items-center justify-center text-xs">
+                                        <button
+                                            @click="setPreviewMode('mobile')"
+                                            class="btn btn-xs btn-soft"
+                                            :class="{ 'btn-primary': previewMode === 'mobile' }"
+                                        >
+                                            <DevicePhoneMobileIcon class="w-4" />
+                                        </button>
+                                        <button
+                                            @click="setPreviewMode('tablet')"
+                                            class="btn btn-xs btn-soft"
+                                            :class="{ 'btn-primary': previewMode === 'tablet' }"
+                                        >
+                                            <DeviceTabletIcon class="w-4" />
+                                        </button>
+                                        <button
+                                            @click="setPreviewMode('desktop')"
+                                            class="btn btn-xs btn-soft"
+                                            :class="{ 'btn-primary': previewMode === 'desktop' }"
+                                        >
+                                            <ComputerDesktopIcon class="w-4" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="flex gap-3 items-center"><span v-text="visited.headers[1]"></span></div>
                                 <div
                                     v-if="visited.attachments.length > 0"
                                     class="flex gap-3 items-center"
@@ -295,53 +325,19 @@ const setPreviewMode = (mode: string) => {
                             </div>
                         </div>
 
+                        <!-- body -->
                         <div
-                            class="px-3 w-full"
-                            style="height: -webkit-fill-available"
+                            v-if="visited"
+                            class="w-full flex-1"
                         >
-                            <div class="flex gap-2 mb-2 items-center justify-center text-xs">
-                                <button
-                                    @click="setPreviewMode('mobile')"
-                                    class="btn btn-xs btn-soft"
-                                    :class="{ 'btn-primary': previewMode === 'mobile' }"
-                                >
-                                    <DevicePhoneMobileIcon class="w-4" />
-                                    Mobile
-                                </button>
-                                <button
-                                    @click="setPreviewMode('tablet')"
-                                    class="btn btn-xs btn-soft"
-                                    :class="{ 'btn-primary': previewMode === 'tablet' }"
-                                >
-                                    <DeviceTabletIcon class="w-4" />
-                                    Tablet
-                                </button>
-                                <button
-                                    @click="setPreviewMode('desktop')"
-                                    class="btn btn-xs btn-soft"
-                                    :class="{ 'btn-primary': previewMode === 'desktop' }"
-                                >
-                                    <ComputerDesktopIcon class="w-4" />
-                                    Desktop
-                                </button>
-                            </div>
-
-                            <div
-                                v-if="visited"
-                                class="w-full h-full space-y-2 p-2 pl-4"
-                            >
-                                <div
-                                    class="w-full flex justify-center"
-                                    style="height: -webkit-fill-available"
-                                >
-                                    <iframe
-                                        class="border"
-                                        :style="previewStyle"
-                                        allowfullscreen
-                                        frameborder="0"
-                                        :src="`http://localhost:9191/${previewUrl}.html`"
-                                    />
-                                </div>
+                            <div class="w-full h-full flex justify-center">
+                                <iframe
+                                    class="border"
+                                    :style="previewStyle"
+                                    allowfullscreen
+                                    frameborder="0"
+                                    :src="`http://localhost:9191/${previewUrl}.html`"
+                                />
                             </div>
                         </div>
                     </div>

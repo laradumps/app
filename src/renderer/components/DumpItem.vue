@@ -145,7 +145,7 @@ const getLabel = computed(() => {
     <div>
         <div
             :class="{ 'collapse-open': open }"
-            class="collapse bg-base-200/40 bg-laravel border border-base-content/5"
+            class="card collapse bg-base-200/40 bg-laravel border border-base-content/5"
         >
             <div
                 @click="open = !open"
@@ -319,3 +319,8 @@ const getLabel = computed(() => {
         </div>
     </div>
 </template>
+<style scoped>
+.card {
+    display: grid !important;
+}
+</style>
