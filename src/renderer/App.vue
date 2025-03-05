@@ -8,6 +8,7 @@ const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 
 const readyToLoad = ref(false);
+const screen = ref<string|null>('');
 
 //* * Convert shortcuts to Electron format **/
 Object.defineProperty(String.prototype, "beautifyShortcut", {
@@ -71,6 +72,9 @@ onMounted(() => {
         document.documentElement.setAttribute("data-theme", "light");
         settingsStore.update();
     });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    screen.value = urlParams.get("screen");
 });
 </script>
 
@@ -83,7 +87,14 @@ onMounted(() => {
             }"
             class="absolute w-full h-full min-h-full"
         >
-            <TheNavBar has-color />
+            <TheNavBar v-if="screen === 'default'" has-color />
+            <div v-else>
+                <div class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10">
+                    <div class="w-full nav-bar">&nbsp;</div>
+                    <span class="uppercase text-xs font-semibold nav-bar flex items-center">{{ screen }}</span>
+                    <div class="w-full nav-bar">&nbsp;</div>
+                </div>
+            </div>
 
             <main class="w-full overflow-auto h-[calc(100vh-50px)]">
                 <RouterView :key="$route.fullPath" />

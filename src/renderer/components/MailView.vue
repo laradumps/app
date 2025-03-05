@@ -234,7 +234,6 @@ const setPreviewMode = (mode: string) => {
 
                 <pane
                     class="overflow-auto text-sm"
-                    style="height: min-content"
                 >
                     <div
                         v-if="visited"

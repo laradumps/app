@@ -22,6 +22,7 @@ import { chooseDirectory } from "./choose-directory";
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
 import { createScreenWindow } from "./window/screen";
+import { format } from "url";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
@@ -63,14 +64,13 @@ function createWindow(): BrowserWindow {
 
     window.setMenuBarVisibility(false);
 
-    window.loadURL(
-        isDev
-            ? `http://localhost:4999`
-            : url.format({
-                  pathname: join(__dirname, "app", "index.html"),
-                  protocol: "file:",
-                  slashes: true
-              })
+    window.loadURL(isDev
+            ? `http://localhost:4999?screen=default`
+            : format({
+            pathname: join(__dirname, "app", "index.html"),
+            protocol: "file:",
+            slashes: true
+        }) + `?screen=default`
     );
 
     window.on("resize", (): void => {

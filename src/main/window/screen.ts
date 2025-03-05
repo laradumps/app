@@ -14,7 +14,7 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
         show: false,
         resizable: true,
         alwaysOnTop: true,
-        titleBarStyle: isMac ? "hidden" : "default",
+        titleBarStyle: "hiddenInset",
         webPreferences: {
             spellcheck: true,
             nodeIntegration: true,
@@ -28,24 +28,21 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
     }
 
     if (isMac) {
-        screenWindowOptions.titleBarStyle = "hidden";
+        screenWindowOptions.trafficLightPosition = { x: 12, y: 11 };
     }
 
     const window = new BrowserWindow(screenWindowOptions);
 
     window.setMenu(null);
 
-    if (isDev) {
-        window.loadURL(`http://localhost:4999`);
-    } else {
-        window.loadURL(
-            format({
-                pathname: join(__dirname, "app", "index.html"),
-                protocol: "file:",
-                slashes: true
-            })
-        );
-    }
+    window.loadURL(isDev
+            ? `http://localhost:4999?screen=${screen}`
+            : format({
+            pathname: join(__dirname, "app", "index.html"),
+            protocol: "file:",
+            slashes: true
+        }) + `?screen=${screen}`
+    );
 
     window.on("closed", () => {
         mainEvent.webContents.send("screen-window:closed", { screen });
