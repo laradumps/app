@@ -107,7 +107,7 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             setTimeout(() => {
                 window.webContents.openDevTools();
-            }, 1000);
+            }, 800);
         }
     });
 

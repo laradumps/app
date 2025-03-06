@@ -451,7 +451,7 @@ const getHighlightedCode = (lineContent) => {
             tooltipContent = `${variable.type}: ${variable.value}`;
         }
 
-        return `<span class="text-primary highlight cursor-pointer font-normal" data-variable="${match}" onclick="modal_property_get.showModal()" data-tippy-content="${tooltipContent}">${match}</span>`;
+        return `<span class="underline highlight cursor-pointer font-semibold" data-variable="${match}" onclick="modal_property_get.showModal()" data-tippy-content="${tooltipContent}">${match}</span>`;
     });
 };
 
@@ -611,12 +611,16 @@ onBeforeUnmount(() => {
                     >
                         <SvgXDebug />
 
-                        <span
-                            class="link"
-                            @click="openXDebugLink"
-                        >
+                        <div class="flex gap-2">
+                            <span
+                                class="link"
+                                @click="openXDebugLink"
+                            >
                             https://xdebug.org
                         </span>
+
+                            (unofficial feature)
+                        </div>
 
                         <div class="space-y-3 text-base-content text-sm font-normal">
                             <li>{{ i18n.t("doc.add") }} <span class="font-semibold">xdebug_break()</span> {{ i18n.t("doc.in_any_line_of_code") }}</li>
@@ -698,8 +702,8 @@ onBeforeUnmount(() => {
                                         @click="property.type !== 'string' ? handlePropertyContextClick(property.type, property.name, false) : null"
                                     >
                                         <span
-                                            :class="{ 'opacity-70 !text-base-content line-through': property.type === 'uninitialized' }"
-                                            class="variable-name text-primary mr-2"
+                                            :class="{ 'opacity-70 line-through': property.type === 'uninitialized' }"
+                                            class="variable-name mr-2"
                                             >{{ property.name.replace("$", "") }}</span
                                         >
                                         <span class="classname truncate"
@@ -745,7 +749,7 @@ onBeforeUnmount(() => {
                     v-if="selectedVariableName && propertiesEvalTree.length === 0"
                 >
                     <div class="select-none">
-                        <span class="variable-name text-base text-primary">{{ selectedVariableName }}</span>
+                        <span class="variable-name text-base">{{ selectedVariableName }}</span>
                     </div>
                 </div>
 
@@ -754,7 +758,7 @@ onBeforeUnmount(() => {
                     v-if="propertiesEvalTree.length > 0"
                 >
                     <span
-                        class="variable-name text-primary"
+                        class="variable-name"
                         v-text="evaluate"
                     ></span>
                 </div>
@@ -826,7 +830,7 @@ onBeforeUnmount(() => {
 @reference "./../styles.css";
 
 .variable-name {
-    @apply text-primary;
+    @apply text-[#9876AA];
 }
 
 .classname {

@@ -2,7 +2,7 @@
     <!-- https://xdebug.org -->
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="120"
+        width="100"
         height="55"
         viewBox="0 0 351 181"
     >

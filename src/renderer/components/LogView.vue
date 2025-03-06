@@ -116,7 +116,7 @@ const closeModal = () => {
             v-if="selectedLogDetail"
             @close="closeModal"
         >
-            <div class="modal-box max-w-2xl max-h-[calc(100vh-74px)]">
+            <div class="modal-box max-w-3xl max-h-[calc(100vh-74px)]">
                 <div class="py-4 space-y-5">
                     <div>{{ selectedLogDetail.message }}</div>
                     <div>
