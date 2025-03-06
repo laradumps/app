@@ -19,11 +19,7 @@
                 <IconCodeBrackets v-show="!hasArrayIndexAtEnd(property.fullname) && !['object', 'array'].includes(property.type)" />
 
                 <div>
-                    <span
-                        :class="{ '!text-primary': ['string', 'int', 'bool', 'array', 'null', 'float'].includes(property.type) }"
-                        class="variable-name"
-                        >{{ displayVariableName(property) }}</span
-                    >
+                    <span class="variable-name">{{ displayVariableName(property) }}</span>
 
                     <span v-if="property.type === 'null'"> = <span class="text-secondary">null</span></span>
 
@@ -140,7 +136,7 @@ const sendCommand = (cmd): void => {
 }
 
 .variable-name {
-    @apply text-primary;
+    @apply text-[#9876AA];
 }
 
 .classname {

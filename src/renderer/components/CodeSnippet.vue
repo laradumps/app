@@ -142,86 +142,75 @@ onMounted(() => {
 @reference "./../styles.css";
 
 .code-snippet {
-    @apply bg-base-300 border border-base-content/20;
-}
-
-[data-theme="light"] .code-snippet,
-[data-theme="nord"] .code-snippet {
-    @apply !bg-white border border-base-content/10;
-}
-
-.scrollable {
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-.line-number {
-    @apply inline-block w-[40px] select-none text-base-content;
+    @apply bg-black border border-gray-700 rounded-lg p-4;
 }
 
 .hljs {
-    @apply !bg-transparent font-normal text-xs leading-8;
+    @apply !bg-transparent font-mono !text-xs leading-6 !text-gray-300;
 }
 
-.hljs,
-.hljs-params {
-    @apply !text-base-content/80;
+.hljs-comment {
+    @apply !text-gray-500 italic;
 }
 
-.hljs-comment,
-.hljs-quote {
-    @apply !text-[#5c6370] italic;
-}
-
-.hljs-doctag,
-.hljs-formula,
-.hljs-keyword {
-    @apply !text-[#c678dd];
-}
-
-.hljs-deletion,
-.hljs-name,
-.hljs-section,
+.hljs-keyword,
 .hljs-selector-tag,
-.hljs-subst {
-    @apply !text-[#e06c75];
+.hljs-doctag {
+    @apply !text-[#cc7832] font-bold;
 }
 
-.hljs-literal {
-    @apply !text-[#56b6c2];
-}
-
-.hljs-addition,
-.hljs-attribute,
+.hljs-string,
 .hljs-meta .hljs-string,
-.hljs-regexp,
-.hljs-meta,
-.hljs-string {
-    @apply !text-[#98c379];
+.hljs-attribute {
+    @apply !text-[#6a8759];
 }
-.hljs-attr,
+
 .hljs-number,
-.hljs-selector-attr,
-.hljs-selector-class,
-.hljs-selector-pseudo,
-.hljs-template-variable,
-.hljs-type,
-.hljs-variable {
-    @apply text-rose-400;
+.hljs-literal,
+.hljs-boolean {
+    @apply !text-[#6897BB];
 }
 
-.hljs-bullet,
-.hljs-link,
-.hljs-meta,
-.hljs-selector-id,
-.hljs-symbol,
-.hljs-title {
-    @apply text-blue-400;
+.hljs-title,
+.hljs-function,
+.hljs-built_in {
+    @apply !text-[#ffc66d];
 }
 
-.hljs-built_in,
+.hljs-variable,
+.hljs-template-variable {
+    @apply !text-[#9876AA];
+}
+
 .hljs-class,
+.hljs-type,
 .hljs-title.class_ {
-    @apply text-orange-400;
+    @apply !text-[#a9b7c6];
+}
+
+.hljs-attr,
+.hljs-symbol {
+    @apply !text-[#b3b3b3];
+}
+
+/* Operadores */
+.hljs-operator {
+    @apply !text-[#cc7832];
+}
+
+.hljs-regexp {
+    @apply !text-[#b68c35];
+}
+
+.hljs-tag,
+.hljs-name,
+.hljs-section {
+    @apply !text-[#e8bf6a];
+}
+
+/* Links */
+.hljs-link {
+    @apply !text-[#287bde] underline;
 }
 
 .hljs-emphasis {
@@ -232,7 +221,11 @@ onMounted(() => {
     @apply font-semibold;
 }
 
-.hljs-link {
-    @apply underline;
+.line-number {
+    @apply inline-block w-[40px] select-none text-gray-500 text-right pr-2;
+}
+
+.scrollable {
+    @apply overflow-auto;
 }
 </style>
