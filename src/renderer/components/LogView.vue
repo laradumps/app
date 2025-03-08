@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Job } from "@/store/jobs";
 import { computed, defineProps, nextTick, onMounted, ref } from "vue";
 import moment from "moment";
 import { EyeIcon, TrashIcon } from "@heroicons/vue/24/outline";
@@ -24,6 +23,7 @@ const selectedLogDetail = ref();
 
 const props = defineProps<{
     items: Record<string, Log>;
+    inScreenWindow: boolean;
 }>();
 
 const generateLink = (ideHandler: IdeHandle) => {
@@ -139,7 +139,10 @@ const closeModal = () => {
             </form>
         </dialog>
 
-        <div class="space-y-3 h-[calc(100vh-140px)]">
+        <div
+            class="space-y-3"
+            :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }"
+        >
             <div class="flex items-center gap-2 justify-between mt-1">
                 <input
                     v-model="search"

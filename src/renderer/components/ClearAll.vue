@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import { nextTick, onMounted } from "vue";
-import { useScreenStore } from "@/store/screen";
+import { computed, onMounted } from "vue";
 import { useTimeStore } from "@/store/time";
 import { useColorStore } from "@/store/colors";
 import { useGlobalSearchStore } from "@/store/global-search";
 import { usePayloadStore } from "@/store/payload";
 import { TrashIcon } from "@heroicons/vue/24/outline";
+import { useQueriesPayloadStore } from "@/store/queries";
+import { useMailStore } from "@/store/mail";
+import { useJobStore } from "@/store/jobs";
+import { useLogStore } from "@/store/logs";
 
-const screenStore = useScreenStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const payloadStore = usePayloadStore();
+const logStore = useLogStore();
+const jobStore = useJobStore();
+const queryStore = useQueriesPayloadStore();
+const mailStore = useMailStore();
 
 const clearAll = (): void => {
     // store
@@ -20,9 +26,15 @@ const clearAll = (): void => {
     globalSearchStore.clear();
     colorStore.clear();
     payloadStore.clearAll();
-
-    window.ipcRenderer.send("reload");
+    logStore.clear();
+    jobStore.clear();
+    mailStore.clear();
+    queryStore.clear();
 };
+
+const hasPayload = computed(() => {
+    return payloadStore.payload.length > 0 || Object(logStore.logs).length > 0 || Object(jobStore.jobs).length > 0 || Object(mailStore.mails).length > 0 || Object(queryStore.payload).length > 0;
+});
 
 onMounted(() => {
     window.ipcRenderer.on("clear", () => clearAll());
@@ -33,7 +45,7 @@ onMounted(() => {
 <template>
     <div>
         <button
-            v-show="payloadStore.payload.length > 0"
+            v-show="hasPayload"
             :title="$t('clear')"
             class="p-2 flex hover:bg-base-200 rounded-md"
             @click="clearAll"

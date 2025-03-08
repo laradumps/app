@@ -25,4 +25,6 @@ export interface Settings {
     show_ssh_button: boolean;
     show_variable_type: boolean;
     limit_dumps: number;
+    limit_laravel_queries: number;
+    limit_laravel_logs: number;
 }

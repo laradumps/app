@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { CodeSnippet, LogApplicationPayload } from "@/types/Payload";
+import { CodeSnippet, Payload } from "@/types/Payload";
 import { IdeHandle } from "@/types/IdeHandle";
 import { useSettingsStore } from "@/store/settings";
 
@@ -10,7 +10,7 @@ export type Log = {
     message: any;
     created_at: Date;
     ide_handle: IdeHandle;
-    code_snippet: CodeSnippet;
+    code_snippet: CodeSnippet[];
     color: string;
 };
 
@@ -23,13 +23,17 @@ export const useLogStore = defineStore("logStore", {
         logs: JSON.parse(localStorage.getItem("logs") || "[]")
     }),
     actions: {
-        add(log: LogApplicationPayload, code_snippet: CodeSnippet, ide_handle: IdeHandle) {
-            const log_id = log.context[1];
+        add(content: Payload) {
+            if (!content.log_application) {
+                return;
+            }
+
+            const log_id = content.log_application.context[1];
 
             this._removeOldestIfExceedsLimit();
 
             if (!this.logs[log_id]) {
-                this._initialize(log, code_snippet, ide_handle);
+                this._initialize(content);
             }
         },
         store() {
@@ -39,20 +43,26 @@ export const useLogStore = defineStore("logStore", {
             this.logs = {};
             this.store();
         },
-        _initialize(payload: LogApplicationPayload, code_snippet: CodeSnippet, ide_handle: IdeHandle) {
+        _initialize(payload: Payload) {
+            const { log_application, code_snippet, ide_handle } = payload;
+
+            if (!log_application) {
+                return;
+            }
+
             const date = new Date();
 
-            const log_id = payload.context[1];
+            const log_id = log_application.context[1];
 
             this.logs[log_id] = {
-                log_id: payload.context[1],
-                level: payload.level,
-                context: payload.context,
-                message: payload.message,
+                log_id: log_application.context[1],
+                level: log_application.level,
+                context: log_application.context,
+                message: log_application.message,
                 created_at: date,
                 code_snippet,
                 ide_handle,
-                color: this._parseColor(payload.level)
+                color: this._parseColor(log_application.level)
             };
 
             console.log(this.logs[log_id]);
@@ -60,22 +70,16 @@ export const useLogStore = defineStore("logStore", {
         _parseColor(level: string) {
             switch (level) {
                 case "error":
-                    return "red";
                 case "critical":
-                    return "red";
                 case "alert":
+                case "emergency":
                     return "red";
                 case "warning":
                     return "orange";
-                case "emergency":
-                    return "red";
                 case "info":
                     return "blue";
-                case "debug":
-                    return "gray";
                 case "notice":
                     return "green";
-
                 default:
                     return "gray";
             }
@@ -83,7 +87,7 @@ export const useLogStore = defineStore("logStore", {
         _removeOldestIfExceedsLimit() {
             const settingsStore = useSettingsStore();
 
-            if (Object.keys(this.logs).length == settingsStore.settings.limit_dumps + 1) {
+            if (Object.keys(this.logs).length == settingsStore.settings.limit_laravel_logs + 1) {
                 const oldestLogKey = Object.keys(this.logs).reduce((oldestKey, currentKey) => {
                     return this.logs[currentKey].created_at < this.logs[oldestKey].created_at ? currentKey : oldestKey;
                 }, Object.keys(this.logs)[0]);

@@ -17,6 +17,7 @@ const previewMode = ref<string>("desktop");
 
 const props = defineProps<{
     items: any;
+    inScreenWindow: boolean;
 }>();
 
 const display = (mail: Mail) => {

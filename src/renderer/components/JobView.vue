@@ -19,6 +19,7 @@ const search = ref("");
 
 const props = defineProps<{
     items: Record<string, Job>;
+    inScreenWindow: boolean;
 }>();
 
 const generateLink = (ideHandler: IdeHandle) => {
@@ -146,7 +147,10 @@ const duration = (startTime: any, endTime: any) => {
             </form>
         </dialog>
 
-        <div class="space-y-3 h-[calc(100vh-140px)]">
+        <div
+            class="space-y-3"
+            :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }"
+        >
             <div class="flex items-center gap-2 justify-between mt-1">
                 <input
                     v-model="search"

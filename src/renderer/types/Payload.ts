@@ -6,6 +6,9 @@ export interface QueriesPayload {
     time: string;
     sql: string;
     duplicated: boolean;
+    origin: string;
+    uri: string;
+    method: string;
 }
 
 export interface QueryPayload {
@@ -127,7 +130,7 @@ export interface Payload {
     request_id: never;
     ide_handle: IdeHandle;
     xdebug: any; // todo
-    date_time: string;
+    date_time: Date;
     application_path: string;
     sf_dump_id: string;
     dump?: DumpPayload;

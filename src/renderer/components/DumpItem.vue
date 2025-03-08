@@ -159,7 +159,7 @@ const getLabel = computed(() => {
                     <li class="list-none">
                         {{ moment(payload.date_time).format("hh:mm:ss a") }}
                     </li>
-                    <li>
+                    <li class="select-none">
                         <DumpLink :ide-handler="payload.ide_handle" />
                     </li>
                 </ul>
@@ -176,20 +176,6 @@ const getLabel = computed(() => {
                         >
                             <CopyToClick />
                         </div>
-                        <!--                            <div-->
-                        <!--                                :title="$t('menu.saved_dumps')"-->
-                        <!--                                @click="saveDump"-->
-                        <!--                                v-if="!inSavedDumpsWindow"-->
-                        <!--                            >-->
-                        <!--                                <SaveDump />-->
-                        <!--                            </div>-->
-                        <!--                            <div-->
-                        <!--                                :title="$t('menu.remove')"-->
-                        <!--                                @click="removeSaveDump"-->
-                        <!--                                v-if="inSavedDumpsWindow"-->
-                        <!--                            >-->
-                        <!--                                <IconTrash class="cursor-pointer size-4" />-->
-                        <!--                            </div>-->
                     </div>
 
                     <!-- variable type -->
@@ -208,8 +194,15 @@ const getLabel = computed(() => {
                     </div>
 
                     <div
+                        v-if="payload.queries && payload.queries?.origin"
+                        class="badge badge-xs badge-ghost"
+                    >
+                        {{ payload.queries?.origin }}
+                    </div>
+
+                    <div
                         v-if="isDuplicated(payload.queries?.sql)"
-                        class="badge font-semibold badge-warning text-warning-content uppercase text-xs"
+                        class="badge lowercase badge-xs badge-warning text-warning-content text-xs"
                     >
                         Duplicated
                     </div>
@@ -293,7 +286,7 @@ const getLabel = computed(() => {
                     <!-- dump queries -->
                     <DumpQueries
                         :id="`dump-content-${props.payload.sf_dump_id}`"
-                        class="w-full"
+                        class="w-full mr-"
                         v-if="props.payload.type === `queries`"
                         :payload="payload"
                     />
