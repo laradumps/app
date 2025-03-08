@@ -424,7 +424,7 @@ const openScreenWindow = () => {
         >
             <ScreenWindow
                 v-if="!['jobs', 'mail', 'logs', 'queries'].includes(inScreenWindow)"
-                :dumps-items="payloadScreen"
+                :dumps="payloadScreen"
                 v-model:screen="inScreenWindow"
             />
 
