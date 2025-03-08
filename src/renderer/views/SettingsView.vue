@@ -278,14 +278,44 @@ const editShortcut = () => {
                 </div>
             </div>
 
+            <div class="mt-10 flex items-center justify-between">
+                <h1 class="text-lg font-semibold">Limit dumps</h1>
+            </div>
+
             <Divider class="mt-3" />
             <div class="mt-3 grid grid-cols-2 items-center">
-                <div>Limit dumps</div>
+                <div>Dumps</div>
                 <div class="flex items-center justify-between">
                     <input
                         type="number"
                         class="grow input input-bordered input-md w-full"
                         v-model="settingsStore.settings.limit_dumps"
+                        @change="saveLimitDumps()"
+                    />
+                </div>
+            </div>
+
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Laravel Queries</div>
+                <div class="flex items-center justify-between">
+                    <input
+                        type="number"
+                        class="grow input input-bordered input-md w-full"
+                        v-model="settingsStore.settings.limit_laravel_queries"
+                        @change="saveLimitDumps()"
+                    />
+                </div>
+            </div>
+
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Laravel Logs</div>
+                <div class="flex items-center justify-between">
+                    <input
+                        type="number"
+                        class="grow input input-bordered input-md w-full"
+                        v-model="settingsStore.settings.limit_laravel_logs"
                         @change="saveLimitDumps()"
                     />
                 </div>

@@ -616,8 +616,8 @@ onBeforeUnmount(() => {
                                 class="link"
                                 @click="openXDebugLink"
                             >
-                            https://xdebug.org
-                        </span>
+                                https://xdebug.org
+                            </span>
 
                             (unofficial feature)
                         </div>

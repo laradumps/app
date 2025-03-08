@@ -1,13 +1,18 @@
 <script setup>
 import { useTimeStore } from "@/store/time";
 import SelectMenu from "@/components/SelectMenu.vue";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useFormattedQueriesStore } from "@/store/formatted-queries";
 import { useQueryDuplicated } from "@/store/query-duplicated";
+import { useQueriesOriginFilter } from "@/store/queries-origin-filter.js";
+import { AdjustmentsHorizontalIcon } from "@heroicons/vue/20/solid";
 
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
 const duplicatesStore = useQueryDuplicated();
+const queriesOriginFilter = useQueriesOriginFilter();
+
+const orderBy = ref("default");
 
 const props = defineProps({
     total: {
@@ -24,23 +29,6 @@ const props = defineProps({
     }
 });
 
-const queryOrder = computed(() => {
-    return [
-        {
-            id: false,
-            label: "default"
-        },
-        {
-            id: true,
-            label: "desc"
-        },
-        {
-            id: false,
-            label: "asc"
-        }
-    ];
-});
-
 const allRequests = computed(() => {
     let requests = timeStore.groups.map((group, index) => ({
         index: index + 1,
@@ -48,14 +36,28 @@ const allRequests = computed(() => {
         label: `#${index + 1} - <b>${timeStore.getTotal(group).toFixed(2)}ms</b> - ${timeStore.getUri(group)} (${timeStore.getMethod(group)})`
     }));
 
+    if (queriesOriginFilter.origin.length > 0) {
+        requests = requests.filter((request) => queriesOriginFilter.origin.includes(timeStore.getOrigin(request.id)));
+    }
+
     requests.sort((a, b) => b.index - a.index);
 
     return requests;
 });
+
+watch(orderBy, (value) => {
+    timeStore.setOrder(value);
+});
+
+const options = ["http", "console"];
+
+const toggle = (value) => {
+    queriesOriginFilter.toggleFilter(value);
+};
 </script>
 
 <template>
-    <div class="mb-2 gap-2 flex flex-col bg-base-100 px-3 z-100 h-auto w-full">
+    <div class="gap-2 flex flex-col bg-base-100 z-100 h-auto w-full">
         <div
             v-if="timeStore.groups.length > 0"
             class="justify-between items-center gap-4 text-base-content"
@@ -84,28 +86,90 @@ const allRequests = computed(() => {
                         class="flex flex-row-reverse gap-3 items-center"
                     >
                         <span class="text-primary text-base">{{ duplicatesStore.totalByRequestId(timeStore.selected) }}</span>
-                        <span class="text-xs uppercase badge badge-warning font-semibold">duplicated</span>
+                        <span class="badge lowercase badge-xs badge-warning text-warning-content text-xs">duplicated</span>
                     </div>
                 </div>
 
                 <div class="flex gap-3 items-end">
-                    <label class="flex items-center gap-2 !justify-end !text-left p-1.5">
-                        <input
-                            type="checkbox"
-                            v-model="formattedQueriesStore.formatted"
-                            class="toggle toggle-xs toggle-primary"
-                            @click="formattedQueriesStore.toggle()"
-                        />
-                        <span class="text-xs whitespace-nowrap font-normal uppercase">Prettify</span>
-                    </label>
-
                     <div>
-                        <div>
-                            <SelectMenu
-                                @selected="timeStore.setOrder($event.id)"
-                                class="dark:!bg-base-600 !text-xs !w-[100px]"
-                                v-model:data="queryOrder"
-                            />
+                        <div class="dropdown dropdown-end">
+                            <div
+                                tabindex="0"
+                                role="button"
+                                class="btn btn-sm btn-circle btn-soft btn-accent"
+                            >
+                                <AdjustmentsHorizontalIcon class="w-4" />
+                            </div>
+                            <ul
+                                tabindex="0"
+                                class="dropdown-content menu !text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
+                            >
+                                <li class="text-xs uppercase font-normal mb-1">Order by:</li>
+                                <li>
+                                    <label>
+                                        <input
+                                            v-model="orderBy"
+                                            type="radio"
+                                            name="radio-order"
+                                            class="radio radio-sm radio-accent"
+                                            value="default"
+                                        />
+                                        default
+                                    </label>
+                                </li>
+                                <li>
+                                    <label>
+                                        <input
+                                            v-model="orderBy"
+                                            type="radio"
+                                            name="radio-order"
+                                            class="radio radio-sm radio-accent"
+                                            value="desc"
+                                        />
+                                        desc
+                                    </label>
+                                </li>
+                                <li>
+                                    <label>
+                                        <input
+                                            v-model="orderBy"
+                                            type="radio"
+                                            name="radio-order"
+                                            class="radio radio-sm radio-accent"
+                                            value="asc"
+                                        />
+                                        asc
+                                    </label>
+                                </li>
+                                <li class="text-xs uppercase font-normal my-3">origin:</li>
+                                <li
+                                    v-for="option in options"
+                                    :key="option"
+                                >
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            :value="option"
+                                            :checked="queriesOriginFilter.origin.includes(option)"
+                                            @change="toggle(option)"
+                                            class="checkbox checkbox-sm checkbox-accent"
+                                        />
+                                        {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+                                    </label>
+                                </li>
+                                <li class="text-xs border mb-2 -mx-4 !border-base-content/10 uppercase font-normal mb-1"></li>
+                                <li>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            v-model="formattedQueriesStore.formatted"
+                                            class="checkbox checkbox-sm checkbox-accent"
+                                            @click="formattedQueriesStore.toggle()"
+                                        />
+                                        Prettify
+                                    </label>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>

@@ -174,3 +174,7 @@ body {
 .pane-code {
     @apply !bg-base-100;
 }
+
+.collapse-content {
+    padding-bottom: 0 !important;
+}

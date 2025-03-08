@@ -7,6 +7,7 @@ import { useJobStore } from "@/store/jobs";
 import IconPin from "@/components/Icons/IconPin.vue";
 import { useMailStore } from "@/store/mail";
 import { useLogStore } from "@/store/logs.js";
+import { useQueriesPayloadStore } from "@/store/queries.js";
 
 const emit = defineEmits(["toggleScreen"]);
 
@@ -15,6 +16,7 @@ const payloadStore = usePayloadStore();
 const jobStore = useJobStore();
 const mailStore = useMailStore();
 const logStore = useLogStore();
+const queriesStore = useQueriesPayloadStore();
 
 const showTooltip = ref(false);
 const isDraggingIndex = ref(null);
@@ -41,6 +43,7 @@ const openScreenWindow = (screen, mouseX, mouseY) => {
     const serializableJobPayload = JSON.parse(JSON.stringify(jobStore.jobs));
     const serializableMailPayload = JSON.parse(JSON.stringify(mailStore.mails));
     const serializableLogPayload = JSON.parse(JSON.stringify(logStore.logs));
+    const serializableQueriesPayload = JSON.parse(JSON.stringify(queriesStore.payload));
 
     window.ipcRenderer.send("screen-window:show", {
         screen: screen,
@@ -48,6 +51,7 @@ const openScreenWindow = (screen, mouseX, mouseY) => {
         jobs: serializableJobPayload,
         mails: serializableMailPayload,
         logs: serializableLogPayload,
+        queries: serializableQueriesPayload,
         position: {
             x: mouseX,
             y: mouseY
@@ -85,6 +89,10 @@ const getPayloadScreenCount = (screenName) => {
         return Object.entries(logStore.logs).length;
     }
 
+    if (screenName === "queries") {
+        return Object.entries(queriesStore.payload).length;
+    }
+
     return payloadStore.get(screenName).length;
 };
 
@@ -104,7 +112,7 @@ const pinScreen = (screen) => {
                 v-for="(screen, index) in screenStore.allVisible()"
                 :key="screen.screen_name"
                 :class="{ dragging: isDraggingIndex === index }"
-                v-bind:draggable="!['home', 'livewire'].includes(screen.screen_name)"
+                v-bind:draggable="!['home', 'livewire', 'queries'].includes(screen.screen_name)"
                 @dragstart="onDragStart(index)"
                 @dragover.prevent
                 @dragend="onDragEnd($event, screen)"

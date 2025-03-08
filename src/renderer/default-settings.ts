@@ -26,5 +26,7 @@ export const DEFAULT_SETTINGS: Settings = {
     show_collapse_button: false,
     show_pause_button: false,
     show_variable_type: true,
-    limit_dumps: 100
+    limit_dumps: 100,
+    limit_laravel_queries: 150,
+    limit_laravel_logs: 150
 };

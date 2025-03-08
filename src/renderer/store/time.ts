@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import moment from "moment";
+import { QueriesPayload } from "@/types/Payload";
 
 type Requests = {
     time: number | string;
@@ -7,6 +8,7 @@ type Requests = {
     total: number;
     uri: string;
     method: string;
+    origin: string;
 };
 
 type State = {
@@ -14,7 +16,7 @@ type State = {
     groups: string[];
     dumpIds: string[];
     selected: string;
-    order: boolean;
+    order: string;
 };
 
 export const useTimeStore = defineStore("timeStore", {
@@ -24,7 +26,7 @@ export const useTimeStore = defineStore("timeStore", {
             groups: [],
             dumpIds: [],
             selected: "",
-            order: false
+            order: "default"
         };
     },
     actions: {
@@ -64,6 +66,13 @@ export const useTimeStore = defineStore("timeStore", {
             return this.requests[requestId].uri;
         },
 
+        getOrigin(requestId: never) {
+            if (typeof this.requests[requestId] === "undefined") {
+                return 0;
+            }
+
+            return this.requests[requestId].origin;
+        },
         getMethod(requestId: never) {
             if (typeof this.requests[requestId] === "undefined") {
                 return 0;
@@ -80,7 +89,7 @@ export const useTimeStore = defineStore("timeStore", {
             this.selected = value;
         },
 
-        increment(requestId: string, dumpId: string, time: number | string, uri: string, method: string) {
+        increment(requestId: string, dumpId: string, queriesPayload: QueriesPayload) {
             if (this.dumpIds.includes(dumpId)) {
                 return;
             }
@@ -93,14 +102,15 @@ export const useTimeStore = defineStore("timeStore", {
                 };
             }
 
-            const total = (this.requests[requestId].total += time);
+            const total = (this.requests[requestId].total += queriesPayload.time);
 
             this.requests[requestId] = {
                 requestId,
                 total,
                 time: moment().format("HH:mm:ss a"),
-                uri,
-                method
+                uri: queriesPayload.uri,
+                method: queriesPayload.method,
+                origin: queriesPayload.origin
             };
 
             if (!this.groups.includes(requestId)) {

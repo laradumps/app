@@ -10,14 +10,12 @@ import { useColorStore } from "@/store/colors";
 import { Payload, ScreenPayload } from "@/types/Payload";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
-import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
 import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
 import ScreenWindow from "@/components/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
-import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useSettingsStore } from "@/store/settings";
 import XDebugMode from "@/components/XDebugMode.vue";
 import { useXDebug } from "@/store/xdebug";
@@ -28,6 +26,8 @@ import MailView from "@/components/MailView.vue";
 import { useLogStore } from "@/store/logs";
 import LogView from "@/components/LogView.vue";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
+import { useQueriesPayloadStore } from "@/store/queries";
+import QueriesView from "@/components/QueriesView.vue";
 
 markRaw(TheUpdateModalInfo);
 
@@ -40,6 +40,7 @@ const IDEHandler = useIDEHandlerStore();
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 const logStore = useLogStore();
+const queriesStore = useQueriesPayloadStore();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
@@ -63,12 +64,12 @@ const payloadScreen = ref([]);
 const jobScreen = ref({});
 const mailScreen = ref([]);
 const logScreen = ref({});
+const queriesScreen = ref([]);
 
 const applicationPath = ref("");
 const livewireRequests = ref([]);
 const isPaused = ref(false);
 
-const allRequests = ref([]);
 const xdebugMode = ref(false);
 
 onBeforeMount(() => {
@@ -98,6 +99,7 @@ onMounted(() => {
         jobScreen.value = args.jobs;
         mailScreen.value = args.mails;
         logScreen.value = args.logs;
+        queriesScreen.value = args.queries;
 
         setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
     });
@@ -107,6 +109,7 @@ onMounted(() => {
         jobScreen.value = args.jobs;
         mailScreen.value = args.mails;
         logScreen.value = args.logs;
+        queriesScreen.value = args.queries;
     });
 
     window.ipcRenderer.send("local-shortcut:get");
@@ -191,7 +194,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on("http-client", (event, { content }) => dispatch("http-client", event, content));
     window.ipcRenderer.on("model", (event, { content }) => dispatch("model", event, content));
     window.ipcRenderer.on("log_application", (event, { content }) => {
-        logStore.add(content.log_application, content.code_snippet, content.ide_handle);
+        logStore.add(content);
 
         const serializable = JSON.parse(JSON.stringify(logStore.logs));
 
@@ -200,16 +203,11 @@ const dumpListeners = () => {
 
             window.ipcRenderer.send("screen-window:show", {
                 screen: content.to_screen.screen_name,
-                payload: {},
-                jobs: {},
-                logs: serializable,
-                position: {}
+                logs: serializable
             });
         } else {
             window.ipcRenderer.send("send-screen-window-update", {
                 screen: content.to_screen.screen_name,
-                payload: {},
-                jobs: {},
                 logs: serializable
             });
         }
@@ -226,14 +224,53 @@ const dumpListeners = () => {
             toggleScreen(screen.screen_name, true);
         }
     });
+
     window.ipcRenderer.on("json_validate", (event, { content }) => {
         payloadStore.updateJSONValidatePayload(content);
     });
+
     window.ipcRenderer.on("validate", (event, { content }) => {
         payloadStore.updateValidatePayload(content);
     });
     window.ipcRenderer.on("json", (event, { content }) => dispatch("json", event, content));
-    window.ipcRenderer.on("queries", (event, { content }) => dispatch("queries", event, content));
+
+    window.ipcRenderer.on("queries", (event, { content }) => {
+        content.queries && timeStore.increment(content.request_id, content.id, content.queries);
+
+        if (typeof content.date_time == "undefined") {
+            content.date_time = new Date();
+        }
+
+        queriesStore.add(content);
+
+        const serializable = JSON.parse(JSON.stringify(queriesStore.payload));
+
+        if (content.to_screen.new_window) {
+            screenStore.hidden(content.to_screen.screen_name);
+
+            window.ipcRenderer.send("screen-window:show", {
+                screen: content.to_screen.screen_name,
+                payload: {},
+                jobs: {},
+                logs: {},
+                position: {},
+                queries: serializable
+            });
+        } else {
+            window.ipcRenderer.send("send-screen-window-update", {
+                screen: content.to_screen.screen_name,
+                payload: {},
+                jobs: {},
+                logs: {},
+                queries: serializable
+            });
+        }
+
+        setTimeout(() => {
+            const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
+            if (lastPayload) timeStore.selected = lastPayload.request_id;
+        }, 50);
+    });
     window.ipcRenderer.on("query", (event, { content }) => dispatch("query", event, content));
     window.ipcRenderer.on("time_track", (event, { content }) => {
         const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.with_label.label === content.with_label.label);
@@ -248,57 +285,23 @@ const dumpListeners = () => {
     });
 };
 
-const dumpsBagFiltered = computed(() => {
-    const reverseTimeOrder = (reversed) => {
-        return function () {
-            reversed = !reversed;
-            return function (a, b) {
-                const aTime = a?.queries?.time;
-                const bTime = b?.queries?.time;
-                return (aTime === bTime ? 0 : aTime < bTime ? -1 : 1) * (reversed ? -1 : 1);
-            };
-        };
-    };
-
-    const sort = reverseTimeOrder(timeStore.order);
-    const queryDuplicatedStore = useQueryDuplicated();
-
-    const dumps = dumpsBag.value;
-
-    dumps
-        .filter((dump: Payload) => dump.type === "queries")
-        .forEach((dump: Payload) => {
-            const sql = dump.queries.sql;
-
-            const isDuplicate = dumps.filter((d: Payload) => d.type === "queries" && d.request_id === dump.request_id && d.queries.sql === sql);
-
-            queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
-        });
-
-    return dumps
+const dumpsBagFiltered = computed((): Payload[] => {
+    return dumpsBag.value
         .filter(
             (dump: Payload) =>
                 JSON.stringify(dump[dump.type] ?? "")
                     .toLowerCase()
                     .includes(globalSearchStore.search.toLowerCase()) || dump.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
         )
-        .filter((dump) => {
-            if (colorStore.colors.length > 0) {
+        .filter((dump: Payload) => {
+            if (colorStore.colors.length > 0 && dump.color) {
                 return colorStore.colors.includes(dump.color);
             }
             return true;
-        })
-        .map((dump: Payload) => {
-            if (dump.type === "queries") {
-                const { time, uri, method } = dump.queries;
-                timeStore.increment(dump.request_id, dump.id, time, uri, method);
-            }
-            return dump;
-        })
-        .sort(sort());
+        });
 });
 
-const addScreen = (param) => {
+const addScreen = (param: ScreenPayload) => {
     param.visible = true;
     param.pinned = false;
     screenStore.add(param);
@@ -327,13 +330,6 @@ const toggleScreen = async (value: string, shouldActivate = false): Promise<void
             document.getElementById(settingsStore.settings.scroll_direction)?.scrollIntoView({ behavior: "smooth" });
         }
     });
-
-    if (screenStore.screen === "queries") {
-        setTimeout(() => {
-            const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
-            if (lastPayload) timeStore.selected = lastPayload.request_id;
-        }, 50);
-    }
 };
 
 type EventType = "label" | "color" | "screen" | "dump";
@@ -366,11 +362,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     payloadStore.add(content);
 
-    let screenName = content.to_screen.screen_name ?? "home";
-
-    if (!["queries"].includes(screenName)) {
-        maximizeApp(content.auto_invoke_app);
-    }
+    maximizeApp(content.auto_invoke_app);
 
     const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name)));
 
@@ -403,6 +395,7 @@ const openScreenWindow = () => {
     const serializableJobPayload = JSON.parse(JSON.stringify(jobStore.jobs));
     const serializableMailPayload = JSON.parse(JSON.stringify(mailStore.mails));
     const serializableLogPayload = JSON.parse(JSON.stringify(logStore.logs));
+    const serializableQueriesPayload = JSON.parse(JSON.stringify(queriesStore.payload));
 
     window.ipcRenderer.send("screen-window:show", {
         screen: screenStore.screen,
@@ -410,6 +403,7 @@ const openScreenWindow = () => {
         jobs: serializableJobPayload,
         mails: serializableMailPayload,
         logs: serializableLogPayload,
+        queries: serializableQueriesPayload,
         position: {}
     });
 
@@ -424,29 +418,38 @@ const openScreenWindow = () => {
         :class="{ absolute: !inScreenWindow }"
         class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
     >
-        <div v-if="inScreenWindow">
+        <div
+            v-if="inScreenWindow"
+            class="mt-3 h-[calc(100vh-50px)] w-[100vw] text-base"
+        >
             <ScreenWindow
-                v-if="!['jobs', 'mail', 'logs'].includes(inScreenWindow)"
-                :dumps-items="payloadScreen"
+                v-if="!['jobs', 'mail', 'logs', 'queries'].includes(inScreenWindow)"
+                :dumps="payloadScreen"
                 v-model:screen="inScreenWindow"
             />
 
             <JobView
+                :in-screen-window="inScreenWindow.length > 0"
                 v-if="inScreenWindow === 'jobs'"
                 :items="jobScreen"
-                class="mt-3 h-[calc(100vh-105px)] w-[100vw] text-base overflow-auto"
             />
 
             <MailView
+                :in-screen-window="inScreenWindow.length > 0"
                 v-if="inScreenWindow === 'mail'"
                 :items="mailScreen"
-                class="mt-3 h-[calc(100vh-105px)] w-[100vw] text-base overflow-auto"
             />
 
             <LogView
+                :in-screen-window="inScreenWindow.length > 0"
                 v-if="inScreenWindow === 'logs'"
                 :items="logScreen"
-                class="mt-3 h-[calc(100vh-85px)] w-[100vw] text-base overflow-auto"
+            />
+
+            <QueriesView
+                :in-screen-window="inScreenWindow.length > 0"
+                v-if="inScreenWindow === 'queries'"
+                :items="queriesScreen"
             />
         </div>
 
@@ -465,7 +468,7 @@ const openScreenWindow = () => {
                                 <DumpScreens @toggleScreen="toggleScreen" />
 
                                 <button
-                                    v-if="!['home', 'livewire'].includes(screenStore.screen)"
+                                    v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
                                     @click="openScreenWindow"
                                     class="btn btn-xs btn-ghost"
                                 >
@@ -486,28 +489,21 @@ const openScreenWindow = () => {
                             <LogView class="h-[calc(100vh-100px)] w-[100vw] text-base" />
                         </div>
 
+                        <div v-if="screenStore.screen === 'queries'">
+                            <QueriesView class="w-[100vw] text-base" />
+                        </div>
+
                         <div
                             v-else
                             :class="{
-                                'px-3 items-center': payloadStore.payload.length === 0,
-                                flex: dumpsBagFiltered.length === 0
+                                'items-center': payloadStore.payload.length === 0
                             }"
-                            class="rounded-sm text-base overflow-auto h-[calc(100vh-85px)] w-[100vw]"
+                            class="flex flex-col rounded-sm text-base h-[calc(100vh-85px)] w-[100vw]"
                         >
                             <div id="top"></div>
 
-                            <div v-if="screenStore.screen === 'queries'">
-                                <HeaderQueryRequests
-                                    :in-screen-window="inScreenWindow ? 'true' : 'false'"
-                                    :all-requests="allRequests"
-                                    :total="dumpsBagFiltered.length"
-                                    :total-filtered="dumpsBagFiltered.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
-                                />
-                            </div>
-
                             <div
                                 :class="{
-                                    flex: screenStore.screen === 'queries',
                                     'w-full': dumpsBagFiltered.length === 0 && screenStore.screen !== 'home'
                                 }"
                             >
@@ -515,7 +511,9 @@ const openScreenWindow = () => {
                                     id="dumps-base"
                                     class="w-full mb-[40px]"
                                     v-if="payloadStore.payload.length > 0"
-                                    :class="{ 'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal' && screenStore.screen !== 'queries' }"
+                                    :class="{
+                                        'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal'
+                                    }"
                                 >
                                     <div
                                         v-for="(payload, index) in dumpsBagFiltered"
@@ -525,7 +523,7 @@ const openScreenWindow = () => {
                                     >
                                         <DumpItem
                                             class="w-full px-3 group text-sm mb-2"
-                                            v-show="screenStore.screen === 'queries' ? payload.request_id === timeStore.selected : screenStore.screen !== 'livewire'"
+                                            v-show="screenStore.screen !== 'livewire'"
                                             :payload="payload"
                                         />
                                     </div>

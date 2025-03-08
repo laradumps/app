@@ -45,10 +45,7 @@ const xDebugMode = computed(() => {
 
 <template>
     <div class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10">
-        <div
-            v-if="payloadStore.payload.length > 0"
-            :class="{ 'ml-[4.6rem]': platform === 'darwin' }"
-        >
+        <div :class="{ 'ml-[4.6rem]': platform === 'darwin' }">
             <div class="w-auto h-full">
                 <div class="flex items-center">
                     <!-- clear -->

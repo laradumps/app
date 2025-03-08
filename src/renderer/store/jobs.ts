@@ -66,6 +66,9 @@ export const useJobStore = defineStore("jobStore", {
 
                 delete this.jobs[oldestLogKey];
             }
+        },
+        clear() {
+            this.jobs = {};
         }
     }
 });

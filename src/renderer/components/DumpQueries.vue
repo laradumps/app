@@ -37,19 +37,19 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
 </script>
 
 <template>
-    <div class="rounded-sm dump-queries overflow-scroll">
-        <div class="flex justify-between gap-3 items-center mb-3">
-            <div class="flex items-center gap-3">
-                <span class="text-base font-semibold text-base-content"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
+    <div class="rounded-sm overflow-scroll">
+        <div class="flex justify-between items-start">
+            <div class="flex-1 min-w-0">
+                <pre
+                    v-if="formattedQueriesStore.formatted"
+                    class="flex relative group select-none w-auto overflow-hidden whitespace-pre-wrap break-words"
+                >
+                <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formatSql"></code>
+            </pre>
             </div>
-        </div>
 
-        <pre
-            v-if="formattedQueriesStore.formatted"
-            class="flex relative group select-none w-auto overflow-hidden whitespace-pre-wrap"
-        >
-            <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formatSql"></code>
-        </pre>
+            <span class="mr-2 text-lg text-primary font-normal whitespace-nowrap"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
+        </div>
 
         <code
             v-if="!formattedQueriesStore.formatted"
@@ -85,17 +85,6 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
 
 code * {
     @apply !font-light !text-base-content tracking-wider;
-}
-.hljs-keyword {
-    @apply !text-secondary;
-}
-.hljs-string {
-    @apply !text-secondary;
-}
-
-.hljs-number,
-.hljs-operator {
-    @apply !text-accent;
 }
 
 [data-theme="retro"] .hljs-keyword {
