@@ -8,7 +8,6 @@ import sql from "highlight.js/lib/languages/sql";
 hljs.registerLanguage("sql", sql);
 
 const formatted = ref(false);
-const copied = ref(false);
 
 const toggleFormatted = () => {
     formatted.value = !formatted.value;

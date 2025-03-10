@@ -19,15 +19,15 @@ import { usePayloadStore } from "@/store/payload";
 import { useSettingsStore } from "@/store/settings";
 import XDebugMode from "@/components/XDebugMode.vue";
 import { useXDebug } from "@/store/xdebug";
-import JobView from "@/components/JobView.vue";
+import JobView from "@/components/laravel/JobView.vue";
 import { useJobStore } from "@/store/jobs";
 import { useMailStore } from "@/store/mail";
-import MailView from "@/components/MailView.vue";
+import MailView from "@/components/laravel/MailView.vue";
 import { useLogStore } from "@/store/logs";
-import LogView from "@/components/LogView.vue";
+import LogView from "@/components/laravel/LogView.vue";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import { useQueriesPayloadStore } from "@/store/queries";
-import QueriesView from "@/components/QueriesView.vue";
+import QueriesView from "@/components/laravel/QueriesView.vue";
 
 markRaw(TheUpdateModalInfo);
 
@@ -498,7 +498,7 @@ const openScreenWindow = () => {
                             :class="{
                                 'items-center': payloadStore.payload.length === 0
                             }"
-                            class="flex flex-col rounded-sm text-base h-[calc(100vh-85px)] w-[100vw]"
+                            class="flex flex-col rounded-sm text-base h-[calc(100vh-85px)] w-[100vw] overflow-auto"
                         >
                             <div id="top"></div>
 

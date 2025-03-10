@@ -10,6 +10,7 @@ export interface Shortcuts {
 }
 
 export interface Settings {
+    version: string;
     theme: string;
     language: string;
     check_for_updates: string;
@@ -27,4 +28,5 @@ export interface Settings {
     limit_dumps: number;
     limit_laravel_queries: number;
     limit_laravel_logs: number;
+    limit_laravel_jobs: number;
 }

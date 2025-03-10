@@ -3,7 +3,7 @@ import { IdeHandle } from "@/types/IdeHandle";
 export interface QueriesPayload {
     connectionName: string;
     database: string;
-    time: string;
+    time: number;
     sql: string;
     duplicated: boolean;
     origin: string;

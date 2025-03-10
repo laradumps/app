@@ -1,6 +1,7 @@
 import { Settings } from "@/types/settings.type";
 
 export const DEFAULT_SETTINGS: Settings = {
+    version: "",
     theme: "dark",
     language: "en",
     check_for_updates: "auto_download",
@@ -28,5 +29,6 @@ export const DEFAULT_SETTINGS: Settings = {
     show_variable_type: true,
     limit_dumps: 100,
     limit_laravel_queries: 150,
-    limit_laravel_logs: 150
+    limit_laravel_logs: 150,
+    limit_laravel_jobs: 150
 };

@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, defineProps, nextTick, onMounted, ref, watch } from "vue";
 import DumpLink from "@/components/DumpLink.vue";
-import DumpQueries from "@/components/DumpQueries.vue";
+import DumpQueries from "@/components/laravel/DumpQueries.vue";
 import DumpJson from "@/components/DumpJson.vue";
-import DumpLog from "@/components/DumpLog.vue";
 import DumpModel from "@/components/DumpModel.vue";
 import DumpTable from "@/components/DumpTable.vue";
 import DumpHTML from "@/components/DumpHTML.vue";
@@ -272,14 +271,6 @@ const getLabel = computed(() => {
                         :id="`dump-content-${props.payload.sf_dump_id}`"
                         class="w-full"
                         v-if="props.payload.type === `json`"
-                        :payload="payload"
-                    />
-
-                    <!-- dump log -->
-                    <DumpLog
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        class="w-full"
-                        v-if="props.payload.type === `log_application`"
                         :payload="payload"
                     />
 

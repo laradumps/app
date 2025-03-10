@@ -46,27 +46,5 @@ export default {
                 base1: colors.neutral
             }
         }
-    },
-    daisyui: {
-        themes: [
-            "light",
-            "dark",
-            "retro",
-            "cyberpunk",
-            "halloween",
-            "dracula",
-            "lemonade",
-            "winter",
-            "dim",
-            {
-                laravel: {
-                    primary: "#FF2D20",
-                    secondary: "#ff8400",
-                    neutral: "#18181a",
-                    "base-100": "#000000"
-                }
-            }
-        ]
-    },
-    plugins: []
+    }
 };

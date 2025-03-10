@@ -6,13 +6,12 @@ import { useQueriesPayloadStore } from "@/store/queries";
 import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
-import { useGlobalSearchStore } from "@/store/global-search";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { TrashIcon } from "@heroicons/vue/24/outline";
+import QueriesControl from "@/components/QueriesControl.vue";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
-const globalSearchStore = useGlobalSearchStore();
 const queriesOriginFilter = useQueriesOriginFilter();
 
 const search = ref("");
@@ -100,17 +99,19 @@ const clear = () => {
         />
 
         <div class="overflow-auto mt-2 h-[calc(100vh-225px)]">
-            <div
-                v-for="(payload, index) in queries"
-                :key="payload.sf_dump_id"
-                :id="payload.id"
-                class="w-full"
-            >
-                <DumpItem
-                    class="w-full group text-sm mb-2"
-                    v-show="payload.request_id === timeStore.selected"
-                    :payload="payload"
-                />
+            <div class="overflow-auto">
+                <div
+                    v-for="(payload, index) in queries"
+                    :key="payload.sf_dump_id"
+                    :id="payload.id"
+                    class="w-full"
+                >
+                    <DumpItem
+                        class="w-full group text-sm mb-2"
+                        v-show="payload.request_id === timeStore.selected"
+                        :payload="payload"
+                    />
+                </div>
             </div>
         </div>
     </div>

@@ -59,7 +59,7 @@ export const useJobStore = defineStore("jobStore", {
         _removeOldestIfExceedsLimit() {
             const settingsStore = useSettingsStore();
 
-            if (Object.keys(this.jobs).length == settingsStore.settings.limit_dumps + 1) {
+            if (Object.keys(this.jobs).length == settingsStore.settings.limit_laravel_jobs + 1) {
                 const oldestLogKey = Object.keys(this.jobs).reduce((oldestKey, currentKey) => {
                     return this.jobs[currentKey].pushed_time < this.jobs[oldestKey].pushed_time ? currentKey : oldestKey;
                 }, Object.keys(this.jobs)[0]);

@@ -176,6 +176,15 @@ const editShortcut = () => {
                     >{{ $t("settings.changes_saved") }}</span
                 >
             </div>
+
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>App version</div>
+                <div class="flex items-center justify-between">
+                    {{ settingsStore.settings.version ?? "-" }}
+                </div>
+            </div>
+
             <Divider class="mt-3" />
             <div class="mt-3 grid grid-cols-2 items-center">
                 <div>Theme</div>
@@ -316,6 +325,19 @@ const editShortcut = () => {
                         type="number"
                         class="grow input input-bordered input-md w-full"
                         v-model="settingsStore.settings.limit_laravel_logs"
+                        @change="saveLimitDumps()"
+                    />
+                </div>
+            </div>
+
+            <Divider class="mt-3" />
+            <div class="mt-3 grid grid-cols-2 items-center">
+                <div>Laravel Jobs</div>
+                <div class="flex items-center justify-between">
+                    <input
+                        type="number"
+                        class="grow input input-bordered input-md w-full"
+                        v-model="settingsStore.settings.limit_laravel_jobs"
                         @change="saveLimitDumps()"
                     />
                 </div>
