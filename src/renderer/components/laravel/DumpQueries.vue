@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, ref } from "vue";
+import { computed, defineProps } from "vue";
 import { format } from "sql-formatter";
 import { useTimeStore } from "@/store/time";
 import { Payload } from "@/types/Payload";
@@ -17,7 +17,14 @@ const props = defineProps<{
 }>();
 
 const total = computed(() => timeStore.requests[props.payload.request_id]?.total ?? 0);
-const percentage = computed(() => ((100 * props.payload.queries?.time) / total.value).toFixed(2));
+
+const percentage = computed(() => {
+    if (!props.payload.queries) {
+        return 0;
+    }
+
+    return Number(((100 * props.payload.queries?.time) / total.value).toFixed(2));
+});
 
 const formatSql = computed(() => {
     const sql = props.payload.queries?.sql;
@@ -37,7 +44,10 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
 </script>
 
 <template>
-    <div class="rounded-sm overflow-scroll">
+    <div
+        v-if="payload.queries"
+        class="rounded-sm overflow-scroll"
+    >
         <div class="flex justify-between items-start">
             <div class="flex-1 min-w-0">
                 <pre
@@ -48,7 +58,7 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
             </pre>
             </div>
 
-            <span class="mr-2 text-lg text-primary font-normal whitespace-nowrap"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
+            <span class="-mr-2 absolute right-2 text-lg text-primary font-normal whitespace-nowrap"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
         </div>
 
         <code
@@ -81,7 +91,7 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
 </template>
 
 <style>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 
 code * {
     @apply !font-light !text-base-content tracking-wider;
