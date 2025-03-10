@@ -8,7 +8,6 @@ import DumpItem from "@/components/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { TrashIcon } from "@heroicons/vue/24/outline";
-import QueriesControl from "@/components/QueriesControl.vue";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
