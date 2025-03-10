@@ -116,3 +116,8 @@ const clear = () => {
         </div>
     </div>
 </template>
+<style scoped>
+.collapse-content {
+    padding-bottom: 0;
+}
+</style>
