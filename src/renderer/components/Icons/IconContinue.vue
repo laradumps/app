@@ -5,7 +5,7 @@
         fill="none"
         stroke-width="1"
         stroke="currentColor"
-        class="w-5 text-success"
+        class="w-4 text-success"
     >
         <path
             fill-rule="evenodd"

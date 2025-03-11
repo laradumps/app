@@ -45,7 +45,7 @@ const saveTheme = async () => {
     if (settingsStore.settings.theme === "custom") {
         await nextTick(() => saveSettings());
 
-        modal_custom_theme.showModal()
+        modal_custom_theme.showModal();
         return;
     }
 
@@ -195,8 +195,10 @@ const saveCustomTheme = async () => {
 
 <template>
     <div class="overflow-auto text-base-content">
-
-        <dialog id="modal_custom_theme" class="modal modal-middle">
+        <dialog
+            id="modal_custom_theme"
+            class="modal modal-middle"
+        >
             <div class="modal-box">
                 <h3 class="text-lg font-bold">Custom Theme</h3>
                 <fieldset class="fieldset w-full">
@@ -205,7 +207,7 @@ const saveCustomTheme = async () => {
                     <span
                         @click="openThemeGenerator"
                         class="cursor-pointer link fieldset-label"
-                    >https://daisyui.com/theme-generator</span
+                        >https://daisyui.com/theme-generator</span
                     >
 
                     <textarea
@@ -215,7 +217,10 @@ const saveCustomTheme = async () => {
                     </textarea>
                 </fieldset>
                 <div class="modal-action">
-                    <form method="dialog" class="flex gap-3">
+                    <form
+                        method="dialog"
+                        class="flex gap-3"
+                    >
                         <button class="btn btn-sm">Close</button>
 
                         <button
@@ -225,7 +230,6 @@ const saveCustomTheme = async () => {
                         >
                             {{ $t("settings.save") }}
                         </button>
-
                     </form>
                 </div>
             </div>
@@ -270,7 +274,7 @@ const saveCustomTheme = async () => {
             <span
                 :class="{ 'opacity-0': !saved, 'opacity-65': saved }"
                 class="px-3 text-sm flex justify-end transition-all duration-300"
-            >{{ $t("settings.changes_saved") }}</span
+                >{{ $t("settings.changes_saved") }}</span
             >
 
             <div

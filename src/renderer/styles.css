@@ -93,10 +93,6 @@ body {
     @apply inline-block w-[40px] select-none text-base-content;
 }
 
-.pane-code {
-    @apply !bg-base-100;
-}
-
 pre code.hljs {
     display: block;
     overflow-x: auto;

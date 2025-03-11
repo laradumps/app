@@ -2,7 +2,7 @@
     <div>
         <div class="property-node p-1">
             <div
-                class="flex gap-1 items-center cursor-pointer"
+                class="flex gap-1 items-center text-gray-400 cursor-pointer"
                 @click="handlePropertyClick"
             >
                 <button v-if="['array', 'object'].includes(property.type)">
@@ -136,7 +136,7 @@ const sendCommand = (cmd): void => {
 }
 
 .variable-name {
-    @apply text-[#9876AA];
+    @apply text-[#61aeee];
 }
 
 .classname {

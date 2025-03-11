@@ -5,7 +5,7 @@
         viewBox="0 0 24 24"
         stroke-width="1.5"
         stroke="currentColor"
-        class="size-4 hover:opacity-75"
+        class="size-4 text-gray-300 hover:opacity-75"
     >
         <path
             stroke-linecap="round"
