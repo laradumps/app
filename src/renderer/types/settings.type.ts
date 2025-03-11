@@ -29,4 +29,5 @@ export interface Settings {
     limit_laravel_queries: number;
     limit_laravel_logs: number;
     limit_laravel_jobs: number;
+    custom_css: string;
 }

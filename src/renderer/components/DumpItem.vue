@@ -144,12 +144,12 @@ const getLabel = computed(() => {
     <div>
         <div
             :class="{ 'collapse-open': open }"
-            class="card collapse bg-base-200/40 bg-laravel border border-base-content/5"
+            class="card collapse bg-base-100 bg-laravel border border-base-content/10"
         >
             <div
                 @click="open = !open"
                 title="Double click to collapse"
-                class="collapse-title text-base-content items-center justify-between flex text-xs"
+                class="collapse-title text-base-content items-center justify-between flex text-xs select-none"
             >
                 <ul
                     class="flex items-center gap-5 whitespace-nowrap"

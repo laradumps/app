@@ -69,6 +69,7 @@ const queries = computed(() => {
 });
 
 const clear = () => {
+    timeStore.clear();
     queriesStore.clear();
 };
 </script>
@@ -97,7 +98,7 @@ const clear = () => {
             :total-filtered="queriesStore.payload.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
         />
 
-        <div class="overflow-auto mt-2 h-[calc(100vh-225px)]">
+        <div class="overflow-auto mt-3 h-[calc(100vh-225px)]">
             <div class="overflow-auto">
                 <div
                     v-for="(payload, index) in queries"
@@ -106,7 +107,7 @@ const clear = () => {
                     class="w-full"
                 >
                     <DumpItem
-                        class="w-full group text-sm mb-2"
+                        class="w-full group text-sm mb-2.5"
                         v-show="payload.request_id === timeStore.selected"
                         :payload="payload"
                     />

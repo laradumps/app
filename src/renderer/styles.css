@@ -93,84 +93,119 @@ body {
     @apply inline-block w-[40px] select-none text-base-content;
 }
 
-.hljs {
-    @apply !bg-transparent font-light text-sm leading-8 tracking-wider;
-}
-
-.hljs,
-.hljs-params {
-    color: #abb2bf;
-}
-
-.hljs-comment,
-.hljs-quote {
-    color: #5c6370;
-    font-style: italic;
-}
-
-.hljs-doctag,
-.hljs-formula,
-.hljs-keyword {
-    color: #c678dd;
-}
-
-.hljs-deletion,
-.hljs-name,
-.hljs-section,
-.hljs-selector-tag,
-.hljs-subst {
-    color: #e06c75;
-}
-
-.hljs-literal {
-    color: #56b6c2;
-}
-
-.hljs-addition,
-.hljs-attribute,
-.hljs-meta .hljs-string,
-.hljs-regexp,
-.hljs-string {
-    color: #98c379;
-}
-.hljs-attr,
-.hljs-number,
-.hljs-selector-attr,
-.hljs-selector-class,
-.hljs-selector-pseudo,
-.hljs-template-variable,
-.hljs-type,
-.hljs-variable {
-    color: #d19a66;
-}
-
-.hljs-bullet,
-.hljs-link,
-.hljs-meta,
-.hljs-selector-id,
-.hljs-symbol,
-.hljs-title {
-    color: #61aeee;
-}
-
-.hljs-built_in,
-.hljs-class .hljs-title,
-.hljs-title.class_ {
-    color: #e6c07b;
-}
-
-.hljs-emphasis {
-    font-style: italic;
-}
-
-.hljs-strong {
-    font-weight: 700;
-}
-
-.hljs-link {
-    text-decoration: underline;
-}
-
 .pane-code {
     @apply !bg-base-100;
+}
+
+pre code.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 1em;
+}
+code.hljs {
+    padding: 3px 5px;
+}
+
+/**
+ * Theme: GitHub Dark
+ *
+ * @author https://github.com/php-debugbar/php-debugbar
+ * @see https://github.com/php-debugbar/php-debugbar/blob/master/src/DebugBar/Resources/vendor/highlightjs/styles/github.css
+ *
+ */
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-meta .hljs-keyword,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-variable.language_ {
+    /* prettylights-syntax-keyword */
+    color: #ff7b72 !important;
+}
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.class_.inherited__,
+.hljs-title.function_ {
+    /* prettylights-syntax-entity */
+    color: #d2a8ff !important;
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-variable,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id {
+    /* prettylights-syntax-constant */
+    color: #79c0ff !important;
+}
+.hljs-regexp,
+.hljs-string,
+.hljs-meta .hljs-string {
+    /* prettylights-syntax-string */
+    color: #a5d6ff !important;
+}
+.hljs-built_in,
+.hljs-symbol {
+    /* prettylights-syntax-variable */
+    color: #ffa657 !important;
+}
+.hljs-comment,
+.hljs-code,
+.hljs-formula {
+    /* prettylights-syntax-comment */
+    color: #8b949e !important;
+}
+.hljs-name,
+.hljs-quote,
+.hljs-selector-tag,
+.hljs-selector-pseudo {
+    /* prettylights-syntax-entity-tag */
+    color: #7ee787 !important;
+}
+.hljs-subst {
+    /* prettylights-syntax-storage-modifier-import */
+    color: #c9d1d9 !important;
+}
+.hljs-section {
+    /* prettylights-syntax-markup-heading */
+    color: #1f6feb !important;
+    font-weight: bold;
+}
+.hljs-bullet {
+    /* prettylights-syntax-markup-list */
+    color: #f2cc60 !important;
+}
+.hljs-emphasis {
+    /* prettylights-syntax-markup-italic */
+    color: #c9d1d9 !important;
+    font-style: italic;
+}
+.hljs-strong {
+    /* prettylights-syntax-markup-bold */
+    color: #c9d1d9 !important;
+    font-weight: bold;
+}
+.hljs-addition {
+    /* prettylights-syntax-markup-inserted */
+    color: #aff5b4 !important;
+    background-color: #033a16 !important;
+}
+.hljs-deletion {
+    /* prettylights-syntax-markup-deleted */
+    color: #ffdcd7 !important;
+    background-color: #67060c !important;
+}
+.hljs-char.escape_,
+.hljs-link,
+.hljs-params,
+.hljs-property,
+.hljs-punctuation,
+.hljs-tag {
+    /* purposely ignored */
 }

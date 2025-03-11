@@ -24,7 +24,8 @@ const themeColors = {
     silk: "Silk",
     luxury: "Luxury",
     cupcake: "Cupcake",
-    caramellatte: "Caramel Latte"
+    caramellatte: "Caramel Latte",
+    custom: "Custom"
 };
 
 const languageOptions = {
