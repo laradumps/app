@@ -39,8 +39,6 @@ const formatSql = computed(() => {
         return hljs.highlight(formattedSql, { language: "sql" }).value;
     }
 });
-
-const unformattedSql = computed(() => props.payload.queries?.sql);
 </script>
 
 <template>
@@ -58,13 +56,13 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
             </pre>
             </div>
 
-            <span class="-mr-2 absolute right-2 text-lg text-primary font-normal whitespace-nowrap"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
+            <span class="-mr-2 relative right-2 text-lg font-normal whitespace-nowrap"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
         </div>
 
         <code
             v-if="!formattedQueriesStore.formatted"
-            class="text-base-content rounded !text-xs select-none break-all"
-            v-html="unformattedSql"
+            class="text-base-content language-sql rounded !text-xs select-none break-all"
+            v-html="formatSql"
         ></code>
 
         <div class="group items-center mt-1">
@@ -95,37 +93,5 @@ const unformattedSql = computed(() => props.payload.queries?.sql);
 
 code * {
     @apply !font-light !text-base-content tracking-wider;
-}
-
-[data-theme="retro"] .hljs-keyword {
-    @apply !text-accent;
-}
-[data-theme="retro"] .hljs-string {
-    @apply !text-accent;
-}
-
-[data-theme="halloween"] .hljs-keyword {
-    @apply !text-primary;
-}
-[data-theme="halloween"] .hljs-string {
-    @apply !text-primary;
-}
-
-[data-theme="cyberpunk"] .hljs-keyword {
-    @apply !text-primary;
-}
-[data-theme="cyberpunk"] .hljs-string {
-    @apply !text-primary;
-}
-
-[data-theme="lemonade"] .hljs-keyword {
-    @apply !text-primary;
-}
-[data-theme="lemonade"] .hljs-string {
-    @apply !text-primary;
-}
-[data-theme="lemonade"] .hljs-number,
-.hljs-operator {
-    @apply !text-secondary !font-semibold;
 }
 </style>

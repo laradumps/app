@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheNavBar from "@/components/TheNavBar.vue";
 import { usePayloadStore } from "@/store/payload";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useSettingsStore } from "@/store/settings";
 
 const payloadStore = usePayloadStore();
@@ -75,6 +75,10 @@ onMounted(() => {
 
     const urlParams = new URLSearchParams(window.location.search);
     screen.value = urlParams.get("screen");
+
+    const style = document.createElement("style");
+    style.innerHTML = settingsStore.settings.custom_css;
+    document.head.appendChild(style);
 });
 </script>
 
@@ -85,7 +89,7 @@ onMounted(() => {
             :class="{
                 '!space-y-0': payloadStore.payload.length > 0
             }"
-            class="absolute w-full h-full min-h-full"
+            class="bg-base-200 absolute w-full h-full min-h-full"
         >
             <TheNavBar
                 v-if="screen === 'default'"

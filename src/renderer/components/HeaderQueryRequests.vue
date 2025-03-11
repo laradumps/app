@@ -57,12 +57,12 @@ const toggle = (value) => {
 </script>
 
 <template>
-    <div class="gap-2 flex flex-col bg-base-100 z-100 h-auto w-full">
+    <div class="gap-2 flex flex-col z-100 h-auto w-full">
         <div
             v-if="timeStore.groups.length > 0"
             class="justify-between items-center gap-4 text-base-content"
         >
-            <div class="flex justify-between mt-0.5">
+            <div class="flex justify-between my-1">
                 <div class="flex w-full items-center">
                     <div class="flex flex-row-reverse gap-3 items-center">
                         <span class="text-primary text-base whitespace-nowrap">{{ timeStore.get(timeStore.selected)?.total.toFixed(2) }} ms</span>
@@ -104,6 +104,18 @@ const toggle = (value) => {
                                 tabindex="0"
                                 class="dropdown-content menu !text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
                             >
+                                <li>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            v-model="formattedQueriesStore.formatted"
+                                            class="checkbox checkbox-sm checkbox-accent"
+                                            @click="formattedQueriesStore.toggle()"
+                                        />
+                                        Prettify
+                                    </label>
+                                </li>
+                                <li class="text-xs border mb-2 -mx-4 !border-base-content/10 uppercase font-normal mb-1"></li>
                                 <li class="text-xs uppercase font-normal mb-1">Order by:</li>
                                 <li>
                                     <label>
@@ -155,18 +167,6 @@ const toggle = (value) => {
                                             class="checkbox checkbox-sm checkbox-accent"
                                         />
                                         {{ option.charAt(0).toUpperCase() + option.slice(1) }}
-                                    </label>
-                                </li>
-                                <li class="text-xs border mb-2 -mx-4 !border-base-content/10 uppercase font-normal mb-1"></li>
-                                <li>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            v-model="formattedQueriesStore.formatted"
-                                            class="checkbox checkbox-sm checkbox-accent"
-                                            @click="formattedQueriesStore.toggle()"
-                                        />
-                                        Prettify
                                     </label>
                                 </li>
                             </ul>

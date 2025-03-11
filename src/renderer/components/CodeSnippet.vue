@@ -97,7 +97,7 @@ onMounted(() => {
     <div
         v-for="(codeSnippet, index) in props.code_snippet"
         :key="index"
-        class="text-xs opacity-80 p-1.5 px-2"
+        class="code-snippet text-xs opacity-80 p-1.5 px-2"
         :class="{ 'hover:rounded hover:bg-base-300': activeFileIndex !== index }"
     >
         <div
@@ -145,83 +145,81 @@ onMounted(() => {
     @apply bg-black border border-gray-700 rounded-lg p-4;
 }
 
-.hljs {
+.code-snippet .hljs {
     @apply !bg-transparent font-mono !text-xs leading-6 !text-gray-300;
 }
 
-.hljs-comment {
+.code-snippet .hljs-comment {
     @apply !text-gray-500 italic;
 }
 
-.hljs-keyword,
+.code-snippet .hljs-keyword,
 .hljs-selector-tag,
 .hljs-doctag {
     @apply !text-[#cc7832] font-bold;
 }
 
-.hljs-string,
+.code-snippet .hljs-string,
 .hljs-meta .hljs-string,
 .hljs-attribute {
     @apply !text-[#6a8759];
 }
 
-.hljs-number,
+.code-snippet.hljs-number,
 .hljs-literal,
 .hljs-boolean {
     @apply !text-[#6897BB];
 }
 
-.hljs-title,
+.code-snippet .hljs-title,
 .hljs-function,
 .hljs-built_in {
     @apply !text-[#ffc66d];
 }
 
-.hljs-variable,
+.code-snippet .hljs-variable,
 .hljs-template-variable {
     @apply !text-[#9876AA];
 }
 
-.hljs-class,
+.code-snippet .hljs-class,
 .hljs-type,
 .hljs-title.class_ {
     @apply !text-[#a9b7c6];
 }
 
-.hljs-attr,
+.code-snippet .hljs-attr,
 .hljs-symbol {
     @apply !text-[#b3b3b3];
 }
 
-/* Operadores */
-.hljs-operator {
+.code-snippet .hljs-operator {
     @apply !text-[#cc7832];
 }
 
-.hljs-regexp {
+.code-snippet .hljs-regexp {
     @apply !text-[#b68c35];
 }
 
-.hljs-tag,
+.code-snippet .hljs-tag,
 .hljs-name,
 .hljs-section {
     @apply !text-[#e8bf6a];
 }
 
-/* Links */
-.hljs-link {
+.code-snippet .hljs-link {
     @apply !text-[#287bde] underline;
 }
 
-.hljs-emphasis {
+.code-snippet .hljs-emphasis {
     @apply italic;
 }
 
-.hljs-strong {
+.code-snippet .hljs-strong {
     @apply font-semibold;
 }
 
-.line-number {
+.code-snippet .line-number {
     @apply inline-block w-[40px] select-none text-gray-500 text-right pr-2;
 }
 
