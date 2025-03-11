@@ -36,10 +36,19 @@ const saveSettings = async () => {
 
 const saveTheme = async () => {
     if (settingsStore.settings.theme === "system") {
+        await nextTick(() => saveSettings());
         window.ipcRenderer.send("native-theme");
 
         return;
     }
+
+    if (settingsStore.settings.theme === "custom") {
+        await nextTick(() => saveSettings());
+
+        modal_custom_theme.showModal()
+        return;
+    }
+
     document.documentElement.setAttribute("data-theme", settingsStore.settings.theme);
     await nextTick(() => saveSettings());
 };
@@ -186,6 +195,42 @@ const saveCustomTheme = async () => {
 
 <template>
     <div class="overflow-auto text-base-content">
+
+        <dialog id="modal_custom_theme" class="modal modal-middle">
+            <div class="modal-box">
+                <h3 class="text-lg font-bold">Custom Theme</h3>
+                <fieldset class="fieldset w-full">
+                    <legend class="fieldset-legend">Add your custom theme here:</legend>
+
+                    <span
+                        @click="openThemeGenerator"
+                        class="cursor-pointer link fieldset-label"
+                    >https://daisyui.com/theme-generator</span
+                    >
+
+                    <textarea
+                        class="textarea rounded-lg h-80 w-full"
+                        v-model="customTheme"
+                    >
+                    </textarea>
+                </fieldset>
+                <div class="modal-action">
+                    <form method="dialog" class="flex gap-3">
+                        <button class="btn btn-sm">Close</button>
+
+                        <button
+                            @click="saveCustomTheme"
+                            type="button"
+                            class="btn btn-sm btn-primary"
+                        >
+                            {{ $t("settings.save") }}
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+        </dialog>
+
         <div class="max-w-2xl mx-auto p-10">
             <div class="tabs tabs-box">
                 <input
@@ -220,20 +265,12 @@ const saveCustomTheme = async () => {
                     class="tab"
                     aria-label="Shortcuts"
                 />
-                <input
-                    v-model="selected"
-                    value="custom_theme"
-                    type="radio"
-                    name="settings"
-                    class="tab"
-                    aria-label="Custom Theme"
-                />
             </div>
 
             <span
                 :class="{ 'opacity-0': !saved, 'opacity-65': saved }"
                 class="px-3 text-sm flex justify-end transition-all duration-300"
-                >{{ $t("settings.changes_saved") }}</span
+            >{{ $t("settings.changes_saved") }}</span
             >
 
             <div
@@ -546,37 +583,6 @@ const saveCustomTheme = async () => {
 
                     <button
                         @click="saveShortcuts"
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                    >
-                        {{ $t("settings.save") }}
-                    </button>
-                </div>
-            </div>
-
-            <div
-                v-if="selected === 'custom_theme'"
-                class="p-4"
-            >
-                <fieldset class="fieldset w-full">
-                    <legend class="fieldset-legend">Add your custom theme here:</legend>
-
-                    <span
-                        @click="openThemeGenerator"
-                        class="cursor-pointer link fieldset-label"
-                        >https://daisyui.com/theme-generator</span
-                    >
-
-                    <textarea
-                        class="textarea rounded-lg h-[calc(100vh-230px)] w-full"
-                        v-model="customTheme"
-                    >
-                    </textarea>
-                </fieldset>
-
-                <div class="mt-4 flex justify-end">
-                    <button
-                        @click="saveCustomTheme"
                         type="button"
                         class="btn btn-sm btn-primary"
                     >
