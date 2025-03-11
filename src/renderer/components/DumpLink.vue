@@ -78,7 +78,7 @@ const label = computed(() => {
             <div class="text-right w-16 tracking-wider hover:opacity-75 flex items-center">
                 <span
                     class="whitespace-nowrap w-full"
-                    :class="{ 'text-accent font-semibold': label }"
+                    :class="{ 'text-gray-400 font-normal': label }"
                     >{{ label }}</span
                 >
                 <a

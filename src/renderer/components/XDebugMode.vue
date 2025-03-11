@@ -533,11 +533,11 @@ onBeforeUnmount(() => {
 <template>
     <div>
         <div class="w-full">
-            <div class="w-full z-300 top-0 bg-base-100 flex px-3 py-2 flex-row gap-1 items-center uppercase text-xs">
+            <div class="w-full z-300 top-0 flex px-3 py-2 flex-row gap-1 items-center uppercase text-xs">
                 <div class="flex w-full gap-1 items-center justify-between">
                     <div class="flex w-full gap-1 items-center">
                         <button
-                            class="btn btn-xs !px-1.5 btn-ghost"
+                            class="btn btn-xs btn-soft !py-4"
                             @click="continueDebug"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Continue (F5)"
@@ -546,25 +546,25 @@ onBeforeUnmount(() => {
                         </button>
 
                         <button
-                            class="btn btn-xs !px-1.5 btn-ghost"
+                            class="btn btn-xs btn-soft !py-4"
                             @click="stepOver"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Over (F8)"
                         >
                             <IconStepOver
-                                class="text-info w-5"
+                                class="text-info w-4"
                                 :class="{ '!text-gray-500': variablesNames.length === 0 }"
                             />
                         </button>
 
                         <button
-                            class="btn btn-xs !px-1.5 btn-ghost"
+                            class="btn btn-xs btn-soft !py-4"
                             @click="stepInto"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Into (F7)"
                         >
                             <IconStepInto
-                                class="w-5 text-warning"
+                                class="w-4 text-warning"
                                 :class="{ '!text-gray-500': variablesNames.length === 0 }"
                             />
                         </button>
@@ -583,7 +583,7 @@ onBeforeUnmount(() => {
                             data-tippy-content="Stop (F2)"
                         >
                             <IconStop
-                                class="text-error w-5"
+                                class="text-error w-4"
                                 :class="{ '!text-gray-500': variablesNames.length === 0 }"
                             />
                         </button>
@@ -638,7 +638,7 @@ onBeforeUnmount(() => {
 
                 <div
                     v-else
-                    class="flex flex-row gap-3 w-full h-[calc(100vh-142px)]"
+                    class="flex xdebug flex-row gap-3 w-full h-[calc(100vh-142px)]"
                 >
                     <Splitpanes vertical>
                         <pane
@@ -653,7 +653,7 @@ onBeforeUnmount(() => {
                                     v-for="(lineContent, lineNumber) in fileContent"
                                     :key="`${lineNumber}-${currentFileName}`"
                                     class="flex hover:!bg-red-500/10 px-3 group/line"
-                                    :class="{ 'bg-red-500/20 shadow-lg font-semibold': parseInt(lineNumber) === currentLine }"
+                                    :class="{ 'bg-red-500/20 shadow-lg font-semibold cursor-pointer': parseInt(lineNumber) === currentLine }"
                                     :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
                                 >
                                     <DumpLink
@@ -687,7 +687,7 @@ onBeforeUnmount(() => {
                             size="40"
                             class="pane-code"
                         >
-                            <div class="overflow-auto text-sm h-fill-available bg-base-300">
+                            <div class="overflow-auto text-sm h-fill-available">
                                 <div
                                     v-for="property in variablesNames"
                                     :key="property.name + '-' + property.type"
@@ -696,9 +696,9 @@ onBeforeUnmount(() => {
                                         :class="{
                                             'cursor-pointer': property.type !== 'string',
                                             'cursor-not-allowed': property.type === 'string',
-                                            'bg-base-100 border-l-4 !border-accent': expandedProperties[property.name]
+                                            'bg-gray-800 border-l-4 !border-[#d19a66]': expandedProperties[property.name]
                                         }"
-                                        class="flex border-l-4 border-transparent hover:bg-base-200 items-center px-1 py-2 pl-3"
+                                        class="flex border-l-4 border-transparent hover:bg-gray-700 items-center px-1 py-2 pl-3"
                                         @click="property.type !== 'string' ? handlePropertyContextClick(property.type, property.name, false) : null"
                                     >
                                         <span
@@ -826,34 +826,105 @@ onBeforeUnmount(() => {
         </dialog>
     </div>
 </template>
-<style>
+<style scoped>
 @reference "./../styles.css";
 
 .variable-name {
-    @apply text-[#9876AA];
+    @apply text-[#61aeee];
 }
 
-.classname {
-    @apply text-base-content/50;
+::v-deep(.classname) {
+    @apply text-gray-400;
 }
 
-[data-theme="dark"].splitpanes {
-    @apply bg-base-content/20 bg-base-100;
+::v-deep(.splitpanes--vertical) {
+    @apply bg-black/40;
 }
 
-[data-theme="white"].splitpanes {
-    @apply bg-base-content/40 bg-base-100;
+::v-deep(.splitpanes--vertical > .splitpanes__splitter) {
+    @apply min-w-[0.2rem] bg-gray-800 hover:bg-accent/40;
 }
 
-.splitpanes .pane-code {
-    @apply !bg-base-300;
-}
-
-.splitpanes--vertical > .splitpanes__splitter {
-    @apply min-w-[0.3rem] bg-accent/10 hover:bg-accent/40;
-}
-
-[data-tippy-root] {
+::v-deep([data-tippy-root]) {
     @apply break-all;
+}
+
+::v-deep(.xdebug .hljs) {
+    @apply !bg-transparent font-light text-sm leading-8 tracking-wider;
+}
+
+::v-deep(.xdebug .hljs),
+::v-deep(.xdebug .hljs-params) {
+    color: #abb2bf !important;
+}
+
+::v-deep(.xdebug .hljs-comment),
+::v-deep(.xdebug .hljs-quote) {
+    color: #5c6370 !important;
+    font-style: italic;
+}
+
+::v-deep(.xdebug .hljs-doctag),
+::v-deep(.xdebug .hljs-formula),
+::v-deep(.xdebug .hljs-keyword) {
+    color: #c678dd !important;
+}
+
+::v-deep(.xdebug .hljs-deletion),
+::v-deep(.xdebug .hljs-name),
+::v-deep(.xdebug .hljs-section),
+::v-deep(.xdebug .hljs-selector-tag),
+::v-deep(.xdebug .hljs-subst) {
+    color: #e06c75 !important;
+}
+
+::v-deep(.xdebug .hljs-literal) {
+    color: #56b6c2 !important;
+}
+
+::v-deep(.xdebug .hljs-addition),
+::v-deep(.xdebug .hljs-attribute),
+::v-deep(.xdebug .hljs-meta .hljs-string),
+::v-deep(.xdebug .hljs-regexp),
+::v-deep(.xdebug .hljs-string) {
+    color: #98c379 !important;
+}
+
+::v-deep(.xdebug .hljs-attr),
+::v-deep(.xdebug .hljs-number),
+::v-deep(.xdebug .hljs-selector-attr),
+::v-deep(.xdebug .hljs-selector-class),
+::v-deep(.xdebug .hljs-selector-pseudo),
+::v-deep(.xdebug .hljs-template-variable),
+::v-deep(.xdebug .hljs-type),
+::v-deep(.xdebug .hljs-variable) {
+    color: #d19a66 !important;
+}
+
+::v-deep(.xdebug .hljs-bullet),
+::v-deep(.xdebug .hljs-link),
+::v-deep(.xdebug .hljs-meta),
+::v-deep(.xdebug .hljs-selector-id),
+::v-deep(.xdebug .hljs-symbol),
+::v-deep(.xdebug .hljs-title) {
+    color: #61aeee !important;
+}
+
+::v-deep(.xdebug .hljs-built_in),
+::v-deep(.xdebug .hljs-class .hljs-title),
+::v-deep(.xdebug .hljs-title.class_) {
+    color: #e6c07b !important;
+}
+
+::v-deep(.xdebug .hljs-emphasis) {
+    font-style: italic !important;
+}
+
+::v-deep(.xdebug .hljs-strong) {
+    font-weight: 700 !important;
+}
+
+::v-deep(.xdebug .hljs-link) {
+    text-decoration: underline !important;
 }
 </style>
