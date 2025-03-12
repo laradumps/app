@@ -447,11 +447,13 @@ const getHighlightedCode = (lineContent) => {
         const variable = variablesNames.value.find((v) => v.name === match);
         let tooltipContent = "Click to open dump";
 
-        if (["int", "string", "bool", "float"].includes(variable.type) && variable.value !== null) {
+        if (["int", "bool", "float"].includes(variable.type) && variable.value !== null) {
             tooltipContent = `${variable.type}: ${variable.value}`;
         }
 
-        return `<span class="underline highlight cursor-pointer font-semibold" data-variable="${match}" onclick="modal_property_get.showModal()" data-tippy-content="${tooltipContent}">${match}</span>`;
+        console.log(variable)
+
+        return `<span class="highlight cursor-pointer font-semibold" data-variable="${match}" onclick="modal_property_get.showModal()" data-tippy-content="${tooltipContent}">${match}</span>`;
     });
 };
 
