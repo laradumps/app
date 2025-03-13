@@ -25,25 +25,27 @@ const percentage = computed(() => {
 
     return Number(((100 * props.payload.queries?.time) / total.value).toFixed(2));
 });
-
 const formatSql = computed(() => {
     if (!props.payload.queries) return;
 
     const sql = props.payload.queries.sql;
 
-    let driver = "mysql";
+    let driver = "sql";
 
     if (props.payload.queries.hasOwnProperty("driver")) {
-        driver = props.payload.queries.driver;
-    }
+        const driverMap = {
+            pgsql: "postgresql",
+            postgresql: "postgresql"
+        };
 
-    const language = driver === "pgsql" ? "postgresql" : driver;
+        driver = driverMap[props.payload.queries.driver] || "sql";
+    }
 
     if (sql != null) {
         let formattedSql = formattedQueriesStore.formatted
             ? format(sql, {
                   indent: "    ",
-                  language
+                  language: driver
               })
             : sql;
 
