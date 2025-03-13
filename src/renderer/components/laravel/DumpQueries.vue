@@ -3,10 +3,10 @@ import { computed, defineProps } from "vue";
 import { format } from "sql-formatter";
 import { useTimeStore } from "@/store/time";
 import { Payload } from "@/types/Payload";
+import { useFormattedQueriesStore } from "@/store/formatted-queries";
 
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
-import { useFormattedQueriesStore } from "@/store/formatted-queries";
 hljs.registerLanguage("sql", sql);
 
 const timeStore = useTimeStore();
@@ -27,16 +27,22 @@ const percentage = computed(() => {
 });
 
 const formatSql = computed(() => {
-    const sql = props.payload.queries?.sql;
+    if (!props.payload.queries) return;
+
+    const sql = props.payload.queries.sql;
+
+    const driver = props.payload.queries.driver;
+    const language = driver === "pgsql" ? "postgresql" : driver;
 
     if (sql != null) {
         let formattedSql = formattedQueriesStore.formatted
             ? format(sql, {
-                  indent: "    "
+                  indent: "    ",
+                  language
               })
             : sql;
 
-        return hljs.highlight(formattedSql, { language: "sql" }).value;
+        return hljs.highlight(formattedSql, { language: driver }).value;
     }
 });
 </script>
