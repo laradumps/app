@@ -31,7 +31,12 @@ const formatSql = computed(() => {
 
     const sql = props.payload.queries.sql;
 
-    const driver = props.payload.queries.driver;
+    let driver = "mysql";
+
+    if (props.payload.queries.hasOwnProperty("driver")) {
+        driver = props.payload.queries.driver;
+    }
+
     const language = driver === "pgsql" ? "postgresql" : driver;
 
     if (sql != null) {
