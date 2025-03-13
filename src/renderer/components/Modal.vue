@@ -2,6 +2,9 @@
 import { ref, defineProps } from "vue";
 import { TransitionRoot, TransitionChild, DialogPanel, DialogTitle, Dialog } from "@headlessui/vue";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
+import { useSettingsStore } from "@/store/settings";
+
+const settingsStore = useSettingsStore();
 
 const props = defineProps({
     title: {
@@ -37,6 +40,7 @@ defineExpose({ openModal, closeModal });
                 as="div"
                 @close="closeModal"
                 class="relative z-300"
+                :data-theme="settingsStore.settings.theme"
             >
                 <TransitionChild
                     as="template"
@@ -62,7 +66,7 @@ defineExpose({ openModal, closeModal });
                             leave-to="opacity-0 scale-95"
                         >
                             <DialogPanel
-                                class="w-full transform overflow-hidden rounded-lg p-6 text-left align-middle transition-all bg-base-100 text-base-content"
+                                class="w-full transform overflow-hidden rounded-lg p-6 text-left align-middle transition-all bg-base-200 text-base-content"
                                 :class="{
                                     'max-w-md': props.size === 'md',
                                     'max-w-lg': props.size === 'lg',

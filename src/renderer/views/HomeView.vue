@@ -57,8 +57,6 @@ const defaultScreen = ref({
 
 const appVersion = ref("");
 
-const payload = ref([]);
-const dumpsBag = ref([]);
 const inScreenWindow = ref("");
 const payloadScreen = ref([]);
 const jobScreen = ref({});
@@ -212,7 +210,7 @@ const dumpListeners = () => {
             });
         }
     });
-    window.ipcRenderer.on("color", (event, { content }) => {
+    window.ipcRenderer.on("color", async (event, { content }) => {
         payloadStore.updateColorPayload(content);
     });
     window.ipcRenderer.on("screen", (event, { content }) => {
@@ -250,24 +248,17 @@ const dumpListeners = () => {
 
             window.ipcRenderer.send("screen-window:show", {
                 screen: content.to_screen.screen_name,
-                payload: {},
-                jobs: {},
-                logs: {},
-                position: {},
                 queries: serializable
             });
         } else {
             window.ipcRenderer.send("send-screen-window-update", {
                 screen: content.to_screen.screen_name,
-                payload: {},
-                jobs: {},
-                logs: {},
                 queries: serializable
             });
         }
 
         setTimeout(() => {
-            const lastPayload: Payload = dumpsBag.value[dumpsBag.value.length - 1];
+            const lastPayload: Payload = payloadStore.filteredPayload[payloadStore.filteredPayload.length - 1];
             if (lastPayload) timeStore.selected = lastPayload.request_id;
         }, 50);
     });
@@ -286,12 +277,12 @@ const dumpListeners = () => {
 };
 
 const dumpsBagFiltered = computed((): Payload[] => {
-    return dumpsBag.value
+    return payloadStore.filteredPayload
         .filter(
             (dump: Payload) =>
                 JSON.stringify(dump[dump.type] ?? "")
                     .toLowerCase()
-                    .includes(globalSearchStore.search.toLowerCase()) || dump.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
+                    .includes(globalSearchStore.search.toLowerCase()) || JSON.stringify(dump.with_label)?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
         )
         .filter((dump: Payload) => {
             if (colorStore.colors.length > 0 && dump.color) {
@@ -322,11 +313,11 @@ const toggleScreen = async (value: string, shouldActivate = false): Promise<void
     }
 
     if (screenStore.screen === value) {
-        dumpsBag.value = payloadStore.payload.filter((payload) => payload.type !== "screen" && payload.to_screen.screen_name === value);
+        payloadStore.filteredPayload = payloadStore.payload.filter((payload) => payload.type !== "screen" && payload.to_screen.screen_name === value);
     }
 
     await nextTick(() => {
-        if (!["jobs", "mail", "logs"].includes(screenStore.screen)) {
+        if (!["jobs", "mail", "logs", "queries"].includes(screenStore.screen)) {
             document.getElementById(settingsStore.settings.scroll_direction)?.scrollIntoView({ behavior: "smooth" });
         }
     });
@@ -364,7 +355,7 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     maximizeApp(content.auto_invoke_app);
 
-    const serializablePayload = JSON.parse(JSON.stringify(payload.value.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name)));
+    const serializablePayload = JSON.parse(JSON.stringify(payloadStore.payload.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name)));
 
     if (content.to_screen.new_window) {
         screenStore.hidden(content.to_screen.screen_name);

@@ -24,7 +24,12 @@
                     <span v-if="property.type === 'null'"> = <span class="text-secondary">null</span></span>
 
                     <span v-if="property.value">
-                        = <span class="text-secondary" style="white-space: break-spaces;">{{ formatValue() }}</span></span
+                        =
+                        <span
+                            class="text-secondary"
+                            style="white-space: break-spaces"
+                            >{{ formatValue() }}</span
+                        ></span
                     >
 
                     <span class="classname">{{ " {" + (property.classname ?? property.type) + "}" }}</span>
