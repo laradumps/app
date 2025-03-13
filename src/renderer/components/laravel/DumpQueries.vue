@@ -30,7 +30,7 @@ const formatSql = computed(() => {
 
     const sql = props.payload.queries.sql;
 
-    let driver = "sql";
+    let language = "sql";
 
     if (props.payload.queries.hasOwnProperty("driver")) {
         const driverMap = {
@@ -38,14 +38,14 @@ const formatSql = computed(() => {
             postgresql: "postgresql"
         };
 
-        driver = driverMap[props.payload.queries.driver] || "sql";
+        language = driverMap[props.payload.queries.driver] || "sql";
     }
 
     if (sql != null) {
         let formattedSql = formattedQueriesStore.formatted
             ? format(sql, {
                   indent: "    ",
-                  language: driver
+                  language
               })
             : sql;
 
