@@ -2,6 +2,7 @@ import { IdeHandle } from "@/types/IdeHandle";
 
 export interface QueriesPayload {
     connectionName: string;
+    driver: string;
     database: string;
     time: number;
     sql: string;
