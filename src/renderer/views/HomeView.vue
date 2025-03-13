@@ -89,7 +89,10 @@ onMounted(() => {
     window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
 
     window.ipcRenderer.send("main:app-version");
-    window.ipcRenderer.on("main:app-version.reply", (event, arg) => setTimeout(() => (appVersion.value = `v${arg.version}`), 100));
+
+    window.ipcRenderer.on("main:app-version.reply", (event, arg) => {
+        setTimeout(() => (appVersion.value = `v${arg.version}`), 100)
+    });
 
     window.ipcRenderer.on("app:screen-window-enable", async (event, args) => {
         inScreenWindow.value = args.screen;
