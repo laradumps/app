@@ -25,6 +25,7 @@ const percentage = computed(() => {
 
     return Number(((100 * props.payload.queries?.time) / total.value).toFixed(2));
 });
+
 const formatSql = computed(() => {
     if (!props.payload.queries) return;
 
