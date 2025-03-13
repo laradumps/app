@@ -3,7 +3,7 @@ import { defineProps } from "vue";
 import { Payload } from "@/types/Payload";
 import VueJsonPretty from "vue-json-pretty";
 
-const props = defineProps<{
+defineProps<{
     payload: Payload;
 }>();
 </script>

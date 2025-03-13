@@ -451,7 +451,7 @@ const getHighlightedCode = (lineContent) => {
             tooltipContent = `${variable.type}: ${variable.value}`;
         }
 
-        console.log(variable)
+        console.log(variable);
 
         return `<span class="highlight cursor-pointer font-semibold" data-variable="${match}" onclick="modal_property_get.showModal()" data-tippy-content="${tooltipContent}">${match}</span>`;
     });

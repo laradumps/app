@@ -61,6 +61,7 @@
     "devDependencies": {
         "@types/electron": "^1.6.10",
         "@types/electron-json-storage": "^4.5.4",
+        "@types/humanize-duration": "^3.27.4",
         "@types/ssh2": "^1.15.4",
         "@vitejs/plugin-vue": "5.2.1",
         "concurrently": "^9.1.2",
