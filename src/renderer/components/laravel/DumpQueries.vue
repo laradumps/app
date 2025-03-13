@@ -50,7 +50,7 @@ const formatSql = computed(() => {
               })
             : sql;
 
-        return hljs.highlight(formattedSql, { language: driver }).value;
+        return hljs.highlight(formattedSql, { language }).value;
     }
 });
 </script>
