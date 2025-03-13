@@ -41,8 +41,6 @@ export const initShortcuts = (event) => {
     }
 };
 export const getSettings = (): Settings => {
-    defaultSettings.version = app.getVersion();
-
     let settings: Settings = defaultSettings;
 
     if (fs.existsSync(settingsPath)) {
@@ -54,6 +52,8 @@ export const getSettings = (): Settings => {
             return settings;
         }
     }
+
+    settings.version = app.getVersion()
 
     setSettings(settings);
     return settings;
