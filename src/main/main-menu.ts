@@ -70,7 +70,6 @@ async function getMenuTemplate() {
         }
     ];
 
-    // Enables copy to clipboard in macOS
     if (process.platform === "darwin") {
         menuTemplate.splice(1, 0, {
             label: "Edit",
@@ -79,7 +78,8 @@ async function getMenuTemplate() {
                 { label: "Redo", role: "redo", accelerator: "Shift+CmdOrCtrl+Z" },
                 { type: "separator" },
                 { label: "Copy", role: "copy", accelerator: "CmdOrCtrl+C" },
-                { label: "Paste", role: "paste", accelerator: "CmdOrCtrl+V" }
+                { label: "Paste", role: "paste", accelerator: "CmdOrCtrl+V" },
+                { label: "Select All", role: "selectall", accelerator: "CmdOrCtrl+A" }
             ]
         });
     }
