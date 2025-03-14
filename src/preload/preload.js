@@ -33,6 +33,10 @@ app.use(
 app.post("/api/dumps", (req, res) => {
     const { body } = req;
 
+    if (typeof body.date_time == "undefined") {
+        body.date_time = new Date();
+    }
+
     ipcRenderer.send("dump", {
         type: body.type,
         content: body

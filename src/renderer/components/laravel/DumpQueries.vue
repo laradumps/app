@@ -26,7 +26,7 @@ const percentage = computed(() => {
     return Number(((100 * props.payload.queries?.time) / total.value).toFixed(2));
 });
 
-const formatSql = computed(() => {
+const formattedSql = computed(() => {
     if (!props.payload.queries) return;
 
     const sql = props.payload.queries.sql;
@@ -66,8 +66,8 @@ const formatSql = computed(() => {
                     v-if="formattedQueriesStore.formatted"
                     class="flex relative group select-none w-auto overflow-hidden whitespace-pre-wrap break-words"
                 >
-                <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formatSql"></code>
-            </pre>
+                    <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
+                </pre>
             </div>
 
             <span class="-mr-2 relative right-2 text-lg font-normal whitespace-nowrap"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
@@ -76,7 +76,7 @@ const formatSql = computed(() => {
         <code
             v-if="!formattedQueriesStore.formatted"
             class="text-base-content language-sql rounded !text-xs select-none break-all"
-            v-html="formatSql"
+            v-html="formattedSql"
         ></code>
 
         <div class="group items-center mt-1">

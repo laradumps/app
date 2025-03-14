@@ -335,10 +335,6 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     content.rendered = false;
 
-    if (typeof content.date_time == "undefined") {
-        content.date_time = new Date();
-    }
-
     if (applicationPath.value != content.application_path) {
         window.ipcRenderer.send("storage.check", {
             applicationPath: content.application_path
