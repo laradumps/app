@@ -745,7 +745,7 @@ onBeforeUnmount(() => {
             id="modal_property_get"
             class="modal modal-middle"
         >
-            <div class="modal-box !rounded-md w-9/12 max-w-4xl space-y-3">
+            <div class="bg-gray-900 modal-box !rounded-md w-9/12 max-w-4xl space-y-3">
                 <div
                     class="flex gap-3 text-sm"
                     v-if="selectedVariableName && propertiesEvalTree.length === 0"
@@ -840,7 +840,7 @@ onBeforeUnmount(() => {
 }
 
 ::v-deep(.splitpanes--vertical) {
-    @apply bg-black/40;
+    @apply bg-gray-900;
 }
 
 ::v-deep(.splitpanes--vertical > .splitpanes__splitter) {
