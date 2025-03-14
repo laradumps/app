@@ -238,10 +238,6 @@ const dumpListeners = () => {
     window.ipcRenderer.on("queries", (event, { content }) => {
         content.queries && timeStore.increment(content.request_id, content.id, content.queries);
 
-        if (typeof content.date_time == "undefined") {
-            content.date_time = new Date();
-        }
-
         queriesStore.add(content);
 
         const serializable = JSON.parse(JSON.stringify(queriesStore.payload));
@@ -259,6 +255,8 @@ const dumpListeners = () => {
                 queries: serializable
             });
         }
+
+        addScreen(content.to_screen);
 
         setTimeout(() => {
             const lastPayload: Payload = payloadStore.filteredPayload[payloadStore.filteredPayload.length - 1];
