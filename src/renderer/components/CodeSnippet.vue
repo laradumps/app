@@ -94,45 +94,50 @@ onMounted(() => {
 </script>
 
 <template>
-    <div
-        v-for="(codeSnippet, index) in props.code_snippet"
-        :key="index"
-        class="code-snippet text-xs opacity-80 p-1.5 px-2"
-        :class="{ 'hover:rounded hover:bg-base-300': activeFileIndex !== index }"
-    >
+    <div>
         <div
-            :class="{
-                '!font-semibold text-sm !opacity-100 !text-accent': activeFileIndex === index
-            }"
-            class="text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
-            @click="toggleFileVisibility(index)"
-        >
-            <IconArrowLight v-if="activeFileIndex === index" />
-            {{ getFileLineDisplay(codeSnippet) }}
-        </div>
-
-        <div
-            v-if="activeFileIndex === index"
-            class="code-snippet rounded-md scrollable mt-2"
-            :style="{ maxWidth: containerWidth }"
+            v-for="(codeSnippet, index) in props.code_snippet"
+            :key="index"
+            class="text-xs opacity-80 p-1.5 px-2"
+            :class="{ 'hover:rounded hover:bg-base-300': activeFileIndex !== index }"
         >
             <div
-                :id="`current-snippet-${index}`"
-                v-for="(lineContent, lineNumber) in codeSnippet.snippet"
-                :key="`${lineNumber}-code`"
-                :class="{ 'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === codeSnippet.line }"
-                class="flex items-center tracking-widest leading-6 hover:!bg-red-500/20 px-2 group/line"
+                :class="{
+                '!font-semibold text-sm !opacity-100 !text-accent': activeFileIndex === index
+            }"
+                class="text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
+                @click="toggleFileVisibility(index)"
             >
-                <DumpLink
-                    class="font-normal h-full text-base-content text-xs"
-                    :label="lineNumber"
-                    :show-icon="true"
-                    :ide-handler="getIdeHandleFromStack(codeSnippet, lineNumber)"
-                />
-                <span
-                    class="language-php highlight whitespace-pre hljs h-full text-xs text-primary font-normal"
-                    v-html="getLineContent(lineContent)"
-                ></span>
+                <IconArrowLight v-if="activeFileIndex === index" />
+                {{ getFileLineDisplay(codeSnippet) }}
+            </div>
+
+            <div
+                v-if="activeFileIndex === index"
+                class="rounded-md scrollable mt-2"
+                :class="{
+                    'code-snippet': activeFileIndex === index
+                }"
+                :style="{ maxWidth: containerWidth }"
+            >
+                <div
+                    :id="`current-snippet-${index}`"
+                    v-for="(lineContent, lineNumber) in codeSnippet.snippet"
+                    :key="`${lineNumber}-code`"
+                    :class="{ 'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === codeSnippet.line }"
+                    class="flex items-center tracking-widest leading-6 hover:!bg-red-500/20 px-2 group/line"
+                >
+                    <DumpLink
+                        class="font-normal h-full text-base-content text-xs"
+                        :label="lineNumber"
+                        :show-icon="true"
+                        :ide-handler="getIdeHandleFromStack(codeSnippet, lineNumber)"
+                    />
+                    <span
+                        class="language-php highlight whitespace-pre hljs h-full text-xs text-primary font-normal"
+                        v-html="getLineContent(lineContent)"
+                    ></span>
+                </div>
             </div>
         </div>
     </div>
@@ -142,7 +147,7 @@ onMounted(() => {
 @reference "./../styles.css";
 
 .code-snippet {
-    @apply bg-black border border-gray-700 rounded-lg p-4;
+    @apply bg-slate-950 border border-gray-700 rounded-lg p-4;
 }
 
 .code-snippet .hljs {
