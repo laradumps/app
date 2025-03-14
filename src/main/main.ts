@@ -1,9 +1,8 @@
-import { app, nativeTheme, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell, screen } from "electron";
+import { app, nativeTheme, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell } from "electron";
 import { autoUpdater } from "electron-updater";
 import { download } from "electron-dl";
 
 import path, { join, resolve } from "path";
-import * as url from "url";
 import fs from "fs";
 import * as ssh from "./ssh";
 
