@@ -50,7 +50,7 @@ onMounted(() => {
         if (typeof dump === "string" && props.payload.sf_dump_id) {
             const sfDump = document.getElementById(`sf-dump-${props.payload.sf_dump_id}`);
 
-            if (!sfDump?.hasAttribute("has-dump-js")) {
+            if (sfDump && !sfDump?.hasAttribute("has-dump-js")) {
                 sfDump?.setAttribute("has-dump-js", "true");
                 window.Sfdump(`sf-dump-${props.payload.sf_dump_id}`);
             }
