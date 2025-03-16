@@ -147,21 +147,20 @@ const getLabel = computed(() => {
     <div>
         <div
             :class="{ 'collapse-open': open }"
-            class="card collapse bg-base-100 bg-laravel border border-base-content/10"
+            class="card card-border border-base-300 collapse bg-base-100 bg-laravel"
         >
             <div
                 @click="open = !open"
-                title="Double click to collapse"
-                class="collapse-title text-base-content items-center justify-between flex text-xs select-none"
+                class="collapse-title items-center justify-between flex text-xs select-none"
             >
                 <ul
                     class="flex items-center gap-5 whitespace-nowrap"
                     v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
                 >
-                    <li class="list-none">
+                    <li class="list-none opacity-70">
                         {{ moment(payload.date_time).format("hh:mm:ss a") }}
                     </li>
-                    <li class="select-none">
+                    <li class="select-none opacity-70">
                         <DumpLink :ide-handler="payload.ide_handle" />
                     </li>
                 </ul>

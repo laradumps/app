@@ -107,7 +107,7 @@ const clear = () => {
                     class="w-full"
                 >
                     <DumpItem
-                        class="w-full group text-sm mb-2.5"
+                        class="w-full group text-sm mb-3"
                         v-show="payload.request_id === timeStore.selected"
                         :payload="payload"
                     />

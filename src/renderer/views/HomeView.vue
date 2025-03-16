@@ -471,7 +471,7 @@ const openScreenWindow = () => {
 
                 <!-- content -->
                 <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
-                    <main class="flex flex-col flex-1 min-h-full">
+                    <main class="flex flex-col flex-1 min-h-full space-y-1">
                         <!-- screen buttons -->
                         <div class="flex px-2">
                             <div class="flex items-center justify-between w-full overflow-x-auto">
@@ -532,7 +532,7 @@ const openScreenWindow = () => {
                                         class="w-full"
                                     >
                                         <DumpItem
-                                            class="w-full px-3 group text-sm mb-2"
+                                            class="w-full px-3 group text-sm mb-3"
                                             v-show="screenStore.screen !== 'livewire'"
                                             :payload="payload"
                                         />
