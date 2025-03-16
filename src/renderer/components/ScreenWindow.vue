@@ -39,7 +39,7 @@ onUpdated(async () => {
                     :key="payload.sf_dump_id"
                 >
                     <DumpItem
-                        class="w-full px-3 group text-sm mb-2"
+                        class="w-full px-3 group text-sm mb-3"
                         :index="index"
                         :payload="payload"
                         v-show="screen !== 'livewire'"

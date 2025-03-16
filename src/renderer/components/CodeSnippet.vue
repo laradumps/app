@@ -103,8 +103,8 @@ onMounted(() => {
         >
             <div
                 :class="{
-                '!font-semibold text-sm !opacity-100 !text-accent': activeFileIndex === index
-            }"
+                    '!font-semibold text-sm !opacity-100 !text-accent': activeFileIndex === index
+                }"
                 class="text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
                 @click="toggleFileVisibility(index)"
             >
