@@ -64,7 +64,7 @@ const formattedSql = computed(() => {
             <div class="flex-1 min-w-0">
                 <pre
                     v-if="formattedQueriesStore.formatted"
-                    class="flex relative group select-none w-auto overflow-hidden whitespace-pre-wrap break-words"
+                    class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
                 >
                     <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
                 </pre>
@@ -73,7 +73,7 @@ const formattedSql = computed(() => {
 
         <code
             v-if="!formattedQueriesStore.formatted"
-            class="text-base-content language-sql rounded !text-xs select-none break-all"
+            class="text-base-content language-sql rounded !text-xs break-all"
             v-html="formattedSql"
         ></code>
 
