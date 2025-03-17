@@ -176,6 +176,12 @@ watch(xdebug, (value) => {
     disconnectFromXdebug();
 });
 
+watch(xDebugStore, (value) => {
+    if (value.current.project_path === "") {
+        xdebug.value = false;
+    }
+});
+
 window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYml) => {
     xDebugStore.setCurrent(arg);
     window.ipcRenderer.send("connect-xdebug", arg);
