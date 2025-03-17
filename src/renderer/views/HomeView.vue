@@ -28,6 +28,7 @@ import LogView from "@/components/laravel/LogView.vue";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import QueriesView from "@/components/laravel/QueriesView.vue";
+import { deepClone } from "@/lib/deep_clone";
 
 markRaw(TheUpdateModalInfo);
 
@@ -160,7 +161,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on("jobs", (event, { content }) => {
         jobStore.addOrUpdateJob(content.jobs, content.ide_handle);
 
-        const serializableJobs = JSON.parse(JSON.stringify(jobStore.jobs));
+        const serializableJobs = deepClone(jobStore.jobs);
 
         if (content.to_screen.new_window) {
             screenStore.hidden(content.to_screen.screen_name);
@@ -197,7 +198,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on("log_application", (event, { content }) => {
         logStore.add(content);
 
-        const serializable = JSON.parse(JSON.stringify(logStore.logs));
+        const serializable = deepClone(logStore.logs);
 
         if (content.to_screen.new_window) {
             screenStore.hidden(content.to_screen.screen_name);
@@ -240,7 +241,7 @@ const dumpListeners = () => {
 
         queriesStore.add(content);
 
-        const serializable = JSON.parse(JSON.stringify(queriesStore.payload));
+        const serializable = deepClone(queriesStore.payload);
 
         if (content.to_screen.new_window) {
             screenStore.hidden(content.to_screen.screen_name);
@@ -352,7 +353,9 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 
     maximizeApp(content.auto_invoke_app);
 
-    const serializablePayload = JSON.parse(JSON.stringify(payloadStore.payload.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name)));
+    const serializablePayload = deepClone(
+        payloadStore.payload.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name)
+    );
 
     if (content.to_screen.new_window) {
         screenStore.hidden(content.to_screen.screen_name);
@@ -379,11 +382,11 @@ const dispatch = (type: string, event: EventType, content: any): void => {
 const openScreenWindow = () => {
     screenStore.toggleVisible(screenStore.screen);
 
-    const serializablePayload = JSON.parse(JSON.stringify(payloadStore.get(screenStore.screen)));
-    const serializableJobPayload = JSON.parse(JSON.stringify(jobStore.jobs));
-    const serializableMailPayload = JSON.parse(JSON.stringify(mailStore.mails));
-    const serializableLogPayload = JSON.parse(JSON.stringify(logStore.logs));
-    const serializableQueriesPayload = JSON.parse(JSON.stringify(queriesStore.payload));
+    const serializablePayload = deepClone(screenStore.screen);
+    const serializableJobPayload = deepClone(jobStore.jobs);
+    const serializableMailPayload = deepClone(mailStore.mails);
+    const serializableLogPayload = deepClone(logStore.logs);
+    const serializableQueriesPayload = deepClone(queriesStore.payload);
 
     window.ipcRenderer.send("screen-window:show", {
         screen: screenStore.screen,

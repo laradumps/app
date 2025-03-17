@@ -8,6 +8,7 @@ import IconPin from "@/components/Icons/IconPin.vue";
 import { useMailStore } from "@/store/mail";
 import { useLogStore } from "@/store/logs.js";
 import { useQueriesPayloadStore } from "@/store/queries.js";
+import { deepClone } from "@/lib/deep_clone.js";
 
 const emit = defineEmits(["toggleScreen"]);
 
@@ -39,11 +40,11 @@ const onDragEnd = (event, screen) => {
 const openScreenWindow = (screen, mouseX, mouseY) => {
     screenStore.toggleVisible(screen);
 
-    const serializablePayload = JSON.parse(JSON.stringify(payloadStore.get(screen)));
-    const serializableJobPayload = JSON.parse(JSON.stringify(jobStore.jobs));
-    const serializableMailPayload = JSON.parse(JSON.stringify(mailStore.mails));
-    const serializableLogPayload = JSON.parse(JSON.stringify(logStore.logs));
-    const serializableQueriesPayload = JSON.parse(JSON.stringify(queriesStore.payload));
+    const serializablePayload = deepClone(payloadStore.get(screen));
+    const serializableJobPayload = deepClone(jobStore.jobs);
+    const serializableMailPayload = deepClone(mailStore.mails);
+    const serializableLogPayload = deepClone(logStore.logs);
+    const serializableQueriesPayload = deepClone(queriesStore.payload);
 
     window.ipcRenderer.send("screen-window:show", {
         screen: screen,

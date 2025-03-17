@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 import { Settings } from "@/types/settings.type";
 import { DEFAULT_SETTINGS } from "@/default-settings";
+import { deepClone } from "@/lib/deep_clone";
 
 const themeColors = {
     system: "System",
@@ -78,7 +79,7 @@ export const useSettingsStore = defineStore("settings", () => {
     const settings = ref<Settings>(savedSettings ? JSON.parse(savedSettings) : DEFAULT_SETTINGS);
 
     const update = () => {
-        const serializablePayload = JSON.parse(JSON.stringify(settings.value));
+        const serializablePayload = deepClone(settings.value);
 
         localStorage.setItem("user-settings", JSON.stringify(serializablePayload));
 

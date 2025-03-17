@@ -1,6 +1,7 @@
 import path from "path";
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
 import { isMac } from "./main";
+import { deepClone } from "@/lib/deep_clone";
 
 let tray: Electron.Tray;
 
@@ -42,7 +43,7 @@ export const init = async (mainWindow: BrowserWindow) => {
                     }));
 
                     tray.setContextMenu(buildContextMenu());
-                    mainWindow.webContents.send("main:tray-updated-environment-options", JSON.parse(JSON.stringify(selectedOptions)));
+                    mainWindow.webContents.send("main:tray-updated-environment-options", deepClone(selectedOptions));
                 }
             } as MenuItem;
         }
