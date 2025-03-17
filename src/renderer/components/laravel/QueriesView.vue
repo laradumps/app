@@ -98,7 +98,7 @@ const clear = () => {
             :total-filtered="queriesStore.payload.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
         />
 
-        <div class="overflow-auto mt-3 h-[calc(100vh-225px)]">
+        <div class="overflow-auto mt-3 h-[calc(100vh-240px)]">
             <div class="overflow-auto">
                 <div
                     v-for="(payload, index) in queries"

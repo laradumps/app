@@ -90,87 +90,83 @@ const toggle = (value) => {
                     </div>
                 </div>
 
-                <div class="flex gap-3 items-end">
-                    <div>
-                        <div class="dropdown dropdown-end">
-                            <div
-                                tabindex="0"
-                                role="button"
-                                class="btn btn-sm btn-circle btn-soft btn-accent"
-                            >
-                                <AdjustmentsHorizontalIcon class="w-4" />
-                            </div>
-                            <ul
-                                tabindex="0"
-                                class="dropdown-content menu !text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
-                            >
-                                <li>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            v-model="formattedQueriesStore.formatted"
-                                            class="checkbox checkbox-sm checkbox-accent"
-                                            @click="formattedQueriesStore.toggle()"
-                                        />
-                                        Prettify
-                                    </label>
-                                </li>
-                                <li class="text-xs border mb-2 -mx-4 !border-base-content/10 uppercase font-normal mb-1"></li>
-                                <li class="text-xs uppercase font-normal mb-1">Order by:</li>
-                                <li>
-                                    <label>
-                                        <input
-                                            v-model="orderBy"
-                                            type="radio"
-                                            name="radio-order"
-                                            class="radio radio-sm radio-accent"
-                                            value="default"
-                                        />
-                                        default
-                                    </label>
-                                </li>
-                                <li>
-                                    <label>
-                                        <input
-                                            v-model="orderBy"
-                                            type="radio"
-                                            name="radio-order"
-                                            class="radio radio-sm radio-accent"
-                                            value="desc"
-                                        />
-                                        desc
-                                    </label>
-                                </li>
-                                <li>
-                                    <label>
-                                        <input
-                                            v-model="orderBy"
-                                            type="radio"
-                                            name="radio-order"
-                                            class="radio radio-sm radio-accent"
-                                            value="asc"
-                                        />
-                                        asc
-                                    </label>
-                                </li>
-                                <li class="text-xs uppercase font-normal my-3">origin:</li>
-                                <li
-                                    v-for="option in options"
-                                    :key="option"
-                                >
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            :value="option"
-                                            :checked="queriesOriginFilter.origin.includes(option)"
-                                            @change="toggle(option)"
-                                            class="checkbox checkbox-sm checkbox-accent"
-                                        />
-                                        {{ option.charAt(0).toUpperCase() + option.slice(1) }}
-                                    </label>
-                                </li>
-                            </ul>
+                <div class="flex gap-5 items-center">
+                    <label class="flex flew-row gap-2 text-sm opacity-90">
+                        <input
+                            type="checkbox"
+                            v-model="formattedQueriesStore.formatted"
+                            class="checkbox checkbox-sm"
+                            @click="formattedQueriesStore.toggle()"
+                        />
+                        Prettify
+                    </label>
+
+                    <div class="dropdown dropdown-end">
+                        <div
+                            tabindex="0"
+                            role="button"
+                            class="btn btn-sm btn-circle btn-soft"
+                        >
+                            <AdjustmentsHorizontalIcon class="w-4.5" />
                         </div>
+                        <ul
+                            tabindex="0"
+                            class="dropdown-content menu !text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
+                        >
+                            <li class="text-xs uppercase font-normal mb-1">Order by:</li>
+                            <li>
+                                <label>
+                                    <input
+                                        v-model="orderBy"
+                                        type="radio"
+                                        name="radio-order"
+                                        class="radio radio-sm"
+                                        value="default"
+                                    />
+                                    default
+                                </label>
+                            </li>
+                            <li>
+                                <label>
+                                    <input
+                                        v-model="orderBy"
+                                        type="radio"
+                                        name="radio-order"
+                                        class="radio radio-sm"
+                                        value="desc"
+                                    />
+                                    desc
+                                </label>
+                            </li>
+                            <li>
+                                <label>
+                                    <input
+                                        v-model="orderBy"
+                                        type="radio"
+                                        name="radio-order"
+                                        class="radio radio-sm"
+                                        value="asc"
+                                    />
+                                    asc
+                                </label>
+                            </li>
+                            <li class="text-xs uppercase font-normal my-3">origin:</li>
+                            <li
+                                v-for="option in options"
+                                :key="option"
+                            >
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        :value="option"
+                                        :checked="queriesOriginFilter.origin.includes(option)"
+                                        @change="toggle(option)"
+                                        class="checkbox checkbox-sm"
+                                    />
+                                    {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+                                </label>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>

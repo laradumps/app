@@ -47,7 +47,7 @@ onUpdated(() => {
         <div class="relative">
             <ListboxButton
                 :title="selected?.label.replaceAll('<b>', '').replace('</b>', '')"
-                class="relative w-full h-[34px] text-left cursor-default rounded-md border border-base-content/15 py-1.5 pl-3 pr-10 shadow-sm focus:border-base-700 focus:outline-none focus:ring-1 focus:ring-base-500 sm:text-sm"
+                class="relative bg-base-100 w-full h-[34px] text-left cursor-default rounded-md border border-base-content/15 py-1.5 pl-3 pr-10 shadow-sm focus:border-base-700 focus:outline-none focus:ring-1 focus:ring-base-500 sm:text-sm"
             >
                 <span
                     class="block truncate text-sm text-base-content"
@@ -67,7 +67,7 @@ onUpdated(() => {
                 leave-to-class="opacity-0"
             >
                 <ListboxOptions
-                    class="absolute z-300 mt-1 max-h-60 w-full overflow-auto rounded-md bg-base-300 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                    class="absolute z-300 mt-1 max-h-60 w-full overflow-auto rounded-md bg-base-300 py-1 text-base shadow-lg p-2 pt-2 focus:outline-none sm:text-sm"
                 >
                     <ListboxOption
                         as="template"

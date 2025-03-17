@@ -196,9 +196,15 @@ const getLabel = computed(() => {
 
                     <div
                         v-if="payload.queries && payload.queries?.origin"
-                        class="badge badge-xs badge-ghost"
+                        class="badge badge-xs badge-ghost mr-1"
                     >
                         {{ payload.queries?.origin }}
+                    </div>
+
+                    <div
+                        v-if="payload.queries && payload.queries?.time"
+                    >
+                        <span class="text-lg opacity-70 font-normal whitespace-nowrap"> {{ payload.queries.time }}<span class="font-semibold text-[10px]">ms</span> </span>
                     </div>
 
                     <div
@@ -211,6 +217,9 @@ const getLabel = computed(() => {
             </div>
             <div
                 class="collapse-content"
+                :class="{
+                    '!pb-0' : payload.type === 'queries'
+                }"
                 v-on:click.right="openOptions = true"
                 v-on:click="openOptions = false"
             >
