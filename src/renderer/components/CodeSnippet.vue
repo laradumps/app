@@ -147,7 +147,7 @@ onMounted(() => {
 @reference "./../styles.css";
 
 .code-snippet {
-    @apply bg-slate-950 border border-gray-700 rounded-lg p-4;
+    @apply bg-black/80 border border-gray-700 rounded-lg p-4;
 }
 
 .code-snippet .hljs {

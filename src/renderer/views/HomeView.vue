@@ -196,7 +196,9 @@ const dumpListeners = () => {
                 jobs: serializableJobs,
                 position: {}
             });
-        } else {
+        }
+
+        if (content.to_screen && !content.to_screen.new_window) {
             window.ipcRenderer.send("send-screen-window-update", {
                 screen: content.to_screen.screen_name,
                 payload: {},
@@ -231,7 +233,9 @@ const dumpListeners = () => {
                 screen: content.to_screen.screen_name,
                 logs: serializable
             });
-        } else {
+        }
+
+        if (content.to_screen && !content.to_screen.new_window) {
             window.ipcRenderer.send("send-screen-window-update", {
                 screen: content.to_screen.screen_name,
                 logs: serializable
@@ -274,7 +278,9 @@ const dumpListeners = () => {
                 screen: content.to_screen.screen_name,
                 queries: serializable
             });
-        } else {
+        }
+
+        if (content.to_screen && !content.to_screen.new_window) {
             window.ipcRenderer.send("send-screen-window-update", {
                 screen: content.to_screen.screen_name,
                 queries: serializable
