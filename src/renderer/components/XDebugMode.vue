@@ -127,7 +127,7 @@ const handleResponse = (event, response) => {
     setTimeout(() => parseResponse(response), 100);
 };
 
-const handlePropertyContextClick = (type, variable, openModal) => {
+const handlePropertyContextClick = (type, variable) => {
     if (type === "uninitialized") return;
 
     expandedProperties.value = { [variable]: true };
@@ -136,8 +136,6 @@ const handlePropertyContextClick = (type, variable, openModal) => {
     variablesInSidebar.value = true;
 
     propertyGet(variable);
-
-    openModal && setTimeout(() => modal_property_get.showModal(), 30);
 };
 
 const handleContextGet = (responseElement) => {
@@ -445,15 +443,17 @@ const getHighlightedCode = (lineContent) => {
 
     return highlightedSyntax.replace(regex, (match) => {
         const variable = variablesNames.value.find((v) => v.name === match);
-        let tooltipContent = "Click to open dump";
+        let tooltipContent = "";
 
         if (["int", "bool", "float"].includes(variable.type) && variable.value !== null) {
             tooltipContent = `${variable.type}: ${variable.value}`;
+        } else {
+            tooltipContent = `${variable.type}`;
         }
 
         console.log(variable);
 
-        return `<span class="highlight cursor-pointer font-semibold" data-variable="${match}" onclick="modal_property_get.showModal()" data-tippy-content="${tooltipContent}">${match}</span>`;
+        return `<span class="highlight cursor-pointer font-semibold" data-variable="${match}" data-tippy-content="${tooltipContent}">${match}</span>`;
     });
 };
 
@@ -539,35 +539,35 @@ onBeforeUnmount(() => {
                 <div class="flex w-full gap-1 items-center justify-between">
                     <div class="flex w-full gap-1 items-center">
                         <button
-                            class="btn btn-xs btn-soft !py-4"
+                            class="btn btn-xs !bg-transparent !py-4"
                             @click="continueDebug"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Continue (F5)"
                         >
-                            <IconContinue :class="{ '!text-gray-500': variablesNames.length === 0 }" />
+                            <IconContinue :class="{ 'opacity-60': variablesNames.length === 0 }" />
                         </button>
 
                         <button
-                            class="btn btn-xs btn-soft !py-4"
+                            class="btn btn-xs !bg-transparent !py-4"
                             @click="stepOver"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Over (F8)"
                         >
                             <IconStepOver
                                 class="text-info w-4"
-                                :class="{ '!text-gray-500': variablesNames.length === 0 }"
+                                :class="{ 'opacity-60': variablesNames.length === 0 }"
                             />
                         </button>
 
                         <button
-                            class="btn btn-xs btn-soft !py-4"
+                            class="btn btn-xs !bg-transparent !py-4"
                             @click="stepInto"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Into (F7)"
                         >
                             <IconStepInto
                                 class="w-4 text-warning"
-                                :class="{ '!text-gray-500': variablesNames.length === 0 }"
+                                :class="{ 'opacity-60': variablesNames.length === 0 }"
                             />
                         </button>
                     </div>
@@ -585,7 +585,7 @@ onBeforeUnmount(() => {
                             data-tippy-content="Stop (F2)"
                         >
                             <IconStop
-                                class="text-error w-4"
+                                class="text-error w-5"
                                 :class="{ '!text-gray-500': variablesNames.length === 0 }"
                             />
                         </button>
@@ -710,7 +710,7 @@ onBeforeUnmount(() => {
                                         >
                                         <span class="classname truncate"
                                             >{{ " {" + (property.classname ?? property.type) + "}" }}
-                                            <span v-if="!['uninitialized', 'object'].includes(property.type)">
+                                            <span v-if="!['uninitialized', 'object', 'array'].includes(property.type)">
                                                 =
                                                 <span class="text-secondary">{{ formatValue(property) }}</span>
                                             </span>
@@ -745,7 +745,7 @@ onBeforeUnmount(() => {
             id="modal_property_get"
             class="modal modal-middle"
         >
-            <div class="bg-gray-900 modal-box !rounded-md w-9/12 max-w-4xl space-y-3">
+            <div class="modal-box !rounded-md w-9/12 max-w-4xl space-y-3">
                 <div
                     class="flex gap-3 text-sm"
                     v-if="selectedVariableName && propertiesEvalTree.length === 0"
