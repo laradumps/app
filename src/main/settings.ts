@@ -53,7 +53,7 @@ export const getSettings = (): Settings => {
         }
     }
 
-    settings.version = app.getVersion()
+    settings.version = app.getVersion();
 
     setSettings(settings);
     return settings;

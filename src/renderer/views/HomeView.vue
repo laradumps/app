@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, markRaw, nextTick, onBeforeMount, onMounted, ref } from "vue";
+import { computed, markRaw, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
 import { useScreenStore } from "@/store/screen";
 import { useI18nStore } from "@/store/i18n";
@@ -56,8 +56,6 @@ const defaultScreen = ref({
     new_window: false
 });
 
-const appVersion = ref("");
-
 const inScreenWindow = ref("");
 const payloadScreen = ref([]);
 const jobScreen = ref({});
@@ -75,6 +73,33 @@ onBeforeMount(() => {
     locale.value = localeStore.value;
 });
 
+onBeforeUnmount(() => {
+    [
+        "dump",
+        "livewire",
+        "jobs",
+        "html",
+        "mailable",
+        "table_v2",
+        "mail",
+        "label",
+        "table",
+        "http-client",
+        "model",
+        "log_application",
+        "color",
+        "screen",
+        "json_validate",
+        "validate",
+        "json",
+        "queries",
+        "query",
+        "time_track"
+    ].forEach((event) => {
+        window.ipcRenderer.removeAllListeners(event);
+    });
+});
+
 onMounted(() => {
     if (xDebugStore.current) {
         xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
@@ -82,17 +107,16 @@ onMounted(() => {
 
     IDEHandler.setValue(localStorage.IDEHandler);
 
-    setTimeout(() => (document.title = "LaraDumps - " + appVersion.value), 200);
     addScreen(defaultScreen.value);
 
     window.ipcRenderer.on("app:pause-dumps", (event, arg) => (isPaused.value = arg));
 
-    window.ipcRenderer.on("dump", (event, { content }) => dispatch("dump", event, content));
+    window.ipcRenderer.on("dump", (event, { content }) => dispatch(content));
 
     window.ipcRenderer.send("main:app-version");
 
     window.ipcRenderer.on("main:app-version.reply", (event, arg) => {
-        setTimeout(() => (appVersion.value = `v${arg.version}`), 100)
+        document.title = "LaraDumps - " + `v${arg.version}`;
     });
 
     window.ipcRenderer.on("app:screen-window-enable", async (event, args) => {
@@ -127,7 +151,7 @@ onMounted(() => {
         xdebugMode.value = false;
     });
 
-    window.ipcRenderer.on("xdebug", (event, { content }) => dispatch("xdebug", event, content));
+    window.ipcRenderer.on("xdebug", (event, { content }) => dispatch(content));
 
     dumpListeners();
 
@@ -155,7 +179,7 @@ onMounted(() => {
 const dumpListeners = () => {
     window.ipcRenderer.on("livewire", (event, { content }) => {
         livewireRequests.value.push(content);
-        dispatch("livewire", event, content);
+        dispatch(content);
     });
 
     window.ipcRenderer.on("jobs", (event, { content }) => {
@@ -181,9 +205,9 @@ const dumpListeners = () => {
         }
     });
 
-    window.ipcRenderer.on("html", (event, { content }) => dispatch("html", event, content));
-    window.ipcRenderer.on("mailable", (event, { content }) => dispatch("mailable", event, content));
-    window.ipcRenderer.on("table_v2", (event, { content }) => dispatch("table_v2", event, content));
+    window.ipcRenderer.on("html", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("mailable", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("table_v2", (event, { content }) => dispatch(content));
     window.ipcRenderer.on("mail", (event, { content }) => {
         mailStore.addOrUpdateMail(content.mail, content.ide_handle);
     });
@@ -192,9 +216,9 @@ const dumpListeners = () => {
         payloadStore.updateLabelPayload(content);
     });
 
-    window.ipcRenderer.on("table", (event, { content }) => dispatch("table", event, content));
-    window.ipcRenderer.on("http-client", (event, { content }) => dispatch("http-client", event, content));
-    window.ipcRenderer.on("model", (event, { content }) => dispatch("model", event, content));
+    window.ipcRenderer.on("table", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("http-client", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("model", (event, { content }) => dispatch(content));
     window.ipcRenderer.on("log_application", (event, { content }) => {
         logStore.add(content);
 
@@ -234,7 +258,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on("validate", (event, { content }) => {
         payloadStore.updateValidatePayload(content);
     });
-    window.ipcRenderer.on("json", (event, { content }) => dispatch("json", event, content));
+    window.ipcRenderer.on("json", (event, { content }) => dispatch(content));
 
     window.ipcRenderer.on("queries", (event, { content }) => {
         content.queries && timeStore.increment(content.request_id, content.id, content.queries);
@@ -264,12 +288,12 @@ const dumpListeners = () => {
             if (lastPayload) timeStore.selected = lastPayload.request_id;
         }, 50);
     });
-    window.ipcRenderer.on("query", (event, { content }) => dispatch("query", event, content));
+    window.ipcRenderer.on("query", (event, { content }) => dispatch(content));
     window.ipcRenderer.on("time_track", (event, { content }) => {
         const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.with_label.label === content.with_label.label);
 
         if (exist.length === 0) {
-            dispatch("time-track", event, content);
+            dispatch(content);
 
             return;
         }
@@ -325,9 +349,7 @@ const toggleScreen = async (value: string, shouldActivate = false): Promise<void
     });
 };
 
-type EventType = "label" | "color" | "screen" | "dump";
-
-const dispatch = (type: string, event: EventType, content: any): void => {
+const dispatch = (content: any): void => {
     if (isPaused.value) {
         return;
     }
@@ -452,7 +474,7 @@ const openScreenWindow = () => {
 
                 <!-- content -->
                 <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
-                    <main class="flex flex-col flex-1 min-h-full">
+                    <main class="flex flex-col flex-1 min-h-full space-y-1">
                         <!-- screen buttons -->
                         <div class="flex px-2">
                             <div class="flex items-center justify-between w-full overflow-x-auto">
@@ -513,7 +535,7 @@ const openScreenWindow = () => {
                                         class="w-full"
                                     >
                                         <DumpItem
-                                            class="w-full px-3 group text-sm mb-2"
+                                            class="w-full px-3 group text-sm mb-3"
                                             v-show="screenStore.screen !== 'livewire'"
                                             :payload="payload"
                                         />

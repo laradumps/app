@@ -18,7 +18,6 @@ const props = defineProps<{
 }>();
 
 const formattedSql = computed(() => {
-
     const sql = props.query.sql;
 
     let language = "sql";
@@ -44,12 +43,8 @@ const formattedSql = computed(() => {
 </script>
 
 <template>
-    <div
-        class="space-y-2 w-full"
-    >
-        <pre
-            class="flex relative group select-none w-auto overflow-hidden whitespace-pre-wrap break-words"
-        >
+    <div class="space-y-2 w-full">
+        <pre class="flex relative group select-none w-auto overflow-hidden whitespace-pre-wrap break-words">
             <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
         </pre>
     </div>
