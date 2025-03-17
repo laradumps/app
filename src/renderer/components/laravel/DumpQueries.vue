@@ -69,8 +69,6 @@ const formattedSql = computed(() => {
                     <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
                 </pre>
             </div>
-
-            <span class="-mr-2 relative right-2 text-lg font-normal whitespace-nowrap"> {{ payload.queries.time }} <span class="font-semibold text-[10px]">ms</span> </span>
         </div>
 
         <code
@@ -108,4 +106,5 @@ const formattedSql = computed(() => {
 code * {
     @apply !font-light !text-base-content tracking-wider;
 }
+
 </style>
