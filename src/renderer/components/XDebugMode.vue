@@ -80,6 +80,8 @@ const stop = () => {
 
     const id = getNextTransactionId();
     sendCommand(`stop -i ${id}`);
+
+    handleStop();
 };
 
 const contextGet = (id) => {
@@ -130,7 +132,13 @@ const handleResponse = (event, response) => {
 const handlePropertyContextClick = (type, variable) => {
     if (type === "uninitialized") return;
 
-    expandedProperties.value = { [variable]: true };
+    propertiesContextTree.value = [];
+
+    if (expandedProperties.value[variable]) {
+        expandedProperties.value = { ...expandedProperties.value, [variable]: false };
+    } else {
+        expandedProperties.value = { ...expandedProperties.value, [variable]: true };
+    }
 
     selectedVariableName.value = variable;
     variablesInSidebar.value = true;
@@ -138,19 +146,25 @@ const handlePropertyContextClick = (type, variable) => {
     propertyGet(variable);
 };
 
+
 const handleContextGet = (responseElement) => {
     const properties = responseElement.getElementsByTagName("property");
 
     variablesNames.value = [];
 
     Array.from(properties).forEach((property) => {
-        let value = null;
-
-        try {
-            value = atob(property.textContent.trim());
-        } catch (e) {}
-
         const name = property.getAttribute("name");
+        let value = property.getAttribute("value") || property.textContent.trim();
+
+        const encoding = property.getAttribute("encoding");
+        if (encoding === "base64" && value) {
+            try {
+                value = atob(value);
+            } catch (e) {
+                console.error("Erro ao decodificar base64:", e);
+                value = property.textContent.trim();
+            }
+        }
 
         if (name.startsWith("$")) {
             variablesNames.value.push({
@@ -195,14 +209,19 @@ const handlePropertyGet = (responseElement, evaluate) => {
             return null;
         }
 
+        console.log({
+            name,
+            encoding: propertyElement.getAttribute("encoding")
+        })
         let valueElement = propertyElement.querySelector("cdata") || propertyElement;
-        let value = valueElement.textContent;
+        let value = propertyElement.getAttribute("value") || valueElement.textContent;
 
-        if (type === "string" && value) {
+        const encoding = propertyElement.getAttribute("encoding");
+        if (encoding === "base64" && value) {
             try {
                 value = atob(value);
             } catch (e) {
-                console.error("Error decoding Base64:", e);
+                console.error("Error decoding base64:", e);
             }
         }
 
@@ -434,26 +453,25 @@ const parseResponse = async (xml) => {
 const getHighlightedCode = (lineContent) => {
     const highlightedSyntax = hljs.highlight(lineContent, { language: "php" }).value;
 
-    const sortedVariableNames = [...variablesNames.value].map((variable) => `${variable.name}`).sort((a, b) => b.length - a.length);
-
-    const escapedVariableNames = sortedVariableNames.map((name) => name.replace(/[-\/\\^$.*+?()[\]{}|]/g, "\\$&"));
-
-    const variableNamesPattern = escapedVariableNames.join("|");
-    const regex = new RegExp(`(${variableNamesPattern})`, "g");
+    const regex = new RegExp(
+        [...variablesNames.value]
+            .map(v => v.name)
+            .sort((a, b) => b.length - a.length)
+            .map(n => n.replace(/[-\/\\^$.*+?()[\]{}|]/g, "\\$&"))
+            .join("|"),
+        "g"
+    );
 
     return highlightedSyntax.replace(regex, (match) => {
-        const variable = variablesNames.value.find((v) => v.name === match);
-        let tooltipContent = "";
+        const variable = variablesNames.value.find(v => v.name === match);
+        if (!variable) return match;
 
-        if (["int", "bool", "float"].includes(variable.type) && variable.value !== null) {
-            tooltipContent = `${variable.type}: ${variable.value}`;
-        } else {
-            tooltipContent = `${variable.type}`;
-        }
+        const classes = variable.type === "uninitialized" ? "opacity-60 line-through" : "cursor-pointer font-normal";
+        const tooltip = ["int", "bool", "float"].includes(variable.type) && variable.value !== null
+            ? ` data-tippy-content="${variable.type}: ${variable.value}"`
+            : "";
 
-        console.log(variable);
-
-        return `<span class="highlight cursor-pointer font-semibold" data-variable="${match}" data-tippy-content="${tooltipContent}">${match}</span>`;
+        return `<span class="highlight ${classes}" data-variable="${match}" onclick="modal_property_get.showModal()"${tooltip}>${match}</span>`;
     });
 };
 
@@ -539,31 +557,34 @@ onBeforeUnmount(() => {
                 <div class="flex w-full gap-1 items-center justify-between">
                     <div class="flex w-full gap-1 items-center">
                         <button
-                            class="btn btn-xs !bg-transparent !py-4"
+                            class="btn btn-xs !py-4"
                             @click="continueDebug"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Continue (F5)"
+                            :class="{'!bg-transparent' : variablesNames.length === 0}"
                         >
                             <IconContinue :class="{ 'opacity-60': variablesNames.length === 0 }" />
                         </button>
 
                         <button
-                            class="btn btn-xs !bg-transparent !py-4"
+                            class="btn btn-xs !py-4"
                             @click="stepOver"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Over (F8)"
+                            :class="{'!bg-transparent' : variablesNames.length === 0}"
                         >
                             <IconStepOver
                                 class="text-info w-4"
-                                :class="{ 'opacity-60': variablesNames.length === 0 }"
+                                :class="{'opacity-60': variablesNames.length === 0}"
                             />
                         </button>
 
                         <button
-                            class="btn btn-xs !bg-transparent !py-4"
+                            class="btn btn-xs !py-4"
                             @click="stepInto"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Into (F7)"
+                            :class="{'!bg-transparent' : variablesNames.length === 0}"
                         >
                             <IconStepInto
                                 class="w-4 text-warning"
@@ -579,10 +600,11 @@ onBeforeUnmount(() => {
                         />
 
                         <button
-                            class="btn btn-xs !px-1.5 btn-ghost"
+                            class="btn btn-xs !px-1.5"
                             @click="stop"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Stop (F2)"
+                            :class="{'!bg-transparent' : variablesNames.length === 0}"
                         >
                             <IconStop
                                 class="text-error w-5"
@@ -655,7 +677,7 @@ onBeforeUnmount(() => {
                                     v-for="(lineContent, lineNumber) in fileContent"
                                     :key="`${lineNumber}-${currentFileName}`"
                                     class="flex hover:!bg-red-500/10 px-3 group/line"
-                                    :class="{ 'bg-red-500/20 shadow-lg font-semibold cursor-pointer': parseInt(lineNumber) === currentLine }"
+                                    :class="{ 'bg-red-500/20 shadow-lg font-semibold': parseInt(lineNumber) === currentLine }"
                                     :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
                                 >
                                     <DumpLink
@@ -696,20 +718,20 @@ onBeforeUnmount(() => {
                                 >
                                     <div
                                         :class="{
-                                            'cursor-pointer': property.type !== 'string',
-                                            'cursor-not-allowed': property.type === 'string',
+                                            'cursor-pointer': !['int', 'bool', 'string'].includes(property.type),
+                                            '!cursor-default flex-wrap': ['string', 'uninitialized'].includes(property.type),
                                             'bg-gray-800 border-l-4 !border-[#d19a66]': expandedProperties[property.name]
                                         }"
                                         class="flex border-l-4 border-transparent hover:bg-gray-700 items-center px-1 py-2 pl-3"
-                                        @click="property.type !== 'string' ? handlePropertyContextClick(property.type, property.name, false) : null"
+                                        @click="!['int', 'bool', 'string'].includes(property.type) ? handlePropertyContextClick(property.type, property.name) : null"
                                     >
                                         <span
-                                            :class="{ 'opacity-70 line-through': property.type === 'uninitialized' }"
+                                            :class="{ 'opacity-60 line-through': property.type === 'uninitialized' }"
                                             class="variable-name mr-2"
-                                            >{{ property.name.replace("$", "") }}</span
+                                            >{{ property.name }}</span
                                         >
-                                        <span class="classname truncate"
-                                            >{{ " {" + (property.classname ?? property.type) + "}" }}
+                                        <span class="classname">
+                                            <span class="truncate">{{ " {" + (property.classname ?? property.type) + "}" }}</span>
                                             <span v-if="!['uninitialized', 'object', 'array'].includes(property.type)">
                                                 =
                                                 <span class="text-secondary">{{ formatValue(property) }}</span>
@@ -720,17 +742,17 @@ onBeforeUnmount(() => {
                                     <template
                                         v-if="expandedProperties[property.name]"
                                         :key="expandedProperties + '-' + property.name"
-                                        class="ml-5 py-2"
-                                    >
-                                        <XDebugPropertyNode
-                                            v-if="propertiesTree"
-                                            v-for="property in propertiesContextTree"
-                                            :key="'child-' + property.name + '-' + property.type"
-                                            :property="property"
-                                            :transition-id="transactionId"
-                                            @click="variableClicked = false"
-                                        />
-                                    </template>
+                                        class="py-2"
+                                        >
+                                            <XDebugPropertyNode
+                                                v-if="propertiesTree"
+                                                            v-for="property in propertiesContextTree"
+                                                            :key="'child-' + property.name + '-' + property.type"
+                                                            :property="property"
+                                                            :transition-id="transactionId"
+                                                            @click="variableClicked = false"
+                                                            />
+                        </template>
                                 </div>
                             </div>
                         </pane>
@@ -840,7 +862,7 @@ onBeforeUnmount(() => {
 }
 
 ::v-deep(.splitpanes--vertical) {
-    @apply bg-gray-900;
+    @apply bg-neutral-900;
 }
 
 ::v-deep(.splitpanes--vertical > .splitpanes__splitter) {
@@ -857,12 +879,12 @@ onBeforeUnmount(() => {
 
 ::v-deep(.xdebug .hljs),
 ::v-deep(.xdebug .hljs-params) {
-    color: #abb2bf !important;
+    color: rgba(171, 178, 191, 0.9);
 }
 
 ::v-deep(.xdebug .hljs-comment),
 ::v-deep(.xdebug .hljs-quote) {
-    color: #5c6370 !important;
+    color: #5c6370;
     font-style: italic;
 }
 
@@ -890,17 +912,6 @@ onBeforeUnmount(() => {
 ::v-deep(.xdebug .hljs-regexp),
 ::v-deep(.xdebug .hljs-string) {
     color: #98c379 !important;
-}
-
-::v-deep(.xdebug .hljs-attr),
-::v-deep(.xdebug .hljs-number),
-::v-deep(.xdebug .hljs-selector-attr),
-::v-deep(.xdebug .hljs-selector-class),
-::v-deep(.xdebug .hljs-selector-pseudo),
-::v-deep(.xdebug .hljs-template-variable),
-::v-deep(.xdebug .hljs-type),
-::v-deep(.xdebug .hljs-variable) {
-    color: #d19a66 !important;
 }
 
 ::v-deep(.xdebug .hljs-bullet),

@@ -73,7 +73,7 @@ const label = computed(() => {
         <div
             v-else
             :title="label"
-            class="flex items-center group"
+            class="flex items-center group h-[32px]"
         >
             <div class="text-right w-16 tracking-wider hover:opacity-75 flex items-center">
                 <span

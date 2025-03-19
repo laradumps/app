@@ -1,8 +1,8 @@
 <template>
-    <div>
+    <div class="ml-2">
         <div class="property-node p-1">
             <div
-                class="flex gap-1 items-center text-gray-400 cursor-pointer"
+                class="flex gap-1 items-center text-gray-400 cursor-pointer whitespace-pre-wrap"
                 @click="handlePropertyClick"
             >
                 <button v-if="['array', 'object'].includes(property.type)">
@@ -12,11 +12,10 @@
 
                 <button
                     v-else
-                    class="min-w-4 size-4 cursor-not-allowed"
+                    class="min-w-4 size-4 cursor-default"
                 ></button>
 
                 <IconListBullet v-show="property.type === 'array'" />
-                <IconCodeBrackets v-show="!hasArrayIndexAtEnd(property.fullname) && !['object', 'array'].includes(property.type)" />
 
                 <div>
                     <span class="variable-name">{{ displayVariableName(property) }}</span>
@@ -65,7 +64,6 @@ import XDebugLoadingChildren from "./XDebugLoadingChildren.vue";
 import IconArrowRight from "@/components/Icons/IconArrowRight.vue";
 import IconArrowDown from "@/components/Icons/IconArrowDown.vue";
 import IconListBullet from "@/components/Icons/IconListBullet.vue";
-import IconCodeBrackets from "@/components/Icons/IconCodeBrackets.vue";
 
 const props = defineProps({
     property: Object,
@@ -145,6 +143,9 @@ const sendCommand = (cmd): void => {
 }
 
 .classname {
-    @apply text-base-content/50;
+    @apply text-base-content/50 text-xs;
+}
+.property-node * {
+    flex-shrink: 0;
 }
 </style>
