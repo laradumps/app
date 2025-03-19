@@ -604,6 +604,7 @@ onBeforeUnmount(() => {
                             @click="stop"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Stop (F2)"
+                            :class="{'!bg-transparent' : variablesNames.length === 0}"
                         >
                             <IconStop
                                 class="text-error w-5"
