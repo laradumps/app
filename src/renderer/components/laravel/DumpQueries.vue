@@ -7,7 +7,9 @@ import { useFormattedQueriesStore } from "@/store/formatted-queries";
 
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
+
 hljs.registerLanguage("sql", sql);
+hljs.registerLanguage("postgresql", sql);
 
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
