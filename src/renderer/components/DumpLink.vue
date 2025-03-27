@@ -44,6 +44,7 @@ const label = computed(() => {
     const { class_name, real_path, line } = ideHandler;
 
     if (label) return label;
+    if (class_name === "empty") return "";
     if (class_name === "empty" || !real_path || real_path.includes("ExecutionLoopClosure")) return "Tinker";
     if (line?.toString() !== "") return `${class_name}:${line}`;
 
