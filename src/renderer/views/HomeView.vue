@@ -369,6 +369,11 @@ const dispatch = (content: any): void => {
         applicationPath.value = content.application_path;
     }
 
+    if (!content.hasOwnProperty('to_screen')) {
+        alert('An error occurred, please update the app and laradumps-core and try again.');
+        window.location.reload();
+    }
+
     if (content.to_screen && typeof content.to_screen.screen_name == "string") {
         addScreen(content.to_screen);
     }
