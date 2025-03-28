@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { Job, useJobStore } from "@/store/jobs";
-import { computed, defineProps, nextTick, onMounted, ref } from "vue";
+import { computed, defineProps, nextTick, ref } from "vue";
 import moment from "moment";
 import { EyeIcon } from "@heroicons/vue/24/outline";
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
 import { TrashIcon } from "@heroicons/vue/24/outline";
 
-import { useIDEHandlerStore } from "@/store/ide-handler";
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
+import { useSettingsStore } from "@/store/settings";
 
 const jobStore = useJobStore();
-const IDEHandlerStore = useIDEHandlerStore();
 const currentProjectStore = useCurrentProject();
+const settingsStore = useSettingsStore();
 
 const selectedJobDetail = ref();
 const search = ref("");
@@ -23,6 +23,10 @@ const props = defineProps<{
 }>();
 
 const generateLink = (ideHandler: IdeHandle) => {
+    const ide_handler = settingsStore.settings.ide_handler
+        ? settingsStore.settings.ide_handler
+        : "phpstorm://open?file={filepath}&line={line}";
+
     const { project_path, real_path, workdir, wsl_config, base_path, line } = ideHandler;
     const relativePath = real_path?.replace(workdir, "").replace(project_path, "");
     let linkPath = project_path + relativePath;
@@ -32,8 +36,8 @@ const generateLink = (ideHandler: IdeHandle) => {
     }
 
     if (real_path) {
-        let link = IDEHandlerStore.value.replace("{filepath}", linkPath).replace("{line}", line);
-        if (IDEHandlerStore.value.includes("wsl_config") && wsl_config) {
+        let link = ide_handler.replace("{filepath}", linkPath).replace("{line}", line);
+        if (ide_handler.includes("wsl_config") && wsl_config) {
             link = link.replace("{wsl_config}", wsl_config);
         }
         return link;

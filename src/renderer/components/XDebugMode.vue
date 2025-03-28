@@ -850,7 +850,7 @@ onBeforeUnmount(() => {
         </dialog>
     </div>
 </template>
-<style scoped>
+<style>
 @reference "./../styles.css";
 
 .variable-name {
@@ -861,12 +861,8 @@ onBeforeUnmount(() => {
     @apply text-gray-400;
 }
 
-::v-deep(.splitpanes--vertical) {
-    @apply bg-neutral-900;
-}
-
-::v-deep(.splitpanes--vertical > .splitpanes__splitter) {
-    @apply min-w-[0.2rem] bg-gray-800 hover:bg-accent/40;
+.splitpanes--vertical > .splitpanes__splitter {
+    @apply min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
 }
 
 ::v-deep([data-tippy-root]) {

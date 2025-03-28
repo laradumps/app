@@ -10,7 +10,6 @@ import { useColorStore } from "@/store/colors";
 import { Payload, ScreenPayload } from "@/types/Payload";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
-import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
@@ -37,7 +36,6 @@ const screenStore = useScreenStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
-const IDEHandler = useIDEHandlerStore();
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 const logStore = useLogStore();
@@ -104,8 +102,6 @@ onMounted(() => {
     if (xDebugStore.current) {
         xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
     }
-
-    IDEHandler.setValue(localStorage.IDEHandler);
 
     addScreen(defaultScreen.value);
 

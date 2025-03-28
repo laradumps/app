@@ -67,13 +67,13 @@ const xDebugMode = computed(() => {
             <NavBarGlobalSearch v-if="payloadStore.payload.length > 0" />
 
             <!-- collapse -->
-            <NavBarCollapse v-if="!xDebugMode || (settingsStore.settings.show_collapse_button && payloadStore.payload.length > 0)" />
+            <NavBarCollapse v-if="settingsStore.settings.show_collapse_button && payloadStore.payload.length > 0" />
 
             <!-- always on top -->
             <NavBarAlwaysOnTop />
 
             <!-- ssh -->
-            <NavBarSSH v-if="!xDebugMode || settingsStore.settings.show_ssh_button" />
+            <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
 
             <!-- listening -->
             <NavBarListening v-if="!inSavedDumpsWindow" />

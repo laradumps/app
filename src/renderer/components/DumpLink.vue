@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, defineProps, onMounted, ref } from "vue";
-import { useIDEHandlerStore } from "@/store/ide-handler";
 import { IdeHandle } from "@/types/IdeHandle";
 import IconPencil from "@/components/Icons/IconPencil.vue";
 import { useCurrentProject } from "@/store/current-project";
+import { useSettingsStore } from "@/store/settings";
 
 const props = defineProps<{
     ideHandler: IdeHandle;
@@ -11,8 +11,8 @@ const props = defineProps<{
     showIcon?: boolean;
 }>();
 
-const IDEHandlerStore = useIDEHandlerStore();
 const currentProjectStore = useCurrentProject();
+const settingsStore = useSettingsStore();
 
 const link = ref();
 
@@ -21,7 +21,10 @@ onMounted(() => {
 });
 
 const generateLink = () => {
-    const { value: ide } = IDEHandlerStore;
+    const ide_handler = settingsStore.settings.ide_handler
+        ? settingsStore.settings.ide_handler
+        : "phpstorm://open?file={filepath}&line={line}";
+
     const { project_path, real_path, workdir, wsl_config, base_path, line } = props.ideHandler;
     const relativePath = real_path?.replace(workdir, "").replace(project_path, "");
     let linkPath = project_path + relativePath;
@@ -31,8 +34,8 @@ const generateLink = () => {
     }
 
     if (real_path) {
-        let link = ide.replace("{filepath}", linkPath).replace("{line}", line);
-        if (ide.includes("wsl_config") && wsl_config) {
+        let link = ide_handler.replace("{filepath}", linkPath).replace("{line}", line);
+        if (ide_handler.includes("wsl_config") && wsl_config) {
             link = link.replace("{wsl_config}", wsl_config);
         }
         return link;
