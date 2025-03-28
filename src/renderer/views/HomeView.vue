@@ -28,6 +28,7 @@ import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import QueriesView from "@/components/laravel/QueriesView.vue";
 import { deepClone } from "@/lib/deep_clone";
+import { usePausePayloadStore } from "@/store/pause";
 
 markRaw(TheUpdateModalInfo);
 
@@ -40,6 +41,7 @@ const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 const queriesStore = useQueriesPayloadStore();
+const pausePayloadStore = usePausePayloadStore();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
@@ -63,7 +65,6 @@ const queriesScreen = ref([]);
 
 const applicationPath = ref("");
 const livewireRequests = ref([]);
-const isPaused = ref(false);
 
 const xdebugMode = ref(false);
 
@@ -104,8 +105,6 @@ onMounted(() => {
     }
 
     addScreen(defaultScreen.value);
-
-    window.ipcRenderer.on("app:pause-dumps", (event, arg) => (isPaused.value = arg));
 
     window.ipcRenderer.on("dump", (event, { content }) => dispatch(content));
 
@@ -174,11 +173,19 @@ onMounted(() => {
 
 const dumpListeners = () => {
     window.ipcRenderer.on("livewire", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         livewireRequests.value.push(content);
         dispatch(content);
     });
 
     window.ipcRenderer.on("jobs", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         jobStore.addOrUpdateJob(content.jobs, content.ide_handle);
 
         const serializableJobs = deepClone(jobStore.jobs);
@@ -206,18 +213,33 @@ const dumpListeners = () => {
     window.ipcRenderer.on("html", (event, { content }) => dispatch(content));
     window.ipcRenderer.on("mailable", (event, { content }) => dispatch(content));
     window.ipcRenderer.on("table_v2", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("table", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("http-client", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("model", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("json", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("query", (event, { content }) => dispatch(content));
+
     window.ipcRenderer.on("mail", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         mailStore.addOrUpdateMail(content.mail, content.ide_handle);
     });
 
     window.ipcRenderer.on("label", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         payloadStore.updateLabelPayload(content);
     });
 
-    window.ipcRenderer.on("table", (event, { content }) => dispatch(content));
-    window.ipcRenderer.on("http-client", (event, { content }) => dispatch(content));
-    window.ipcRenderer.on("model", (event, { content }) => dispatch(content));
     window.ipcRenderer.on("log_application", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         logStore.add(content);
 
         const serializable = deepClone(logStore.logs);
@@ -239,9 +261,17 @@ const dumpListeners = () => {
         }
     });
     window.ipcRenderer.on("color", async (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         payloadStore.updateColorPayload(content);
     });
     window.ipcRenderer.on("screen", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         payloadStore.updateScreenPayload(content);
         const screen: ScreenPayload = content.to_screen;
         addScreen(screen);
@@ -252,15 +282,26 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("json_validate", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         payloadStore.updateJSONValidatePayload(content);
     });
 
     window.ipcRenderer.on("validate", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         payloadStore.updateValidatePayload(content);
     });
-    window.ipcRenderer.on("json", (event, { content }) => dispatch(content));
 
     window.ipcRenderer.on("queries", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         content.queries && timeStore.increment(content.request_id, content.id, content.queries);
 
         queriesStore.add(content);
@@ -290,8 +331,12 @@ const dumpListeners = () => {
             if (lastPayload) timeStore.selected = lastPayload.request_id;
         }, 50);
     });
-    window.ipcRenderer.on("query", (event, { content }) => dispatch(content));
+
     window.ipcRenderer.on("time_track", (event, { content }) => {
+        if (pausePayloadStore.is_paused) {
+            return;
+        }
+
         const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.with_label.label === content.with_label.label);
 
         if (exist.length === 0) {
@@ -352,7 +397,7 @@ const toggleScreen = async (value: string, shouldActivate = false): Promise<void
 };
 
 const dispatch = (content: any): void => {
-    if (isPaused.value) {
+    if (pausePayloadStore.is_paused) {
         return;
     }
 

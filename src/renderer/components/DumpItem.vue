@@ -58,52 +58,6 @@ onMounted(() => {
     }
 });
 
-const getColorClass = (colorType: string) => {
-    let borderClass = "";
-    let bgClass = "";
-
-    if (typeof props.payload.color !== "undefined") {
-        switch (props.payload.color) {
-            case "red":
-                borderClass = "!border-l-error";
-                bgClass = "!bg-error/10";
-                break;
-            case "orange":
-            case "warning":
-                borderClass = "!border-l-warning";
-                bgClass = "!bg-warning/10";
-                break;
-            case "green":
-                borderClass = "!border-l-success";
-                bgClass = "!bg-success/10";
-                break;
-            case "blue":
-                borderClass = "!border-l-info";
-                bgClass = "!bg-info/10";
-                break;
-            case "gray":
-                borderClass = "!border-l-neutral";
-                bgClass = "!bg-neutral/10";
-                break;
-            case "black":
-                borderClass = "!border-black";
-                bgClass = "!bg-black/10";
-                break;
-            default:
-                borderClass = props.payload.color;
-                bgClass = props.payload.color;
-                break;
-        }
-
-        return colorType === "border" ? borderClass : bgClass;
-    }
-
-    return props.payload.color;
-};
-
-const borderColor = computed(() => getColorClass("border"));
-const bgColor = computed(() => getColorClass("bg"));
-
 const isDuplicated = (sql) => {
     return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
 };

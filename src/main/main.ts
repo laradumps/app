@@ -388,10 +388,6 @@ nativeTheme.on("updated", () => {
     mainWindow.webContents.send(nativeTheme.shouldUseDarkColors ? "app:theme-dark" : "app:theme-light");
 });
 
-ipcMain.on("main:pause-dumps", (event, args) => {
-    mainWindow.webContents.send("app:pause-dumps", args);
-});
-
 ipcMain.on("platform", (event, args) => {
     event.reply("platform.reply", process.platform);
 });
