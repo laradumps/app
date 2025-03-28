@@ -10,7 +10,6 @@ import { useColorStore } from "@/store/colors";
 import { Payload, ScreenPayload } from "@/types/Payload";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
-import { useIDEHandlerStore } from "@/store/ide-handler";
 import DumpScreens from "@/components/DumpScreens.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
@@ -37,7 +36,6 @@ const screenStore = useScreenStore();
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
-const IDEHandler = useIDEHandlerStore();
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 const logStore = useLogStore();
@@ -104,8 +102,6 @@ onMounted(() => {
     if (xDebugStore.current) {
         xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
     }
-
-    IDEHandler.setValue(localStorage.IDEHandler);
 
     addScreen(defaultScreen.value);
 
@@ -369,6 +365,11 @@ const dispatch = (content: any): void => {
         applicationPath.value = content.application_path;
     }
 
+    if (!content.hasOwnProperty("to_screen")) {
+        alert("An error occurred, please update the app and laradumps-core and try again.");
+        window.location.reload();
+    }
+
     if (content.to_screen && typeof content.to_screen.screen_name == "string") {
         addScreen(content.to_screen);
     }
@@ -381,9 +382,7 @@ const dispatch = (content: any): void => {
 
     maximizeApp(content.auto_invoke_app);
 
-    const serializablePayload = deepClone(
-        payloadStore.payload.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name)
-    );
+    const serializablePayload = deepClone(payloadStore.payload.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name));
 
     if (content.to_screen.new_window) {
         screenStore.hidden(content.to_screen.screen_name);

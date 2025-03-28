@@ -7,6 +7,7 @@ import { computed, defineProps, nextTick, ref } from "vue";
 import { CloudArrowDownIcon, TrashIcon, DevicePhoneMobileIcon, DeviceTabletIcon, ComputerDesktopIcon } from "@heroicons/vue/24/outline";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import DumpLink from "@/components/DumpLink.vue";
+import { modifyHtml } from "./../utils";
 
 const mailStore = useMailStore();
 
@@ -20,15 +21,24 @@ const props = defineProps<{
     inScreenWindow: boolean;
 }>();
 
+window.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "open-external-link") {
+        window.ipcRenderer.send("main:openLink", event.data.url);
+        event.preventDefault();
+    }
+});
+
 const display = (mail: Mail) => {
     mailStore.visited(mail.message_id);
     visited.value = mail;
 
     previewUrl.value = Math.random().toString(36).slice(2, 7);
 
+    const modifiedHtml = modifyHtml(visited.value.html);
+
     window.ipcRenderer.send("main:create-static-tmp-file", {
         name: previewUrl.value,
-        content: visited.value.html
+        content: modifiedHtml
     });
 };
 
@@ -111,9 +121,13 @@ const openTmpBrowserPreview = () => {
     window.ipcRenderer.send("main:openLink", `http://localhost:9191/${previewUrl.value}.html`);
 };
 
+const previewSize = computed(() => {
+    return previewMode.value === "mobile" ? "415px" : previewMode.value === "tablet" ? "768px" : "1024px";
+});
+
 const previewStyle = computed(() => {
     return `
-        width: ${previewMode.value === "mobile" ? "375px" : previewMode.value === "tablet" ? "768px" : "1024px"};
+        width: ${previewMode.value === "mobile" ? "415px" : previewMode.value === "tablet" ? "768px" : "1024px"};
         height: 100%;
         transform: scale(1);
         transform-origin: top left;
@@ -218,7 +232,7 @@ const setPreviewMode = (mode: string) => {
                             :key="mail.message_id"
                             :class="{
                                 'hover:bg-base-300 hover:rounded-md': visited?.message_id !== mail.message_id,
-                                'opacity-70': mail.is_read && visited?.message_id !== mail.message_id,
+                                'opacity-40 !font-normal': mail.is_read && visited?.message_id !== mail.message_id,
                                 'bg-primary text-primary-content rounded-md': visited?.message_id === mail.message_id
                             }"
                             class="p-2 space-y-2 cursor-pointer focus:bg-primary"
@@ -228,7 +242,14 @@ const setPreviewMode = (mode: string) => {
                                 <div class="truncate">{{ mail.from_mail }}</div>
                                 <span class="px-1 text-xs">{{ moment(mail.date).format("HH:mm") }}</span>
                             </div>
-                            <div class="font-semibold truncate">{{ mail.subject }}</div>
+                            <div
+                                :class="{
+                                    '!font-normal': mail.is_read && visited?.message_id !== mail.message_id
+                                }"
+                                class="font-semibold truncate"
+                            >
+                                {{ mail.subject }}
+                            </div>
                         </div>
                     </div>
                 </pane>
@@ -299,6 +320,7 @@ const setPreviewMode = (mode: string) => {
                                 >
                                     <ComputerDesktopIcon class="w-4" />
                                 </button>
+                                <span class="text-xs">{{ previewSize }}</span>
                             </div>
 
                             <div class="flex gap-2">
@@ -307,14 +329,12 @@ const setPreviewMode = (mode: string) => {
                                     class="btn btn-xs btn-outline border-base-content/10"
                                 >
                                     Dumps
-                                    <IconExternalLink class="w-4" />
                                 </button>
                                 <button
                                     @click="openHeaders"
                                     class="btn btn-xs btn-outline border-base-content/10"
                                 >
                                     Headers
-                                    <IconExternalLink class="w-4" />
                                 </button>
                                 <button
                                     @click="openTmpBrowserPreview"
@@ -331,13 +351,15 @@ const setPreviewMode = (mode: string) => {
                             class="w-full flex-1"
                         >
                             <div class="w-full h-full flex justify-center">
-                                <iframe
-                                    class="border"
-                                    :style="previewStyle"
-                                    allowfullscreen
-                                    frameborder="0"
-                                    :src="`http://localhost:9191/${previewUrl}.html`"
-                                />
+                                <div :class="{ smartphone: previewMode == 'mobile', tablet: previewMode == 'tablet' }">
+                                    <iframe
+                                        class="iframe-content"
+                                        :style="previewStyle"
+                                        allowfullscreen
+                                        frameborder="0"
+                                        :src="`http://localhost:9191/${previewUrl}.html`"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -360,5 +382,93 @@ iframe {
     height: 100%;
     object-fit: contain;
     border: none;
+}
+
+.smartphone {
+    position: relative;
+    width: 430px;
+    height: 640px;
+    margin: auto;
+    border: 8px black solid;
+    border-top-width: 40px;
+    border-bottom-width: 40px;
+    border-radius: 36px;
+}
+
+.smartphone:before {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 5px;
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #333;
+    border-radius: 10px;
+}
+
+/* The circle on the bottom of the device */
+.smartphone:after {
+    content: "";
+    display: block;
+    width: 25px;
+    height: 25px;
+    position: absolute;
+    left: 50%;
+    bottom: -45px;
+    transform: translate(-50%, -50%);
+    background: #333;
+    border-radius: 50%;
+}
+
+.smartphone .content {
+    width: 360px;
+    height: 640px;
+    background: white;
+}
+
+.tablet {
+    position: relative;
+    width: 798px;
+    height: -webkit-fill-available;
+    margin: auto;
+    border: 16px black solid;
+    border-top-width: 60px;
+    border-bottom-width: 60px;
+    border-radius: 36px;
+}
+
+.tablet:before {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 5px;
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #333;
+    border-radius: 10px;
+}
+
+.tablet:after {
+    content: "";
+    display: block;
+    width: 35px;
+    height: 35px;
+    position: absolute;
+    left: 50%;
+    bottom: -65px;
+    transform: translate(-50%, -50%);
+    background: #333;
+    border-radius: 50%;
+}
+
+.tablet .content {
+    width: 768px;
+    height: 1024px;
+    background: white;
+    margin: -1px;
 }
 </style>

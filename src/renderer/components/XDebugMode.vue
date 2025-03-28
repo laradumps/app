@@ -146,7 +146,6 @@ const handlePropertyContextClick = (type, variable) => {
     propertyGet(variable);
 };
 
-
 const handleContextGet = (responseElement) => {
     const properties = responseElement.getElementsByTagName("property");
 
@@ -212,7 +211,7 @@ const handlePropertyGet = (responseElement, evaluate) => {
         console.log({
             name,
             encoding: propertyElement.getAttribute("encoding")
-        })
+        });
         let valueElement = propertyElement.querySelector("cdata") || propertyElement;
         let value = propertyElement.getAttribute("value") || valueElement.textContent;
 
@@ -455,21 +454,19 @@ const getHighlightedCode = (lineContent) => {
 
     const regex = new RegExp(
         [...variablesNames.value]
-            .map(v => v.name)
+            .map((v) => v.name)
             .sort((a, b) => b.length - a.length)
-            .map(n => n.replace(/[-\/\\^$.*+?()[\]{}|]/g, "\\$&"))
+            .map((n) => n.replace(/[-\/\\^$.*+?()[\]{}|]/g, "\\$&"))
             .join("|"),
         "g"
     );
 
     return highlightedSyntax.replace(regex, (match) => {
-        const variable = variablesNames.value.find(v => v.name === match);
+        const variable = variablesNames.value.find((v) => v.name === match);
         if (!variable) return match;
 
         const classes = variable.type === "uninitialized" ? "opacity-60 line-through" : "cursor-pointer font-normal";
-        const tooltip = ["int", "bool", "float"].includes(variable.type) && variable.value !== null
-            ? ` data-tippy-content="${variable.type}: ${variable.value}"`
-            : "";
+        const tooltip = ["int", "bool", "float"].includes(variable.type) && variable.value !== null ? ` data-tippy-content="${variable.type}: ${variable.value}"` : "";
 
         return `<span class="highlight ${classes}" data-variable="${match}" onclick="modal_property_get.showModal()"${tooltip}>${match}</span>`;
     });
@@ -561,7 +558,7 @@ onBeforeUnmount(() => {
                             @click="continueDebug"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Continue (F5)"
-                            :class="{'!bg-transparent' : variablesNames.length === 0}"
+                            :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
                             <IconContinue :class="{ 'opacity-60': variablesNames.length === 0 }" />
                         </button>
@@ -571,11 +568,11 @@ onBeforeUnmount(() => {
                             @click="stepOver"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Over (F8)"
-                            :class="{'!bg-transparent' : variablesNames.length === 0}"
+                            :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
                             <IconStepOver
                                 class="text-info w-4"
-                                :class="{'opacity-60': variablesNames.length === 0}"
+                                :class="{ 'opacity-60': variablesNames.length === 0 }"
                             />
                         </button>
 
@@ -584,7 +581,7 @@ onBeforeUnmount(() => {
                             @click="stepInto"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Into (F7)"
-                            :class="{'!bg-transparent' : variablesNames.length === 0}"
+                            :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
                             <IconStepInto
                                 class="w-4 text-warning"
@@ -604,7 +601,7 @@ onBeforeUnmount(() => {
                             @click="stop"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Stop (F2)"
-                            :class="{'!bg-transparent' : variablesNames.length === 0}"
+                            :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
                             <IconStop
                                 class="text-error w-5"
@@ -743,16 +740,16 @@ onBeforeUnmount(() => {
                                         v-if="expandedProperties[property.name]"
                                         :key="expandedProperties + '-' + property.name"
                                         class="py-2"
-                                        >
-                                            <XDebugPropertyNode
-                                                v-if="propertiesTree"
-                                                            v-for="property in propertiesContextTree"
-                                                            :key="'child-' + property.name + '-' + property.type"
-                                                            :property="property"
-                                                            :transition-id="transactionId"
-                                                            @click="variableClicked = false"
-                                                            />
-                        </template>
+                                    >
+                                        <XDebugPropertyNode
+                                            v-if="propertiesTree"
+                                            v-for="property in propertiesContextTree"
+                                            :key="'child-' + property.name + '-' + property.type"
+                                            :property="property"
+                                            :transition-id="transactionId"
+                                            @click="variableClicked = false"
+                                        />
+                                    </template>
                                 </div>
                             </div>
                         </pane>
@@ -850,7 +847,7 @@ onBeforeUnmount(() => {
         </dialog>
     </div>
 </template>
-<style scoped>
+<style>
 @reference "./../styles.css";
 
 .variable-name {
@@ -861,12 +858,8 @@ onBeforeUnmount(() => {
     @apply text-gray-400;
 }
 
-::v-deep(.splitpanes--vertical) {
-    @apply bg-neutral-900;
-}
-
-::v-deep(.splitpanes--vertical > .splitpanes__splitter) {
-    @apply min-w-[0.2rem] bg-gray-800 hover:bg-accent/40;
+.splitpanes--vertical > .splitpanes__splitter {
+    @apply min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
 }
 
 ::v-deep([data-tippy-root]) {

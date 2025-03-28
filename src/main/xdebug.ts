@@ -4,8 +4,6 @@ import XDebugServer from "./xdebug-server";
 
 const xdebugServer = XDebugServer.getInstance();
 
-const isDev: boolean = process.env.NODE_ENV === "development";
-
 export const init = async (mainWindow: BrowserWindow) => {
     ipcMain.on("send-xdebug-command", async (event, command) => {
         try {
@@ -29,8 +27,6 @@ export const init = async (mainWindow: BrowserWindow) => {
 
     ipcMain.on("connect-xdebug", (event) => {
         try {
-            mainWindow.setSize(950, 720);
-
             event.reply("xdebug-connected", true);
         } catch (error) {
             event.reply("xdebug-disconnected", false);
@@ -39,8 +35,6 @@ export const init = async (mainWindow: BrowserWindow) => {
 
     ipcMain.on("disconnect-xdebug", (event) => {
         if (xdebugServer) {
-            mainWindow.setSize(950, 640);
-
             xdebugServer.closeClient();
             event.reply("xdebug-disconnected");
         }

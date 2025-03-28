@@ -5,7 +5,6 @@ import { useSettingsStore } from "@/store/settings";
 import SelectInput from "@/components/SelectInput.vue";
 import { useI18n } from "vue-i18n";
 import { useI18nStore } from "@/store/i18n";
-import { useIDEHandlerStore } from "@/store/ide-handler";
 import hotkeys from "hotkeys-js";
 
 const editMode = ref("disabled");
@@ -14,7 +13,6 @@ const selected = ref<string | null>("settings");
 const customTheme = ref("");
 
 const settingsStore = useSettingsStore();
-const IDEHandler = useIDEHandlerStore();
 
 const i18n = useI18n();
 const { locale } = useI18n({ useScope: "global" });
@@ -61,8 +59,6 @@ const saveLanguage = async () => {
 };
 
 const saveIDEHandler = async () => {
-    IDEHandler.setValue(settingsStore.settings.ide_handler);
-
     await nextTick(() => saveSettings());
 };
 
