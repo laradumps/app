@@ -365,8 +365,8 @@ const dispatch = (content: any): void => {
         applicationPath.value = content.application_path;
     }
 
-    if (!content.hasOwnProperty('to_screen')) {
-        alert('An error occurred, please update the app and laradumps-core and try again.');
+    if (!content.hasOwnProperty("to_screen")) {
+        alert("An error occurred, please update the app and laradumps-core and try again.");
         window.location.reload();
     }
 
@@ -382,9 +382,7 @@ const dispatch = (content: any): void => {
 
     maximizeApp(content.auto_invoke_app);
 
-    const serializablePayload = deepClone(
-        payloadStore.payload.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name)
-    );
+    const serializablePayload = deepClone(payloadStore.payload.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name));
 
     if (content.to_screen.new_window) {
         screenStore.hidden(content.to_screen.screen_name);

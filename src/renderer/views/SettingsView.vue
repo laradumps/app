@@ -59,7 +59,6 @@ const saveLanguage = async () => {
 };
 
 const saveIDEHandler = async () => {
-
     await nextTick(() => saveSettings());
 };
 

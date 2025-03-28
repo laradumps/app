@@ -108,5 +108,4 @@ const formattedSql = computed(() => {
 code * {
     @apply !font-light !text-base-content tracking-wider;
 }
-
 </style>

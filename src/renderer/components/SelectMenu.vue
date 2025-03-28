@@ -66,9 +66,7 @@ onUpdated(() => {
                 leave-from-class="opacity-100"
                 leave-to-class="opacity-0"
             >
-                <ListboxOptions
-                    class="absolute z-300 mt-1 max-h-60 w-full overflow-auto rounded-md bg-base-300 py-1 text-base shadow-lg p-2 pt-2 focus:outline-none sm:text-sm"
-                >
+                <ListboxOptions class="absolute z-300 mt-1 max-h-60 w-full overflow-auto rounded-md bg-base-300 py-1 text-base shadow-lg p-2 pt-2 focus:outline-none sm:text-sm">
                     <ListboxOption
                         as="template"
                         v-for="(item, index) in data"

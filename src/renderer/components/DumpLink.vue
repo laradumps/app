@@ -21,9 +21,7 @@ onMounted(() => {
 });
 
 const generateLink = () => {
-    const ide_handler = settingsStore.settings.ide_handler
-        ? settingsStore.settings.ide_handler
-        : "phpstorm://open?file={filepath}&line={line}";
+    const ide_handler = settingsStore.settings.ide_handler ? settingsStore.settings.ide_handler : "phpstorm://open?file={filepath}&line={line}";
 
     const { project_path, real_path, workdir, wsl_config, base_path, line } = props.ideHandler;
     const relativePath = real_path?.replace(workdir, "").replace(project_path, "");
