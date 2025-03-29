@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { Payload } from "@/types/Payload";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
-import { computed, defineProps, ref } from "vue";
+import { computed, defineProps, onMounted, ref, watch } from "vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
-import { TrashIcon } from "@heroicons/vue/24/outline";
+import { useQueriesBlockedStore } from "@/store/queries-blocked";
+import { AdjustmentsHorizontalIcon, MagnifyingGlassIcon, TrashIcon, LockClosedIcon, LockOpenIcon } from "@heroicons/vue/20/solid";
+import tippy from "tippy.js";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
 const queriesOriginFilter = useQueriesOriginFilter();
+const blockedQueriesStore = useQueriesBlockedStore();
+const queryDuplicatedStore = useQueryDuplicated();
 
 const search = ref("");
+const orderBy = ref("default");
 
 const props = defineProps<{
     items: [];
@@ -71,25 +76,181 @@ const queries = computed(() => {
 const clear = () => {
     timeStore.clear();
     queriesStore.clear();
+    queriesOriginFilter.clear();
+    blockedQueriesStore.clear();
+    queryDuplicatedStore.clear();
 };
+
+const showBlockedQueries = () => {
+    blocked_queries.showModal();
+};
+
+watch(orderBy, (value) => {
+    timeStore.setOrder(value);
+});
+
+const options = ["http", "console"];
+
+const toggle = (value) => {
+    queriesOriginFilter.toggleFilter(value);
+};
+
+onMounted(() => {
+    tippy("[data-tippy-content]", { allowHTML: true, theme: "light-border", placement: "right-end" });
+});
 </script>
 
 <template>
     <div class="px-3">
-        <div class="flex items-center gap-2 justify-between mt-1 mb-2">
-            <input
-                v-model="search"
-                type="text"
-                class="w-full input input-sm"
-                :placeholder="$t('search')"
-            />
-            <button
-                @click="clear()"
-                class="btn btn-soft btn-sm"
+        <dialog
+            id="blocked_queries"
+            class="modal modal-middle"
+        >
+            <div class="modal-box w-11/12 max-w-5xl">
+                <h3 class="font-bold text-lg">Blocked</h3>
+                <div class="overflow-auto mt-3 h-[calc(100vh-240px)]">
+                    <table class="table table-zebra w-full">
+                        <thead>
+                            <tr>
+                                <th>sql</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for="(sql, index) in blockedQueriesStore.blocked"
+                                :key="index"
+                            >
+                                <td>
+                                    <span
+                                        :title="sql"
+                                        class="line-clamp-4"
+                                        >{{ sql }}</span
+                                    >
+                                </td>
+                                <td>
+                                    <button
+                                        @click="blockedQueriesStore.unblock(sql)"
+                                        class="btn btn-primary btn-sm"
+                                    >
+                                        <LockOpenIcon class="w-4" />
+                                        {{ $t("unblock") }}
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <form
+                method="dialog"
+                class="modal-backdrop"
             >
-                <TrashIcon class="w-4" />
-                <span class="text-xs">{{ $t("clear") }}</span>
-            </button>
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <div class="flex items-center gap-2 justify-between mt-1 mb-2">
+            <div class="flex gap-2 w-full">
+                <label class="input w-full input-sm">
+                    <MagnifyingGlassIcon class="size-4" />
+                    <input
+                        v-model="search"
+                        type="search"
+                        class="grow"
+                        :placeholder="$t('search')"
+                    />
+                </label>
+            </div>
+            <div class="flex gap-2">
+                <div class="dropdown dropdown-end">
+                    <div
+                        tabindex="0"
+                        role="button"
+                        class="btn btn-soft btn-sm"
+                    >
+                        <AdjustmentsHorizontalIcon class="w-4.5 text-primary" />
+                    </div>
+                    <ul
+                        tabindex="0"
+                        class="dropdown-content menu !text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
+                    >
+                        <li class="text-xs uppercase font-normal mb-1">Order by:</li>
+                        <li>
+                            <label>
+                                <input
+                                    v-model="orderBy"
+                                    type="radio"
+                                    name="radio-order"
+                                    class="radio radio-sm"
+                                    value="default"
+                                />
+                                default
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                <input
+                                    v-model="orderBy"
+                                    type="radio"
+                                    name="radio-order"
+                                    class="radio radio-sm"
+                                    value="desc"
+                                />
+                                desc
+                            </label>
+                        </li>
+                        <li>
+                            <label>
+                                <input
+                                    v-model="orderBy"
+                                    type="radio"
+                                    name="radio-order"
+                                    class="radio radio-sm"
+                                    value="asc"
+                                />
+                                asc
+                            </label>
+                        </li>
+                        <li class="text-xs uppercase font-normal my-3">origin:</li>
+                        <li
+                            v-for="option in options"
+                            :key="option"
+                        >
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    :value="option"
+                                    :checked="queriesOriginFilter.origin.includes(option)"
+                                    @change="toggle(option)"
+                                    class="checkbox checkbox-sm"
+                                />
+                                {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+                <button
+                    @click="showBlockedQueries"
+                    class="btn btn-soft btn-sm"
+                    data-tippy-content="Blocked Queries"
+                >
+                    <LockClosedIcon class="text-warning size-4 hover:opacity-75" />
+                    <span
+                        class="text-xs font-normal opacity-70"
+                        v-if="blockedQueriesStore.blocked.length > 0"
+                    >
+                        ({{ blockedQueriesStore.blocked.length }})
+                    </span>
+                </button>
+                <button
+                    @click="clear()"
+                    class="btn btn-soft btn-sm"
+                    data-tippy-content="Clear"
+                >
+                    <TrashIcon class="w-4 text-error" />
+                </button>
+            </div>
         </div>
 
         <HeaderQueryRequests

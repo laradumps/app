@@ -106,5 +106,7 @@ export default {
         connect: "Connect"
     },
     search: "Buscar",
-    composer_invalid_version: "App require laradumps/laradumps-core 3.0 or higher"
+    composer_invalid_version: "App requer laradumps/laradumps-core 3.0 ou superior",
+    click_to_block: "Click para bloquear",
+    unblock: "Desbloquear"
 };

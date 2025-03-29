@@ -16,6 +16,9 @@ export const useQueriesOriginFilter = defineStore("queriesOriginFilter", {
             } else {
                 this.origin.splice(index, 1);
             }
+        },
+        clear() {
+            this.origin = [];
         }
     }
 });

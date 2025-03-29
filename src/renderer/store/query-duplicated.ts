@@ -35,6 +35,10 @@ export const useQueryDuplicated = defineStore("queryDuplicated", {
             this.cache[request_id] = total;
 
             return total;
+        },
+        clear() {
+            this.duplicatesInfo = [];
+            this.cache = [];
         }
     }
 });

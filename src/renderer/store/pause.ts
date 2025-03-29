@@ -1,11 +1,11 @@
 import { defineStore } from "pinia";
 
-type Current = {
+type State = {
     is_paused: boolean;
 };
 
 export const usePausePayloadStore = defineStore("pausePayload", {
-    state: (): Current => ({
+    state: (): State => ({
         is_paused: false
     }),
     actions: {

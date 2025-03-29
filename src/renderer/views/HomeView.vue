@@ -29,6 +29,8 @@ import { useQueriesPayloadStore } from "@/store/queries";
 import QueriesView from "@/components/laravel/QueriesView.vue";
 import { deepClone } from "@/lib/deep_clone";
 import { usePausePayloadStore } from "@/store/pause";
+import tippy from "tippy.js";
+import { useQueriesBlockedStore } from "@/store/queries-blocked";
 
 markRaw(TheUpdateModalInfo);
 
@@ -42,6 +44,7 @@ const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 const queriesStore = useQueriesPayloadStore();
 const pausePayloadStore = usePausePayloadStore();
+const queriesBlockStore = useQueriesBlockedStore();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
@@ -65,6 +68,14 @@ const queriesScreen = ref([]);
 
 const applicationPath = ref("");
 const livewireRequests = ref([]);
+
+type PendingRequests = {
+    [requestId: string]: {
+        queries: string[];
+    };
+};
+
+const pendingRequests = ref<PendingRequests>({});
 
 const xdebugMode = ref(false);
 
@@ -302,6 +313,24 @@ const dumpListeners = () => {
             return;
         }
 
+        const requestId = content.request_id;
+
+        if (!pendingRequests.value[requestId]) {
+            pendingRequests.value[requestId] = {
+                queries: []
+            };
+        }
+
+        pendingRequests.value[requestId].queries.push(content.queries.sql);
+
+        const blockedStore = useQueriesBlockedStore();
+        const allBlocked = pendingRequests.value[requestId].queries.every((sql) => blockedStore.blocked.includes(sql));
+
+        if (allBlocked) {
+            console.log(`all sql queries are blocked for request id ${requestId}`);
+            return;
+        }
+
         content.queries && timeStore.increment(content.request_id, content.id, content.queries);
 
         queriesStore.add(content);
@@ -325,11 +354,6 @@ const dumpListeners = () => {
         }
 
         addScreen(content.to_screen);
-
-        setTimeout(() => {
-            const lastPayload: Payload = payloadStore.filteredPayload[payloadStore.filteredPayload.length - 1];
-            if (lastPayload) timeStore.selected = lastPayload.request_id;
-        }, 50);
     });
 
     window.ipcRenderer.on("time_track", (event, { content }) => {
