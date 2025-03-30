@@ -31,6 +31,7 @@ import { deepClone } from "@/lib/deep_clone";
 import { usePausePayloadStore } from "@/store/pause";
 import tippy from "tippy.js";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
+import { usePendingRequestsStore } from "@/store/pending-requests";
 
 markRaw(TheUpdateModalInfo);
 
@@ -44,12 +45,13 @@ const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 const queriesStore = useQueriesPayloadStore();
 const pausePayloadStore = usePausePayloadStore();
-const queriesBlockStore = useQueriesBlockedStore();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
 const jobStore = useJobStore();
 const mailStore = useMailStore();
+const pendingRequestsStore = usePendingRequestsStore();
+const blockedStore = useQueriesBlockedStore();
 
 const defaultScreen = ref({
     screen_name: "home",
@@ -68,14 +70,6 @@ const queriesScreen = ref([]);
 
 const applicationPath = ref("");
 const livewireRequests = ref([]);
-
-type PendingRequests = {
-    [requestId: string]: {
-        queries: string[];
-    };
-};
-
-const pendingRequests = ref<PendingRequests>({});
 
 const xdebugMode = ref(false);
 
@@ -314,19 +308,13 @@ const dumpListeners = () => {
         }
 
         const requestId = content.request_id;
+        const sqlQuery = content.queries.sql;
 
-        if (!pendingRequests.value[requestId]) {
-            pendingRequests.value[requestId] = {
-                queries: []
-            };
-        }
+        pendingRequestsStore.add(requestId, "queries", sqlQuery);
 
-        pendingRequests.value[requestId].queries.push(content.queries.sql);
+        const storedQuery = pendingRequestsStore.get(requestId, "queries");
 
-        const blockedStore = useQueriesBlockedStore();
-        const allBlocked = pendingRequests.value[requestId].queries.every((sql) => blockedStore.blocked.includes(sql));
-
-        if (allBlocked) {
+        if (blockedStore.blocked.includes(storedQuery)) {
             console.log(`all sql queries are blocked for request id ${requestId}`);
             return;
         }
@@ -339,14 +327,11 @@ const dumpListeners = () => {
 
         if (content.to_screen.new_window) {
             screenStore.hidden(content.to_screen.screen_name);
-
             window.ipcRenderer.send("screen-window:show", {
                 screen: content.to_screen.screen_name,
                 queries: serializable
             });
-        }
-
-        if (content.to_screen && !content.to_screen.new_window) {
+        } else {
             window.ipcRenderer.send("send-screen-window-update", {
                 screen: content.to_screen.screen_name,
                 queries: serializable

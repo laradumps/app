@@ -9,6 +9,7 @@ import { useQueriesPayloadStore } from "@/store/queries";
 import { useMailStore } from "@/store/mail";
 import { useJobStore } from "@/store/jobs";
 import { useLogStore } from "@/store/logs";
+import { usePendingRequestsStore } from "@/store/pending-requests";
 
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
@@ -18,6 +19,7 @@ const logStore = useLogStore();
 const jobStore = useJobStore();
 const queryStore = useQueriesPayloadStore();
 const mailStore = useMailStore();
+const pendingRequestsStore = usePendingRequestsStore();
 
 const clearAll = (): void => {
     // store
@@ -30,6 +32,8 @@ const clearAll = (): void => {
     jobStore.clear();
     mailStore.clear();
     queryStore.clear();
+
+    pendingRequestsStore.clear("queries");
 };
 
 const hasPayload = computed(() => {

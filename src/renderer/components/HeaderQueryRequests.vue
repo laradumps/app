@@ -1,11 +1,10 @@
 <script setup>
 import { useTimeStore } from "@/store/time";
 import SelectMenu from "@/components/SelectMenu.vue";
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 import { useFormattedQueriesStore } from "@/store/formatted-queries";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter.js";
-import { AdjustmentsHorizontalIcon } from "@heroicons/vue/20/solid";
 
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
@@ -50,18 +49,18 @@ const allRequests = computed(() => {
             v-if="timeStore.groups.length > 0"
             class="justify-between items-center gap-4 text-base-content"
         >
-            <div class="flex justify-between my-1">
+            <div class="flex justify-between my-1 uppercase">
                 <div class="flex w-full items-center">
                     <div class="flex flex-row-reverse gap-3 items-center">
                         <span class="text-primary text-base whitespace-nowrap">{{ timeStore.get(timeStore.selected)?.total.toFixed(2) }} ms</span>
-                        <span class="text-xs uppercase">time</span>
+                        <span class="text-xs">time</span>
                     </div>
 
                     <div class="divider divider-horizontal !mx-1.5"></div>
 
                     <div class="flex flex-row-reverse gap-3 items-center">
                         <span class="text-primary text-base whitespace-nowrap">{{ totalFiltered }}</span>
-                        <span class="text-xs uppercase">queries</span>
+                        <span class="text-xs">queries</span>
                     </div>
 
                     <div

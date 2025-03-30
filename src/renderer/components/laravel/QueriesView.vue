@@ -10,12 +10,14 @@ import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { AdjustmentsHorizontalIcon, MagnifyingGlassIcon, TrashIcon, LockClosedIcon, LockOpenIcon } from "@heroicons/vue/20/solid";
 import tippy from "tippy.js";
+import { usePendingRequestsStore } from "@/store/pending-requests";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
 const queriesOriginFilter = useQueriesOriginFilter();
 const blockedQueriesStore = useQueriesBlockedStore();
 const queryDuplicatedStore = useQueryDuplicated();
+const pendingRequestsStore = usePendingRequestsStore();
 
 const search = ref("");
 const orderBy = ref("default");
@@ -79,6 +81,8 @@ const clear = () => {
     queriesOriginFilter.clear();
     blockedQueriesStore.clear();
     queryDuplicatedStore.clear();
+
+    pendingRequestsStore.clear("queries");
 };
 
 const showBlockedQueries = () => {
