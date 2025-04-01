@@ -83,6 +83,8 @@ const clear = () => {
     queryDuplicatedStore.clear();
 
     pendingRequestsStore.clear("queries");
+
+    window.ipcRenderer.send('reload')
 };
 
 const showBlockedQueries = () => {
