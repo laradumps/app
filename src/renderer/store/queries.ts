@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { Payload } from "@/types/Payload";
 import { useSettingsStore } from "@/store/settings";
+import { useQueriesBlockedStore } from "@/store/queries-blocked";
 
 type State = {
     payload: Payload[];
@@ -12,6 +13,11 @@ export const useQueriesPayloadStore = defineStore("queriesPayload", {
     }),
     actions: {
         add(payload: Payload) {
+            const queriesBlockedStore = useQueriesBlockedStore();
+            if (queriesBlockedStore.blocked.includes(payload.queries.sql)) {
+                return;
+            }
+
             this._removeOldestIfExceedsLimit();
             this.payload.push(payload);
         },

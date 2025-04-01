@@ -2,7 +2,7 @@
 import { Job, useJobStore } from "@/store/jobs";
 import { computed, defineProps, nextTick, ref } from "vue";
 import moment from "moment";
-import { EyeIcon } from "@heroicons/vue/24/outline";
+import { EyeIcon, MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
 import { TrashIcon } from "@heroicons/vue/24/outline";
 
@@ -154,18 +154,21 @@ const duration = (startTime: any, endTime: any) => {
             :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }"
         >
             <div class="flex items-center gap-2 justify-between mt-1">
-                <input
-                    v-model="search"
-                    type="text"
-                    class="w-full input input-sm"
-                    :placeholder="$t('search')"
-                />
+                <label class="input w-full input-sm">
+                    <MagnifyingGlassIcon class="size-4" />
+                    <input
+                        v-model="search"
+                        type="search"
+                        class="grow"
+                        :placeholder="$t('search')"
+                    />
+                </label>
                 <button
                     @click="clear()"
                     class="btn btn-soft btn-sm"
+                    data-tippy-content="Clear"
                 >
-                    <TrashIcon class="w-4" />
-                    <span class="text-xs">{{ $t("clear") }}</span>
+                    <TrashIcon class="w-4 text-error" />
                 </button>
             </div>
 

@@ -4,7 +4,7 @@ import "splitpanes/dist/splitpanes.css";
 import { Attachment, Mail, mimeTypeMap, useMailStore } from "@/store/mail";
 import moment from "moment";
 import { computed, defineProps, nextTick, ref } from "vue";
-import { CloudArrowDownIcon, TrashIcon, DevicePhoneMobileIcon, DeviceTabletIcon, ComputerDesktopIcon } from "@heroicons/vue/24/outline";
+import { CloudArrowDownIcon, TrashIcon, DevicePhoneMobileIcon, DeviceTabletIcon, ComputerDesktopIcon, MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import DumpLink from "@/components/DumpLink.vue";
 import { modifyHtml } from "./../utils";
@@ -192,18 +192,21 @@ const setPreviewMode = (mode: string) => {
 
         <div class="space-y-3 h-[calc(100vh-140px)]">
             <div class="mt-1 flex items-center gap-2 justify-between">
-                <input
-                    v-model="search"
-                    type="text"
-                    class="w-full input input-sm"
-                    :placeholder="$t('search')"
-                />
+                <label class="input w-full input-sm">
+                    <MagnifyingGlassIcon class="size-4" />
+                    <input
+                        v-model="search"
+                        type="search"
+                        class="grow"
+                        :placeholder="$t('search')"
+                    />
+                </label>
                 <button
                     @click="clear()"
                     class="btn btn-soft btn-sm"
+                    data-tippy-content="Clear"
                 >
-                    <TrashIcon class="w-4" />
-                    <span class="text-xs">{{ $t("clear") }}</span>
+                    <TrashIcon class="w-4 text-error" />
                 </button>
             </div>
 

@@ -1,17 +1,9 @@
 <script setup>
-import { onMounted, ref } from "vue";
 import IconPause from "@/components/Icons/IconPause.vue";
 import IconPlay from "@/components/Icons/IconPlay.vue";
+import { usePausePayloadStore } from "@/store/pause.js";
 
-const isPaused = ref(false);
-
-onMounted(() => {});
-
-const togglePause = () => {
-    isPaused.value = !isPaused.value;
-
-    window.ipcRenderer.send("main:pause-dumps", isPaused.value);
-};
+const pauseStore = usePausePayloadStore();
 </script>
 
 <template>
@@ -19,9 +11,9 @@ const togglePause = () => {
         <button
             :title="$t('pause')"
             class="p-2 hover:bg-base-200 rounded-md"
-            @click="togglePause()"
+            @click="pauseStore.toggle()"
         >
-            <IconPause v-if="!isPaused" />
+            <IconPause v-if="!pauseStore.is_paused" />
             <IconPlay
                 v-else
                 class="size-4 text-warning"

@@ -21,12 +21,16 @@ import { useCollapse } from "@/store/collapse";
 import { useSettingsStore } from "@/store/settings";
 import moment from "moment";
 import { useScreenStore } from "@/store/screen";
+import { LockClosedIcon } from "@heroicons/vue/20/solid";
+import { useQueriesBlockedStore } from "@/store/queries-blocked";
+import tippy from "tippy.js";
 
 const duplicatesStore = useQueryDuplicated();
 const timeStore = useTimeStore();
 const collapseStore = useCollapse();
 const settingsStore = useSettingsStore();
 const screenStore = useScreenStore();
+const queriesBlockedStore = useQueriesBlockedStore();
 
 const open = ref(true);
 const openOptions = ref(false);
@@ -37,6 +41,12 @@ const props = defineProps<{
 
 const copyDump = () => {
     nextTick(() => {
+        if (props.payload.type === "queries" && props.payload.queries?.sql) {
+            navigator.clipboard.writeText(props.payload.queries?.sql).then(() => {});
+
+            return;
+        }
+
         const value = document.getElementById(`dump-content-${props.payload.sf_dump_id}`)?.innerText;
 
         navigator.clipboard.writeText(value).then(() => {});
@@ -57,52 +67,6 @@ onMounted(() => {
         }
     }
 });
-
-const getColorClass = (colorType: string) => {
-    let borderClass = "";
-    let bgClass = "";
-
-    if (typeof props.payload.color !== "undefined") {
-        switch (props.payload.color) {
-            case "red":
-                borderClass = "!border-l-error";
-                bgClass = "!bg-error/10";
-                break;
-            case "orange":
-            case "warning":
-                borderClass = "!border-l-warning";
-                bgClass = "!bg-warning/10";
-                break;
-            case "green":
-                borderClass = "!border-l-success";
-                bgClass = "!bg-success/10";
-                break;
-            case "blue":
-                borderClass = "!border-l-info";
-                bgClass = "!bg-info/10";
-                break;
-            case "gray":
-                borderClass = "!border-l-neutral";
-                bgClass = "!bg-neutral/10";
-                break;
-            case "black":
-                borderClass = "!border-black";
-                bgClass = "!bg-black/10";
-                break;
-            default:
-                borderClass = props.payload.color;
-                bgClass = props.payload.color;
-                break;
-        }
-
-        return colorType === "border" ? borderClass : bgClass;
-    }
-
-    return props.payload.color;
-};
-
-const borderColor = computed(() => getColorClass("border"));
-const bgColor = computed(() => getColorClass("bg"));
 
 const isDuplicated = (sql) => {
     return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
@@ -142,6 +106,14 @@ const getLabel = computed(() => {
 
     return props.payload.type;
 });
+
+const block = () => {
+    props.payload.queries?.sql && queriesBlockedStore.toggle(props.payload.queries?.sql);
+};
+
+onMounted(() => {
+    tippy("[data-tippy-content]", { allowHTML: true, theme: "light-border", placement: "right-end" });
+});
 </script>
 <template>
     <div>
@@ -168,12 +140,13 @@ const getLabel = computed(() => {
                 <div class="group flex justify-center items-center gap-2">
                     <div
                         v-show="open"
-                        class="mr-1 group flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
+                        class="mr-1 flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
                     >
                         <div
                             v-if="!['table'].includes(screenStore.screen)"
-                            :title="$t('click_to_copy')"
                             @click.stop="copyDump"
+                            class="text-info"
+                            :data-tippy-content="$t('click_to_copy')"
                         >
                             <CopyToClick />
                         </div>
@@ -192,6 +165,15 @@ const getLabel = computed(() => {
                         :class="badgeClasses"
                     >
                         {{ getLabel }}
+                    </div>
+
+                    <div
+                        v-if="payload.queries && open"
+                        :data-tippy-content="$t('click_to_block')"
+                        @click.stop="block"
+                        class="opacity-0 transition-all group-hover:opacity-100"
+                    >
+                        <LockClosedIcon class="text-warning size-4 hover:opacity-75" />
                     </div>
 
                     <div

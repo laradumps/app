@@ -1,18 +1,15 @@
 <script setup>
 import { useTimeStore } from "@/store/time";
 import SelectMenu from "@/components/SelectMenu.vue";
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 import { useFormattedQueriesStore } from "@/store/formatted-queries";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter.js";
-import { AdjustmentsHorizontalIcon } from "@heroicons/vue/20/solid";
 
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
 const duplicatesStore = useQueryDuplicated();
 const queriesOriginFilter = useQueriesOriginFilter();
-
-const orderBy = ref("default");
 
 const props = defineProps({
     total: {
@@ -44,16 +41,6 @@ const allRequests = computed(() => {
 
     return requests;
 });
-
-watch(orderBy, (value) => {
-    timeStore.setOrder(value);
-});
-
-const options = ["http", "console"];
-
-const toggle = (value) => {
-    queriesOriginFilter.toggleFilter(value);
-};
 </script>
 
 <template>
@@ -62,18 +49,18 @@ const toggle = (value) => {
             v-if="timeStore.groups.length > 0"
             class="justify-between items-center gap-4 text-base-content"
         >
-            <div class="flex justify-between my-1">
+            <div class="flex justify-between my-1 uppercase">
                 <div class="flex w-full items-center">
                     <div class="flex flex-row-reverse gap-3 items-center">
                         <span class="text-primary text-base whitespace-nowrap">{{ timeStore.get(timeStore.selected)?.total.toFixed(2) }} ms</span>
-                        <span class="text-xs uppercase">time</span>
+                        <span class="text-xs">time</span>
                     </div>
 
                     <div class="divider divider-horizontal !mx-1.5"></div>
 
                     <div class="flex flex-row-reverse gap-3 items-center">
                         <span class="text-primary text-base whitespace-nowrap">{{ totalFiltered }}</span>
-                        <span class="text-xs uppercase">queries</span>
+                        <span class="text-xs">queries</span>
                     </div>
 
                     <div
@@ -100,74 +87,6 @@ const toggle = (value) => {
                         />
                         Prettify
                     </label>
-
-                    <div class="dropdown dropdown-end">
-                        <div
-                            tabindex="0"
-                            role="button"
-                            class="btn btn-sm btn-circle btn-soft"
-                        >
-                            <AdjustmentsHorizontalIcon class="w-4.5" />
-                        </div>
-                        <ul
-                            tabindex="0"
-                            class="dropdown-content menu !text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
-                        >
-                            <li class="text-xs uppercase font-normal mb-1">Order by:</li>
-                            <li>
-                                <label>
-                                    <input
-                                        v-model="orderBy"
-                                        type="radio"
-                                        name="radio-order"
-                                        class="radio radio-sm"
-                                        value="default"
-                                    />
-                                    default
-                                </label>
-                            </li>
-                            <li>
-                                <label>
-                                    <input
-                                        v-model="orderBy"
-                                        type="radio"
-                                        name="radio-order"
-                                        class="radio radio-sm"
-                                        value="desc"
-                                    />
-                                    desc
-                                </label>
-                            </li>
-                            <li>
-                                <label>
-                                    <input
-                                        v-model="orderBy"
-                                        type="radio"
-                                        name="radio-order"
-                                        class="radio radio-sm"
-                                        value="asc"
-                                    />
-                                    asc
-                                </label>
-                            </li>
-                            <li class="text-xs uppercase font-normal my-3">origin:</li>
-                            <li
-                                v-for="option in options"
-                                :key="option"
-                            >
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        :value="option"
-                                        :checked="queriesOriginFilter.origin.includes(option)"
-                                        @change="toggle(option)"
-                                        class="checkbox checkbox-sm"
-                                    />
-                                    {{ option.charAt(0).toUpperCase() + option.slice(1) }}
-                                </label>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>
