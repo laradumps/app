@@ -18,7 +18,7 @@ export const useQueriesOriginFilter = defineStore("queriesOriginFilter", {
             }
         },
         clear() {
-            this.origin = [];
+            this.origin = ["http", "console"];
         }
     }
 });

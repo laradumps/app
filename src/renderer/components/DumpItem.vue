@@ -23,7 +23,7 @@ import moment from "moment";
 import { useScreenStore } from "@/store/screen";
 import { LockClosedIcon } from "@heroicons/vue/20/solid";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import tippy from "tippy.js";
+import { useQueriesChart } from "@/store/queries-chart";
 
 const duplicatesStore = useQueryDuplicated();
 const timeStore = useTimeStore();
@@ -31,6 +31,7 @@ const collapseStore = useCollapse();
 const settingsStore = useSettingsStore();
 const screenStore = useScreenStore();
 const queriesBlockedStore = useQueriesBlockedStore();
+const queriesChart = useQueriesChart();
 
 const open = ref(true);
 const openOptions = ref(false);
@@ -110,13 +111,9 @@ const getLabel = computed(() => {
 const block = () => {
     props.payload.queries?.sql && queriesBlockedStore.toggle(props.payload.queries?.sql);
 };
-
-onMounted(() => {
-    tippy("[data-tippy-content]", { allowHTML: true, theme: "light-border", placement: "right-end" });
-});
 </script>
 <template>
-    <div>
+    <div v-if="(payload.queries && queriesChart.type === 'none') || payload.type !== 'queries'">
         <div
             :class="{ 'collapse-open': open }"
             class="card card-border border-base-300 collapse bg-base-100 bg-laravel"

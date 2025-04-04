@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Payload } from "@/types/Payload";
 import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
-import { computed, defineProps, onMounted, ref, watch } from "vue";
+import { computed, defineProps, nextTick, onMounted, ref } from "vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { AdjustmentsHorizontalIcon, MagnifyingGlassIcon, TrashIcon, LockClosedIcon, LockOpenIcon } from "@heroicons/vue/20/solid";
+import { MagnifyingGlassIcon, TrashIcon, LockOpenIcon } from "@heroicons/vue/20/solid";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 
@@ -20,7 +20,6 @@ const queryDuplicatedStore = useQueryDuplicated();
 const pendingRequestsStore = usePendingRequestsStore();
 
 const search = ref("");
-const orderBy = ref("default");
 
 const props = defineProps<{
     items: [];
@@ -83,26 +82,16 @@ const clear = () => {
     queryDuplicatedStore.clear();
 
     pendingRequestsStore.clear("queries");
-
-    window.ipcRenderer.send('reload')
-};
-
-const showBlockedQueries = () => {
-    blocked_queries.showModal();
-};
-
-watch(orderBy, (value) => {
-    timeStore.setOrder(value);
-});
-
-const options = ["http", "console"];
-
-const toggle = (value) => {
-    queriesOriginFilter.toggleFilter(value);
 };
 
 onMounted(() => {
-    tippy("[data-tippy-content]", { allowHTML: true, theme: "light-border", placement: "right-end" });
+    nextTick(() => {
+        tippy("[data-tippy-content]", {
+            allowHTML: true,
+            theme: "light-border",
+            placement: "bottom"
+        });
+    });
 });
 </script>
 
@@ -168,87 +157,7 @@ onMounted(() => {
                     />
                 </label>
             </div>
-            <div class="flex gap-2">
-                <div class="dropdown dropdown-end">
-                    <div
-                        tabindex="0"
-                        role="button"
-                        class="btn btn-soft btn-sm"
-                    >
-                        <AdjustmentsHorizontalIcon class="w-4.5 text-primary" />
-                    </div>
-                    <ul
-                        tabindex="0"
-                        class="dropdown-content menu !text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
-                    >
-                        <li class="text-xs uppercase font-normal mb-1">Order by:</li>
-                        <li>
-                            <label>
-                                <input
-                                    v-model="orderBy"
-                                    type="radio"
-                                    name="radio-order"
-                                    class="radio radio-sm"
-                                    value="default"
-                                />
-                                default
-                            </label>
-                        </li>
-                        <li>
-                            <label>
-                                <input
-                                    v-model="orderBy"
-                                    type="radio"
-                                    name="radio-order"
-                                    class="radio radio-sm"
-                                    value="desc"
-                                />
-                                desc
-                            </label>
-                        </li>
-                        <li>
-                            <label>
-                                <input
-                                    v-model="orderBy"
-                                    type="radio"
-                                    name="radio-order"
-                                    class="radio radio-sm"
-                                    value="asc"
-                                />
-                                asc
-                            </label>
-                        </li>
-                        <li class="text-xs uppercase font-normal my-3">origin:</li>
-                        <li
-                            v-for="option in options"
-                            :key="option"
-                        >
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    :value="option"
-                                    :checked="queriesOriginFilter.origin.includes(option)"
-                                    @change="toggle(option)"
-                                    class="checkbox checkbox-sm"
-                                />
-                                {{ option.charAt(0).toUpperCase() + option.slice(1) }}
-                            </label>
-                        </li>
-                    </ul>
-                </div>
-                <button
-                    @click="showBlockedQueries"
-                    class="btn btn-soft btn-sm"
-                    data-tippy-content="Blocked Queries"
-                >
-                    <LockClosedIcon class="text-warning size-4 hover:opacity-75" />
-                    <span
-                        class="text-xs font-normal opacity-70"
-                        v-if="blockedQueriesStore.blocked.length > 0"
-                    >
-                        ({{ blockedQueriesStore.blocked.length }})
-                    </span>
-                </button>
+            <div>
                 <button
                     @click="clear()"
                     class="btn btn-soft btn-sm"

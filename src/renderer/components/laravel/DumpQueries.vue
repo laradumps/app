@@ -62,16 +62,12 @@ const formattedSql = computed(() => {
         v-if="payload.queries"
         class="rounded-sm overflow-scroll"
     >
-        <div class="flex justify-between items-start">
-            <div class="flex-1 min-w-0">
-                <pre
-                    v-if="formattedQueriesStore.formatted"
-                    class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
-                >
-                    <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
-                </pre>
-            </div>
-        </div>
+        <pre
+            v-if="formattedQueriesStore.formatted"
+            class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
+        >
+            <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
+        </pre>
 
         <code
             v-if="!formattedQueriesStore.formatted"
