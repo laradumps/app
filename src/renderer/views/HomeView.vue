@@ -32,6 +32,7 @@ import { usePausePayloadStore } from "@/store/pause";
 import tippy from "tippy.js";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { usePendingRequestsStore } from "@/store/pending-requests";
+import { usePauseQueriesStore } from "@/store/pause-queries";
 
 markRaw(TheUpdateModalInfo);
 
@@ -52,6 +53,7 @@ const jobStore = useJobStore();
 const mailStore = useMailStore();
 const pendingRequestsStore = usePendingRequestsStore();
 const blockedStore = useQueriesBlockedStore();
+const pauseQueries = usePauseQueriesStore();
 
 const defaultScreen = ref({
     screen_name: "home",
@@ -67,7 +69,6 @@ const jobScreen = ref({});
 const mailScreen = ref([]);
 const logScreen = ref({});
 const queriesScreen = ref([]);
-
 const applicationPath = ref("");
 const livewireRequests = ref([]);
 
@@ -303,7 +304,7 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("queries", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
+        if (pauseQueries.is_paused) {
             return;
         }
 
@@ -339,6 +340,11 @@ const dumpListeners = () => {
         }
 
         addScreen(content.to_screen);
+
+        setTimeout(() => {
+            const lastPayload: Payload = queriesStore.payload[queriesStore.payload.length - 1];
+            if (lastPayload) timeStore.selected = lastPayload.request_id;
+        }, 50);
     });
 
     window.ipcRenderer.on("time_track", (event, { content }) => {
@@ -522,6 +528,7 @@ const openScreenWindow = () => {
                 :in-screen-window="inScreenWindow.length > 0"
                 v-if="inScreenWindow === 'queries'"
                 :items="queriesScreen"
+                @pause-queries="pauseQueries"
             />
         </div>
 

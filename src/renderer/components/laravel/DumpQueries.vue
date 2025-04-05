@@ -7,12 +7,14 @@ import { useFormattedQueriesStore } from "@/store/formatted-queries";
 
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
+import { useQueryDuplicated } from "@/store/query-duplicated";
 
 hljs.registerLanguage("sql", sql);
 hljs.registerLanguage("postgresql", sql);
 
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
+const duplicatesStore = useQueryDuplicated();
 
 const props = defineProps<{
     payload: Payload;
@@ -27,6 +29,10 @@ const percentage = computed(() => {
 
     return Number(((100 * props.payload.queries?.time) / total.value).toFixed(2));
 });
+
+const isDuplicated = (sql) => {
+    return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
+};
 
 const formattedSql = computed(() => {
     if (!props.payload.queries) return;
@@ -60,8 +66,34 @@ const formattedSql = computed(() => {
 <template>
     <div
         v-if="payload.queries"
-        class="rounded-sm overflow-scroll"
+        class="rounded-sm overflow-scroll space-y-2"
     >
+        <div class="flex items-center opacity-80 justify-end gap-2">
+            <div
+                v-if="isDuplicated(payload.queries?.sql)"
+                class="badge lowercase badge-xs badge-warning text-warning-content text-xs"
+            >
+                Duplicated
+            </div>
+
+            <span
+                v-if="payload.queries && payload.queries.connectionName"
+                v-text="payload.queries.connectionName"
+            >
+            </span>
+
+            <span class="opacity-30">|</span>
+            <span
+                class="text-xs"
+                v-if="payload.queries && payload.queries.origin"
+                v-text="payload.queries.origin"
+            >
+            </span>
+
+            <span class="opacity-30">|</span>
+
+            <span v-if="payload.queries && payload.queries.time"> {{ payload.queries.time }}<span class="font-semibold text-[10px]">ms</span> </span>
+        </div>
         <pre
             v-if="formattedQueriesStore.formatted"
             class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"

@@ -46,20 +46,9 @@ body {
     height: 39px;
 }
 
-::-webkit-scrollbar {
-    width: 11px;
-    height: 14px;
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: rgb(203, 206, 210);
-    border: 3px solid transparent;
-    background-clip: content-box;
-    border-radius: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background-color: transparent;
+:root {
+    scrollbar-color: color-mix(in oklch, currentColor 25%, #0000) #0000;
+    scrollbar-width: none !important;
 }
 
 ::-webkit-scrollbar-thumb:hover {

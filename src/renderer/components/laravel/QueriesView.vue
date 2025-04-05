@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Payload } from "@/types/Payload";
-import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
+import QueriesHeader from "@/components/laravel/QueriesHeader.vue";
 import { computed, defineProps, nextTick, onMounted, ref } from "vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useTimeStore } from "@/store/time";
@@ -8,9 +8,16 @@ import DumpItem from "@/components/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { MagnifyingGlassIcon, TrashIcon, LockOpenIcon } from "@heroicons/vue/20/solid";
+import { MagnifyingGlassIcon, TrashIcon, LockOpenIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
+import { Pane, Splitpanes } from "splitpanes";
+import "splitpanes/dist/splitpanes.css";
+import QueriesRequests from "@/components/laravel/QueriesRequests.vue";
+import IconPause from "@/components/Icons/IconPause.vue";
+import { usePauseQueriesStore } from "@/store/pause-queries";
+import IconPlay from "@/components/Icons/IconPlay.vue";
+import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
@@ -18,6 +25,7 @@ const queriesOriginFilter = useQueriesOriginFilter();
 const blockedQueriesStore = useQueriesBlockedStore();
 const queryDuplicatedStore = useQueryDuplicated();
 const pendingRequestsStore = usePendingRequestsStore();
+const pauseQueries = usePauseQueriesStore();
 
 const search = ref("");
 
@@ -61,10 +69,10 @@ const queries = computed(() => {
 
     return items
         .filter(
-            (dump: Payload) =>
-                JSON.stringify(dump[dump.type] ?? "")
+            (payload: Payload) =>
+                JSON.stringify(payload[payload.type] ?? "")
                     .toLowerCase()
-                    .includes(search.value.toLowerCase()) || dump.label?.toLowerCase().includes(search.value.toLowerCase())
+                    .includes(search.value.toLowerCase()) || payload.label?.toLowerCase().includes(search.value.toLowerCase())
         )
         .filter((dump: Payload) => {
             if (dump.type === "queries" && dump.queries?.origin) {
@@ -157,43 +165,83 @@ onMounted(() => {
                     />
                 </label>
             </div>
-            <div>
-                <button
-                    @click="clear()"
-                    class="btn btn-soft btn-sm"
-                    data-tippy-content="Clear"
-                >
-                    <TrashIcon class="w-4 text-error" />
-                </button>
-            </div>
+            <button
+                @click="pauseQueries.toggle()"
+                class="btn btn-soft btn-sm"
+                :data-tippy-content="$t('pause')"
+            >
+                <IconPlay
+                    v-if="pauseQueries.is_paused"
+                    class="w-4 text-success"
+                />
+                <IconPause
+                    v-else
+                    class="w-4 text-warning"
+                />
+            </button>
+
+            <button
+                @click="clear()"
+                class="btn btn-soft btn-sm"
+                data-tippy-content="Clear"
+            >
+                <TrashIcon class="w-4 text-error" />
+            </button>
         </div>
 
-        <HeaderQueryRequests
+        <Splitpanes
             v-if="queriesStore.payload.length > 0"
-            :total="queriesStore.payload.length"
-            :total-filtered="queriesStore.payload.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
-        />
-
-        <div class="overflow-auto mt-3 h-[calc(100vh-240px)]">
-            <div class="overflow-auto">
-                <div
-                    v-for="(payload, index) in queries"
-                    :key="payload.sf_dump_id"
-                    :id="payload.id"
-                    class="w-full"
-                >
-                    <DumpItem
-                        class="w-full group text-sm mb-3"
-                        v-show="payload.request_id === timeStore.selected"
-                        :payload="payload"
-                    />
+            vertical
+        >
+            <pane
+                size="28"
+                class="text-sm mt-1"
+            >
+                <div class="overflow-auto h-[calc(100vh-155px)]">
+                    <QueriesRequests />
                 </div>
+            </pane>
+
+            <pane class="text-sm">
+                <div
+                    v-if="timeStore.selected"
+                    class="pl-2 space-y-1"
+                >
+                    <QueriesHeader />
+
+                    <div class="overflow-auto h-[calc(100vh-204px)]">
+                        <div
+                            v-for="(payload, index) in queries"
+                            :key="payload.sf_dump_id"
+                            :id="payload.id"
+                            class="w-full"
+                        >
+                            <DumpItem
+                                class="w-full group text-sm mb-3"
+                                v-show="payload.request_id === timeStore.selected"
+                                :payload="payload"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </pane>
+        </Splitpanes>
+
+        <div
+            v-else
+            class="absolute flex items-center justify-center w-full"
+            style="height: -webkit-fill-available"
+        >
+            <SvgEmpty class="w-30 opacity-25" />
+            <div class="text-base-content/70">
+                <h1 class="text-lg font-semibold mb-2">No Queries</h1>
             </div>
         </div>
     </div>
 </template>
 <style scoped>
-.collapse-content {
+::v-deep(.collapse-content) {
     padding-bottom: 0;
+    padding-right: 0 !important;
 }
 </style>

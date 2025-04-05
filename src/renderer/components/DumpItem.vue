@@ -25,8 +25,6 @@ import { LockClosedIcon } from "@heroicons/vue/20/solid";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { useQueriesChart } from "@/store/queries-chart";
 
-const duplicatesStore = useQueryDuplicated();
-const timeStore = useTimeStore();
 const collapseStore = useCollapse();
 const settingsStore = useSettingsStore();
 const screenStore = useScreenStore();
@@ -68,10 +66,6 @@ onMounted(() => {
         }
     }
 });
-
-const isDuplicated = (sql) => {
-    return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
-};
 
 const badgeClasses = computed(() => {
     const { color } = props.payload;
@@ -140,6 +134,15 @@ const block = () => {
                         class="mr-1 flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
                     >
                         <div
+                            v-if="payload.queries && open"
+                            :data-tippy-content="$t('click_to_block')"
+                            @click.stop="block"
+                            class="opacity-0 transition-all group-hover:opacity-100"
+                        >
+                            <LockClosedIcon class="text-warning size-4 hover:opacity-75" />
+                        </div>
+
+                        <div
                             v-if="!['table'].includes(screenStore.screen)"
                             @click.stop="copyDump"
                             class="text-info"
@@ -163,33 +166,6 @@ const block = () => {
                     >
                         {{ getLabel }}
                     </div>
-
-                    <div
-                        v-if="payload.queries && open"
-                        :data-tippy-content="$t('click_to_block')"
-                        @click.stop="block"
-                        class="opacity-0 transition-all group-hover:opacity-100"
-                    >
-                        <LockClosedIcon class="text-warning size-4 hover:opacity-75" />
-                    </div>
-
-                    <div
-                        v-if="payload.queries && payload.queries?.origin"
-                        class="badge badge-xs badge-ghost mr-1"
-                    >
-                        {{ payload.queries?.origin }}
-                    </div>
-
-                    <div v-if="payload.queries && payload.queries?.time">
-                        <span class="text-lg opacity-70 font-normal whitespace-nowrap"> {{ payload.queries.time }}<span class="font-semibold text-[10px]">ms</span> </span>
-                    </div>
-
-                    <div
-                        v-if="isDuplicated(payload.queries?.sql)"
-                        class="badge lowercase badge-xs badge-warning text-warning-content text-xs"
-                    >
-                        Duplicated
-                    </div>
                 </div>
             </div>
             <div
@@ -202,7 +178,7 @@ const block = () => {
             >
                 <div
                     class="relative"
-                    :class="{ 'overflow-auto w-[calc(100vw-70px)]': ['queries', 'table', 'table_v2'].includes(props.payload.type) }"
+                    :class="{ 'overflow-auto w-full': ['queries', 'table', 'table_v2'].includes(props.payload.type) }"
                 >
                     <DumpDump
                         :id="`dump-content-${props.payload.sf_dump_id}`"
@@ -265,7 +241,7 @@ const block = () => {
                     <!-- dump queries -->
                     <DumpQueries
                         :id="`dump-content-${props.payload.sf_dump_id}`"
-                        class="w-full mr-"
+                        class="w-full"
                         v-if="props.payload.type === `queries`"
                         :payload="payload"
                     />

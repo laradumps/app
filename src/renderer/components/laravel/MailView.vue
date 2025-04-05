@@ -8,6 +8,7 @@ import { CloudArrowDownIcon, TrashIcon, DevicePhoneMobileIcon, DeviceTabletIcon,
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import DumpLink from "@/components/DumpLink.vue";
 import { modifyHtml } from "./../utils";
+import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
 
 const mailStore = useMailStore();
 
@@ -210,16 +211,8 @@ const setPreviewMode = (mode: string) => {
                 </button>
             </div>
 
-            <div
-                v-if="mails.length === 0"
-                class="flex items-center justify-center w-full h-full"
-                style="height: -webkit-fill-available"
-            >
-                <span class="text-sm uppercase">No mails</span>
-            </div>
-
             <Splitpanes
-                v-else
+                v-if="mails.length > 0"
                 vertical
             >
                 <pane
@@ -376,6 +369,17 @@ const setPreviewMode = (mode: string) => {
                     </div>
                 </pane>
             </Splitpanes>
+
+            <div
+                v-else
+                class="absolute flex items-center justify-center w-full"
+                style="height: -webkit-fill-available"
+            >
+                <SvgEmpty class="w-30 opacity-25" />
+                <div class="text-base-content/70">
+                    <h1 class="text-lg font-semibold mb-2">No Mails</h1>
+                </div>
+            </div>
         </div>
     </div>
 </template>
