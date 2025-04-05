@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import Divider from "../components/Divider.vue";
-import { nextTick, onMounted, ref, watch } from "vue";
+import {nextTick, onMounted, onUpdated, ref, watch} from "vue";
 import { useSettingsStore } from "@/store/settings";
 import SelectInput from "@/components/SelectInput.vue";
 import { useI18n } from "vue-i18n";
 import { useI18nStore } from "@/store/i18n";
 import hotkeys from "hotkeys-js";
 
-const editMode = ref("disabled");
+const editMode = ref(false);
 const saved = ref(false);
 const selected = ref<string | null>("settings");
 const customTheme = ref("");
@@ -19,9 +19,17 @@ const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
 
 onMounted(() => {
-    getSavedLocalShortcuts();
-    detectHotKeysPress();
     customTheme.value = settingsStore.settings.custom_css;
+})
+
+onUpdated(() => {
+    if (selected.value === 'shortcuts') {
+        getSavedLocalShortcuts();
+
+        nextTick(() => {
+            detectHotKeysPress();
+        })
+    }
 });
 
 const saveSettings = async () => {
@@ -160,7 +168,7 @@ const saveShortcuts = async () => {
 
     alert(i18n.t("settings.shortcut.save_message"));
 
-    editMode.value = "disabled";
+    editMode.value = false;
 };
 
 watch(settingsStore.settings, async () => {
@@ -168,9 +176,9 @@ watch(settingsStore.settings, async () => {
 });
 
 const editShortcut = () => {
-    editMode.value = "";
+    editMode.value = true;
 
-    window.ipcRenderer.send("local-shortcut:reset", {});
+    window.ipcRenderer.send("settings.clear-shortcuts", {});
 };
 
 const openThemeGenerator = () => {
@@ -561,12 +569,13 @@ const saveCustomTheme = async () => {
                     <div class="flex items-center justify-between">
                         <input
                             type="text"
+                            :disabled="!editMode"
                             readonly
-                            :placeholder="editMode !== 'disabled' ? 'type here ...' : ''"
+                            :placeholder="editMode ? 'type here ...' : ''"
                             :name="key"
                             :data-label="shortcut.label"
                             :id="key"
-                            class="js-shortcut grow input input-bordered input-md w-full"
+                            class="js-shortcut disabled:text-base-content/80 grow input input-bordered input-md w-full"
                             :value="shortcut.originalValue"
                         />
                     </div>
