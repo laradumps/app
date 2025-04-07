@@ -121,7 +121,7 @@ const toggleDuplicatedQueries = () => {
 </script>
 
 <template>
-    <div class="gap-3 flex flex-col z-100 h-auto w-full">
+    <div class="flex flex-col z-100 h-auto w-full">
         <dialog id="chart_selected_query" class="modal">
             <div v-if="selectedChartPoint" class="modal-box relative w-full max-w-2xl">
                 <p class="py-4 space-y-4 text-sm">
