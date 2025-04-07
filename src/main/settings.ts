@@ -21,7 +21,7 @@ export const init = async () => {
         await setSettings(data);
     });
     ipcMain.on("settings.init-shortcuts", initShortcuts);
-    ipcMain.on("settings.clear-shortcuts", clearShortcuts)
+    ipcMain.on("settings.clear-shortcuts", clearShortcuts);
 };
 
 export const setSettings = async (data: Settings) => {
@@ -34,12 +34,12 @@ const clearShortcuts = (event) => {
     for (let key in getSettings().shortcuts) {
         const shortcut: Shortcut = getSettings().shortcuts[key];
 
-        console.log('unregistering ' + key);
+        console.log("unregistering " + key);
         electronLocalShortcut.unregister(shortcut.keys);
     }
 
     event.reply("app:local-shortcut-clear");
-}
+};
 
 export const initShortcuts = (event) => {
     const electronLocalShortcut = require("electron-localshortcut");

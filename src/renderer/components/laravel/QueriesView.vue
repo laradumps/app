@@ -38,36 +38,36 @@ const queries = computed(() => {
     const items = props.items ? props.items : queriesStore.payload;
 
     const reverseTimeOrder = (order: string) => {
-        let reversed: boolean;
         if (order === "default") {
-            return function () {};
+            return undefined;
         }
 
-        reversed = order !== "asc";
-        return function () {
-            reversed = !reversed;
-            return function (a: Payload, b: Payload) {
-                const aTime = a?.queries?.time || 0;
-                const bTime = b?.queries?.time || 0;
-                return (aTime === bTime ? 0 : aTime < bTime ? -1 : 1) * (reversed ? -1 : 1);
-            };
+        const isReversed = order !== "asc";
+        return (a: Payload, b: Payload) => {
+            const aTime = a?.queries?.time || 0;
+            const bTime = b?.queries?.time || 0;
+            return (aTime - bTime) * (isReversed ? -1 : 1);
         };
     };
 
     const sort = reverseTimeOrder(timeStore.order);
     const queryDuplicatedStore = useQueryDuplicated();
 
-    items
-        .filter((dump: Payload) => dump.type === "queries")
-        .forEach((dump: Payload) => {
-            const sql = dump.queries?.sql || "";
+    items.forEach((dump: Payload) => {
+        const sql = dump.queries?.sql || "";
 
-            const isDuplicate = items.filter((d: Payload) => d.type === "queries" && d.request_id === dump.request_id && d.queries.sql === sql);
+        const isDuplicate = items.filter((d: Payload) => d.request_id === dump.request_id && d.queries.sql === sql);
 
-            queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
-        });
+        queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
+    });
 
     return items
+        .filter((dump: Payload) => {
+            if (queryDuplicatedStore.showOnlyDuplicated) {
+                return queryDuplicatedStore.isDuplicated(dump.request_id, dump.queries?.sql);
+            }
+            return true;
+        })
         .filter(
             (payload: Payload) =>
                 JSON.stringify(payload[payload.type] ?? "")
@@ -79,7 +79,7 @@ const queries = computed(() => {
                 return queriesOriginFilter.origin.includes(dump.queries?.origin);
             }
         })
-        .sort(sort());
+        .sort(sort);
 });
 
 const clear = () => {

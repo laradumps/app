@@ -10,6 +10,7 @@ import { useMailStore } from "@/store/mail";
 import { useJobStore } from "@/store/jobs";
 import { useLogStore } from "@/store/logs";
 import { usePendingRequestsStore } from "@/store/pending-requests";
+import { useQueryDuplicated } from "@/store/query-duplicated";
 
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
@@ -20,6 +21,7 @@ const jobStore = useJobStore();
 const queryStore = useQueriesPayloadStore();
 const mailStore = useMailStore();
 const pendingRequestsStore = usePendingRequestsStore();
+const duplicatesStore = useQueryDuplicated();
 
 const clearAll = (): void => {
     // store
@@ -32,6 +34,7 @@ const clearAll = (): void => {
     jobStore.clear();
     mailStore.clear();
     queryStore.clear();
+    duplicatesStore.clear();
 
     pendingRequestsStore.clear("queries");
 };

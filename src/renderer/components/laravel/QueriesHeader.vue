@@ -12,6 +12,8 @@ import { SparklesIcon, ChartBarIcon, LockClosedIcon, AdjustmentsHorizontalIcon }
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import DumpQueries from "@/components/laravel/DumpQueries.vue";
 import DumpLink from "@/components/DumpLink.vue";
+import IconWarning from "@/components/Icons/IconWarning.vue";
+import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
 
 const timeStore = useTimeStore();
 const queriesStore = useQueriesPayloadStore();
@@ -22,20 +24,13 @@ const queriesChart = useQueriesChart();
 const blockedQueriesStore = useQueriesBlockedStore();
 
 interface CharPoint {
-    time: string;
+    time: Date;
     value: number;
     id: string;
 }
 
-const getDataPoints = ref<CharPoint>();
+const getDataPoints = ref<CharPoint|null>();
 const selectedChartPoint = ref<Payload|null>(null)
-
-const props = defineProps({
-    inScreenWindow: {
-        type: Boolean,
-        default: false
-    }
-});
 
 const showBlockedQueries = () => {
     blocked_queries.showModal();
@@ -59,9 +54,9 @@ watch(
             setTimeout(() => {
                 getDataPoints.value = queriesStore.payload
                     .filter((payload: Payload) => payload.request_id === value)
-                    .map((payload: Payload) => ({
+                    .map((payload: Payload): CharPoint => ({
                         time: payload.date_time,
-                        value: payload.queries.time,
+                        value: payload.queries?.time,
                         id: payload.id
                     }));
             }, 200);
@@ -69,11 +64,12 @@ watch(
 
         if (queriesChart.type === "all") {
             setTimeout(() => {
-                getDataPoints.value = queriesStore.payload.map((payload: Payload) => ({
-                    time: payload.date_time,
-                    value: payload.queries?.time,
-                    id: payload.id
-                }));
+                getDataPoints.value = queriesStore.payload
+                    .map((payload: Payload): CharPoint => ({
+                        time: payload.date_time,
+                        value: payload.queries?.time,
+                        id: payload.id
+                    }));
             }, 200);
         }
     },
@@ -118,6 +114,10 @@ const handlePointClick = (index) => {
         chart_selected_query.showModal()
     }
 };
+
+const toggleDuplicatedQueries = () => {
+    duplicatesStore.toggleShowOnlyDuplicated()
+};
 </script>
 
 <template>
@@ -151,20 +151,49 @@ const handlePointClick = (index) => {
             class="justify-between items-center gap-4 text-base-content"
         >
             <div class="flex justify-between uppercase py-1">
-                <div class="flex w-full items-center">
+                <div class="flex gap-2 w-full items-center">
                     <div
                         v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
-                        class="flex flex-row-reverse gap-3 items-center"
+                        class="flex gap-3 items-center"
                     >
-                        <span class="text-primary text-base">{{ duplicatesStore.totalByRequestId(timeStore.selected) }}</span>
-                        <span class="badge lowercase badge-xs badge-warning text-warning-content text-xs">duplicated</span>
+                        <button @click="toggleDuplicatedQueries"
+                                :class="{
+                                      '!bg-base-300' : duplicatesStore.showOnlyDuplicated
+                                }"
+                              class="btn hover:bg-base-100 text-xs !py-3 lowercase cursor-pointer badge badge-sm badge-soft ">
+                            <IconWarning class="text-warning w-4" />
+                            <span class="opacity-70">{{ duplicatesStore.totalByRequestId(timeStore.selected) }} duplicated</span>
+                        </button>
                     </div>
+
+                    <button
+                        :class="{
+                            '!bg-base-300': timeStore.order === 'desc'
+                        }"
+                        class="btn hover:bg-base-100 text-xs !py-3 lowercase cursor-pointer badge badge-sm badge-soft"
+                        @click="timeStore.setOrder('desc')"
+                        aria-label="Order by desc"
+                        data-tippy-content="Order by desc"
+                    >
+                        <IconChevronDown class="!w-4"/>
+                    </button>
+                    <button
+                        :class="{
+                            '!bg-base-300': timeStore.order === 'asc'
+                        }"
+                        @click="timeStore.setOrder('asc')"
+                        class="btn hover:bg-base-100 text-xs !py-3 lowercase cursor-pointer badge badge-sm badge-soft"
+                        aria-label="Order by asc"
+                        data-tippy-content="Order by asc"
+                    >
+                        <IconChevronDown class="!w-4 transform rotate-180" />
+                    </button>
                 </div>
 
-                <div class="flex gap-2 items-center">
+                <div class="flex gap-1 items-center">
                     <button
                         @click="showBlockedQueries"
-                        class="btn btn-soft btn-sm"
+                        class="btn bg-transparent btn-sm"
                         data-tippy-content="Blocked Queries"
                     >
                         <LockClosedIcon :class="{
@@ -182,7 +211,7 @@ const handlePointClick = (index) => {
                         <div
                             tabindex="0"
                             role="button"
-                            class="btn btn-soft btn-sm"
+                            class="btn bg-transparent btn-sm"
                             data-tippy-content="Chart Visibility"
                         >
                             <ChartBarIcon
@@ -239,7 +268,7 @@ const handlePointClick = (index) => {
                         <div
                             tabindex="0"
                             role="button"
-                            class="btn btn-soft btn-sm"
+                            class="btn bg-transparent btn-sm"
                             data-tippy-content="Order by and Filter Origin"
                         >
                             <AdjustmentsHorizontalIcon class="w-4.5" />
@@ -248,46 +277,6 @@ const handlePointClick = (index) => {
                             tabindex="0"
                             class="dropdown-content menu !text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
                         >
-                            <li class="text-xs uppercase font-normal mb-1">Order by:</li>
-                            <li>
-                                <label class="!text-xs">
-                                    <input
-                                        v-model="timeStore.order"
-                                        type="radio"
-                                        name="radio-order"
-                                        class="radio radio-sm !text-sm"
-                                        value="default"
-                                        @change="timeStore.setOrder('default')"
-                                    />
-                                    default
-                                </label>
-                            </li>
-                            <li>
-                                <label class="!text-xs">
-                                    <input
-                                        v-model="timeStore.order"
-                                        type="radio"
-                                        name="radio-order"
-                                        class="radio radio-sm"
-                                        value="desc"
-                                        @change="timeStore.setOrder('desc')"
-                                    />
-                                    desc
-                                </label>
-                            </li>
-                            <li>
-                                <label class="!text-xs">
-                                    <input
-                                        v-model="timeStore.order"
-                                        type="radio"
-                                        name="radio-order"
-                                        class="radio radio-sm"
-                                        value="asc"
-                                        @change="timeStore.setOrder('asc')"
-                                    />
-                                    asc
-                                </label>
-                            </li>
                             <li class="text-xs uppercase font-normal my-3">origin:</li>
                             <li
                                 v-for="option in options"
@@ -309,7 +298,7 @@ const handlePointClick = (index) => {
 
                     <button
                         data-tippy-content="Prettify"
-                        class="btn btn-sm btn-soft"
+                        class="btn btn-sm bg-transparent"
                         @click="formattedQueriesStore.toggle()"
                     >
                         <SparklesIcon

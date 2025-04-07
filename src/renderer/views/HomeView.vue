@@ -303,48 +303,51 @@ const dumpListeners = () => {
         payloadStore.updateValidatePayload(content);
     });
 
-    window.ipcRenderer.on("queries", (event, { content }) => {
+    let lastPayloadTimeout: NodeJS.Timeout | null = null;
+    let lastPayloadReceivedTime = 0;
+
+    window.ipcRenderer.on("dump.batches", (event, args) => {
         if (pauseQueries.is_paused) {
             return;
         }
 
-        const requestId = content.request_id;
-        const sqlQuery = content.queries.sql;
+        if (args.type === "batch") {
+            lastPayloadReceivedTime = Date.now();
 
-        pendingRequestsStore.add(requestId, "queries", sqlQuery);
+            if (lastPayloadTimeout) {
+                clearTimeout(lastPayloadTimeout);
+                lastPayloadTimeout = null;
+            }
 
-        const storedQuery = pendingRequestsStore.get(requestId, "queries");
+            args.contents.forEach(({ content }) => {
+                const requestId = content.request_id;
+                const sqlQuery = content.queries.sql;
 
-        if (blockedStore.blocked.includes(storedQuery)) {
-            console.log(`all sql queries are blocked for request id ${requestId}`);
-            return;
-        }
+                pendingRequestsStore.add(requestId, "queries", sqlQuery);
 
-        content.queries && timeStore.increment(content.request_id, content.id, content.queries);
+                const storedQuery = pendingRequestsStore.get(requestId, "queries");
 
-        queriesStore.add(content);
+                if (blockedStore.blocked.includes(storedQuery)) {
+                    console.log(`all sql queries are blocked for request id ${requestId}`);
+                    return;
+                }
 
-        const serializable = deepClone(queriesStore.payload);
+                content.queries && timeStore.increment(content.request_id, content.id, content.queries);
 
-        if (content.to_screen.new_window) {
-            screenStore.hidden(content.to_screen.screen_name);
-            window.ipcRenderer.send("screen-window:show", {
-                screen: content.to_screen.screen_name,
-                queries: serializable
+                queriesStore.add(content);
+
+                addScreen(content.to_screen);
             });
-        } else {
-            window.ipcRenderer.send("send-screen-window-update", {
-                screen: content.to_screen.screen_name,
-                queries: serializable
-            });
+
+            lastPayloadTimeout = setTimeout(() => {
+                if (Date.now() - lastPayloadReceivedTime >= 200) {
+                    const lastPayload: Payload = queriesStore.payload[queriesStore.payload.length - 1];
+                    if (lastPayload) {
+                        timeStore.selected = lastPayload.request_id;
+                    }
+                }
+            }, 200);
         }
-
-        addScreen(content.to_screen);
-
-        setTimeout(() => {
-            const lastPayload: Payload = queriesStore.payload[queriesStore.payload.length - 1];
-            if (lastPayload) timeStore.selected = lastPayload.request_id;
-        }, 50);
     });
 
     window.ipcRenderer.on("time_track", (event, { content }) => {
@@ -522,13 +525,6 @@ const openScreenWindow = () => {
                 :in-screen-window="inScreenWindow.length > 0"
                 v-if="inScreenWindow === 'logs'"
                 :items="logScreen"
-            />
-
-            <QueriesView
-                :in-screen-window="inScreenWindow.length > 0"
-                v-if="inScreenWindow === 'queries'"
-                :items="queriesScreen"
-                @pause-queries="pauseQueries"
             />
         </div>
 

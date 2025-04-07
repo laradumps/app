@@ -82,6 +82,10 @@ export const useTimeStore = defineStore("timeStore", {
         },
 
         setOrder(value: never) {
+            if (this.order === value) {
+                this.order = "default";
+                return;
+            }
             this.order = value;
         },
 

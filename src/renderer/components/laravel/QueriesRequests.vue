@@ -4,10 +4,13 @@ import { Payload } from "@/types/Payload";
 import { useTimeStore } from "@/store/time";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
+import IconWarning from "@/components/Icons/IconWarning.vue";
+import { useQueryDuplicated } from "@/store/query-duplicated";
 
 const timeStore = useTimeStore();
 const queriesStore = useQueriesPayloadStore();
 const queriesOriginFilter = useQueriesOriginFilter();
+const duplicatesStore = useQueryDuplicated();
 
 const allRequests = computed(() => {
     let requests = timeStore.groups.map((group, index) => ({
@@ -30,6 +33,7 @@ const allRequests = computed(() => {
 });
 
 const display = (id: string) => {
+    duplicatesStore.showOnlyDuplicated = false;
     timeStore.setSelectedRequest(id);
 };
 </script>
@@ -52,20 +56,31 @@ const display = (id: string) => {
             <div class="flex justify-between gap-3 items-start">
                 <span
                     class="line-clamp-2 break-words"
-                    v-html="request.label"
+                    v-html="request.label ? request.label : 'Tinker'"
                 ></span>
                 <span class="text-sm font-semibold">{{ request.time }}ms</span>
             </div>
-            <div class="font-semibold truncate flex justify-between">
-                <span
-                    :class="{
-                        'badge-primary': request.id == timeStore.selected,
-                        'badge-soft': request.id !== timeStore.selected
-                    }"
-                    class="badge badge-sm"
-                    >{{ request.method }}</span
-                >
-                <span class="text-sm">{{ request.count }}</span>
+            <div class="font-normal truncate flex justify-between">
+                <div class="flex gap-2">
+                    <span
+                        :class="{
+                            '!badge-ghost': request.id == timeStore.selected,
+                            'badge-soft': request.id !== timeStore.selected
+                        }"
+                        class="badge badge-sm"
+                        >{{ request.method }}
+                    </span>
+
+                    <div
+                        v-if="duplicatesStore.hasDuplicatedByRequest(request.id)"
+                        class="flex gap-2"
+                    >
+                        <IconWarning class="text-warning w-4" />
+                    </div>
+                </div>
+                <span>
+                    {{ request.count }}
+                </span>
             </div>
         </div>
     </div>

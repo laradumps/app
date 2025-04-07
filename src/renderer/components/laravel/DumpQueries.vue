@@ -8,6 +8,7 @@ import { useFormattedQueriesStore } from "@/store/formatted-queries";
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
 import { useQueryDuplicated } from "@/store/query-duplicated";
+import IconWarning from "@/components/Icons/IconWarning.vue";
 
 hljs.registerLanguage("sql", sql);
 hljs.registerLanguage("postgresql", sql);
@@ -69,12 +70,10 @@ const formattedSql = computed(() => {
         class="rounded-sm overflow-scroll space-y-2"
     >
         <div class="flex items-center opacity-80 justify-end gap-2">
-            <div
+            <IconWarning
                 v-if="isDuplicated(payload.queries?.sql)"
-                class="badge lowercase badge-xs badge-warning text-warning-content text-xs"
-            >
-                Duplicated
-            </div>
+                class="text-warning w-4"
+            />
 
             <span
                 v-if="payload.queries && payload.queries.connectionName"
@@ -103,7 +102,7 @@ const formattedSql = computed(() => {
 
         <code
             v-if="!formattedQueriesStore.formatted"
-            class="text-base-content language-sql rounded !text-xs break-all"
+            class="text-base-content language-sql rounded !text-xs"
             v-html="formattedSql"
         ></code>
 

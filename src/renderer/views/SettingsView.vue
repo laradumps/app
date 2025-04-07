@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Divider from "../components/Divider.vue";
-import {nextTick, onMounted, onUpdated, ref, watch} from "vue";
+import { nextTick, onMounted, onUpdated, ref, watch } from "vue";
 import { useSettingsStore } from "@/store/settings";
 import SelectInput from "@/components/SelectInput.vue";
 import { useI18n } from "vue-i18n";
@@ -20,15 +20,15 @@ const localeStore = useI18nStore();
 
 onMounted(() => {
     customTheme.value = settingsStore.settings.custom_css;
-})
+});
 
 onUpdated(() => {
-    if (selected.value === 'shortcuts') {
+    if (selected.value === "shortcuts") {
         getSavedLocalShortcuts();
 
         nextTick(() => {
             detectHotKeysPress();
-        })
+        });
     }
 });
 

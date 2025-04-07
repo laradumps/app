@@ -14,6 +14,10 @@ import os from "os";
 const port = 9191;
 const app = express();
 
+const BATCH_SIZE = 30;
+let batchBuffer = [];
+let batchTimeout = null;
+
 app.use(cors());
 
 app.use(
@@ -30,11 +34,37 @@ app.use(
     })
 );
 
+const sendBatch = () => {
+    if (batchBuffer.length === 0) return;
+
+    ipcRenderer.send("dump.batches", {
+        type: "batch",
+        contents: [...batchBuffer],
+        batch_size: batchBuffer.length
+    });
+
+    batchBuffer = [];
+    clearTimeout(batchTimeout);
+    batchTimeout = null;
+};
+
 app.post("/api/dumps", (req, res) => {
     const { body } = req;
+    body.date_time = new Date();
 
-    if (typeof body.date_time == "undefined") {
-        body.date_time = new Date();
+    if (body.type === "queries") {
+        batchBuffer.push({
+            type: body.type,
+            content: body
+        });
+
+        if (batchBuffer.length >= BATCH_SIZE) {
+            sendBatch();
+        } else if (!batchTimeout) {
+            batchTimeout = setTimeout(sendBatch, 200);
+        }
+
+        return res.send({ id: body.id });
     }
 
     ipcRenderer.send("dump", {
@@ -53,6 +83,7 @@ const server = app
     });
 
 ipcRenderer.on("server:close", (event, arg) => {
+    sendBatch();
     server.close(() => {
         event.sender.send("app:quit", arg);
     });

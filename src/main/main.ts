@@ -118,6 +118,11 @@ ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
     event.sender.send(arg.type, arg);
 });
 
+ipcMain.on("dump.batches", (event: Electron.IpcMainEvent, arg): void => {
+    mainWindow.webContents.send("new.dumps");
+    event.sender.send("dump.batches", arg);
+});
+
 function sendScreenWindowUpdate(screen, payload, jobs, mails, logs, queries) {
     const screenWindow = windowsMap.get(screen);
     if (screenWindow && screenWindow.webContents) {

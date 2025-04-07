@@ -15,8 +15,6 @@ import DumpQuery from "@/components/DumpQuery.vue";
 import { Payload } from "@/types/Payload";
 import CopyToClick from "@/components/CopyToClick.vue";
 import DumpDump from "@/components/DumpDump.vue";
-import { useQueryDuplicated } from "@/store/query-duplicated";
-import { useTimeStore } from "@/store/time";
 import { useCollapse } from "@/store/collapse";
 import { useSettingsStore } from "@/store/settings";
 import moment from "moment";
