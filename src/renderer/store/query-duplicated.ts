@@ -1,12 +1,26 @@
 import { defineStore } from "pinia";
 
+interface DuplicateInfo {
+    request_id: string;
+    sql: string;
+    has_duplicated: boolean;
+    occurrences: number;
+}
+
+interface QueryDuplicatedState {
+    showOnlyDuplicated: boolean;
+    duplicatesInfo: DuplicateInfo[];
+    cache: Record<string, number>;
+}
+
 export const useQueryDuplicated = defineStore("queryDuplicated", {
-    state: () => ({
+    state: (): QueryDuplicatedState => ({
+        showOnlyDuplicated: false,
         duplicatesInfo: [],
-        cache: []
+        cache: {}
     }),
     actions: {
-        add(request_id: String, sql: String, has_duplicated: Boolean, occurrences: Number) {
+        add(request_id: string, sql: string, has_duplicated: boolean, occurrences: number): void {
             const existingInfo = this.duplicatesInfo.find((info) => info.request_id === request_id && info.sql === sql);
 
             if (!existingInfo) {
@@ -18,9 +32,9 @@ export const useQueryDuplicated = defineStore("queryDuplicated", {
                 });
             }
         },
-        totalByRequestId(request_id: String) {
-            if (request_id == "") {
-                return;
+        totalByRequestId(request_id: string): number | undefined {
+            if (request_id === "") {
+                return undefined;
             }
 
             if (this.cache[request_id] !== undefined && this.cache[request_id] > 0) {
@@ -36,9 +50,18 @@ export const useQueryDuplicated = defineStore("queryDuplicated", {
 
             return total;
         },
-        clear() {
+        isDuplicated(request_id: string, sql: string): boolean {
+            return this.duplicatesInfo.some((info) => info.request_id === request_id && info.sql === sql && info.has_duplicated);
+        },
+        hasDuplicatedByRequest(request_id: string): boolean {
+            return this.duplicatesInfo.some((info) => info.request_id === request_id && info.has_duplicated);
+        },
+        toggleShowOnlyDuplicated(): void {
+            this.showOnlyDuplicated = !this.showOnlyDuplicated;
+        },
+        clear(): void {
             this.duplicatesInfo = [];
-            this.cache = [];
+            this.cache = {};
         }
     }
 });

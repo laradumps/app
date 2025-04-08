@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { Payload } from "@/types/Payload";
-import HeaderQueryRequests from "@/components/HeaderQueryRequests.vue";
-import { computed, defineProps, onMounted, ref, watch } from "vue";
+import QueriesHeader from "@/components/laravel/QueriesHeader.vue";
+import { computed, defineProps, nextTick, onMounted, ref } from "vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { AdjustmentsHorizontalIcon, MagnifyingGlassIcon, TrashIcon, LockClosedIcon, LockOpenIcon } from "@heroicons/vue/20/solid";
+import { MagnifyingGlassIcon, TrashIcon, LockOpenIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
+import { Pane, Splitpanes } from "splitpanes";
+import "splitpanes/dist/splitpanes.css";
+import QueriesRequests from "@/components/laravel/QueriesRequests.vue";
+import IconPause from "@/components/Icons/IconPause.vue";
+import { usePauseQueriesStore } from "@/store/pause-queries";
+import IconPlay from "@/components/Icons/IconPlay.vue";
+import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
@@ -18,9 +25,9 @@ const queriesOriginFilter = useQueriesOriginFilter();
 const blockedQueriesStore = useQueriesBlockedStore();
 const queryDuplicatedStore = useQueryDuplicated();
 const pendingRequestsStore = usePendingRequestsStore();
+const pauseQueries = usePauseQueriesStore();
 
 const search = ref("");
-const orderBy = ref("default");
 
 const props = defineProps<{
     items: [];
@@ -31,48 +38,48 @@ const queries = computed(() => {
     const items = props.items ? props.items : queriesStore.payload;
 
     const reverseTimeOrder = (order: string) => {
-        let reversed: boolean;
         if (order === "default") {
-            return function () {};
+            return undefined;
         }
 
-        reversed = order !== "asc";
-        return function () {
-            reversed = !reversed;
-            return function (a: Payload, b: Payload) {
-                const aTime = a?.queries?.time || 0;
-                const bTime = b?.queries?.time || 0;
-                return (aTime === bTime ? 0 : aTime < bTime ? -1 : 1) * (reversed ? -1 : 1);
-            };
+        const isReversed = order !== "asc";
+        return (a: Payload, b: Payload) => {
+            const aTime = a?.queries?.time || 0;
+            const bTime = b?.queries?.time || 0;
+            return (aTime - bTime) * (isReversed ? -1 : 1);
         };
     };
 
     const sort = reverseTimeOrder(timeStore.order);
     const queryDuplicatedStore = useQueryDuplicated();
 
-    items
-        .filter((dump: Payload) => dump.type === "queries")
-        .forEach((dump: Payload) => {
-            const sql = dump.queries?.sql || "";
+    items.forEach((dump: Payload) => {
+        const sql = dump.queries?.sql || "";
 
-            const isDuplicate = items.filter((d: Payload) => d.type === "queries" && d.request_id === dump.request_id && d.queries.sql === sql);
+        const isDuplicate = items.filter((d: Payload) => d.request_id === dump.request_id && d.queries.sql === sql);
 
-            queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
-        });
+        queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
+    });
 
     return items
+        .filter((dump: Payload) => {
+            if (queryDuplicatedStore.showOnlyDuplicated) {
+                return queryDuplicatedStore.isDuplicated(dump.request_id, dump.queries?.sql);
+            }
+            return true;
+        })
         .filter(
-            (dump: Payload) =>
-                JSON.stringify(dump[dump.type] ?? "")
+            (payload: Payload) =>
+                JSON.stringify(payload[payload.type] ?? "")
                     .toLowerCase()
-                    .includes(search.value.toLowerCase()) || dump.label?.toLowerCase().includes(search.value.toLowerCase())
+                    .includes(search.value.toLowerCase()) || payload.label?.toLowerCase().includes(search.value.toLowerCase())
         )
         .filter((dump: Payload) => {
             if (dump.type === "queries" && dump.queries?.origin) {
                 return queriesOriginFilter.origin.includes(dump.queries?.origin);
             }
         })
-        .sort(sort());
+        .sort(sort);
 });
 
 const clear = () => {
@@ -83,26 +90,16 @@ const clear = () => {
     queryDuplicatedStore.clear();
 
     pendingRequestsStore.clear("queries");
-
-    window.ipcRenderer.send('reload')
-};
-
-const showBlockedQueries = () => {
-    blocked_queries.showModal();
-};
-
-watch(orderBy, (value) => {
-    timeStore.setOrder(value);
-});
-
-const options = ["http", "console"];
-
-const toggle = (value) => {
-    queriesOriginFilter.toggleFilter(value);
 };
 
 onMounted(() => {
-    tippy("[data-tippy-content]", { allowHTML: true, theme: "light-border", placement: "right-end" });
+    nextTick(() => {
+        tippy("[data-tippy-content]", {
+            allowHTML: true,
+            theme: "light-border",
+            placement: "bottom"
+        });
+    });
 });
 </script>
 
@@ -168,123 +165,83 @@ onMounted(() => {
                     />
                 </label>
             </div>
-            <div class="flex gap-2">
-                <div class="dropdown dropdown-end">
-                    <div
-                        tabindex="0"
-                        role="button"
-                        class="btn btn-soft btn-sm"
-                    >
-                        <AdjustmentsHorizontalIcon class="w-4.5 text-primary" />
-                    </div>
-                    <ul
-                        tabindex="0"
-                        class="dropdown-content menu !text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
-                    >
-                        <li class="text-xs uppercase font-normal mb-1">Order by:</li>
-                        <li>
-                            <label>
-                                <input
-                                    v-model="orderBy"
-                                    type="radio"
-                                    name="radio-order"
-                                    class="radio radio-sm"
-                                    value="default"
-                                />
-                                default
-                            </label>
-                        </li>
-                        <li>
-                            <label>
-                                <input
-                                    v-model="orderBy"
-                                    type="radio"
-                                    name="radio-order"
-                                    class="radio radio-sm"
-                                    value="desc"
-                                />
-                                desc
-                            </label>
-                        </li>
-                        <li>
-                            <label>
-                                <input
-                                    v-model="orderBy"
-                                    type="radio"
-                                    name="radio-order"
-                                    class="radio radio-sm"
-                                    value="asc"
-                                />
-                                asc
-                            </label>
-                        </li>
-                        <li class="text-xs uppercase font-normal my-3">origin:</li>
-                        <li
-                            v-for="option in options"
-                            :key="option"
-                        >
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    :value="option"
-                                    :checked="queriesOriginFilter.origin.includes(option)"
-                                    @change="toggle(option)"
-                                    class="checkbox checkbox-sm"
-                                />
-                                {{ option.charAt(0).toUpperCase() + option.slice(1) }}
-                            </label>
-                        </li>
-                    </ul>
-                </div>
-                <button
-                    @click="showBlockedQueries"
-                    class="btn btn-soft btn-sm"
-                    data-tippy-content="Blocked Queries"
-                >
-                    <LockClosedIcon class="text-warning size-4 hover:opacity-75" />
-                    <span
-                        class="text-xs font-normal opacity-70"
-                        v-if="blockedQueriesStore.blocked.length > 0"
-                    >
-                        ({{ blockedQueriesStore.blocked.length }})
-                    </span>
-                </button>
-                <button
-                    @click="clear()"
-                    class="btn btn-soft btn-sm"
-                    data-tippy-content="Clear"
-                >
-                    <TrashIcon class="w-4 text-error" />
-                </button>
-            </div>
+            <button
+                @click="pauseQueries.toggle()"
+                class="btn btn-soft btn-sm"
+                :data-tippy-content="$t('pause')"
+            >
+                <IconPlay
+                    v-if="pauseQueries.is_paused"
+                    class="w-4 text-success"
+                />
+                <IconPause
+                    v-else
+                    class="w-4 text-warning"
+                />
+            </button>
+
+            <button
+                @click="clear()"
+                class="btn btn-soft btn-sm"
+                data-tippy-content="Clear"
+            >
+                <TrashIcon class="w-4 text-error" />
+            </button>
         </div>
 
-        <HeaderQueryRequests
+        <Splitpanes
             v-if="queriesStore.payload.length > 0"
-            :total="queriesStore.payload.length"
-            :total-filtered="queriesStore.payload.filter((payload: Payload) => payload.request_id === timeStore.selected).length"
-        />
-
-        <div class="overflow-auto mt-3 h-[calc(100vh-240px)]">
-            <div class="overflow-auto">
-                <div
-                    v-for="(payload, index) in queries"
-                    :key="payload.sf_dump_id"
-                    :id="payload.id"
-                    class="w-full"
-                >
-                    <DumpItem
-                        class="w-full group text-sm mb-3"
-                        v-show="payload.request_id === timeStore.selected"
-                        :payload="payload"
-                    />
+            vertical
+        >
+            <pane
+                size="28"
+                class="text-sm mt-1"
+            >
+                <div class="overflow-auto h-[calc(100vh-155px)]">
+                    <QueriesRequests />
                 </div>
+            </pane>
+
+            <pane class="text-sm">
+                <div
+                    v-if="timeStore.selected"
+                    class="pl-2 space-y-1"
+                >
+                    <QueriesHeader />
+
+                    <div class="overflow-auto h-[calc(100vh-204px)]">
+                        <div
+                            v-for="(payload, index) in queries"
+                            :key="payload.sf_dump_id"
+                            :id="payload.id"
+                            class="w-full"
+                        >
+                            <DumpItem
+                                class="w-full group text-sm mb-3"
+                                v-show="payload.request_id === timeStore.selected"
+                                :payload="payload"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </pane>
+        </Splitpanes>
+
+        <div
+            v-else
+            class="absolute flex items-center justify-center w-full"
+            style="height: -webkit-fill-available"
+        >
+            <SvgEmpty class="w-30 opacity-25" />
+            <div class="text-base-content/70">
+                <h1 class="text-lg font-semibold mb-2">No Queries</h1>
             </div>
         </div>
     </div>
 </template>
 <style scoped>
-.collapse-content {
+::v-deep(.collapse-content) {
     padding-bottom: 0;
+    padding-right: 0 !important;
 }
 </style>

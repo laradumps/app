@@ -9,6 +9,7 @@ import { TrashIcon } from "@heroicons/vue/24/outline";
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
 import { useSettingsStore } from "@/store/settings";
+import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
 
 const jobStore = useJobStore();
 const currentProjectStore = useCurrentProject();
@@ -173,15 +174,7 @@ const duration = (startTime: any, endTime: any) => {
             </div>
 
             <div
-                v-if="jobs.length === 0"
-                class="flex items-center justify-center w-full h-full"
-                style="height: -webkit-fill-available"
-            >
-                <span class="text-sm uppercase">No jobs</span>
-            </div>
-
-            <div
-                v-else
+                v-if="jobs.length > 0"
                 class="overflow-auto"
                 style="height: -webkit-fill-available"
             >
@@ -245,6 +238,17 @@ const duration = (startTime: any, endTime: any) => {
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div
+                v-else
+                class="absolute flex items-center justify-center w-full"
+                style="height: -webkit-fill-available"
+            >
+                <SvgEmpty class="w-30 opacity-25" />
+                <div class="text-base-content/70">
+                    <h1 class="text-lg font-semibold mb-2">No Jobs</h1>
+                </div>
             </div>
         </div>
     </div>
