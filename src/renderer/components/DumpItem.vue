@@ -47,6 +47,12 @@ const copyDump = () => {
             return;
         }
 
+        if (props.payload.dump?.original_content) {
+
+            navigator.clipboard.writeText(props.payload.dump?.original_content).then(() => {});
+            return;
+        }
+
         const value = document.getElementById(`dump-content-${props.payload.sf_dump_id}`)?.innerText;
 
         navigator.clipboard.writeText(value).then(() => {});
