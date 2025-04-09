@@ -274,22 +274,6 @@ const setPreviewMode = (mode: string) => {
                                         <span v-text="visited.headers[1]"></span>
                                     </div>
                                 </div>
-                                <div
-                                    v-if="visited.attachments.length > 0"
-                                    class="flex gap-3 items-center"
-                                >
-                                    Attachments:
-                                </div>
-                                <button
-                                    v-if="visited.attachments.length > 0"
-                                    class="btn btn-primary flex gap-2 items-center"
-                                    v-for="(attachment, index) in visited.attachments"
-                                    :key="`attachment-${index}`"
-                                    @click.prevent="openInBrowser(attachment)"
-                                >
-                                    <CloudArrowDownIcon class="w-4 h-4" />
-                                    {{ attachment.filename }}
-                                </button>
                             </div>
                         </div>
 
@@ -341,12 +325,14 @@ const setPreviewMode = (mode: string) => {
                                 </button>
                             </div>
                         </div>
+                        
                         <!-- body -->
                         <div
                             v-if="visited"
-                            class="w-full flex-1"
+                            class="w-full flex-1 flex flex-col"
                         >
-                            <div class="w-full h-full flex justify-center">
+                            <!-- email content iframe -->
+                            <div class="w-full flex-1 flex justify-center mb-4">
                                 <div :class="{ smartphone: previewMode == 'mobile', tablet: previewMode == 'tablet' }">
                                     <iframe
                                         class="iframe-content"
@@ -355,6 +341,25 @@ const setPreviewMode = (mode: string) => {
                                         frameborder="0"
                                         :src="`http://localhost:9191/${previewUrl}.html`"
                                     />
+                                </div>
+                            </div>
+                            
+                            <!-- attachments -->
+                            <div
+                                v-if="visited.attachments.length > 0"
+                                class="w-full px-4 py-2 border-t border-base-300"
+                            >
+                                <div class="font-semibold mb-2">Attachments:</div>
+                                <div class="flex flex-wrap gap-2">
+                                    <button
+                                        v-for="(attachment, index) in visited.attachments"
+                                        :key="`attachment-${index}`"
+                                        class="btn btn-primary flex gap-2 items-center"
+                                        @click.prevent="openInBrowser(attachment)"
+                                    >
+                                        <CloudArrowDownIcon class="w-4 h-4" />
+                                        {{ attachment.filename }}
+                                    </button>
                                 </div>
                             </div>
                         </div>
