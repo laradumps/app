@@ -9,8 +9,10 @@ import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import DumpLink from "@/components/DumpLink.vue";
 import { modifyHtml } from "./../utils";
 import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
+import {useCurrentProject} from "@/store/current-project";
 
 const mailStore = useMailStore();
+const currentProjectStore = useCurrentProject();
 
 const visited = ref<Mail>();
 const previewUrl = ref<string>("");
@@ -93,6 +95,12 @@ const getMimeTypeFromFilename = (filename: string | null): string => {
 
 const openInBrowser = (attachment: Attachment) => {
     if (attachment.path) {
+        const currentProject = currentProjectStore.value
+
+        if (attachment.path.startsWith('/var/www/html')) {
+            attachment.path = attachment.path.replace("/var/www/html", currentProject);
+        }
+
         window.ipcRenderer.send("main:openLink", "file:///" + attachment.path);
 
         return;
@@ -325,7 +333,7 @@ const setPreviewMode = (mode: string) => {
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- body -->
                         <div
                             v-if="visited"
@@ -343,7 +351,7 @@ const setPreviewMode = (mode: string) => {
                                     />
                                 </div>
                             </div>
-                            
+
                             <!-- attachments -->
                             <div
                                 v-if="visited.attachments.length > 0"
@@ -354,7 +362,7 @@ const setPreviewMode = (mode: string) => {
                                     <button
                                         v-for="(attachment, index) in visited.attachments"
                                         :key="`attachment-${index}`"
-                                        class="btn btn-primary flex gap-2 items-center"
+                                        class="btn btn-neutral flex gap-2 items-center"
                                         @click.prevent="openInBrowser(attachment)"
                                     >
                                         <CloudArrowDownIcon class="w-4 h-4" />
