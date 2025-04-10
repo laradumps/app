@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps } from "vue";
+import {computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref} from "vue";
 import { format } from "sql-formatter";
 import { useTimeStore } from "@/store/time";
 import { Payload } from "@/types/Payload";
@@ -9,6 +9,7 @@ import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import IconWarning from "@/components/Icons/IconWarning.vue";
+import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
 
 hljs.registerLanguage("sql", sql);
 hljs.registerLanguage("postgresql", sql);
@@ -20,6 +21,49 @@ const duplicatesStore = useQueryDuplicated();
 const props = defineProps<{
     payload: Payload;
 }>();
+
+const codeContainer = ref<HTMLElement | null>(null);
+const isCollapsed = ref(false);
+const showToggleControls = ref(false);
+const resizeObserver = ref<ResizeObserver | null>(null);
+const isManualToggle = ref(false);
+
+const checkContainerHeight = () => {
+    if (!codeContainer.value || isManualToggle.value) return;
+
+    void codeContainer.value.offsetHeight;
+
+    const codeHeight = codeContainer.value.offsetHeight;
+
+    showToggleControls.value = codeHeight >= 224;
+    isCollapsed.value = showToggleControls.value;
+};
+
+const toggleCollapse = () => {
+    isManualToggle.value = true;
+    isCollapsed.value = !isCollapsed.value;
+
+    setTimeout(() => {
+        isManualToggle.value = false;
+    }, 300);
+};
+
+onMounted(() => {
+    nextTick(() => {
+        resizeObserver.value = new ResizeObserver(checkContainerHeight);
+        if (codeContainer.value) {
+            resizeObserver.value.observe(codeContainer.value);
+        }
+
+        checkContainerHeight();
+    });
+});
+
+onBeforeUnmount(() => {
+    if (resizeObserver.value && codeContainer.value) {
+        resizeObserver.value.unobserve(codeContainer.value);
+    }
+});
 
 const total = computed(() => timeStore.requests[props.payload.request_id]?.total ?? 0);
 
@@ -67,7 +111,7 @@ const formattedSql = computed(() => {
 <template>
     <div
         v-if="payload.queries"
-        class="rounded-sm overflow-scroll space-y-2"
+        class="rounded-sm overflow-scroll space-y-3"
     >
         <div class="flex items-center opacity-80 justify-end gap-2">
             <IconWarning
@@ -93,6 +137,7 @@ const formattedSql = computed(() => {
 
             <span v-if="payload.queries && payload.queries.time"> {{ payload.queries.time }}<span class="font-semibold text-[10px]">ms</span> </span>
         </div>
+
         <pre
             v-if="formattedQueriesStore.formatted"
             class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
@@ -100,11 +145,29 @@ const formattedSql = computed(() => {
             <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
         </pre>
 
-        <code
-            v-if="!formattedQueriesStore.formatted"
-            class="text-base-content language-sql rounded !text-xs"
-            v-html="formattedSql"
-        ></code>
+        <div class="relative">
+            <code
+                ref="codeContainer"
+                v-if="!formattedQueriesStore.formatted"
+                :class="{ 'line-clamp-[14]': isCollapsed }"
+                class="text-base-content language-sql rounded !text-xs"
+                v-html="formattedSql"
+            ></code>
+
+            <span v-if="showToggleControls" class="blur-overlay w-full"></span>
+
+            <button
+                v-if="showToggleControls"
+                class="absolute -bottom-2 z-100 w-full opacity-80 flex items-center justify-center"
+                @click="toggleCollapse"
+            >
+                <IconChevronDown
+                    class="w-4"
+                    :class="{ 'rotate-180': !isCollapsed }"
+                    stroke-width="2.5"
+                />
+            </button>
+        </div>
 
         <div class="group items-center mt-1">
             <div class="flex items-center select-none">
@@ -134,5 +197,9 @@ const formattedSql = computed(() => {
 
 code * {
     @apply !font-light !text-base-content tracking-wider;
+}
+
+.blur-overlay {
+    @apply absolute h-[40px] blur bg-base-100/90 -bottom-4 right-0 z-40;
 }
 </style>

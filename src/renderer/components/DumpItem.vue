@@ -22,12 +22,17 @@ import { useScreenStore } from "@/store/screen";
 import { LockClosedIcon } from "@heroicons/vue/20/solid";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { useQueriesChart } from "@/store/queries-chart";
+import IconWarning from "@/components/Icons/IconWarning.vue";
+import {useTimeStore} from "@/store/time";
+import {useQueryDuplicated} from "@/store/query-duplicated";
 
 const collapseStore = useCollapse();
 const settingsStore = useSettingsStore();
 const screenStore = useScreenStore();
 const queriesBlockedStore = useQueriesBlockedStore();
 const queriesChart = useQueriesChart();
+const timeStore = useTimeStore();
+const duplicatesStore = useQueryDuplicated();
 
 const open = ref(true);
 const openOptions = ref(false);
@@ -109,6 +114,10 @@ const getLabel = computed(() => {
 const block = () => {
     props.payload.queries?.sql && queriesBlockedStore.toggle(props.payload.queries?.sql);
 };
+
+const isDuplicated = (sql) => {
+    return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
+};
 </script>
 <template>
     <div v-if="(payload.queries && queriesChart.type === 'none') || payload.type !== 'queries'">
@@ -153,6 +162,14 @@ const block = () => {
                             :data-tippy-content="$t('click_to_copy')"
                         >
                             <CopyToClick />
+                        </div>
+                    </div>
+
+                    <div v-show="!open">
+                        <div class="flex items-center opacity-80 justify-end gap-2">
+                            <IconWarning v-if="isDuplicated(payload.queries?.sql)" class="text-warning w-4" />
+
+                            <span v-if="payload.queries && payload.queries.time"> {{ payload.queries.time }}<span class="font-semibold text-[10px]">ms</span> </span>
                         </div>
                     </div>
 

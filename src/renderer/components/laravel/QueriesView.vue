@@ -172,11 +172,11 @@ onMounted(() => {
             >
                 <IconPlay
                     v-if="pauseQueries.is_paused"
-                    class="w-4 text-success"
+                    class="w-4"
                 />
                 <IconPause
                     v-else
-                    class="w-4 text-warning"
+                    class="w-4"
                 />
             </button>
 
@@ -185,7 +185,7 @@ onMounted(() => {
                 class="btn btn-soft btn-sm"
                 data-tippy-content="Clear"
             >
-                <TrashIcon class="w-4 text-error" />
+                <TrashIcon class="w-4" />
             </button>
         </div>
 

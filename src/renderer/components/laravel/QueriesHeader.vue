@@ -152,6 +152,31 @@ const toggleDuplicatedQueries = () => {
         >
             <div class="flex justify-between uppercase py-1">
                 <div class="flex gap-2 w-full items-center">
+                    <div class="flex gap-1">
+                        <button
+                            :class="{
+                            '!text-secondary': timeStore.order === 'desc'
+                        }"
+                            class="btn btn-sm p-[0.5rem]"
+                            @click="timeStore.setOrder('desc')"
+                            aria-label="Order by desc"
+                            data-tippy-content="Order by desc"
+                        >
+                            <IconChevronDown class="!w-4" stroke-width="2.2"/>
+                        </button>
+                        <button
+                            :class="{
+                            '!text-secondary': timeStore.order === 'asc'
+                        }"
+                            @click="timeStore.setOrder('asc')"
+                            class="btn btn-sm p-[0.5rem]"
+                            aria-label="Order by asc"
+                            data-tippy-content="Order by asc"
+                        >
+                            <IconChevronDown class="!w-4 transform rotate-180" stroke-width="2.2"/>
+                        </button>
+                    </div>
+
                     <div
                         v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
                         class="flex gap-3 items-center"
@@ -160,40 +185,17 @@ const toggleDuplicatedQueries = () => {
                                 :class="{
                                       '!bg-base-300' : duplicatesStore.showOnlyDuplicated
                                 }"
-                              class="btn hover:bg-base-100 text-xs !py-3 lowercase cursor-pointer badge badge-sm badge-soft ">
+                                class="btn hover:bg-base-100 text-xs !py-3 lowercase cursor-pointer badge badge-sm badge-soft ">
                             <IconWarning class="text-warning w-4" />
                             <span class="opacity-70">{{ duplicatesStore.totalByRequestId(timeStore.selected) }} duplicated</span>
                         </button>
                     </div>
-
-                    <button
-                        :class="{
-                            '!bg-base-300': timeStore.order === 'desc'
-                        }"
-                        class="btn hover:bg-base-100 text-xs !py-3 lowercase cursor-pointer badge badge-sm badge-soft"
-                        @click="timeStore.setOrder('desc')"
-                        aria-label="Order by desc"
-                        data-tippy-content="Order by desc"
-                    >
-                        <IconChevronDown class="!w-4"/>
-                    </button>
-                    <button
-                        :class="{
-                            '!bg-base-300': timeStore.order === 'asc'
-                        }"
-                        @click="timeStore.setOrder('asc')"
-                        class="btn hover:bg-base-100 text-xs !py-3 lowercase cursor-pointer badge badge-sm badge-soft"
-                        aria-label="Order by asc"
-                        data-tippy-content="Order by asc"
-                    >
-                        <IconChevronDown class="!w-4 transform rotate-180" />
-                    </button>
                 </div>
 
                 <div class="flex gap-1 items-center">
                     <button
                         @click="showBlockedQueries"
-                        class="btn bg-transparent btn-sm"
+                        class="btn btn-sm p-[0.5rem]"
                         data-tippy-content="Blocked Queries"
                     >
                         <LockClosedIcon :class="{
@@ -211,7 +213,7 @@ const toggleDuplicatedQueries = () => {
                         <div
                             tabindex="0"
                             role="button"
-                            class="btn bg-transparent btn-sm"
+                            class="btn btn-sm p-[0.5rem]"
                             data-tippy-content="Chart Visibility"
                         >
                             <ChartBarIcon
@@ -268,7 +270,7 @@ const toggleDuplicatedQueries = () => {
                         <div
                             tabindex="0"
                             role="button"
-                            class="btn bg-transparent btn-sm"
+                            class="btn btn-sm p-[0.5rem]"
                             data-tippy-content="Order by and Filter Origin"
                         >
                             <AdjustmentsHorizontalIcon class="w-4.5" />
@@ -298,7 +300,7 @@ const toggleDuplicatedQueries = () => {
 
                     <button
                         data-tippy-content="Prettify"
-                        class="btn btn-sm bg-transparent"
+                        class="btn btn-sm p-[0.5rem]"
                         @click="formattedQueriesStore.toggle()"
                     >
                         <SparklesIcon
@@ -313,7 +315,7 @@ const toggleDuplicatedQueries = () => {
         </div>
 
         <QueriesChart
-            v-if="queriesChart.type !== 'none' && getDataPoints"
+            v-if="queriesChart.type !== 'none'"
             :data-points="getDataPoints"
             @pointClick="handlePointClick"
         />
