@@ -207,7 +207,7 @@ const setPreviewMode = (mode: string) => {
                     class="btn btn-soft btn-sm"
                     data-tippy-content="Clear"
                 >
-                    <TrashIcon class="w-4 text-error" />
+                    <TrashIcon class="w-4" />
                 </button>
             </div>
 
@@ -229,7 +229,7 @@ const setPreviewMode = (mode: string) => {
                             :class="{
                                 'hover:bg-base-300 hover:rounded-md': visited?.message_id !== mail.message_id,
                                 'opacity-40 !font-normal': mail.is_read && visited?.message_id !== mail.message_id,
-                                'bg-primary text-primary-content rounded-md': visited?.message_id === mail.message_id
+                                'bg-neutral text-neutral-content rounded-md': visited?.message_id === mail.message_id
                             }"
                             class="p-2 space-y-2 cursor-pointer focus:bg-primary"
                             @click="display(mail)"

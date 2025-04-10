@@ -169,7 +169,7 @@ const duration = (startTime: any, endTime: any) => {
                     class="btn btn-soft btn-sm"
                     data-tippy-content="Clear"
                 >
-                    <TrashIcon class="w-4 text-error" />
+                    <TrashIcon class="w-4" />
                 </button>
             </div>
 

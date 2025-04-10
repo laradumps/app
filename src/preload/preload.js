@@ -14,7 +14,7 @@ import os from "os";
 const port = 9191;
 const app = express();
 
-const BATCH_SIZE = 30;
+const BATCH_SIZE = 12;
 let batchBuffer = [];
 let batchTimeout = null;
 
@@ -61,7 +61,7 @@ app.post("/api/dumps", (req, res) => {
         if (batchBuffer.length >= BATCH_SIZE) {
             sendBatch();
         } else if (!batchTimeout) {
-            batchTimeout = setTimeout(sendBatch, 200);
+            batchTimeout = setTimeout(sendBatch, 100);
         }
 
         return res.send({ id: body.id });
