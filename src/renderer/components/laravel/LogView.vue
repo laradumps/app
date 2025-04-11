@@ -196,7 +196,7 @@ const closeModal = () => {
                         >
                             <td>
                                 <span
-                                    class="badge text-xs badge-outline badge-info"
+                                    class="badge text-xs !text-semibold badge-info p-1.5"
                                     v-if="log.level === 'info'"
                                     ><InformationCircleIcon class="w-5" /> Info</span
                                 >
@@ -207,37 +207,37 @@ const closeModal = () => {
                                 >
 
                                 <span
-                                    class="badge text-xs badge-outline badge-warning p-1.5"
+                                    class="badge text-xs !text-semibold badge-warning p-1.5"
                                     v-else-if="log.level === 'warning'"
                                 >
                                     <ExclamationTriangleIcon class="w-5" />
                                     Warning
                                 </span>
                                 <span
-                                    class="badge text-xs badge-outline badge-error p-1.5"
+                                    class="badge text-xs !text-semibold badge-error p-1.5"
                                     v-else-if="log.level === 'error'"
                                 >
                                     <ExclamationCircleIcon class="w-5" />Error</span
                                 >
                                 <span
-                                    class="badge text-xs badge-outline badge-error p-1.5"
+                                    class="badge text-xs !text-semibold badge-error p-1.5"
                                     v-else-if="log.level === 'alert'"
                                 >
                                     <ExclamationCircleIcon class="w-5" />Alert</span
                                 >
                                 <span
-                                    class="badge text-xs badge-error p-1.5"
+                                    class="badge text-xs !text-semibold badge-error p-1.5"
                                     v-else-if="log.level === 'critical'"
                                 >
                                     <ExclamationTriangleIcon class="w-5" />Critical</span
                                 >
                                 <span
-                                    class="badge text-xs badge-outline badge-error text-primary-content p-1.5"
+                                    class="badge text-xs !text-semibold badge-error p-1.5"
                                     v-else-if="log.level === 'emergency'"
                                     ><ExclamationCircleIcon class="w-5" />Emergency</span
                                 >
                                 <span
-                                    class="badge text-xs bg-gray-500 text-primary-content p-1.5"
+                                    class="badge text-xs !text-semibold bg-gray-500 text-primary-content p-1.5"
                                     v-else-if="log.level === 'debug'"
                                     ><InformationCircleIcon class="w-5" />Debug</span
                                 >
@@ -259,7 +259,7 @@ const closeModal = () => {
                                 </div>
                             </td>
                             <td class="w-[64px] ma-w-[64px]">
-                                <button @click="openModal(log.log_id)">
+                                <button class="btn btn-sm btn-soft btn-circle" @click="openModal(log.log_id)">
                                     <EyeIcon class="w-5 text-primary" />
                                 </button>
                             </td>

@@ -103,7 +103,7 @@ onMounted(() => {
         >
             <div
                 :class="{
-                    '!font-semibold text-sm !opacity-100 !text-accent': activeFileIndex === index
+                    '!font-semibold text-sm !opacity-100 !text-secondary': activeFileIndex === index
                 }"
                 class="text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
                 @click="toggleFileVisibility(index)"
@@ -147,7 +147,7 @@ onMounted(() => {
 @reference "./../styles.css";
 
 .code-snippet {
-    @apply bg-black/80 border border-gray-700 rounded-lg p-4;
+    @apply bg-black/80 border border-gray-700 rounded-lg;
 }
 
 .code-snippet .hljs {
