@@ -1,5 +1,4 @@
 @import "./sf-dump.css";
-@import "./custom.css";
 
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
