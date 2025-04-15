@@ -11,6 +11,7 @@ import { useJobStore } from "@/store/jobs";
 import { useLogStore } from "@/store/logs";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { useQueryDuplicated } from "@/store/query-duplicated";
+import {useScreenStore} from "@/store/screen";
 
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
@@ -22,6 +23,7 @@ const queryStore = useQueriesPayloadStore();
 const mailStore = useMailStore();
 const pendingRequestsStore = usePendingRequestsStore();
 const duplicatesStore = useQueryDuplicated();
+const screenStore = useScreenStore();
 
 const clearAll = (): void => {
     // store
@@ -29,14 +31,25 @@ const clearAll = (): void => {
     timeStore.clear();
     globalSearchStore.clear();
     colorStore.clear();
-    payloadStore.clearAll();
     logStore.clear();
     jobStore.clear();
     mailStore.clear();
     queryStore.clear();
     duplicatesStore.clear();
+    screenStore.clearAll();
 
     pendingRequestsStore.clear("queries");
+
+    setTimeout(() => {
+        screenStore.add({
+            screen_name: "home",
+            raise_in: 0,
+            visible: true,
+            pinned: false,
+            new_window: false
+        })
+        window.ipcRenderer.send("storage.get");
+    }, 10)
 };
 
 const hasPayload = computed(() => {
