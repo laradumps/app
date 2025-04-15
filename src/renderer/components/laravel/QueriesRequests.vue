@@ -40,7 +40,7 @@ const display = (id: string) => {
 
 <template>
     <div
-        class="mr-2 flex flex-col gap-1"
+        class="flex flex-col gap-1"
         style="height: -webkit-fill-available"
     >
         <div

@@ -152,13 +152,12 @@ const isDuplicated = (sql) => {
                             @click.stop="block"
                             class="opacity-0 transition-all group-hover:opacity-100"
                         >
-                            <LockClosedIcon class="text-warning size-4 hover:opacity-75" />
+                            <LockClosedIcon class="size-4 hover:opacity-75" />
                         </div>
 
                         <div
                             v-if="!['table'].includes(screenStore.screen)"
                             @click.stop="copyDump"
-                            class="text-info"
                             :data-tippy-content="$t('click_to_copy')"
                         >
                             <CopyToClick />

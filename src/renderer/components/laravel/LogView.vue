@@ -11,6 +11,7 @@ import CodeSnippet from "@/components/CodeSnippet.vue";
 import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
 import { useColorStore } from "@/store/colors";
 import { useSettingsStore } from "@/store/settings";
+import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
 
 const logStore = useLogStore();
 const currentProjectStore = useCurrentProject();
@@ -145,7 +146,7 @@ const closeModal = () => {
             class="space-y-3"
             :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }"
         >
-            <div class="flex items-center gap-2 justify-between mt-1">
+            <div class="flex items-center gap-1 justify-between mt-1">
                 <label class="input w-full input-sm">
                     <MagnifyingGlassIcon class="size-4" />
                     <input
@@ -160,7 +161,7 @@ const closeModal = () => {
                 </div>
                 <button
                     @click="clear()"
-                    class="btn btn-soft btn-sm"
+                    class="btn btn-sm p-[0.5rem]"
                     data-tippy-content="Clear"
                 >
                     <TrashIcon class="w-4" />
@@ -168,15 +169,7 @@ const closeModal = () => {
             </div>
 
             <div
-                v-if="logs.length === 0"
-                class="flex items-center justify-center w-full h-full"
-                style="height: -webkit-fill-available"
-            >
-                <span class="text-sm uppercase">No logs</span>
-            </div>
-
-            <div
-                v-else
+                v-if="logs.length > 0"
                 class="overflow-auto"
                 style="height: -webkit-fill-available"
             >
@@ -266,6 +259,17 @@ const closeModal = () => {
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div
+                v-else
+                class="absolute flex items-center justify-center w-full"
+                style="height: -webkit-fill-available"
+            >
+                <SvgEmpty class="w-30 opacity-25" />
+                <div class="text-base-content/70">
+                    <h1 class="text-lg font-semibold mb-2">No Logs</h1>
+                </div>
             </div>
         </div>
     </div>

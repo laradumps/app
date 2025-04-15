@@ -66,14 +66,14 @@
         "@types/ssh2": "^1.15.4",
         "@vitejs/plugin-vue": "5.2.3",
         "concurrently": "^9.1.2",
-        "daisyui": "^5.0.9",
+        "daisyui": "^5.0.19",
         "electron": "^32.1.0",
         "electron-builder": "^25.1.8",
         "esbuild": "^0.25.1",
         "eslint-plugin-prettier": "5.2.5",
         "postcss": "8.5.3",
         "prettier": "3.5.3",
-        "tailwindcss": "^4.0.17",
+        "tailwindcss": "^4.1.4",
         "vite": "^6.2.3"
     },
     "ts-standard": {

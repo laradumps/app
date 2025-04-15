@@ -8,7 +8,7 @@ import DumpItem from "@/components/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { MagnifyingGlassIcon, TrashIcon, LockOpenIcon } from "@heroicons/vue/24/outline";
+import { MagnifyingGlassIcon, TrashIcon, PlayIcon, LockOpenIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { Pane, Splitpanes } from "splitpanes";
@@ -16,7 +16,6 @@ import "splitpanes/dist/splitpanes.css";
 import QueriesRequests from "@/components/laravel/QueriesRequests.vue";
 import IconPause from "@/components/Icons/IconPause.vue";
 import { usePauseQueriesStore } from "@/store/pause-queries";
-import IconPlay from "@/components/Icons/IconPlay.vue";
 import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
 
 const queriesStore = useQueriesPayloadStore();
@@ -153,7 +152,7 @@ onMounted(() => {
             </form>
         </dialog>
 
-        <div class="flex items-center gap-2 justify-between mt-1 mb-2">
+        <div class="flex items-center gap-1 justify-between mt-1 mb-2">
             <div class="flex gap-2 w-full">
                 <label class="input w-full input-sm">
                     <MagnifyingGlassIcon class="size-4" />
@@ -167,12 +166,12 @@ onMounted(() => {
             </div>
             <button
                 @click="pauseQueries.toggle()"
-                class="btn btn-soft btn-sm"
+                class="btn btn-sm p-[0.5rem]"
                 :data-tippy-content="$t('pause')"
             >
-                <IconPlay
+                <PlayIcon
                     v-if="pauseQueries.is_paused"
-                    class="w-4"
+                    class="w-4 text-warning"
                 />
                 <IconPause
                     v-else
@@ -182,7 +181,7 @@ onMounted(() => {
 
             <button
                 @click="clear()"
-                class="btn btn-soft btn-sm"
+                class="btn btn-sm p-[0.5rem]"
                 data-tippy-content="Clear"
             >
                 <TrashIcon class="w-4" />
@@ -240,8 +239,14 @@ onMounted(() => {
     </div>
 </template>
 <style scoped>
+@reference "./../../styles.css";
+
 ::v-deep(.collapse-content) {
     padding-bottom: 0;
     padding-right: 0 !important;
+}
+
+::v-deep(.splitpanes__splitter) {
+    @apply opacity-0 hover:opacity-100 min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
 }
 </style>
