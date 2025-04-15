@@ -212,7 +212,7 @@ const setPreviewMode = (mode: string) => {
                 </label>
                 <button
                     @click="clear()"
-                    class="btn btn-soft btn-sm"
+                    class="btn btn-sm p-[0.5rem]"
                     data-tippy-content="Clear"
                 >
                     <TrashIcon class="w-4" />
@@ -397,6 +397,8 @@ const setPreviewMode = (mode: string) => {
     </div>
 </template>
 <style>
+@reference "./../../styles.css";
+
 iframe {
     width: 100%;
     height: 100%;
@@ -490,5 +492,9 @@ iframe {
     height: 1024px;
     background: white;
     margin: -1px;
+}
+
+::v-deep(.splitpanes__splitter) {
+    @apply opacity-0 hover:opacity-100 min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
 }
 </style>

@@ -154,7 +154,7 @@ const duration = (startTime: any, endTime: any) => {
             class="space-y-3"
             :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }"
         >
-            <div class="flex items-center gap-2 justify-between mt-1">
+            <div class="flex items-center gap-1 justify-between mt-1">
                 <label class="input w-full input-sm">
                     <MagnifyingGlassIcon class="size-4" />
                     <input
@@ -166,7 +166,7 @@ const duration = (startTime: any, endTime: any) => {
                 </label>
                 <button
                     @click="clear()"
-                    class="btn btn-soft btn-sm"
+                    class="btn btn-sm p-[0.5rem]"
                     data-tippy-content="Clear"
                 >
                     <TrashIcon class="w-4" />

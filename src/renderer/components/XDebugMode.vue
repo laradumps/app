@@ -858,7 +858,7 @@ onBeforeUnmount(() => {
     @apply text-gray-400;
 }
 
-.splitpanes--vertical > .splitpanes__splitter {
+::v-deep(.splitpanes__splitter) {
     @apply min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
 }
 
