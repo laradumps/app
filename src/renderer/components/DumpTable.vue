@@ -27,7 +27,7 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
 
     thr.setAttribute("class", "text-xs");
     table.setAttribute("id", `table-${payloadId}`);
-    table.setAttribute("class", "table text-base-content");
+    table.setAttribute("class", "table w-full overflow-auto text-base-content !mt-0");
 
     fieldTitles.forEach((fieldTitle) => {
         const th = document.createElement("th");
@@ -36,6 +36,7 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
         thr.appendChild(th);
     });
     thead.appendChild(thr);
+    thead.setAttribute("class", "top-0 sticky z-10 bg-base-200 text-base-content/70");
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
@@ -52,9 +53,23 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
         });
         tbody.appendChild(tr);
     });
+
+    const footer = document.createElement("tfoot");
+    const footerRow = document.createElement("tr");
+    const footerCell = document.createElement("td");
+    footerCell.setAttribute("colspan", "999");
+    footerCell.appendChild(document.createTextNode(`Total Records: ${objectArray.length}`));
+    footerCell.setAttribute("class", "p-2 text-xs");
+    footerRow.appendChild(footerCell);
+    footer.appendChild(footerRow);
+
+    footer.setAttribute("class", "sticky bottom-0 z-10 bg-base-200 text-base-content/70");
+
     table.appendChild(tbody);
+    table.appendChild(footer);
 
     div.appendChild(table);
+    div.setAttribute("class", "relative")
 
     return div.innerHTML;
 };
@@ -81,7 +96,7 @@ const searchableTable = (search, id) => {
 
 <template>
     <div>
-        <div>
+        <div class="w-[calc(100vw-70px)] flex flex-col gap-3">
             <div class="flex justify-end mt-1">
                 <label class="flex !justify-end input input-bordered input-sm gap-2 max-w-[300px]">
                     <input
@@ -95,7 +110,7 @@ const searchableTable = (search, id) => {
             </div>
 
             <div
-                class="overflow-x-auto dstable mt-2 rounded-lg max-h-[412px]"
+                class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 dstable rounded-lg max-h-[429px]"
                 v-html="table"
             ></div>
         </div>
