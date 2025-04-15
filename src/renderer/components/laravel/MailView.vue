@@ -17,7 +17,7 @@ const currentProjectStore = useCurrentProject();
 const visited = ref<Mail>();
 const previewUrl = ref<string>("");
 const search = ref<string>("");
-const previewMode = ref<string>("desktop");
+const previewMode = ref<string>("mobile");
 
 const props = defineProps<{
     items: any;
@@ -228,7 +228,7 @@ const setPreviewMode = (mode: string) => {
                     class="overflow-auto pb-1 text-sm"
                 >
                     <div
-                        class="mr-2 overflow-auto flex flex-col gap-1"
+                        class="overflow-auto flex flex-col gap-1"
                         style="height: -webkit-fill-available"
                     >
                         <div
@@ -258,7 +258,7 @@ const setPreviewMode = (mode: string) => {
                     </div>
                 </pane>
 
-                <pane class="overflow-auto text-sm">
+                <pane class="overflow-auto ml-2 text-sm">
                     <div
                         v-if="visited"
                         class="flex flex-col w-full space-y-2 !h-[calc(100vh-150px)]"
@@ -396,7 +396,7 @@ const setPreviewMode = (mode: string) => {
         </div>
     </div>
 </template>
-<style>
+<style scoped>
 @reference "./../../styles.css";
 
 iframe {
