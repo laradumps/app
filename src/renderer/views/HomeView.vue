@@ -285,6 +285,13 @@ const dumpListeners = () => {
         if (screenStore.get(screen.screen_name)?.pinned) {
             toggleScreen(screen.screen_name, true);
         }
+
+        // raise_in: seconds
+        if (screen.raise_in > 0) {
+            setTimeout(() => {
+                toggleScreen(screen.screen_name, true);
+            }, screen.raise_in * 1000);
+        }
     });
 
     window.ipcRenderer.on("json_validate", (event, { content }) => {
