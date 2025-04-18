@@ -30,5 +30,7 @@ export const DEFAULT_SETTINGS: Settings = {
     limit_dumps: 100,
     limit_laravel_queries: 150,
     limit_laravel_logs: 150,
-    limit_laravel_jobs: 150
+    limit_laravel_jobs: 150,
+    custom_css: "",
+    show_badge_count: true,
 };

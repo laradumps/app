@@ -124,7 +124,7 @@ const toggleDuplicatedQueries = () => {
     <div class="flex flex-col z-100 h-auto w-full">
         <dialog id="chart_selected_query" class="modal">
             <div v-if="selectedChartPoint" class="modal-box relative w-full max-w-2xl">
-                <p class="py-4 space-y-4 text-sm">
+                <div class="py-4 space-y-4 text-sm">
                     <DumpLink v-if="selectedChartPoint.ide_handle" :ide-handler="selectedChartPoint.ide_handle" />
                     <div class="flex gap-2">
                         <div class="badge badge-soft badge-ghost">{{ selectedChartPoint.queries?.time }}ms</div>
@@ -139,7 +139,7 @@ const toggleDuplicatedQueries = () => {
                         class="w-full mr-"
                         :payload="selectedChartPoint"
                     />
-                </p>
+                </div>
             </div>
             <form method="dialog" class="modal-backdrop">
                 <button>close</button>

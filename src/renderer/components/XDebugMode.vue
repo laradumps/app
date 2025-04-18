@@ -208,10 +208,6 @@ const handlePropertyGet = (responseElement, evaluate) => {
             return null;
         }
 
-        console.log({
-            name,
-            encoding: propertyElement.getAttribute("encoding")
-        });
         let valueElement = propertyElement.querySelector("cdata") || propertyElement;
         let value = propertyElement.getAttribute("value") || valueElement.textContent;
 
@@ -668,13 +664,13 @@ onBeforeUnmount(() => {
                         >
                             <div
                                 v-show="variablesNames.length > 0"
-                                class="pane-code-container text-xs mb-0 border-x border-base-content/20 overflow-auto w-full"
+                                class="pane-code-container mb-0 border-x border-base-content/20 overflow-auto w-full"
                             >
                                 <div
                                     v-for="(lineContent, lineNumber) in fileContent"
                                     :key="`${lineNumber}-${currentFileName}`"
-                                    class="flex hover:!bg-red-500/10 px-3 group/line"
-                                    :class="{ 'bg-red-500/20 shadow-lg font-semibold': parseInt(lineNumber) === currentLine }"
+                                    class="flex text-sm font-normal items-center hover:!bg-red-500/10 px-3 group/line"
+                                    :class="{ 'bg-red-500/20': parseInt(lineNumber) === currentLine }"
                                     :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
                                 >
                                     <DumpLink
@@ -693,7 +689,7 @@ onBeforeUnmount(() => {
                                     />
 
                                     <span
-                                        class="language-php whitespace-pre hljs h-full"
+                                        class="language-php tracking-wide whitespace-pre hljs h-full"
                                         v-if="variablesNames.length > 0"
                                         v-html="getHighlightedCode(lineContent)"
                                         @click="handleClick"

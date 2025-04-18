@@ -25,8 +25,10 @@ import { useQueriesChart } from "@/store/queries-chart";
 import IconWarning from "@/components/Icons/IconWarning.vue";
 import {useTimeStore} from "@/store/time";
 import {useQueryDuplicated} from "@/store/query-duplicated";
+import { usePayloadStore } from "@/store/payload";
 
 const collapseStore = useCollapse();
+const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 const screenStore = useScreenStore();
 const queriesBlockedStore = useQueriesBlockedStore();
@@ -73,6 +75,10 @@ onMounted(() => {
                 window.Sfdump(`sf-dump-${props.payload.sf_dump_id}`);
             }
         }
+
+        if (props.payload.to_screen.screen_name === "home") {
+            window.ipcRenderer.send("badge-icon.increment")
+        }
     }
 });
 
@@ -118,15 +124,30 @@ const block = () => {
 const isDuplicated = (sql) => {
     return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
 };
+
+const decrementBadgeCount = () => {
+    if (props.payload.show_badge_count) {
+        window.ipcRenderer.send("badge-icon.decrement");
+
+        payloadStore.updatePayload(props.payload, "show_badge_count", () => false)
+        return;
+    }
+};
 </script>
 <template>
     <div v-if="(payload.queries && queriesChart.type === 'none') || payload.type !== 'queries'">
         <div
-            :class="{ 'collapse-open': open }"
+            @mouseenter="decrementBadgeCount"
+            :class="{
+                'collapse-open': open,
+            }"
             class="card card-border border-base-300 collapse bg-base-100 bg-laravel"
         >
             <div
                 @click="open = !open"
+                :class="{
+
+                }"
                 class="collapse-title items-center justify-between flex text-xs select-none"
             >
                 <ul
@@ -172,6 +193,11 @@ const isDuplicated = (sql) => {
                         </div>
                     </div>
 
+                    <div v-show="open && payload.show_badge_count" class="relative items-center">
+                        <div class="group:opacity-100 bg-warning w-2 h-2 rounded-full absolute"></div>
+                        <div class="group:opacity-100 bg-warning w-2 h-2 animate-ping rounded-full"></div>
+                    </div>
+
                     <!-- variable type -->
                     <div
                         v-show="settingsStore.settings.show_variable_type && payload.dump?.variable_type !== undefined"
@@ -191,8 +217,9 @@ const isDuplicated = (sql) => {
             <div
                 class="collapse-content"
                 :class="{
-                    '!pb-0': payload.type === 'queries'
+                    '!pb-0': payload.type === 'queries',
                 }"
+
                 v-on:click.right="openOptions = true"
                 v-on:click="openOptions = false"
             >

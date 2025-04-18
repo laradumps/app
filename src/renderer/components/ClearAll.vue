@@ -50,6 +50,10 @@ const clearAll = (): void => {
         })
         window.ipcRenderer.send("storage.get");
     }, 10)
+
+    window.ipcRenderer.send("set-badge-icon-count", {
+        reset: true
+    });
 };
 
 const hasPayload = computed(() => {
@@ -64,12 +68,7 @@ onMounted(() => {
 
 <template>
     <div>
-        <button
-            v-show="hasPayload"
-            :title="$t('clear')"
-            class="p-2 flex hover:bg-base-200 rounded-md"
-            @click="clearAll"
-        >
+        <button v-show="hasPayload" :title="$t('clear')" class="p-2 flex hover:bg-base-200 rounded-md" @click="clearAll">
             <TrashIcon class="size-4" />
         </button>
     </div>
