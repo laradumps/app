@@ -156,4 +156,5 @@ export interface Payload {
     with_label: LabelPayload;
     code_snippet: CodeSnippet[];
     jobs: JobPayload[];
+    show_badge_count: boolean;
 }

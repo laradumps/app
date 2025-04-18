@@ -112,7 +112,9 @@ onMounted(() => {
 
     addScreen(defaultScreen.value);
 
-    window.ipcRenderer.on("dump", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("dump", (event, { content }) => {
+        dispatch(content);
+    });
 
     window.ipcRenderer.send("main:app-version");
 
@@ -448,6 +450,10 @@ const dispatch = (content: any): void => {
         payloadStore.payload.shift();
     }
 
+    if (settingsStore.settings.show_badge_count) {
+        content.show_badge_count = true
+    }
+
     payloadStore.add(content);
 
     maximizeApp(content.auto_invoke_app);
@@ -502,37 +508,15 @@ const openScreenWindow = () => {
 };
 </script>
 <template>
-    <div
-        :class="{ absolute: !inScreenWindow }"
-        class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
-    >
-        <div
-            v-if="inScreenWindow"
-            class="mt-3 h-[calc(100vh-50px)] w-[100vw] text-base"
-        >
-            <ScreenWindow
-                v-if="!['jobs', 'mail', 'logs', 'queries'].includes(inScreenWindow)"
-                :dumps="payloadScreen"
-                v-model:screen="inScreenWindow"
-            />
+    <div :class="{ absolute: !inScreenWindow }" class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available">
+        <div v-if="inScreenWindow" class="mt-3 h-[calc(100vh-50px)] w-[100vw] text-base">
+            <ScreenWindow v-if="!['jobs', 'mail', 'logs', 'queries'].includes(inScreenWindow)" :dumps="payloadScreen" v-model:screen="inScreenWindow" />
 
-            <JobView
-                :in-screen-window="inScreenWindow.length > 0"
-                v-if="inScreenWindow === 'jobs'"
-                :items="jobScreen"
-            />
+            <JobView :in-screen-window="inScreenWindow.length > 0" v-if="inScreenWindow === 'jobs'" :items="jobScreen" />
 
-            <MailView
-                :in-screen-window="inScreenWindow.length > 0"
-                v-if="inScreenWindow === 'mail'"
-                :items="mailScreen"
-            />
+            <MailView :in-screen-window="inScreenWindow.length > 0" v-if="inScreenWindow === 'mail'" :items="mailScreen" />
 
-            <LogView
-                :in-screen-window="inScreenWindow.length > 0"
-                v-if="inScreenWindow === 'logs'"
-                :items="logScreen"
-            />
+            <LogView :in-screen-window="inScreenWindow.length > 0" v-if="inScreenWindow === 'logs'" :items="logScreen" />
         </div>
 
         <div v-else>
@@ -549,11 +533,7 @@ const openScreenWindow = () => {
                             <div class="flex items-center justify-between w-full overflow-x-auto">
                                 <DumpScreens @toggleScreen="toggleScreen" />
 
-                                <button
-                                    v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
-                                    @click="openScreenWindow"
-                                    class="btn btn-xs btn-ghost"
-                                >
+                                <button v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)" @click="openScreenWindow" class="btn btn-xs btn-ghost">
                                     <IconExternalLink class="w-4 opacity-90" />
                                 </button>
                             </div>
@@ -597,24 +577,11 @@ const openScreenWindow = () => {
                                         'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal'
                                     }"
                                 >
-                                    <div
-                                        v-for="(payload, index) in dumpsBagFiltered"
-                                        :key="payload.sf_dump_id"
-                                        :id="payload.id"
-                                        class="w-full"
-                                    >
-                                        <DumpItem
-                                            class="w-full px-3 group text-sm mb-3"
-                                            v-show="screenStore.screen !== 'livewire'"
-                                            :payload="payload"
-                                        />
+                                    <div v-for="(payload, index) in dumpsBagFiltered" :key="payload.sf_dump_id" :id="payload.id" class="w-full">
+                                        <DumpItem class="w-full px-3 group text-sm mb-3" v-show="screenStore.screen !== 'livewire'" :payload="payload" />
                                     </div>
 
-                                    <DumpLivewire
-                                        v-if="screenStore.screen === 'livewire'"
-                                        class="pt-2"
-                                        v-model:livewire-requests="livewireRequests"
-                                    />
+                                    <DumpLivewire v-if="screenStore.screen === 'livewire'" class="pt-2" v-model:livewire-requests="livewireRequests" />
                                 </div>
 
                                 <div
@@ -628,10 +595,7 @@ const openScreenWindow = () => {
 
                             <div id="bottom"></div>
 
-                            <WelcomePage
-                                v-if="payloadStore.payload.length === 0 && screenStore.screen === 'home'"
-                                class="w-full h-full"
-                            />
+                            <WelcomePage v-if="payloadStore.payload.length === 0 && screenStore.screen === 'home'" class="w-full h-full" />
                         </div>
                     </main>
                 </div>

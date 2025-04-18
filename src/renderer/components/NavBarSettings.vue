@@ -13,7 +13,7 @@ const togglePage = () => {
 };
 
 onMounted(() => {
-    window.ipcRenderer.on("new.dumps", () => {
+    window.ipcRenderer.on("new.dumps", (event) => {
         router.push({ name: "home" }, { xdebug: xDebugStore.current !== "" });
     });
 });

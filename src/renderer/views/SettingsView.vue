@@ -171,7 +171,12 @@ const saveShortcuts = async () => {
     editMode.value = false;
 };
 
-watch(settingsStore.settings, async () => {
+watch(settingsStore.settings, async (value, oldValue) => {
+    if (!settingsStore.settings.show_badge_count) {
+        window.ipcRenderer.send("badge-icon.increment", {
+            reset: true
+        });
+    }
     await saveSettings();
 });
 
@@ -494,6 +499,20 @@ const saveCustomTheme = async () => {
                                 type="checkbox"
                                 class="toggle toggle-sm toggle-accent"
                                 v-model="settingsStore.settings.show_variable_type"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <Divider class="mt-3" />
+                <div class="mt-3 grid grid-cols-2 items-center">
+                    <div>Show badge count <span class="text-xs opacity-70">(macOS, linux)</span></div>
+                    <div class="flex items-center justify-end">
+                        <div class="p-1.5">
+                            <input
+                                type="checkbox"
+                                class="toggle toggle-sm toggle-accent"
+                                v-model="settingsStore.settings.show_badge_count"
                             />
                         </div>
                     </div>

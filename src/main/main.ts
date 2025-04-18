@@ -27,7 +27,7 @@ const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";
 
 let mainWindow: BrowserWindow;
-
+let badgeCount = 0;
 const windowsMap = new Map();
 
 const electronLocalShortcut = require("electron-localshortcut");
@@ -118,11 +118,36 @@ ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
     event.sender.send(arg.type, arg);
 });
 
+ipcMain.on("badge-icon.decrement", (event: Electron.IpcMainEvent, args): void => {
+    if (badgeCount > 0) {
+        badgeCount -= 1;
+    }
+
+    setBadgeCount(badgeCount)
+})
+
+ipcMain.on("badge-icon.increment", (event: Electron.IpcMainEvent, args): void => {
+    if (args && args.reset) {
+        badgeCount = 0;
+    } else {
+        badgeCount += 1;
+    }
+
+    setBadgeCount(badgeCount)
+});
+
 ipcMain.on("dump.batches", (event: Electron.IpcMainEvent, arg): void => {
     mainWindow.webContents.send("new.dumps");
     event.sender.send("dump.batches", arg);
 });
 
+function setBadgeCount(count: number): void {
+    try {
+        app.setBadgeCount(badgeCount);
+    } catch (error) {
+        console.error('Error setting app badge:', error);
+    }
+}
 function sendScreenWindowUpdate(screen, payload, jobs, mails, logs, queries) {
     const screenWindow = windowsMap.get(screen);
     if (screenWindow && screenWindow.webContents) {
@@ -148,6 +173,7 @@ ipcMain.on("send-screen-window-update", (event, args) => {
 
 ipcMain.on("reload", () => {
     mainWindow.webContents.send("xdebug-connector::disconnect");
+    setBadgeCount(0)
     mainWindow.reload();
 });
 
