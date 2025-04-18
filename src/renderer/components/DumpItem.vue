@@ -76,7 +76,7 @@ onMounted(() => {
             }
         }
 
-        if (props.payload.to_screen.screen_name === "home") {
+        if (props.payload.show_badge_count && props.payload.to_screen.screen_name === "home" && settingsStore.settings.show_badge_count) {
             window.ipcRenderer.send("badge-icon.increment")
         }
     }
@@ -126,13 +126,17 @@ const isDuplicated = (sql) => {
 };
 
 const decrementBadgeCount = () => {
-    if (props.payload.show_badge_count) {
+    if (shouldDisplayBadge) {
         window.ipcRenderer.send("badge-icon.decrement");
 
         payloadStore.updatePayload(props.payload, "show_badge_count", () => false)
         return;
     }
 };
+
+const shouldDisplayBadge = computed(() => {
+    return props.payload.show_badge_count && props.payload.to_screen.screen_name === "home" && settingsStore.settings.show_badge_count;
+});
 </script>
 <template>
     <div v-if="(payload.queries && queriesChart.type === 'none') || payload.type !== 'queries'">
@@ -193,7 +197,7 @@ const decrementBadgeCount = () => {
                         </div>
                     </div>
 
-                    <div v-show="open && payload.show_badge_count" class="relative items-center">
+                    <div v-show="open && shouldDisplayBadge" class="relative items-center">
                         <div class="group:opacity-100 bg-warning w-2 h-2 rounded-full absolute"></div>
                         <div class="group:opacity-100 bg-warning w-2 h-2 animate-ping rounded-full"></div>
                     </div>

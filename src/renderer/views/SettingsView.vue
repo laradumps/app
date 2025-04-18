@@ -171,7 +171,12 @@ const saveShortcuts = async () => {
     editMode.value = false;
 };
 
-watch(settingsStore.settings, async () => {
+watch(settingsStore.settings, async (value, oldValue) => {
+    if (!settingsStore.settings.show_badge_count) {
+        window.ipcRenderer.send("badge-icon.increment", {
+            reset: true
+        });
+    }
     await saveSettings();
 });
 

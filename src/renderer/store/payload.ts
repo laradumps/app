@@ -14,7 +14,6 @@ export const usePayloadStore = defineStore("payload", {
             return this.filteredPayload.findIndex((payload) => payload.id === id);
         },
         add(object: Payload) {
-            object.show_badge_count = true
             this.payload.push(object);
         },
         get(screen: String) {

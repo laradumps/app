@@ -51,7 +51,7 @@ const clearAll = (): void => {
         window.ipcRenderer.send("storage.get");
     }, 10)
 
-    window.ipcRenderer.send("set-badge-icon-count", {
+    window.ipcRenderer.send("badge-icon.increment", {
         reset: true
     });
 };

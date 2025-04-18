@@ -450,6 +450,10 @@ const dispatch = (content: any): void => {
         payloadStore.payload.shift();
     }
 
+    if (settingsStore.settings.show_badge_count) {
+        content.show_badge_count = true
+    }
+
     payloadStore.add(content);
 
     maximizeApp(content.auto_invoke_app);
