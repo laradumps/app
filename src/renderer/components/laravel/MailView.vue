@@ -25,7 +25,7 @@ const props = defineProps<{
 }>();
 
 window.addEventListener("message", (event) => {
-    if (event.data && event.data.type === "open-external-link") {
+    if (event.data && event.data.type === "open-external-link-" + previewUrl.value) {
         window.ipcRenderer.send("main:openLink", event.data.url);
         event.preventDefault();
     }
@@ -35,9 +35,9 @@ const display = (mail: Mail) => {
     mailStore.visited(mail.message_id);
     visited.value = mail;
 
-    previewUrl.value = Math.random().toString(36).slice(2, 7);
+    previewUrl.value = Math.random().toString(36).slice(2, 12);
 
-    const modifiedHtml = modifyHtml(visited.value.html);
+    const modifiedHtml = modifyHtml(visited.value.html, previewUrl.value);
 
     window.ipcRenderer.send("main:create-static-tmp-file", {
         name: previewUrl.value,
@@ -141,7 +141,6 @@ const previewStyle = computed(() => {
         transform: scale(1);
         transform-origin: top left;
         overflow: hidden;
-
     `;
 });
 
