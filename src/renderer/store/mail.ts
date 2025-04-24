@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { MailPayload } from "@/types/Payload";
+import {ContextPayload, MailPayload} from "@/types/Payload";
 import { IdeHandle } from "@/types/IdeHandle";
 import { useSettingsStore } from "@/store/settings";
 
@@ -16,6 +16,7 @@ export type Mail = {
     html: string;
     attachments: Attachment[];
     ide_handle: IdeHandle;
+    context: ContextPayload;
 };
 
 type State = {
@@ -43,10 +44,10 @@ export const useMailStore = defineStore("mailStore", {
         mails: JSON.parse(localStorage.getItem("emails") || "[]")
     }),
     actions: {
-        addOrUpdateMail(payload: MailPayload, ide_handle: IdeHandle) {
+        addOrUpdateMail(payload: MailPayload, ide_handle: IdeHandle, context: ContextPayload) {
             const existingMailIndex = this.mails.findIndex((mail) => mail.message_id === payload.messageId);
             if (existingMailIndex === -1) {
-                this._initialize(payload, ide_handle);
+                this._initialize(payload, ide_handle, context);
                 this.store();
 
                 return;
@@ -61,7 +62,7 @@ export const useMailStore = defineStore("mailStore", {
             this.mails = [];
             this.store();
         },
-        _initialize(payload: MailPayload, ide_handle: IdeHandle) {
+        _initialize(payload: MailPayload, ide_handle: IdeHandle, context: ContextPayload) {
             const date = new Date();
             const fromHeader = payload.headers.find((header) => header.startsWith("From:")) ?? "";
             const subjectHeader = payload.headers.find((header) => header.startsWith("Subject:")) ?? "";
@@ -93,7 +94,8 @@ export const useMailStore = defineStore("mailStore", {
                 to,
                 is_read: false,
                 ...payload,
-                ide_handle
+                ide_handle,
+                context,
             });
         },
         visited(message_id: string) {

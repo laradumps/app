@@ -29,8 +29,8 @@ interface CharPoint {
     id: string;
 }
 
-const getDataPoints = ref<CharPoint|null>();
-const selectedChartPoint = ref<Payload|null>(null)
+const getDataPoints = ref<CharPoint | null>();
+const selectedChartPoint = ref<Payload | null>(null);
 
 const showBlockedQueries = () => {
     blocked_queries.showModal();
@@ -54,22 +54,25 @@ watch(
             setTimeout(() => {
                 getDataPoints.value = queriesStore.payload
                     .filter((payload: Payload) => payload.request_id === value)
-                    .map((payload: Payload): CharPoint => ({
-                        time: payload.date_time,
-                        value: payload.queries?.time,
-                        id: payload.id
-                    }));
+                    .map(
+                        (payload: Payload): CharPoint => ({
+                            time: payload.date_time,
+                            value: payload.queries?.time,
+                            id: payload.id
+                        })
+                    );
             }, 200);
         }
 
         if (queriesChart.type === "all") {
             setTimeout(() => {
-                getDataPoints.value = queriesStore.payload
-                    .map((payload: Payload): CharPoint => ({
+                getDataPoints.value = queriesStore.payload.map(
+                    (payload: Payload): CharPoint => ({
                         time: payload.date_time,
                         value: payload.queries?.time,
                         id: payload.id
-                    }));
+                    })
+                );
             }, 200);
         }
     },
@@ -105,27 +108,34 @@ watch(
 );
 
 const handlePointClick = (index) => {
-    const selectedPoint = getDataPoints.value[index]
+    const selectedPoint = getDataPoints.value[index];
     if (selectedPoint && selectedPoint.id) {
-        selectedChartPoint.value = queriesStore.payload
-            .filter((payload: Payload) => payload.id === selectedPoint.id
-            )[0];
+        selectedChartPoint.value = queriesStore.payload.filter((payload: Payload) => payload.id === selectedPoint.id)[0];
 
-        chart_selected_query.showModal()
+        chart_selected_query.showModal();
     }
 };
 
 const toggleDuplicatedQueries = () => {
-    duplicatesStore.toggleShowOnlyDuplicated()
+    duplicatesStore.toggleShowOnlyDuplicated();
 };
 </script>
 
 <template>
     <div class="flex flex-col z-100 h-auto w-full">
-        <dialog id="chart_selected_query" class="modal">
-            <div v-if="selectedChartPoint" class="modal-box relative w-full max-w-2xl">
+        <dialog
+            id="chart_selected_query"
+            class="modal"
+        >
+            <div
+                v-if="selectedChartPoint"
+                class="modal-box relative w-full max-w-2xl"
+            >
                 <div class="py-4 space-y-4 text-sm">
-                    <DumpLink v-if="selectedChartPoint.ide_handle" :ide-handler="selectedChartPoint.ide_handle" />
+                    <DumpLink
+                        v-if="selectedChartPoint.ide_handle"
+                        :ide-handler="selectedChartPoint.ide_handle"
+                    />
                     <div class="flex gap-2">
                         <div class="badge badge-soft badge-ghost">{{ selectedChartPoint.queries?.time }}ms</div>
                         <div class="badge badge-soft badge-ghost">{{ selectedChartPoint.queries?.origin }}</div>
@@ -141,7 +151,10 @@ const toggleDuplicatedQueries = () => {
                     />
                 </div>
             </div>
-            <form method="dialog" class="modal-backdrop">
+            <form
+                method="dialog"
+                class="modal-backdrop"
+            >
                 <button>close</button>
             </form>
         </dialog>
@@ -155,25 +168,31 @@ const toggleDuplicatedQueries = () => {
                     <div class="flex gap-1">
                         <button
                             :class="{
-                            '!text-secondary': timeStore.order === 'desc'
-                        }"
+                                '!text-secondary': timeStore.order === 'desc'
+                            }"
                             class="btn btn-sm p-[0.5rem]"
                             @click="timeStore.setOrder('desc')"
                             aria-label="Order by desc"
                             data-tippy-content="Order by desc"
                         >
-                            <IconChevronDown class="!w-4" stroke-width="2.2"/>
+                            <IconChevronDown
+                                class="!w-4"
+                                stroke-width="2.2"
+                            />
                         </button>
                         <button
                             :class="{
-                            '!text-secondary': timeStore.order === 'asc'
-                        }"
+                                '!text-secondary': timeStore.order === 'asc'
+                            }"
                             @click="timeStore.setOrder('asc')"
                             class="btn btn-sm p-[0.5rem]"
                             aria-label="Order by asc"
                             data-tippy-content="Order by asc"
                         >
-                            <IconChevronDown class="!w-4 transform rotate-180" stroke-width="2.2"/>
+                            <IconChevronDown
+                                class="!w-4 transform rotate-180"
+                                stroke-width="2.2"
+                            />
                         </button>
                     </div>
 
@@ -181,11 +200,13 @@ const toggleDuplicatedQueries = () => {
                         v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
                         class="flex gap-3 items-center"
                     >
-                        <button @click="toggleDuplicatedQueries"
-                                :class="{
-                                      '!bg-base-300' : duplicatesStore.showOnlyDuplicated
-                                }"
-                                class="btn hover:bg-base-100 text-xs !py-3 lowercase cursor-pointer badge badge-sm badge-soft ">
+                        <button
+                            @click="toggleDuplicatedQueries"
+                            :class="{
+                                '!bg-base-300': duplicatesStore.showOnlyDuplicated
+                            }"
+                            class="btn hover:bg-base-100 text-xs !py-3 lowercase cursor-pointer badge badge-sm badge-soft"
+                        >
                             <IconWarning class="text-warning w-4" />
                             <span class="opacity-70">{{ duplicatesStore.totalByRequestId(timeStore.selected) }} duplicated</span>
                         </button>
@@ -198,9 +219,12 @@ const toggleDuplicatedQueries = () => {
                         class="btn btn-sm p-[0.5rem]"
                         data-tippy-content="Blocked Queries"
                     >
-                        <LockClosedIcon :class="{
-                            'text-warning ': blockedQueriesStore.blocked.length > 0
-                        }" class="size-4 hover:opacity-75" />
+                        <LockClosedIcon
+                            :class="{
+                                'text-warning ': blockedQueriesStore.blocked.length > 0
+                            }"
+                            class="size-4 hover:opacity-75"
+                        />
                         <span
                             class="text-xs font-normal opacity-70"
                             v-if="blockedQueriesStore.blocked.length > 0"

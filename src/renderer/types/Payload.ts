@@ -125,6 +125,10 @@ export interface JobPayload {
     display_name: string;
 }
 
+export interface ContextPayload {
+    context: [];
+}
+
 export interface Payload {
     id: string;
     type: string;
@@ -157,4 +161,5 @@ export interface Payload {
     code_snippet: CodeSnippet[];
     jobs: JobPayload[];
     show_badge_count: boolean;
+    context?: ContextPayload;
 }

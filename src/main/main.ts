@@ -123,8 +123,8 @@ ipcMain.on("badge-icon.decrement", (event: Electron.IpcMainEvent, args): void =>
         badgeCount -= 1;
     }
 
-    setBadgeCount(badgeCount)
-})
+    setBadgeCount(badgeCount);
+});
 
 ipcMain.on("badge-icon.increment", (event: Electron.IpcMainEvent, args): void => {
     if (args && args.reset) {
@@ -133,7 +133,7 @@ ipcMain.on("badge-icon.increment", (event: Electron.IpcMainEvent, args): void =>
         badgeCount += 1;
     }
 
-    setBadgeCount(badgeCount)
+    setBadgeCount(badgeCount);
 });
 
 ipcMain.on("dump.batches", (event: Electron.IpcMainEvent, arg): void => {
@@ -145,7 +145,7 @@ function setBadgeCount(count: number): void {
     try {
         app.setBadgeCount(badgeCount);
     } catch (error) {
-        console.error('Error setting app badge:', error);
+        console.error("Error setting app badge:", error);
     }
 }
 function sendScreenWindowUpdate(screen, payload, jobs, mails, logs, queries) {
@@ -173,7 +173,7 @@ ipcMain.on("send-screen-window-update", (event, args) => {
 
 ipcMain.on("reload", () => {
     mainWindow.webContents.send("xdebug-connector::disconnect");
-    setBadgeCount(0)
+    setBadgeCount(0);
     mainWindow.reload();
 });
 

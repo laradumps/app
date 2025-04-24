@@ -23,9 +23,11 @@ import { LockClosedIcon } from "@heroicons/vue/20/solid";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { useQueriesChart } from "@/store/queries-chart";
 import IconWarning from "@/components/Icons/IconWarning.vue";
-import {useTimeStore} from "@/store/time";
-import {useQueryDuplicated} from "@/store/query-duplicated";
+import { useTimeStore } from "@/store/time";
+import { useQueryDuplicated } from "@/store/query-duplicated";
 import { usePayloadStore } from "@/store/payload";
+import VueJsonPretty from "vue-json-pretty";
+import IconArrowDown from "@/components/Icons/IconArrowDown.vue";
 
 const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
@@ -38,6 +40,7 @@ const duplicatesStore = useQueryDuplicated();
 
 const open = ref(true);
 const openOptions = ref(false);
+const showContext = ref(true);
 
 const props = defineProps<{
     payload: Payload;
@@ -52,7 +55,6 @@ const copyDump = () => {
         }
 
         if (props.payload.dump?.original_content) {
-
             navigator.clipboard.writeText(props.payload.dump?.original_content).then(() => {});
             return;
         }
@@ -77,7 +79,7 @@ onMounted(() => {
         }
 
         if (props.payload.show_badge_count && props.payload.to_screen.screen_name === "home" && settingsStore.settings.show_badge_count) {
-            window.ipcRenderer.send("badge-icon.increment")
+            window.ipcRenderer.send("badge-icon.increment");
         }
     }
 });
@@ -129,7 +131,7 @@ const decrementBadgeCount = () => {
     if (shouldDisplayBadge) {
         window.ipcRenderer.send("badge-icon.decrement");
 
-        payloadStore.updatePayload(props.payload, "show_badge_count", () => false)
+        payloadStore.updatePayload(props.payload, "show_badge_count", () => false);
         return;
     }
 };
@@ -137,27 +139,26 @@ const decrementBadgeCount = () => {
 const shouldDisplayBadge = computed(() => {
     return props.payload.show_badge_count && props.payload.to_screen.screen_name === "home" && settingsStore.settings.show_badge_count;
 });
+
+const toggleShowContext = () => {
+    showContext.value = !showContext.value;
+};
+
+const hasContext = computed(() => {
+    return props.payload.context && Object.keys(props.payload.context).length > 0;
+});
 </script>
 <template>
     <div v-if="(payload.queries && queriesChart.type === 'none') || payload.type !== 'queries'">
         <div
             @mouseenter="decrementBadgeCount"
             :class="{
-                'collapse-open': open,
+                'collapse-open': open
             }"
             class="card card-border border-base-300 collapse bg-base-100 bg-laravel"
         >
-            <div
-                @click="open = !open"
-                :class="{
-
-                }"
-                class="collapse-title items-center justify-between flex text-xs select-none"
-            >
-                <ul
-                    class="flex items-center gap-5 whitespace-nowrap"
-                    v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
-                >
+            <div @click="open = !open" :class="{}" class="collapse-title items-center justify-between flex text-xs select-none">
+                <ul class="flex items-center gap-5 whitespace-nowrap" v-bind:style="props.payload.ide_handle.real_path ? 'list-style-type: disc;' : ''">
                     <li class="list-none opacity-70">
                         {{ moment(payload.date_time).format("hh:mm:ss a") }}
                     </li>
@@ -167,24 +168,12 @@ const shouldDisplayBadge = computed(() => {
                 </ul>
 
                 <div class="group flex justify-center items-center gap-2">
-                    <div
-                        v-show="open"
-                        class="mr-1 flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
-                    >
-                        <div
-                            v-if="payload.queries && open"
-                            :data-tippy-content="$t('click_to_block')"
-                            @click.stop="block"
-                            class="opacity-0 transition-all group-hover:opacity-100"
-                        >
+                    <div v-show="open" class="mr-1 flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100">
+                        <div v-if="payload.queries && open" :data-tippy-content="$t('click_to_block')" @click.stop="block" class="opacity-0 transition-all group-hover:opacity-100">
                             <LockClosedIcon class="size-4 hover:opacity-75" />
                         </div>
 
-                        <div
-                            v-if="!['table'].includes(screenStore.screen)"
-                            @click.stop="copyDump"
-                            :data-tippy-content="$t('click_to_copy')"
-                        >
+                        <div v-if="!['table'].includes(screenStore.screen)" @click.stop="copyDump" :data-tippy-content="$t('click_to_copy')">
                             <CopyToClick />
                         </div>
                     </div>
@@ -209,11 +198,7 @@ const shouldDisplayBadge = computed(() => {
                         v-text="`(${payload.dump?.variable_type})`"
                     ></div>
 
-                    <div
-                        class="-mr-1 !text-[0.68rem] p-2.5 !font-semibold"
-                        v-if="payload.type !== `queries`"
-                        :class="badgeClasses"
-                    >
+                    <div class="-mr-1 !text-[0.68rem] p-2.5 !font-semibold" v-if="payload.type !== `queries`" :class="badgeClasses">
                         {{ getLabel }}
                     </div>
                 </div>
@@ -221,105 +206,87 @@ const shouldDisplayBadge = computed(() => {
             <div
                 class="collapse-content"
                 :class="{
-                    '!pb-0': payload.type === 'queries',
+                    '!pb-0': payload.type === 'queries'
                 }"
-
                 v-on:click.right="openOptions = true"
                 v-on:click="openOptions = false"
             >
-                <div
-                    class="relative"
-                    :class="{ 'overflow-auto w-full': ['queries', 'table', 'table_v2'].includes(props.payload.type) }"
-                >
-                    <DumpDump
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        class="text-base-content break-all"
-                        v-if="props.payload.type === `dump`"
-                        :payload="payload"
-                    />
+                <div class="relative" :class="{ 'overflow-auto w-full': ['queries', 'table', 'table_v2'].includes(props.payload.type) }">
+                    <DumpDump :id="`dump-content-${props.payload.sf_dump_id}`" class="text-base-content break-all" v-if="props.payload.type === `dump`" :payload="payload" />
 
-                    <DumpModel
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        class="text-base-content break-all"
-                        v-if="props.payload.type === `model`"
-                        :payload="payload"
-                    />
+                    <DumpModel :id="`dump-content-${props.payload.sf_dump_id}`" class="text-base-content break-all" v-if="props.payload.type === `model`" :payload="payload" />
 
-                    <DumpTimeTrack
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        v-if="props.payload.type === `time_track`"
-                        :payload="payload"
-                    />
+                    <DumpTimeTrack :id="`dump-content-${props.payload.sf_dump_id}`" v-if="props.payload.type === `time_track`" :payload="payload" />
 
                     <!-- dump mailable -->
-                    <DumpMailable
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        v-if="props.payload.type === `mailable`"
-                        :payload="payload"
-                    />
+                    <DumpMailable :id="`dump-content-${props.payload.sf_dump_id}`" v-if="props.payload.type === `mailable`" :payload="payload" />
 
                     <!-- dump html -->
-                    <DumpHTML
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        v-if="props.payload.type === `html`"
-                        :payload="payload"
-                    />
+                    <DumpHTML :id="`dump-content-${props.payload.sf_dump_id}`" v-if="props.payload.type === `html`" :payload="payload" />
 
                     <!-- dump table -->
-                    <DumpTable
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        class="w-full"
-                        v-if="props.payload.type === `table`"
-                        :payload="payload"
-                    />
+                    <DumpTable :id="`dump-content-${props.payload.sf_dump_id}`" class="w-full" v-if="props.payload.type === `table`" :payload="payload" />
 
                     <!-- dump table v2 -->
-                    <DumpTableV2
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        class="w-full"
-                        v-if="['table_v2', 'http_client'].includes(props.payload.type)"
-                        :payload="payload"
-                    />
+                    <DumpTableV2 :id="`dump-content-${props.payload.sf_dump_id}`" class="w-full" v-if="['table_v2', 'http_client'].includes(props.payload.type)" :payload="payload" />
 
                     <!-- dump model -->
-                    <DumpJson
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        class="w-full"
-                        v-if="props.payload.type === `json`"
-                        :payload="payload"
-                    />
+                    <DumpJson :id="`dump-content-${props.payload.sf_dump_id}`" class="w-full" v-if="props.payload.type === `json`" :payload="payload" />
 
                     <!-- dump queries -->
-                    <DumpQueries
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        class="w-full"
-                        v-if="props.payload.type === `queries`"
-                        :payload="payload"
-                    />
+                    <DumpQueries :id="`dump-content-${props.payload.sf_dump_id}`" class="w-full" v-if="props.payload.type === `queries`" :payload="payload" />
 
                     <!-- dump query -->
-                    <DumpQuery
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        v-if="props.payload.type === `query`"
-                        :query="payload.query"
-                    />
+                    <DumpQuery :id="`dump-content-${props.payload.sf_dump_id}`" v-if="props.payload.type === `query`" :query="payload.query" />
 
-                    <DumpContains
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        :payload="payload"
-                    />
+                    <DumpContains :id="`dump-content-${props.payload.sf_dump_id}`" :payload="payload" />
 
-                    <DumpIsJson
-                        :id="`dump-content-${props.payload.sf_dump_id}`"
-                        :payload="payload"
-                    />
+                    <DumpIsJson :id="`dump-content-${props.payload.sf_dump_id}`" :payload="payload" />
+
+                    <div v-if="hasContext">
+                        <button @click="toggleShowContext" class="mt-5 !text-[0.68rem] p-2.5 badge uppercase font-semibold text-xs text-base-content/80 bg-base-content/10 shadow-sm rounded-box w-auto">
+                            <IconArrowDown v-if="showContext" class="inline-block w-3 h-3 mr-1" />
+                            <IconArrowDown v-else class="inline-block w-3 h-3 mr-1 rotate-270" />
+                            Context
+                        </button>
+
+                        <div v-if="showContext" class="mt-3 space-y-3 bg-base-300 p-3 rounded-md">
+                            <VueJsonPretty
+                                :show-icon="true"
+                                :show-length="true"
+                                :show-line="false"
+                                :data="payload.context"
+                                :show-double-quotes="false"
+                                class="ml-2 !text-sm"
+                                :deep="2"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </template>
-<style scoped>
+<style>
+@reference "./../styles.css";
+
 .card {
     display: grid !important;
+}
+
+.vjs-carets {
+    @apply opacity-60 pr-1 top-2;
+}
+
+.vjs-tree-brackets {
+    @apply !opacity-60;
+}
+
+.vjs-indent-unit {
+    @apply !w-6;
+}
+
+.vjs-value-string {
+    @apply !text-secondary;
 }
 </style>

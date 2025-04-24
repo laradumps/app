@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref} from "vue";
+import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { format } from "sql-formatter";
 import { useTimeStore } from "@/store/time";
 import { Payload } from "@/types/Payload";
@@ -111,7 +111,7 @@ const formattedSql = computed(() => {
 <template>
     <div
         v-if="payload.queries"
-        class="rounded-sm overflow-scroll space-y-3"
+        class="rounded-sm overflow-scroll"
     >
         <div class="flex items-center opacity-80 justify-end gap-2">
             <IconWarning
@@ -154,7 +154,10 @@ const formattedSql = computed(() => {
                 v-html="formattedSql"
             ></code>
 
-            <span v-if="showToggleControls" class="blur-overlay w-full"></span>
+            <span
+                v-if="showToggleControls"
+                class="blur-overlay w-full"
+            ></span>
 
             <button
                 v-if="showToggleControls"
