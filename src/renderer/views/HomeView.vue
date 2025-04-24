@@ -33,6 +33,7 @@ import tippy from "tippy.js";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { usePauseQueriesStore } from "@/store/pause-queries";
+import { ArrowsRightLeftIcon } from "@heroicons/vue/24/solid";
 
 markRaw(TheUpdateModalInfo);
 

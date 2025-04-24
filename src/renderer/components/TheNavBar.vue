@@ -13,6 +13,8 @@ import ClearAll from "@/components/ClearAll.vue";
 import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
 import { useSettingsStore } from "@/store/settings";
 import { useXDebug } from "@/store/xdebug.js";
+import { ArrowsRightLeftIcon } from "@heroicons/vue/24/solid/index.js";
+import NavBarToggleProject from "@/components/NavBarToggleProject.vue";
 
 const settingsStore = useSettingsStore();
 const xDebugStore = useXDebug();
@@ -65,6 +67,8 @@ const xDebugMode = computed(() => {
         <div class="flex gap-1 items-center m-0.5">
             <!-- global search -->
             <NavBarGlobalSearch v-if="payloadStore.payload.length > 0" />
+
+            <NavBarToggleProject />
 
             <!-- collapse -->
             <NavBarCollapse v-if="settingsStore.settings.show_collapse_button" />

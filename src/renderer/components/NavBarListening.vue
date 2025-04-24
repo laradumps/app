@@ -248,7 +248,7 @@ const addProject = () => {
                     class="w-full"
                 >
                     <option
-                        v-for="project in projects"
+                        v-for="project in projects.filter((project) => project.project)"
                         :key="project.project"
                         :value="project.path"
                     >
