@@ -1,4 +1,4 @@
-export const modifyHtml = (html) => {
+export const modifyHtml = (html, id) => {
     const script = String.raw`
         <script type="module">
         document.addEventListener("DOMContentLoaded", function () {
@@ -6,8 +6,7 @@ export const modifyHtml = (html) => {
                 var target = event.target.closest("a");
                 if (target && target.href.startsWith("http")) {
                     event.preventDefault();
-                    console.log(target.href);
-                    window.parent.postMessage({ type: "open-external-link", url: target.href }, "*");
+                    window.parent.postMessage({ type: "open-external-link-${id}", url: target.href }, "*");
                 }
             });
         });
