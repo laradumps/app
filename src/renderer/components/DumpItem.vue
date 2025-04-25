@@ -162,6 +162,10 @@ const getContextPayload = computed(() => {
 
     return {};
 });
+
+const shouldDisplayContext = computed(() => {
+    return settingsStore.settings.show_context && hasContext.value;
+});
 </script>
 <template>
     <div v-if="(payload.queries && queriesChart.type === 'none') || payload.type !== 'queries'">
@@ -340,7 +344,7 @@ const getContextPayload = computed(() => {
                     />
 
                     <div
-                        v-if="showContext && hasContext"
+                        v-if="showContext && hasContext && shouldDisplayContext"
                         class="mt-3 flex justify-center flex-col !text-xs space-y-3 bg-base-200 p-4 rounded-md"
                     >
                         <div class="text-center uppercase opacity-80">Context</div>
@@ -351,7 +355,7 @@ const getContextPayload = computed(() => {
                             :show-line="false"
                             :data="getContextPayload"
                             :show-double-quotes="true"
-                            class="!text-xm"
+                            class="!text-xs"
                             :deep="4"
                         />
                     </div>
