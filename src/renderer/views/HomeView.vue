@@ -248,7 +248,6 @@ const dumpListeners = () => {
             return;
         }
 
-        console.log(content)
         payloadStore.updatePayload(content, "context");
     });
 

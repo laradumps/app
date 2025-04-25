@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
-import {ContextPayload, MailPayload} from "@/types/Payload";
+import { ContextPayload, MailPayload } from "@/types/Payload";
 import { IdeHandle } from "@/types/IdeHandle";
-import { useSettingsStore } from "@/store/settings";
 
 export type Mail = {
     message_id: string;
@@ -95,7 +94,7 @@ export const useMailStore = defineStore("mailStore", {
                 is_read: false,
                 ...payload,
                 ide_handle,
-                context,
+                context
             });
         },
         visited(message_id: string) {

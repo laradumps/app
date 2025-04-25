@@ -111,7 +111,7 @@ const formattedSql = computed(() => {
 <template>
     <div
         v-if="payload.queries"
-        class="rounded-sm overflow-scroll"
+        class="rounded-sm"
     >
         <div class="flex items-center opacity-80 justify-end gap-2">
             <IconWarning

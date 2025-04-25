@@ -31,4 +31,5 @@ export interface Settings {
     limit_laravel_jobs: number;
     custom_css: string;
     show_badge_count: boolean;
+    show_context: boolean;
 }

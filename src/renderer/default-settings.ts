@@ -32,5 +32,6 @@ export const DEFAULT_SETTINGS: Settings = {
     limit_laravel_logs: 150,
     limit_laravel_jobs: 150,
     custom_css: "",
-    show_badge_count: true
+    show_badge_count: true,
+    show_context: true
 };

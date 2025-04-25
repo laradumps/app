@@ -161,5 +161,6 @@ export interface Payload {
     code_snippet: CodeSnippet[];
     jobs: JobPayload[];
     show_badge_count: boolean;
+    extra: Record<string, any>;
     context?: ContextPayload;
 }

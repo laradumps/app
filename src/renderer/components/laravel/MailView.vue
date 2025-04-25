@@ -69,8 +69,8 @@ const openContext = () => {
         if (visited.value) {
             modal_context.showModal();
         }
-    })
-}
+    });
+};
 
 const openDumps = () => {
     nextTick(() => {
