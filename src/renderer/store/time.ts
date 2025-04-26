@@ -42,6 +42,18 @@ export const useTimeStore = defineStore("timeStore", {
             return this.requests[requestId];
         },
 
+        toggleOrder () {
+            const currentOrder = this.order;
+
+            if (!currentOrder || currentOrder === 'default') {
+                this.order = 'desc';
+            } else if (currentOrder === 'desc') {
+                this.order = 'asc'
+            } else {
+                this.order = 'default'
+            }
+        },
+
         getSelectedRequest() {
             if (typeof this.requests[this.selected] === "undefined") {
                 return 0;

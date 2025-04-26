@@ -347,7 +347,7 @@ const shouldDisplayContext = computed(() => {
                         v-if="showContext && hasContext && shouldDisplayContext"
                         class="mt-3 flex justify-center flex-col !text-xs space-y-3 bg-base-200 p-4 rounded-md"
                     >
-                        <div class="text-center uppercase opacity-80">Context</div>
+                        <div class="text-center uppercase opacity-80 select-none">Context</div>
 
                         <VueJsonPretty
                             :show-icon="false"
@@ -355,7 +355,7 @@ const shouldDisplayContext = computed(() => {
                             :show-line="false"
                             :data="getContextPayload"
                             :show-double-quotes="true"
-                            class="!text-xs"
+                            class="!text-sm"
                             :deep="4"
                         />
                     </div>

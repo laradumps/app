@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTimeStore } from "@/store/time";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useFormattedQueriesStore } from "@/store/formatted-queries";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter.js";
@@ -119,6 +119,11 @@ const handlePointClick = (index) => {
 const toggleDuplicatedQueries = () => {
     duplicatesStore.toggleShowOnlyDuplicated();
 };
+
+const orderLabel = computed(() => {
+    if (!timeStore.order) return 'Default order';
+    return timeStore.order === 'desc' ? 'Order by desc' : 'Order by asc';
+});
 </script>
 
 <template>
@@ -166,31 +171,26 @@ const toggleDuplicatedQueries = () => {
             <div class="flex justify-between uppercase py-1">
                 <div class="flex gap-2 w-full items-center">
                     <div class="flex gap-1">
+
                         <button
                             :class="{
-                                '!text-secondary': timeStore.order === 'desc'
+                                '!text-secondary': timeStore.order === 'desc',
+                                'text-primary': timeStore.order === 'asc'
                             }"
                             class="btn btn-sm p-[0.5rem]"
-                            @click="timeStore.setOrder('desc')"
-                            aria-label="Order by desc"
-                            data-tippy-content="Order by desc"
+                            @click="timeStore.toggleOrder()"
+                            :aria-label="orderLabel"
+                            :data-tippy-content="orderLabel"
                         >
                             <IconChevronDown
-                                class="!w-4"
-                                stroke-width="2.2"
-                            />
-                        </button>
-                        <button
-                            :class="{
-                                '!text-secondary': timeStore.order === 'asc'
-                            }"
-                            @click="timeStore.setOrder('asc')"
-                            class="btn btn-sm p-[0.5rem]"
-                            aria-label="Order by asc"
-                            data-tippy-content="Order by asc"
-                        >
-                            <IconChevronDown
-                                class="!w-4 transform rotate-180"
+                                :class="[
+            '!w-4 transition-transform',
+            {
+                'rotate-0': timeStore.order === 'desc',
+                'rotate-180': timeStore.order === 'asc',
+                'opacity-50': timeStore.order === null || timeStore.order === undefined
+            }
+        ]"
                                 stroke-width="2.2"
                             />
                         </button>
