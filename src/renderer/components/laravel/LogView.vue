@@ -252,7 +252,10 @@ const closeModal = () => {
                                 </div>
                             </td>
                             <td class="w-[64px] ma-w-[64px]">
-                                <button class="btn btn-sm btn-soft btn-circle" @click="openModal(log.log_id)">
+                                <button
+                                    class="btn btn-sm btn-soft btn-circle"
+                                    @click="openModal(log.log_id)"
+                                >
                                     <EyeIcon class="w-5 text-primary" />
                                 </button>
                             </td>

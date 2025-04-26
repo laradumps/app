@@ -11,7 +11,7 @@ import { useJobStore } from "@/store/jobs";
 import { useLogStore } from "@/store/logs";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { useQueryDuplicated } from "@/store/query-duplicated";
-import {useScreenStore} from "@/store/screen";
+import { useScreenStore } from "@/store/screen";
 
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
@@ -47,9 +47,9 @@ const clearAll = (): void => {
             visible: true,
             pinned: false,
             new_window: false
-        })
+        });
         window.ipcRenderer.send("storage.get");
-    }, 10)
+    }, 10);
 
     window.ipcRenderer.send("badge-icon.increment", {
         reset: true
@@ -68,7 +68,12 @@ onMounted(() => {
 
 <template>
     <div>
-        <button v-show="hasPayload" :title="$t('clear')" class="p-2 flex hover:bg-base-200 rounded-md" @click="clearAll">
+        <button
+            v-show="hasPayload"
+            :title="$t('clear')"
+            class="p-2 flex hover:bg-base-200 rounded-md"
+            @click="clearAll"
+        >
             <TrashIcon class="size-4" />
         </button>
     </div>

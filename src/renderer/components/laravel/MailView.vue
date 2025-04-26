@@ -9,7 +9,8 @@ import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import DumpLink from "@/components/DumpLink.vue";
 import { modifyHtml } from "./../utils";
 import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
-import {useCurrentProject} from "@/store/current-project";
+import { useCurrentProject } from "@/store/current-project";
+import VueJsonPretty from "vue-json-pretty";
 
 const mailStore = useMailStore();
 const currentProjectStore = useCurrentProject();
@@ -63,6 +64,14 @@ const mails = computed(() => {
     return items;
 });
 
+const openContext = () => {
+    nextTick(() => {
+        if (visited.value) {
+            modal_context.showModal();
+        }
+    });
+};
+
 const openDumps = () => {
     nextTick(() => {
         if (visited.value) {
@@ -95,9 +104,9 @@ const getMimeTypeFromFilename = (filename: string | null): string => {
 
 const openInBrowser = (attachment: Attachment) => {
     if (attachment.path) {
-        const currentProject = currentProjectStore.value
+        const currentProject = currentProjectStore.value;
 
-        if (attachment.path.startsWith('/var/www/html')) {
+        if (attachment.path.startsWith("/var/www/html")) {
             attachment.path = attachment.path.replace("/var/www/html", currentProject);
         }
 
@@ -158,6 +167,32 @@ const setPreviewMode = (mode: string) => {
 
 <template>
     <div class="px-3 text-sm">
+        <dialog
+            id="modal_context"
+            class="modal"
+            v-if="visited"
+        >
+            <div class="modal-box max-w-2xl">
+                <div class="space-y-2">
+                    <div class="font-semibold">Context</div>
+                    <VueJsonPretty
+                        :show-icon="true"
+                        :show-length="true"
+                        :show-line="false"
+                        :data="visited.context"
+                        :show-double-quotes="false"
+                        class="!text-sm"
+                        :deep="2"
+                    />
+                </div>
+            </div>
+            <form
+                method="dialog"
+                class="modal-backdrop"
+            >
+                <button>close</button>
+            </form>
+        </dialog>
         <dialog
             id="modal"
             class="modal"
@@ -284,8 +319,8 @@ const setPreviewMode = (mode: string) => {
                             </div>
                         </div>
 
-                        <div class="flex px-3 gap-2 flex-wrap justify-between">
-                            <div class="flex gap-2 mb-2 items-center justify-center text-xs">
+                        <div class="flex px-3 py-2 gap-2 flex-wrap items-center justify-between">
+                            <div class="flex gap-2 items-center justify-center text-xs">
                                 <button
                                     @click="setPreviewMode('mobile')"
                                     class="btn btn-xs btn-soft"
@@ -311,6 +346,13 @@ const setPreviewMode = (mode: string) => {
                             </div>
 
                             <div class="flex gap-2">
+                                <button
+                                    v-if="visited.context && Object.values(visited.context).length > 0"
+                                    @click="openContext"
+                                    class="btn btn-xs btn-outline border-base-content/10"
+                                >
+                                    Context
+                                </button>
                                 <button
                                     @click="openDumps"
                                     class="btn btn-xs btn-outline border-base-content/10"

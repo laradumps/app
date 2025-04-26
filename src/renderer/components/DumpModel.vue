@@ -16,12 +16,10 @@ onMounted(() => {
 
 <template>
     <div class="flex flex-col gap-3">
-        <div class="prose">
-            <h4
-                class="text-base-content"
-                v-text="payload.model?.className"
-            ></h4>
-        </div>
+        <div
+            class="text-base-content text-sm tracking-wider"
+            v-text="payload.model?.className"
+        ></div>
 
         <div v-html="payload.model?.attributes[0]"></div>
         <div
