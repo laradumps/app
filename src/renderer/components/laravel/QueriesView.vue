@@ -241,11 +241,6 @@ onMounted(() => {
 <style scoped>
 @reference "./../../styles.css";
 
-::v-deep(.collapse-content) {
-    padding-bottom: 0;
-    padding-right: 0 !important;
-}
-
 ::v-deep(.splitpanes__splitter) {
     @apply opacity-0 hover:opacity-100 min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
 }

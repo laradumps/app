@@ -200,6 +200,10 @@ const saveCustomTheme = async () => {
         window.ipcRenderer.send("reload");
     });
 };
+
+const openLaravelDocs = () => {
+    window.ipcRenderer.send("main:openLink", "https://laravel.com/docs/context");
+};
 </script>
 
 <template>
@@ -450,6 +454,43 @@ const saveCustomTheme = async () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
+                    <div>
+                        Show context (Laravel)
+                        <span class="ml-1"
+                            ><a
+                                class="text-xs opacity-70 link link-info"
+                                @click="openLaravelDocs"
+                                >Laravel Docs</a
+                            ></span
+                        >
+                    </div>
+                    <div class="flex items-center justify-end">
+                        <div class="p-1.5">
+                            <input
+                                type="checkbox"
+                                class="toggle toggle-sm toggle-accent"
+                                v-model="settingsStore.settings.show_context"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <Divider class="mt-3" />
+                <div class="mt-3 grid grid-cols-2 items-center">
+                    <div>Show badge count <span class="text-xs opacity-70">(macOS, linux)</span></div>
+                    <div class="flex items-center justify-end">
+                        <div class="p-1.5">
+                            <input
+                                type="checkbox"
+                                class="toggle toggle-sm toggle-accent"
+                                v-model="settingsStore.settings.show_badge_count"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <Divider class="mt-3" />
+                <div class="mt-3 grid grid-cols-2 items-center">
                     <div>Show Collapse Button</div>
                     <div class="flex items-center justify-end">
                         <div class="p-1.5">
@@ -499,20 +540,6 @@ const saveCustomTheme = async () => {
                                 type="checkbox"
                                 class="toggle toggle-sm toggle-accent"
                                 v-model="settingsStore.settings.show_variable_type"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Show badge count <span class="text-xs opacity-70">(macOS, linux)</span></div>
-                    <div class="flex items-center justify-end">
-                        <div class="p-1.5">
-                            <input
-                                type="checkbox"
-                                class="toggle toggle-sm toggle-accent"
-                                v-model="settingsStore.settings.show_badge_count"
                             />
                         </div>
                     </div>

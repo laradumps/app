@@ -69,7 +69,7 @@ const createTable = (objectArray: string[] | undefined, fields: string[] | undef
     table.appendChild(footer);
 
     div.appendChild(table);
-    div.setAttribute("class", "relative")
+    div.setAttribute("class", "relative");
 
     return div.innerHTML;
 };

@@ -1,6 +1,6 @@
 {
     "name": "laradumps",
-    "version": "4.2.2",
+    "version": "4.3.0",
     "private": false,
     "description": "LaraDumps a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
@@ -74,7 +74,7 @@
         "postcss": "8.5.3",
         "prettier": "3.5.3",
         "tailwindcss": "^4.1.4",
-        "vite": "^6.2.3"
+        "vite": "^6.3.3"
     },
     "ts-standard": {
         "project": "./tsconfig.json"
