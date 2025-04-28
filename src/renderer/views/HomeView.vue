@@ -603,7 +603,7 @@ const openScreenWindow = () => {
                     <main class="flex flex-col flex-1 min-h-full space-y-1">
                         <!-- screen buttons -->
                         <div class="flex">
-                            <div class="flex items-center justify-between w-full overflow-x-auto">
+                            <div class="flex mt-1 px-1 items-center justify-between w-full overflow-x-auto">
                                 <Screens @toggleScreen="toggleScreen" />
 
                                 <button
@@ -661,7 +661,7 @@ const openScreenWindow = () => {
                                         class="w-full"
                                     >
                                         <DumpItem
-                                            class="w-full px-3 group text-sm mb-3"
+                                            class="w-full px-2 group text-sm mb-2"
                                             v-show="screenStore.screen !== 'livewire'"
                                             :payload="payload"
                                         />
