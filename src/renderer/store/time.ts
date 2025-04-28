@@ -42,15 +42,15 @@ export const useTimeStore = defineStore("timeStore", {
             return this.requests[requestId];
         },
 
-        toggleOrder () {
+        toggleOrder() {
             const currentOrder = this.order;
 
-            if (!currentOrder || currentOrder === 'default') {
-                this.order = 'desc';
-            } else if (currentOrder === 'desc') {
-                this.order = 'asc'
+            if (!currentOrder || currentOrder === "default") {
+                this.order = "desc";
+            } else if (currentOrder === "desc") {
+                this.order = "asc";
             } else {
-                this.order = 'default'
+                this.order = "default";
             }
         },
 

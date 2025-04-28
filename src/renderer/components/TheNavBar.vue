@@ -1,6 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed, onMounted, ref } from "vue";
-import { TrashIcon } from "@heroicons/vue/24/outline";
+import { defineProps, computed, onMounted, ref } from "vue";
 import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
 import NavBarGlobalSearch from "@/components/NavBarGlobalSearch.vue";
 import NavBarListening from "@/components/NavBarListening.vue";
@@ -13,7 +12,6 @@ import ClearAll from "@/components/ClearAll.vue";
 import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
 import { useSettingsStore } from "@/store/settings";
 import { useXDebug } from "@/store/xdebug.js";
-
 const settingsStore = useSettingsStore();
 const xDebugStore = useXDebug();
 
@@ -78,7 +76,7 @@ const xDebugMode = computed(() => {
             <!-- listening -->
             <NavBarListening v-if="!inSavedDumpsWindow" />
 
-            <!-- always on top -->
+            <!-- settings -->
             <NavBarSettings />
         </div>
     </div>

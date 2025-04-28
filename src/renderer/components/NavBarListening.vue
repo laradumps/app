@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { SignalSlashIcon, TrashIcon, PlusIcon } from "@heroicons/vue/24/outline";
+import { SignalSlashIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import { SignalIcon } from "@heroicons/vue/24/solid";
-
 import { computed, onMounted, ref, watch } from "vue";
 import JSConfetti from "js-confetti";
 import { useCurrentProject } from "@/store/current-project";
 import { useXDebug } from "@/store/xdebug";
 import { XDebugYml } from "@/types/XDebug";
-import SelectInput from "@/components/SelectInput.vue";
+import { IpcRendererEvent } from "electron";
 
 const xDebugStore = useXDebug();
 
@@ -22,106 +21,117 @@ interface Environment {
     selected: boolean;
 }
 
-let open = ref<boolean>(false);
-let xdebug = ref<boolean>(false);
-const selectedProject = ref<string>("");
-const newProject = ref<boolean>(false);
+const isDropdownOpen = ref(false);
+const isXdebugActive = ref(false);
+const selectedProject = ref<Project>({} as Project);
+const isNewProject = ref(false);
 const projects = ref<Project[]>([]);
 const environments = ref<Environment[]>([]);
 
 const currentProjectStore = useCurrentProject();
 
-const handleProjectAdded = () => {
+const handleProjectAdded = (_: IpcRendererEvent, project: Project) => {
     window.ipcRenderer.send("storage.get");
     const jsConfetti = new JSConfetti();
     jsConfetti.addConfetti();
-    newProject.value = true;
-    setTimeout(() => (newProject.value = false), 5000);
+    isNewProject.value = true;
+
+    setActiveProject(project);
+    setTimeout(() => (isNewProject.value = false), 5000);
 };
 
-const handleSetActiveProject = (event, value) => {
-    if (value.length > 0) {
-        selectedProject.value = value;
-        currentProjectStore.set(selectedProject.value);
-        window.ipcRenderer.send("storage.get-environments", selectedProject.value);
-    }
+const handleActiveProjectSet = (_: IpcRendererEvent, project: Project) => {
+    setActiveProject(project);
+    window.ipcRenderer.send("storage.get-environments", project.path);
 };
 
-const handleStorageGet = (event, value) => {
-    const projectsArray = Object.keys(value).map((key) => ({ project: key, path: value[key] }));
+const handleProjectsRetrieved = (_: IpcRendererEvent, storedProjects: Record<string, string>) => {
+    const projectsArray = Object.keys(storedProjects).map((key) => ({
+        project: key,
+        path: storedProjects[key]
+    }));
 
     projects.value = projectsArray;
 
     if (projectsArray.length > 0) {
-        const foundProject = projectsArray.find((p) => p.path === currentProjectStore.value);
+        const foundProject = projectsArray.find((p) => p.path === currentProjectStore.projectInfo.path);
         if (foundProject) {
-            selectedProject.value = foundProject.path;
+            selectedProject.value = foundProject;
+            currentProjectStore.set(foundProject);
+            window.ipcRenderer.send("storage.get-environments", foundProject.path);
         }
-        window.ipcRenderer.send("storage.get-environments", selectedProject.value);
     }
 };
 
-const handleGetEnvironments = (event, value) => {
-    if (value != null) {
-        environments.value = [];
-        value.forEach((entry: Environment) => {
-            const env = {
-                id: entry.id,
-                value: entry.value,
-                selected: entry.selected
-            };
+const handleEnvironmentsRetrieved = (_: IpcRendererEvent, environmentsData: Environment[]) => {
+    if (!environmentsData) return;
 
-            environments.value.push(env);
+    environments.value = environmentsData.map((entry: Environment) => ({
+        id: entry.id,
+        value: entry.value,
+        selected: entry.selected
+    }));
 
-            if (!["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(env.value)) {
-                window.dispatchEvent(new CustomEvent("add-screen", { detail: env }));
-            }
-        });
-    }
+    environments.value.forEach((env) => {
+        if (!["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(env.value)) {
+            window.dispatchEvent(new CustomEvent("add-screen", { detail: env }));
+        }
+    });
 };
 
-onMounted(async () => {
-    xdebug.value = typeof xDebugStore.current.project_path !== "undefined";
+const setActiveProject = (project: Project) => {
+    currentProjectStore.set(project);
+    selectedProject.value = project;
+    window.ipcRenderer.send("storage.get-environments", project.path);
+};
+
+const initializeProjectData = () => {
+    isXdebugActive.value = !!xDebugStore.current.project_path;
+
+    if (currentProjectStore.projectInfo) {
+        selectedProject.value = currentProjectStore.projectInfo;
+        window.ipcRenderer.send("storage.get-environments", currentProjectStore.projectInfo.path);
+    }
 
     window.ipcRenderer.send("storage.get");
-
-    window.ipcRenderer.on("app-setting:project-added", handleProjectAdded);
-    window.ipcRenderer.on("storage.set-active.reply", handleSetActiveProject);
-    window.ipcRenderer.on("storage.get.reply", handleStorageGet);
-    window.ipcRenderer.on("storage.get-environments.reply", handleGetEnvironments);
-    window.ipcRenderer.on("xdebug-error", handleError);
-    window.ipcRenderer.on("xdebug-connector::disconnect", () => {
-        disconnectFromXdebug();
-    });
-
-    window.ipcRenderer.on("xdebug-connect-closed", (event, args) => {
-        setTimeout(() => {
-            xdebug.value = false;
-        }, 800);
-    });
-});
-
-const handleError = (event, err) => {
-    console.error(err);
 };
 
-const selectedEnvironment = computed(() => {
-    return environments.value.map((key) => {
-        return {
-            value: key.value,
-            selected: key.selected
-        };
+const setupEventListeners = () => {
+    window.ipcRenderer.on("app-setting:project-added", handleProjectAdded);
+    window.ipcRenderer.on("storage.set-active.reply", handleActiveProjectSet);
+    window.ipcRenderer.on("storage.get.reply", handleProjectsRetrieved);
+    window.ipcRenderer.on("storage.get-environments.reply", handleEnvironmentsRetrieved);
+    window.ipcRenderer.on("xdebug-error", handleError);
+    window.ipcRenderer.on("xdebug-connector::disconnect", disconnectFromXdebug);
+    window.ipcRenderer.on("xdebug-connect-closed", () => {
+        setTimeout(() => {
+            isXdebugActive.value = false;
+        }, 800);
     });
+};
+
+onMounted(() => {
+    initializeProjectData();
+    setupEventListeners();
 });
 
-const save = async (env): Promise<void> => {
-    if (typeof env === "undefined") {
-        return;
-    }
+const handleError = (_: IpcRendererEvent, error: Error) => {
+    console.error("Xdebug error:", error);
+};
+
+const selectedEnvironments = computed(() => {
+    return environments.value.map((env) => ({
+        value: env.value,
+        selected: env.selected
+    }));
+});
+
+const saveEnvironment = async (env: null | Environment): Promise<void> => {
+    if (!env) return;
 
     window.ipcRenderer.send("storage.update", {
-        selected: selectedEnvironment.value,
-        project: selectedProject.value
+        selected: selectedEnvironments.value,
+        project: selectedProject.value.project
     });
 
     if (!["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(env.value)) {
@@ -129,188 +139,134 @@ const save = async (env): Promise<void> => {
     }
 };
 
-const remove = () => {
-    if (selectedProject.value !== "") {
-        window.ipcRenderer.on("main:dialog-choice", (event, arg) => {
-            if (arg === 0) {
-                window.ipcRenderer.send("storage.remove", selectedProject.value);
+const confirmProjectRemoval = () => {
+    window.ipcRenderer.send("main:dialog", {
+        buttons: ["Yes", "No"],
+        title: "Remove Project",
+        message: "Are you sure you want to remove the configuration from this Project?"
+    });
 
-                selectedProject.value = "";
-                environments.value = [];
+    const removeHandler = (event: Event, choice: number) => {
+        if (choice === 0) {
+            window.ipcRenderer.send("storage.remove", currentProjectStore.projectInfo.path);
+            selectedProject.value = {} as Project;
+            environments.value = [];
+            window.ipcRenderer.send("storage.get");
+        }
+        window.ipcRenderer.off("main:dialog-choice", removeHandler);
+    };
 
-                window.ipcRenderer.emit("storage.get");
-            }
-        });
-
-        window.ipcRenderer.send("main:dialog", {
-            buttons: ["Yes", "No"],
-            title: "Remove Project",
-            message: "Are you sure you want to remove the configuration from this Project?"
-        });
-    }
-};
-
-const setActiveProject = () => {
-    currentProjectStore.set(selectedProject.value);
-    window.ipcRenderer.send("storage.get-environments", selectedProject.value);
+    window.ipcRenderer.on("main:dialog-choice", removeHandler);
 };
 
 const connectToXdebug = () => {
-    window.ipcRenderer.send("main:setting-get-xdebug-environments", selectedProject.value);
+    window.ipcRenderer.send("main:setting-get-xdebug-environments", selectedProject.value.path);
 };
 
 const disconnectFromXdebug = () => {
     window.ipcRenderer.send("disconnect-xdebug");
 };
 
-window.ipcRenderer.on("xdebug-file-parser-error", (event, args) => {
-    console.log("error", args);
+watch(isXdebugActive, (shouldConnect) => {
+    shouldConnect ? connectToXdebug() : disconnectFromXdebug();
 });
 
-watch(xdebug, (value) => {
-    if (value) {
-        connectToXdebug();
-        return;
-    }
-
-    disconnectFromXdebug();
-});
-
-watch(xDebugStore, (value) => {
-    if (value.current.project_path === "") {
-        xdebug.value = false;
+watch(xDebugStore, (store) => {
+    if (store.current.project_path === "") {
+        isXdebugActive.value = false;
     }
 });
 
-window.ipcRenderer.on("settings:env-xdebug-file-contents", (event, arg: XDebugYml) => {
-    xDebugStore.setCurrent(arg);
-    window.ipcRenderer.send("connect-xdebug", arg);
+window.ipcRenderer.on("settings:env-xdebug-file-contents", (event: Event, config: XDebugYml) => {
+    xDebugStore.setCurrent(config);
+    window.ipcRenderer.send("connect-xdebug", config);
 });
 
-window.ipcRenderer.on("choose-directory", (event, args) => {
-    if (args.hasOwnProperty("error")) {
-        my_modal_1.showModal();
-    }
-});
-
-const addProject = () => {
-    window.ipcRenderer.send("main:choose-directory");
+const formattedName = (name: string): string => {
+    if (!name) return "No project selected";
+    return name.replace(/[-_.]/g, " ");
 };
 </script>
 
 <template>
-    <div>
-        <dialog
-            id="my_modal_1"
-            class="modal"
-        >
-            <div class="modal-box">
-                <h3 class="text-lg font-bold">Install Failure <span class="text-error">⚠️</span></h3>
-                <div class="py-4 space-y-2 text-sm">
-                    <div>Install laradumps in the project before:</div>
-                    <div>
-                        <span class="px-2 bg-base-300 p-1 rounded">composer require laradumps/laradumps --dev</span>
-                    </div>
-                </div>
-                <div class="modal-action">
-                    <form method="dialog">
-                        <button class="btn">Done</button>
-                    </form>
-                </div>
-            </div>
-        </dialog>
-
+    <div class="mr-0.5">
         <div
-            class="dropdown dropdown-left"
-            :class="{ 'dropdown-open': open }"
+            class="dropdown dropdown-end dropdown-hover"
+            :class="{ 'dropdown-open': isDropdownOpen }"
         >
-            <button class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md">
+            <button class="flex font-normal capitalize truncate text-xs btn btn-soft justify-between !px-2.5 !m-0 !h-6.5 gap-2">
+                <span
+                    v-if="selectedProject.project"
+                    v-text="formattedName(selectedProject.project)"
+                />
+                <span v-else>No project selected</span>
                 <SignalSlashIcon
-                    v-if="selectedProject.length === 0"
+                    v-if="!selectedProject.project"
                     class="size-4 text-error"
                 />
-
                 <SignalIcon
                     v-else
-                    :class="{ 'animate-pulse': newProject, 'text-primary': selectedProject }"
+                    :class="{ 'animate-pulse': isNewProject, 'text-primary': selectedProject.project }"
                     class="size-4"
                 />
             </button>
             <ul
                 tabindex="0"
-                class="dropdown-content space-y-3 min-w-64 z-[350] menu p-2 bg-base-200 border border-base-content/10 shadow-lg rounded-md w-auto mt-[44px] !-right-10"
+                class="dropdown-content menu bg-base-100 rounded-box shadow-sm"
             >
-                <SelectInput
-                    id="projects"
-                    v-model="selectedProject"
-                    @change="setActiveProject()"
-                    placeholder="Select a project"
-                    class="w-full"
-                >
-                    <option
-                        v-for="project in projects"
-                        :key="project.project"
-                        :value="project.path"
-                    >
-                        {{ project.project }}
-                    </option>
-                </SelectInput>
-
-                <div class="text-xs flex justify-end gap-4">
-                    <PlusIcon
-                        class="size-4 text-info cursor-pointer"
-                        @click="addProject"
-                    />
-                    <TrashIcon
-                        class="size-4 text-error cursor-pointer"
-                        @click="remove"
-                    />
-                </div>
-
-                <div
-                    v-if="environments.length === 0"
-                    class="text-xs text-base-content text-left p-2"
-                >
-                    No laradumps.yaml found in this project
-                </div>
-
-                <div
-                    class="overflow-auto border-t border-base-content/10"
-                    :class="{
-                        'h-[calc(100vh-10rem)] p-0': environments.length > 0
-                    }"
-                >
-                    <li class="mt-2">
-                        <label class="text-sm space-x-1">
-                            <input
-                                :name="`xdebug`"
-                                :class="{ 'checkbox-primary': xdebug }"
-                                v-model="xdebug"
-                                type="checkbox"
-                                @change.stop="save(env)"
-                                class="checkbox checkbox-sm"
-                            />
-                            <span>Xdebug (step debugging)</span>
-                        </label>
-                    </li>
-
+                <div class="overflow-auto max-h-40">
                     <li
-                        :key="env.value"
-                        v-for="env in environments"
+                        v-for="project in projects.filter((p) => p.project)"
+                        :key="project.path"
+                        @click="setActiveProject(project)"
                     >
-                        <label class="capitalize text-sm space-x-1">
-                            <input
-                                :name="`env-` + env.id"
-                                :class="{ 'checkbox-primary': env.selected }"
-                                v-model="env.selected"
-                                type="checkbox"
-                                @change.stop="save(env)"
-                                class="checkbox checkbox-sm"
+                        <div class="flex justify-between">
+                            <a
+                                :class="{ 'text-primary': selectedProject.path === project.path }"
+                                class="font-normal capitalize truncate !text-sm !pl-0"
+                                v-text="formattedName(project.project)"
                             />
-                            <span>{{ env.value.replaceAll("_", " ") }}</span>
-                        </label>
+                            <TrashIcon
+                                class="size-4 opacity-70 hover:opacity-100 hover:text-error"
+                                @click.stop="confirmProjectRemoval"
+                            />
+                        </div>
                     </li>
                 </div>
+                <li
+                    class="mt-1"
+                    v-if="selectedProject.project"
+                >
+                    <label class="text-sm space-x-1">
+                        <input
+                            v-model="isXdebugActive"
+                            type="checkbox"
+                            class="checkbox checkbox-sm"
+                            :class="{ 'checkbox-primary': isXdebugActive }"
+                            @change.stop="saveEnvironment(null)"
+                        />
+                        <span>Xdebug</span>
+                    </label>
+                </li>
+
+                <li
+                    v-for="env in environments"
+                    :key="env.id"
+                >
+                    <label
+                        :title="formattedName(env.value)"
+                        class="capitalize text-sm space-x-1"
+                    >
+                        <input
+                            v-model="env.selected"
+                            type="checkbox"
+                            class="checkbox checkbox-sm"
+                            :class="{ 'checkbox-primary': env.selected }"
+                            @change.stop="saveEnvironment(env)"
+                        />
+                        <span class="truncate">{{ formattedName(env.value) }}</span>
+                    </label>
+                </li>
             </ul>
         </div>
     </div>

@@ -16,7 +16,6 @@ import * as customWindow from "./custom-window";
 import * as electronAutoLaunch from "./auto-launch";
 import * as settings from "./settings";
 import * as xdebug from "./xdebug";
-import { chooseDirectory } from "./choose-directory";
 
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
@@ -421,8 +420,4 @@ nativeTheme.on("updated", () => {
 
 ipcMain.on("platform", (event, args) => {
     event.reply("platform.reply", process.platform);
-});
-
-ipcMain.on("main:choose-directory", async (event, args) => {
-    await chooseDirectory(mainWindow, event, args);
 });
