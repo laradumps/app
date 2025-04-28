@@ -133,9 +133,9 @@ const removeEnvironment = (event: IpcMainEvent, value: string) => {
     }
 };
 
-const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; project: string }) => {
-    const { selected, project } = value;
-    const filePath = `${project}/laradumps.yaml`;
+const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; path: string }) => {
+    const { selected, path } = value;
+    const filePath = `${path}/laradumps.yaml`;
 
     const yaml = require("js-yaml");
     const fs = require("fs");

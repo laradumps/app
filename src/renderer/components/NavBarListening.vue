@@ -131,7 +131,7 @@ const saveEnvironment = async (env: null | Environment): Promise<void> => {
 
     window.ipcRenderer.send("storage.update", {
         selected: selectedEnvironments.value,
-        project: selectedProject.value.project
+        path: currentProjectStore.projectInfo.path
     });
 
     if (!["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(env.value)) {
