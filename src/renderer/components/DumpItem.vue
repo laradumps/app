@@ -183,13 +183,13 @@ const shouldDisplayContext = computed(() => {
             >
                 <ul
                     class="flex items-center gap-5 whitespace-nowrap"
-                    v-bind:style="payload.ide_handle.real_path ? 'list-style-type: disc;' : ''"
+                    v-bind:style="payload.ide_handle?.real_path ? 'list-style-type: disc;' : ''"
                 >
                     <li class="list-none opacity-70">
                         {{ moment(payload.date_time).format("hh:mm:ss a") }}
                     </li>
                     <li class="select-none opacity-70">
-                        <DumpLink :ide-handler="payload.ide_handle" />
+                        <DumpLink :ide-handler="payload.ide_handle || {}" />
                     </li>
                 </ul>
 
@@ -242,6 +242,7 @@ const shouldDisplayContext = computed(() => {
                         v-text="`(${payload.dump?.variable_type})`"
                     ></div>
 
+                    <!-- dump type -->
                     <div
                         class="-mr-1 !text-[0.68rem] p-2.5 !font-semibold"
                         v-if="payload.type !== `queries`"

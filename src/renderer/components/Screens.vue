@@ -78,23 +78,17 @@ window.ipcRenderer.on("screen-window:closed", (event, args) => {
 });
 
 const getPayloadScreenCount = (screenName) => {
-    if (screenName === "jobs") {
-        return Object.entries(jobStore.jobs).length;
-    }
+    const stores = {
+        jobs: jobStore.jobs,
+        mail: mailStore.mails,
+        logs: logStore.logs,
+        queries: queriesStore.payload
+    };
 
-    if (screenName === "mail") {
-        return Object.entries(mailStore.mails).length;
-    }
+    const items = stores[screenName] || payloadStore.get(screenName);
+    const count = Array.isArray(items) ? items.length : Object.entries(items).length;
 
-    if (screenName === "logs") {
-        return Object.entries(logStore.logs).length;
-    }
-
-    if (screenName === "queries") {
-        return Object.entries(queriesStore.payload).length;
-    }
-
-    return payloadStore.get(screenName).length;
+    return count > 0 ? `(${count})` : "";
 };
 
 const pinScreen = (screen) => {
@@ -109,7 +103,7 @@ const pinScreen = (screen) => {
         >
             <div
                 role="tab"
-                class="select-none gap-1 flex py-1"
+                class="select-none tabs-xs gap-1 flex py-1"
                 v-for="(screen, index) in screenStore.allVisible()"
                 :key="screen.screen_name"
                 :class="{ dragging: isDraggingIndex === index }"
@@ -130,7 +124,11 @@ const pinScreen = (screen) => {
                 >
                     <span class="flex font-normal items-center capitalize gap-1">
                         <span>{{ screen.screen_name }}</span>
-                        <span class="text-[11px] text-base-content/70 badge !bg-transparent !border-0 p-0.5 h-[14px]">({{ getPayloadScreenCount(screen.screen_name) }})</span>
+                        <span
+                            v-if="getPayloadScreenCount(screen.screen_name).length > 0"
+                            class="text-[11px] text-base-content/70 badge !bg-transparent !border-0 p-0.5 h-[14px]"
+                            >{{ getPayloadScreenCount(screen.screen_name) }}</span
+                        >
                         <IconPin
                             v-if="screen.pinned"
                             class="w-3 text-secondary"

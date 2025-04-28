@@ -1,4 +1,4 @@
-import { ipcMain, IpcMainEvent, Notification } from "electron";
+import { app, ipcMain, IpcMainEvent, Notification } from "electron";
 import path from "path";
 import Store from "electron-store";
 import yaml from "js-yaml";
@@ -66,10 +66,20 @@ const checkEnvironment = (event, value) => {
         if (!environments[project]) {
             environments[project] = applicationPath;
             store.set("environments", environments);
-            event.reply("app-setting:project-added");
+            event.reply("app-setting:project-added", {
+                project,
+                path: applicationPath
+            });
         }
-        ipcMain.emit("storage.get", event);
-        setTimeout(() => event.reply("storage.set-active.reply", environments[project]), 200);
+
+        setTimeout(
+            () =>
+                event.reply("storage.set-active.reply", {
+                    project,
+                    path: applicationPath
+                }),
+            200
+        );
     } catch (error) {
         console.error("Error updating environments in storage:", error);
     }

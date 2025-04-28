@@ -10,7 +10,7 @@ import { useColorStore } from "@/store/colors";
 import { Payload, ScreenPayload } from "@/types/Payload";
 import DumpItem from "@/components/DumpItem.vue";
 import WelcomePage from "@/components/WelcomePage.vue";
-import DumpScreens from "@/components/DumpScreens.vue";
+import Screens from "@/components/Screens.vue";
 import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/DumpLivewire.vue";
 import ScreenWindow from "@/components/ScreenWindow.vue";
@@ -34,6 +34,8 @@ import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { usePauseQueriesStore } from "@/store/pause-queries";
 import { ArrowsRightLeftIcon } from "@heroicons/vue/24/solid";
+import { useCurrentProject } from "@/store/current-project";
+import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
 
 markRaw(TheUpdateModalInfo);
 
@@ -55,6 +57,7 @@ const mailStore = useMailStore();
 const pendingRequestsStore = usePendingRequestsStore();
 const blockedStore = useQueriesBlockedStore();
 const pauseQueries = usePauseQueriesStore();
+const currentProjectStore = useCurrentProject();
 
 const defaultScreen = ref({
     screen_name: "home",
@@ -186,6 +189,13 @@ const dumpListeners = () => {
             return;
         }
 
+        if (applicationPath.value != content.application_path) {
+            window.ipcRenderer.send("storage.check", {
+                applicationPath: content.application_path
+            });
+            applicationPath.value = content.application_path;
+        }
+
         livewireRequests.value.push(content);
         dispatch(content);
     });
@@ -193,6 +203,13 @@ const dumpListeners = () => {
     window.ipcRenderer.on("jobs", (event, { content }) => {
         if (pausePayloadStore.is_paused) {
             return;
+        }
+
+        if (applicationPath.value != content.application_path) {
+            window.ipcRenderer.send("storage.check", {
+                applicationPath: content.application_path
+            });
+            applicationPath.value = content.application_path;
         }
 
         jobStore.addOrUpdateJob(content.jobs, content.ide_handle);
@@ -233,6 +250,13 @@ const dumpListeners = () => {
             return;
         }
 
+        if (applicationPath.value != content.application_path) {
+            window.ipcRenderer.send("storage.check", {
+                applicationPath: content.application_path
+            });
+            applicationPath.value = content.application_path;
+        }
+
         mailStore.addOrUpdateMail(content.mail, content.ide_handle, content.context);
     });
 
@@ -257,6 +281,13 @@ const dumpListeners = () => {
             return;
         }
 
+        if (applicationPath.value != content.application_path) {
+            window.ipcRenderer.send("storage.check", {
+                applicationPath: content.application_path
+            });
+            applicationPath.value = content.application_path;
+        }
+
         logStore.add(content);
 
         const serializable = deepClone(logStore.logs);
@@ -277,6 +308,7 @@ const dumpListeners = () => {
             });
         }
     });
+
     window.ipcRenderer.on("color", async (event, { content }) => {
         if (pausePayloadStore.is_paused) {
             return;
@@ -284,6 +316,7 @@ const dumpListeners = () => {
 
         payloadStore.updateColorPayload(content);
     });
+
     window.ipcRenderer.on("screen", (event, { content }) => {
         if (pausePayloadStore.is_paused) {
             return;
@@ -351,6 +384,13 @@ const dumpListeners = () => {
                 }
 
                 content.queries && timeStore.increment(content.request_id, content.id, content.queries);
+
+                if (applicationPath.value != content.application_path) {
+                    window.ipcRenderer.send("storage.check", {
+                        applicationPath: content.application_path
+                    });
+                    applicationPath.value = content.application_path;
+                }
 
                 queriesStore.add(content);
 
@@ -463,6 +503,8 @@ const dispatch = (content: any): void => {
         content.show_badge_count = true;
     }
 
+    content.projectInfo = currentProjectStore.projectInfo;
+
     payloadStore.add(content);
 
     maximizeApp(content.auto_invoke_app);
@@ -494,7 +536,7 @@ const dispatch = (content: any): void => {
 const openScreenWindow = () => {
     screenStore.toggleVisible(screenStore.screen);
 
-    const serializablePayload = deepClone(screenStore.screen);
+    const serializablePayload = deepClone(payloadStore.get(screenStore.screen));
     const serializableJobPayload = deepClone(jobStore.jobs);
     const serializableMailPayload = deepClone(mailStore.mails);
     const serializableLogPayload = deepClone(logStore.logs);
@@ -527,7 +569,7 @@ const openScreenWindow = () => {
         >
             <ScreenWindow
                 v-if="!['jobs', 'mail', 'logs', 'queries'].includes(inScreenWindow)"
-                :dumps="payloadScreen"
+                v-model:dumps="payloadScreen"
                 v-model:screen="inScreenWindow"
             />
 
@@ -560,9 +602,9 @@ const openScreenWindow = () => {
                 <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                     <main class="flex flex-col flex-1 min-h-full space-y-1">
                         <!-- screen buttons -->
-                        <div class="flex px-2">
+                        <div class="flex">
                             <div class="flex items-center justify-between w-full overflow-x-auto">
-                                <DumpScreens @toggleScreen="toggleScreen" />
+                                <Screens @toggleScreen="toggleScreen" />
 
                                 <button
                                     v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
@@ -633,11 +675,14 @@ const openScreenWindow = () => {
                                 </div>
 
                                 <div
-                                    class="flex items-center justify-center w-full h-full"
-                                    style="height: -webkit-fill-available"
                                     v-if="dumpsBagFiltered.length === 0 && screenStore.screen !== 'home'"
+                                    class="absolute flex items-center justify-center w-full"
+                                    style="height: -webkit-fill-available"
                                 >
-                                    <span class="text-sm uppercase">No {{ screenStore.screen }}</span>
+                                    <SvgEmpty class="w-30 opacity-25" />
+                                    <div class="text-base-content/70">
+                                        <h1 class="text-lg font-semibold mb-2">No {{ screenStore.screen }}</h1>
+                                    </div>
                                 </div>
                             </div>
 

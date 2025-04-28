@@ -121,8 +121,8 @@ const toggleDuplicatedQueries = () => {
 };
 
 const orderLabel = computed(() => {
-    if (!timeStore.order) return 'Default order';
-    return timeStore.order === 'desc' ? 'Order by desc' : 'Order by asc';
+    if (!timeStore.order) return "Default order";
+    return timeStore.order === "desc" ? "Order by desc" : "Order by asc";
 });
 </script>
 
@@ -171,7 +171,6 @@ const orderLabel = computed(() => {
             <div class="flex justify-between uppercase py-1">
                 <div class="flex gap-2 w-full items-center">
                     <div class="flex gap-1">
-
                         <button
                             :class="{
                                 '!text-secondary': timeStore.order === 'desc',
@@ -184,13 +183,13 @@ const orderLabel = computed(() => {
                         >
                             <IconChevronDown
                                 :class="[
-            '!w-4 transition-transform',
-            {
-                'rotate-0': timeStore.order === 'desc',
-                'rotate-180': timeStore.order === 'asc',
-                'opacity-50': timeStore.order === null || timeStore.order === undefined
-            }
-        ]"
+                                    '!w-4 transition-transform',
+                                    {
+                                        'rotate-0': timeStore.order === 'desc',
+                                        'rotate-180': timeStore.order === 'asc',
+                                        'opacity-50': timeStore.order === null || timeStore.order === undefined
+                                    }
+                                ]"
                                 stroke-width="2.2"
                             />
                         </button>

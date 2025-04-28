@@ -1,19 +1,22 @@
 import { defineStore } from "pinia";
 
+export interface Project {
+    path: string;
+    project: string;
+}
+
 export const useCurrentProject = defineStore("currentProject", {
-    state: () => {
-        return {
-            value: localStorage.currentProject
-        };
-    },
+    state: () => ({
+        projectInfo: JSON.parse(localStorage.getItem("selectedProject") || "null") as Project
+    }),
     actions: {
-        set(value: string) {
-            localStorage.currentProject = value;
-            this.value = value;
+        set(value: Project) {
+            localStorage.setItem("selectedProject", JSON.stringify(value));
+            this.projectInfo = value;
         },
         remove() {
-            localStorage.removeItem("currentProject");
-            this.value = null;
+            localStorage.removeItem("selectedProject");
+            this.projectInfo = { path: "", project: "" };
         }
     }
 });
