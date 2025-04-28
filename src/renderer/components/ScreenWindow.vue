@@ -5,7 +5,7 @@ import { useSettingsStore } from "@/store/settings";
 
 const settingsStore = useSettingsStore();
 
-const props = defineProps<{
+defineProps<{
     dumps: Object;
     screen: String;
 }>();
