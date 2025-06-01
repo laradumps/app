@@ -117,6 +117,7 @@ onMounted(() => {
     addScreen(defaultScreen.value);
 
     window.ipcRenderer.on("dump", (event, { content }) => {
+        console.log(content)
         dispatch(content);
     });
 
