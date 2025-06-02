@@ -8,7 +8,6 @@
     "type": "module",
     "scripts": {
         "dev": "concurrently \"vite\" \"node build.js --dev && electron .\"",
-        "rebuild": "electron-rebuild",
         "build": "vite build && node build.js --prod",
         "build-win": "npm run build && electron-builder --win",
         "build-mac": "npm run build && electron-builder --mac --universal",
@@ -71,7 +70,6 @@
         "daisyui": "^5.0.27",
         "electron": "^32.1.0",
         "electron-builder": "^25.1.8",
-        "electron-rebuild": "^3.2.9",
         "esbuild": "^0.25.1",
         "eslint-plugin-prettier": "5.2.5",
         "postcss": "8.5.3",
