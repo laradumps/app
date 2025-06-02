@@ -90,10 +90,6 @@ const contextGet = (id) => {
     sendCommand(`context_get -i ${id}`);
 };
 
-const proxy = () => {
-    sendCommand(`proxyinit -p 9001 -k LARADUMPS -m [0|1]`);
-};
-
 const continueDebug = () => {
     variableClicked.value = true;
     if (!inMountEvent.value) {
@@ -355,12 +351,13 @@ const setBreakpoints = (fileuri) => {
     // try to continue debugging after setting breakpoints
     continueDebug();
 
+    console.log(breakpoints.value);
     breakpoints.value.forEach((breakpoint) => {
         const id = getNextTransactionId();
         const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
-        const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`
+        const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
 
-        console.log(cmd)
+        console.log(cmd);
         sendCommand(cmd);
     });
 
@@ -435,7 +432,7 @@ const parseResponse = async (xml) => {
                 const success = responseElement.getAttribute("reason");
 
                 if (success === "ok") {
-                   // todo
+                    // todo
                 }
             }
 
@@ -448,7 +445,7 @@ const parseResponse = async (xml) => {
                 handleContextGet(responseElement);
 
                 if (status === "stopping") {
-                    handleStop()
+                    handleStop();
                     continueDebug();
                 }
             }
@@ -558,10 +555,14 @@ const handleSelectText = () => {
 
 const disconnect = () => {
     xDebugStore.current = {};
-    transactionId.value = 0
+    transactionId.value = 0;
 
     window.ipcRenderer.send("disconnect-xdebug");
     modal_error.close();
+};
+
+const shouldShowBreakpoint = (lineNumber) => {
+    return breakpoints.value.some((breakpoint) => breakpoint.line == lineNumber);
 };
 
 watch(fileContent, () => {
@@ -584,14 +585,30 @@ onMounted(() => {
             args.forEach((breakpoint) => {
                 const id = getNextTransactionId();
                 const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
-                const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`
+                const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
 
-                console.log(cmd)
+                console.log(cmd);
                 sendCommand(cmd);
             });
         }
-    })
+    });
 });
+
+const toggleBreakpoint = (ideHandler) => {
+    let { file, line } = ideHandler;
+
+    file = file.replace(xDebugStore.current.workdir, "file://" + xDebugStore.current.project_path);
+
+    const breakpointIndex = breakpoints.value.findIndex((bp) => bp.url == file && bp.line == line);
+
+    if (breakpointIndex !== -1) {
+        console.log("Removing breakpoint:", file, line);
+        breakpoints.value.splice(breakpointIndex, 1);
+    } else {
+        console.log("Adding breakpoint:", file, line);
+        breakpoints.value.push({ url: file, line });
+    }
+};
 
 onBeforeUnmount(() => {
     window.ipcRenderer.removeListener("xdebug-response", handleResponse);
@@ -623,7 +640,10 @@ onBeforeUnmount(() => {
                             data-tippy-content="Step Over (F8)"
                             :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
-                            <IconStepOver class="text-info w-4" :class="{ 'opacity-60': variablesNames.length === 0 }" />
+                            <IconStepOver
+                                class="text-info w-4"
+                                :class="{ 'opacity-60': variablesNames.length === 0 }"
+                            />
                         </button>
 
                         <button
@@ -633,12 +653,18 @@ onBeforeUnmount(() => {
                             data-tippy-content="Step Into (F7)"
                             :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
-                            <IconStepInto class="w-4 text-warning" :class="{ 'opacity-60': variablesNames.length === 0 }" />
+                            <IconStepInto
+                                class="w-4 text-warning"
+                                :class="{ 'opacity-60': variablesNames.length === 0 }"
+                            />
                         </button>
                     </div>
 
                     <div class="flex gap-2">
-                        <IconLoading class="text-base-content/70 w-5" :class="{ 'opacity-100': loading }" />
+                        <IconLoading
+                            class="text-base-content/70 w-5"
+                            :class="{ 'opacity-100': loading }"
+                        />
 
                         <button
                             class="btn btn-xs !px-1.5"
@@ -647,7 +673,10 @@ onBeforeUnmount(() => {
                             data-tippy-content="Stop (F2)"
                             :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
-                            <IconStop class="text-error w-5" :class="{ '!text-gray-500': variablesNames.length === 0 }" />
+                            <IconStop
+                                class="text-error w-5"
+                                :class="{ '!text-gray-500': variablesNames.length === 0 }"
+                            />
                         </button>
                     </div>
                 </div>
@@ -663,12 +692,23 @@ onBeforeUnmount(() => {
                     class="input placeholder-opacity-75 text-xs tracking-wider border-base-content/10 rounded-none input-sm w-full"
                 />
 
-                <div v-if="variablesNames.length === 0" class="flex h-[calc(100vh-135px)] w-full items-center justify-center">
-                    <div type="button" class="select-none flex gap-7 flex-col items-center text-xs tracking-wide">
+                <div
+                    v-if="variablesNames.length === 0"
+                    class="flex h-[calc(100vh-135px)] w-full items-center justify-center"
+                >
+                    <div
+                        type="button"
+                        class="select-none flex gap-7 flex-col items-center text-xs tracking-wide"
+                    >
                         <SvgXDebug />
 
                         <div class="flex gap-2">
-                            <span class="link" @click="openXDebugLink"> https://xdebug.org </span>
+                            <span
+                                class="link"
+                                @click="openXDebugLink"
+                            >
+                                https://xdebug.org
+                            </span>
 
                             (unofficial feature)
                         </div>
@@ -687,10 +727,19 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
 
-                <div v-else class="flex xdebug flex-row gap-3 w-full h-[calc(100vh-142px)]">
+                <div
+                    v-else
+                    class="flex xdebug flex-row gap-3 w-full h-[calc(100vh-142px)]"
+                >
                     <Splitpanes vertical>
-                        <pane size="90" class="pane-code overflow-auto">
-                            <div v-show="variablesNames.length > 0" class="pane-code-container mb-0 border-x border-base-content/20 overflow-auto w-full">
+                        <pane
+                            size="90"
+                            class="pane-code overflow-auto"
+                        >
+                            <div
+                                v-show="variablesNames.length > 0"
+                                class="pane-code-container mb-0 border-x border-base-content/20 overflow-auto w-full"
+                            >
                                 <div
                                     v-for="(lineContent, lineNumber) in fileContent"
                                     :key="`${lineNumber}-${currentFileName}`"
@@ -699,9 +748,11 @@ onBeforeUnmount(() => {
                                     :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
                                 >
                                     <DumpLink
+                                        @toggleBreakpoint="toggleBreakpoint"
                                         class="flex font-normal h-full text-xs"
                                         :label="lineNumber"
                                         :show-icon="true"
+                                        :breakpoint="shouldShowBreakpoint(lineNumber)"
                                         :ide-handler="{
                                             workdir: xDebugStore.current.workdir,
                                             project_path: xDebugStore.current.project_path,
@@ -725,9 +776,15 @@ onBeforeUnmount(() => {
                             </div>
                         </pane>
 
-                        <pane size="40" class="pane-code">
+                        <pane
+                            size="40"
+                            class="pane-code"
+                        >
                             <div class="overflow-auto text-sm h-fill-available">
-                                <div v-for="property in variablesNames" :key="property.name + '-' + property.type">
+                                <div
+                                    v-for="property in variablesNames"
+                                    :key="property.name + '-' + property.type"
+                                >
                                     <div
                                         :class="{
                                             'cursor-pointer': !['int', 'bool', 'string'].includes(property.type),
@@ -737,7 +794,11 @@ onBeforeUnmount(() => {
                                         class="flex border-l-4 border-transparent hover:bg-gray-700 items-center px-1 py-2 pl-3"
                                         @click="!['int', 'bool', 'string'].includes(property.type) ? handlePropertyContextClick(property.type, property.name) : null"
                                     >
-                                        <span :class="{ 'opacity-60 line-through': property.type === 'uninitialized' }" class="variable-name mr-2">{{ property.name }}</span>
+                                        <span
+                                            :class="{ 'opacity-60 line-through': property.type === 'uninitialized' }"
+                                            class="variable-name mr-2"
+                                            >{{ property.name }}</span
+                                        >
                                         <span class="classname">
                                             <span class="truncate">{{ " {" + (property.classname ?? property.type) + "}" }}</span>
                                             <span v-if="!['uninitialized', 'object', 'array'].includes(property.type)">
@@ -747,7 +808,11 @@ onBeforeUnmount(() => {
                                         </span>
                                     </div>
 
-                                    <template v-if="expandedProperties[property.name]" :key="expandedProperties + '-' + property.name" class="py-2">
+                                    <template
+                                        v-if="expandedProperties[property.name]"
+                                        :key="expandedProperties + '-' + property.name"
+                                        class="py-2"
+                                    >
                                         <XDebugPropertyNode
                                             v-if="propertiesTree"
                                             v-for="property in propertiesContextTree"
@@ -767,16 +832,28 @@ onBeforeUnmount(() => {
             </div>
         </div>
 
-        <dialog id="modal_property_get" class="modal modal-middle">
+        <dialog
+            id="modal_property_get"
+            class="modal modal-middle"
+        >
             <div class="modal-box !rounded-md w-9/12 max-w-4xl space-y-3">
-                <div class="flex gap-3 text-sm" v-if="selectedVariableName && propertiesEvalTree.length === 0">
+                <div
+                    class="flex gap-3 text-sm"
+                    v-if="selectedVariableName && propertiesEvalTree.length === 0"
+                >
                     <div class="select-none">
                         <span class="variable-name text-base">{{ selectedVariableName }}</span>
                     </div>
                 </div>
 
-                <div class="flex gap-3 text-sm" v-if="propertiesEvalTree.length > 0">
-                    <span class="variable-name" v-text="evaluate"></span>
+                <div
+                    class="flex gap-3 text-sm"
+                    v-if="propertiesEvalTree.length > 0"
+                >
+                    <span
+                        class="variable-name"
+                        v-text="evaluate"
+                    ></span>
                 </div>
 
                 <div class="w-full text-xs overflow-auto -mt-1">
@@ -808,12 +885,18 @@ onBeforeUnmount(() => {
                     />
                 </div>
             </div>
-            <form method="dialog" class="modal-backdrop">
+            <form
+                method="dialog"
+                class="modal-backdrop"
+            >
                 <button>close</button>
             </form>
         </dialog>
 
-        <dialog id="modal_error" class="modal modal-middle">
+        <dialog
+            id="modal_error"
+            class="modal modal-middle"
+        >
             <div class="modal-box !rounded-md text-sm w-9/12 max-w-4xl space-y-3">
                 <h3 class="text-error">Error</h3>
                 <div class="w-full overflow-auto -mt-1 break-all">
@@ -824,7 +907,12 @@ onBeforeUnmount(() => {
 
                 <div class="modal-action">
                     <form method="dialog">
-                        <button class="btn" @click="disconnect">Close</button>
+                        <button
+                            class="btn"
+                            @click="disconnect"
+                        >
+                            Close
+                        </button>
                     </form>
                 </div>
             </div>

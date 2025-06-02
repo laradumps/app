@@ -25,8 +25,8 @@ class XDebugServer extends EventEmitter {
         return XDebugServer.instance;
     }
 
-    startClient(mainWindow: BrowserWindow, args: XDebugYml) {
-        watcherPath(mainWindow, args.project_path);
+    async startClient(mainWindow: BrowserWindow, args: XDebugYml) {
+        await watcherPath(mainWindow, args.project_path);
 
         this.serverSocket = net.createServer((socket: Socket) => {
             this.clientSocket = socket;
@@ -57,7 +57,7 @@ class XDebugServer extends EventEmitter {
             };
 
             socket.on("error", (err) => {
-                this.closeClient(mainWindow);
+                this.closeClient();
             });
         });
 
@@ -66,31 +66,28 @@ class XDebugServer extends EventEmitter {
         });
 
         this.serverSocket.on("error", (err): void => {
-            this.closeClient(mainWindow);
-            mainWindow.webContents.send("xdebug-connection-status", {
-                connected: false,
-                err: err.message,
-                ...args
-            });
+            this.closeClient();
+            // mainWindow.webContents.send("xdebug-connection-status", {
+            //     connected: false,
+            //     err: err.message
+            // });
         });
 
         this.serverSocket.on("listening", (): void => {
-            mainWindow.webContents.send("xdebug-connection-status", {
-                connected: true,
-                ...args
-            });
+            // mainWindow.webContents.send("xdebug-connection-status", {
+            //     connected: true
+            // });
         });
 
         this.serverSocket.on("close", (): void => {
-            mainWindow.webContents.send("xdebug-connection-status", {
-                connected: false,
-                err: "closed",
-                ...args
-            });
+            // mainWindow.webContents.send("xdebug-connection-status", {
+            //     connected: false,
+            //     err: "closed",
+            // });
         });
     }
 
-    closeClient(mainWindow = BrowserWindow) {
+    closeClient() {
         if (this.clientSocket) {
             this.clientSocket.end();
             this.clientSocket.destroy();
@@ -100,10 +97,6 @@ class XDebugServer extends EventEmitter {
         if (this.serverSocket) {
             this.serverSocket.close();
             this.serverSocket = null;
-        }
-
-        if (mainWindow) {
-            mainWindow.webContents.send("xdebug-connect-closed");
         }
     }
 
@@ -140,9 +133,10 @@ class XDebugServer extends EventEmitter {
 
             this.clientSocket && this.clientSocket.on("data", onData);
 
-            this.clientSocket && this.clientSocket.on("error", (err) => {
-                reject(new Error("Client socket error: " + err.message));
-            });
+            this.clientSocket &&
+                this.clientSocket.on("error", (err) => {
+                    reject(new Error("Client socket error: " + err.message));
+                });
         });
     }
 }
