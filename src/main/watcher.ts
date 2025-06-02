@@ -1,55 +1,60 @@
 import chokidar from "chokidar";
 import fs from "fs";
+import path from "path";
 import xml2js from "xml2js";
 import { BrowserWindow } from "electron";
 import { Breakpoint } from "@/types/XDebug";
-import XDebugServer from "./xdebug-server";
-
-const xdebugServer = XDebugServer.getInstance();
 
 let breakpoints: Breakpoint[] = [];
 
-function readBreakpoints(mainWindow: BrowserWindow, projectPath: string, workspacePath: string): void {
-    fs.readFile(workspacePath, (err, data) => {
-        if (err) {
-            console.error("err:", err);
-            return;
-        }
+function readPhpStormBreakpoints(projectPath: string, workspacePath: string): Promise<Breakpoint[]> {
+    return new Promise((resolve) => {
+        fs.readFile(workspacePath, (err, data) => {
+            if (err) return resolve([]);
 
-        xml2js.parseString(data, (err, result) => {
-            if (err) {
-                console.error("err:", err);
-                return;
-            }
+            xml2js.parseString(data, (err, result) => {
+                if (err) return resolve([]);
 
-            const components = result.project.component;
-            const debuggerManager = components.find((component: any) => component.$.name === "XDebuggerManager");
+                try {
+                    const components = result.project.component;
+                    const debuggerManager = components.find((component: any) => component.$.name === "XDebuggerManager");
 
-            if (debuggerManager && debuggerManager["breakpoint-manager"]) {
-                const breakpointManager = debuggerManager["breakpoint-manager"][0];
-                const breakpointsList = breakpointManager.breakpoints[0]["line-breakpoint"];
+                    if (!debuggerManager || !debuggerManager["breakpoint-manager"]) {
+                        return resolve([]);
+                    }
 
-                breakpoints = breakpointsList
-                    .filter((breakpoint: any) => breakpoint.url[0].includes("$PROJECT_DIR$"))
-                    .map((breakpoint: any) => ({
-                        url: breakpoint.url[0].replace("$PROJECT_DIR$/", projectPath), // review separator
-                        line: breakpoint.line ? breakpoint.line[0] : null,
-                        enabled: breakpoint.$.enabled === "true"
-                    }));
+                    const breakpointManager = debuggerManager["breakpoint-manager"][0];
+                    const breakpointsList = breakpointManager.breakpoints[0]["line-breakpoint"];
 
-                xdebugServer.updateBreakpoints();
-            }
+                    const parsedBreakpoints: Breakpoint[] = breakpointsList
+                        .filter((bp: any) => bp.url[0].includes("$PROJECT_DIR$"))
+                        .map((bp: any) => ({
+                            url: bp.url[0].replace("$PROJECT_DIR$/", projectPath),
+                            line: bp.line ? parseInt(bp.line[0]) : null,
+                            enabled: bp.$.enabled === "true"
+                        }));
+
+                    resolve(parsedBreakpoints);
+                } catch {
+                    resolve([]);
+                }
+            });
         });
     });
 }
 
-export const watcherPath = (mainWindow, projectPath) => {
-    const workspacePath = `${projectPath}.idea/workspace.xml`;
+async function readBreakpointsFromAllSources(mainWindow: BrowserWindow, projectPath: string, workspacePath: string): Promise<void> {
+    breakpoints = await readPhpStormBreakpoints(projectPath, workspacePath);
 
-    readBreakpoints(mainWindow, projectPath, workspacePath);
+    mainWindow.webContents.send("xdebug-breakpoints", breakpoints);
+}
 
-    chokidar.watch(workspacePath).on("change", (path) => {
-        readBreakpoints(mainWindow, projectPath, workspacePath);
+export const watcherPath = async (mainWindow: BrowserWindow, projectPath: string) => {
+    const workspacePath = path.join(projectPath, ".idea", "workspace.xml");
+    await readBreakpointsFromAllSources(mainWindow, projectPath, workspacePath);
+
+    chokidar.watch(workspacePath).on("change", () => {
+        readBreakpointsFromAllSources(mainWindow, projectPath, workspacePath);
     });
 };
 
