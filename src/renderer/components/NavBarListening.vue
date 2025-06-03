@@ -139,19 +139,23 @@ const saveEnvironment = async (env: null | Environment): Promise<void> => {
     }
 };
 
-const confirmProjectRemoval = () => {
+const confirmProjectRemoval = (projectPath: string) => {
     window.ipcRenderer.send("main:dialog", {
         buttons: ["Yes", "No"],
         title: "Remove Project",
         message: "Are you sure you want to remove the configuration from this Project?"
     });
 
-    const removeHandler = (event: Event, choice: number) => {
+    const removeHandler = (_: Event, choice: number) => {
         if (choice === 0) {
-            window.ipcRenderer.send("storage.remove", currentProjectStore.projectInfo.path);
-            selectedProject.value = {} as Project;
-            environments.value = [];
+            window.ipcRenderer.send("storage.remove", projectPath);
             window.ipcRenderer.send("storage.get");
+            if (projects.value.length > 0) {
+                const firstProject = projects.value[0];
+                currentProjectStore.set(firstProject);
+                selectedProject.value = firstProject;
+                window.ipcRenderer.send("storage.get-environments", firstProject.path);
+            }
         }
         window.ipcRenderer.off("main:dialog-choice", removeHandler);
     };
@@ -191,7 +195,7 @@ const formattedName = (name: string): string => {
 <template>
     <div class="mr-0.5">
         <div
-            class="dropdown dropdown-end dropdown-hover"
+            class="dropdown dropdown-end dropdown-hover dropdown-open"
             :class="{ 'dropdown-open': isDropdownOpen }"
         >
             <button class="flex font-normal capitalize truncate text-xs btn btn-soft justify-between !px-2.5 !m-0 !h-6.5 gap-2">
@@ -228,7 +232,7 @@ const formattedName = (name: string): string => {
                             />
                             <TrashIcon
                                 class="size-4 opacity-70 hover:opacity-100 hover:text-error"
-                                @click.stop="confirmProjectRemoval"
+                                @click.stop="confirmProjectRemoval(project.path)"
                             />
                         </div>
                     </li>
