@@ -544,6 +544,20 @@ const openLaravelDocs = () => {
                         </div>
                     </div>
                 </div>
+
+                <Divider class="mt-3" />
+                <div class="mt-3 grid grid-cols-2 items-center">
+                    <div>Show Tips</div>
+                    <div class="flex items-center justify-end">
+                        <div class="p-1.5">
+                            <input
+                                type="checkbox"
+                                class="toggle toggle-sm toggle-accent"
+                                v-model="settingsStore.settings.show_tips"
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div
