@@ -423,7 +423,7 @@ ipcMain.on("platform", (event, args) => {
     event.reply("platform.reply", process.platform);
 });
 
-ipcMain.on("settings:enable-xdebug-session", (event, args) => {
+ipcMain.on("settings:enable-xdebug-session", (_, args) => {
     const envFile = path.join(args.cmd, ".env");
     const enabled = args.enabled;
 
@@ -433,17 +433,22 @@ ipcMain.on("settings:enable-xdebug-session", (event, args) => {
             return;
         }
 
-        let lines = data.split("\n").filter((line) => !line.startsWith("XDEBUG_SESSION="));
-        lines.push("XDEBUG_SESSION=" + (enabled ? "1" : "0"));
+        let lines = data.split("\n").filter((line) => !line.startsWith("XDEBUG_SESSION=") && !line.includes("# Automatically added by LaraDumps"));
+
+        if (enabled) {
+            lines.push("# Automatically added by LaraDumps");
+            lines.push("XDEBUG_SESSION=1");
+        }
 
         fs.writeFile(envFile, lines.join("\n"), "utf8", (err) => {
             if (err) {
                 console.error("Error writing to .env file:", err);
-            } else {
-                mainWindow.webContents.send("xdebug-session-updated", {
-                    enabled
-                });
             }
+
+            mainWindow.webContents.send("xdebug-session-updated", {
+                enabled
+            });
         });
     });
 });
+
