@@ -32,4 +32,5 @@ export interface Settings {
     custom_css: string;
     show_badge_count: boolean;
     show_context: boolean;
+    show_tips: boolean;
 }
