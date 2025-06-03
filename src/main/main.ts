@@ -422,3 +422,28 @@ nativeTheme.on("updated", () => {
 ipcMain.on("platform", (event, args) => {
     event.reply("platform.reply", process.platform);
 });
+
+ipcMain.on("settings:enable-xdebug-session", (event, args) => {
+    const envFile = path.join(args.cmd, ".env");
+    const enabled = args.enabled;
+
+    fs.readFile(envFile, "utf8", (err, data) => {
+        if (err) {
+            console.error("Error reading .env file:", err);
+            return;
+        }
+
+        let lines = data.split("\n").filter(line => !line.startsWith("XDEBUG_SESSION="));
+        lines.push("XDEBUG_SESSION=" + (enabled ? "1" : "0"));
+
+        fs.writeFile(envFile, lines.join("\n"), "utf8", err => {
+            if (err) {
+                console.error("Error writing to .env file:", err);
+            } else {
+                mainWindow.webContents.send("xdebug-session-updated", {
+                    enabled
+                });
+            }
+        });
+    });
+});

@@ -172,7 +172,10 @@ const disconnectFromXdebug = () => {
 };
 
 watch(isXdebugActive, (shouldConnect) => {
-    shouldConnect ? connectToXdebug() : disconnectFromXdebug();
+    window.ipcRenderer.send("settings:enable-xdebug-session", {
+        cmd: selectedProject.value.path,
+        enabled: shouldConnect
+    });
 });
 
 watch(xDebugStore, (store) => {
@@ -185,6 +188,10 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event: Event, config
     xDebugStore.setCurrent(config);
     window.ipcRenderer.send("connect-xdebug", config);
 });
+
+window.ipcRenderer.on("xdebug-session-updated", (_, args) => {
+    args.enabled ? connectToXdebug() : disconnectFromXdebug();
+})
 
 const formattedName = (name: string): string => {
     if (!name) return "No project selected";
