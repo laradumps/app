@@ -45,6 +45,8 @@ const expandedProperties = ref({});
 
 const loading = ref(false);
 
+const breakpoints = ref([]);
+
 const openXDebugLink = () => {
     window.ipcRenderer.send("main:openLink", "https://xdebug.org");
 };
@@ -88,10 +90,6 @@ const contextGet = (id) => {
     sendCommand(`context_get -i ${id}`);
 };
 
-const proxy = () => {
-    sendCommand(`proxyinit -p 9001 -k LARADUMPS -m [0|1]`);
-};
-
 const continueDebug = () => {
     variableClicked.value = true;
     if (!inMountEvent.value) {
@@ -99,7 +97,8 @@ const continueDebug = () => {
     }
 
     const id = getNextTransactionId();
-    sendCommand(`continue -i ${id}`);
+
+    sendCommand(`run -i ${id}`);
 };
 
 const propertyGet = (variableName) => {
@@ -343,6 +342,28 @@ const convertHTMLTextToArray = (data) => {
     return result;
 };
 
+const setBreakpoints = (fileuri) => {
+    const id = getNextTransactionId();
+    const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${fileuri} -n 5`;
+
+    sendCommand(cmd);
+
+    // try to continue debugging after setting breakpoints
+    continueDebug();
+
+    console.log(breakpoints.value);
+    breakpoints.value.forEach((breakpoint) => {
+        const id = getNextTransactionId();
+        const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
+        const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
+
+        console.log(cmd);
+        sendCommand(cmd);
+    });
+
+    setTimeout(() => continueDebug(), 100);
+};
+
 const parseResponse = async (xml) => {
     if (variableClicked.value === false) {
         return;
@@ -363,6 +384,8 @@ const parseResponse = async (xml) => {
 
             const fileuri = initEvent[0].getAttribute("fileuri");
 
+            console.log("File URI:", fileuri);
+
             if (fileuri && fileuri.includes("phpcs")) {
                 console.log("ignore phpcs");
                 continue;
@@ -375,7 +398,8 @@ const parseResponse = async (xml) => {
             window.ipcRenderer.send("main:show");
 
             setTimeout(async () => {
-                continueDebug();
+                setBreakpoints(fileuri);
+                // continueDebug();
             }, 100);
         }
 
@@ -404,10 +428,24 @@ const parseResponse = async (xml) => {
             const command = responseElement.getAttribute("command");
             const status = responseElement.getAttribute("status");
 
+            if (command === "breakpoint_set") {
+                const success = responseElement.getAttribute("reason");
+
+                if (success === "ok") {
+                    // todo
+                }
+            }
+
+            if (command === "run" && status === "stopping") {
+                handleStop();
+                continueDebug();
+            }
+
             if (command === "context_get") {
                 handleContextGet(responseElement);
 
                 if (status === "stopping") {
+                    handleStop();
                     continueDebug();
                 }
             }
@@ -517,9 +555,14 @@ const handleSelectText = () => {
 
 const disconnect = () => {
     xDebugStore.current = {};
+    transactionId.value = 0;
 
     window.ipcRenderer.send("disconnect-xdebug");
     modal_error.close();
+};
+
+const shouldShowBreakpoint = (lineNumber) => {
+    return breakpoints.value.some((breakpoint) => breakpoint.line == lineNumber);
 };
 
 watch(fileContent, () => {
@@ -534,7 +577,38 @@ onMounted(() => {
     window.ipcRenderer.on("xdebug-error", handleError);
 
     window.addEventListener("keydown", handleKeyboardEvent);
+
+    window.ipcRenderer.on("xdebug-breakpoints", (_, args) => {
+        breakpoints.value = args;
+
+        if (transactionId.value > 1) {
+            args.forEach((breakpoint) => {
+                const id = getNextTransactionId();
+                const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
+                const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
+
+                console.log(cmd);
+                sendCommand(cmd);
+            });
+        }
+    });
 });
+
+const toggleBreakpoint = (ideHandler) => {
+    let { file, line } = ideHandler;
+
+    file = file.replace(xDebugStore.current.workdir, "file://" + xDebugStore.current.project_path);
+
+    const breakpointIndex = breakpoints.value.findIndex((bp) => bp.url == file && bp.line == line);
+
+    if (breakpointIndex !== -1) {
+        console.log("Removing breakpoint:", file, line);
+        breakpoints.value.splice(breakpointIndex, 1);
+    } else {
+        console.log("Adding breakpoint:", file, line);
+        breakpoints.value.push({ url: file, line });
+    }
+};
 
 onBeforeUnmount(() => {
     window.ipcRenderer.removeListener("xdebug-response", handleResponse);
@@ -674,9 +748,11 @@ onBeforeUnmount(() => {
                                     :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
                                 >
                                     <DumpLink
+                                        @toggleBreakpoint="toggleBreakpoint"
                                         class="flex font-normal h-full text-xs"
                                         :label="lineNumber"
                                         :show-icon="true"
+                                        :breakpoint="shouldShowBreakpoint(lineNumber)"
                                         :ide-handler="{
                                             workdir: xDebugStore.current.workdir,
                                             project_path: xDebugStore.current.project_path,

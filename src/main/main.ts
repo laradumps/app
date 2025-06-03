@@ -21,6 +21,7 @@ import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
 import { createScreenWindow } from "./window/screen";
 import { format } from "url";
+import { watcherPath, getBreakpoints } from "./watcher.js";
 
 const isDev: boolean = process.env.NODE_ENV === "development";
 const isMac: boolean = process.platform === "darwin";

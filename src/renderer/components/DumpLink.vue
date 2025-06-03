@@ -9,7 +9,10 @@ const props = defineProps<{
     ideHandler: IdeHandle;
     label?: string;
     showIcon?: boolean;
+    breakpoint: boolean;
 }>();
+
+const emit = defineEmits();
 
 const currentProjectStore = useCurrentProject();
 const settingsStore = useSettingsStore();
@@ -51,6 +54,13 @@ const label = computed(() => {
 
     return "";
 });
+
+const toggleBreakpoint = () => {
+    emit("toggleBreakpoint", {
+        file: props.ideHandler.real_path,
+        line: props.ideHandler.line
+    });
+};
 </script>
 
 <template>
@@ -78,6 +88,11 @@ const label = computed(() => {
             class="flex items-center group h-[32px]"
         >
             <div class="text-right w-16 tracking-wider hover:opacity-75 flex items-center">
+                <div
+                    v-show="breakpoint"
+                    @click="toggleBreakpoint"
+                    class="rounded-full cursor-pointer bg-red-500 w-2 h-2 p-[.3rem]"
+                ></div>
                 <span
                     class="whitespace-nowrap w-full"
                     :class="{ 'text-gray-400 font-normal': label }"
