@@ -195,7 +195,7 @@ const formattedName = (name: string): string => {
 <template>
     <div class="mr-0.5">
         <div
-            class="dropdown dropdown-end dropdown-hover dropdown-open"
+            class="dropdown dropdown-end dropdown-hover"
             :class="{ 'dropdown-open': isDropdownOpen }"
         >
             <button class="flex font-normal capitalize truncate text-xs btn btn-soft justify-between !px-2.5 !m-0 !h-6.5 gap-2">
