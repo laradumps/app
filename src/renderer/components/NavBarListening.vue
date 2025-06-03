@@ -101,7 +101,6 @@ const setupEventListeners = () => {
     window.ipcRenderer.on("storage.set-active.reply", handleActiveProjectSet);
     window.ipcRenderer.on("storage.get.reply", handleProjectsRetrieved);
     window.ipcRenderer.on("storage.get-environments.reply", handleEnvironmentsRetrieved);
-    window.ipcRenderer.on("xdebug-error", handleError);
     window.ipcRenderer.on("xdebug-connector::disconnect", disconnectFromXdebug);
     window.ipcRenderer.on("xdebug-connect-closed", () => {
         setTimeout(() => {
@@ -114,10 +113,6 @@ onMounted(() => {
     initializeProjectData();
     setupEventListeners();
 });
-
-const handleError = (_: IpcRendererEvent, error: Error) => {
-    console.error("Xdebug error:", error);
-};
 
 const selectedEnvironments = computed(() => {
     return environments.value.map((env) => ({

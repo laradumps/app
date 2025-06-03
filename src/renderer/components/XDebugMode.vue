@@ -342,15 +342,7 @@ const convertHTMLTextToArray = (data) => {
     return result;
 };
 
-const setBreakpoints = (fileuri) => {
-    const id = getNextTransactionId();
-    const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${fileuri} -n 5`;
-
-    sendCommand(cmd);
-
-    // try to continue debugging after setting breakpoints
-    continueDebug();
-
+const setBreakpoints = () => {
     console.log(breakpoints.value);
     breakpoints.value.forEach((breakpoint) => {
         const id = getNextTransactionId();
@@ -359,6 +351,11 @@ const setBreakpoints = (fileuri) => {
 
         console.log(cmd);
         sendCommand(cmd);
+
+        const index = breakpoints.value.indexOf(breakpoint);
+        if (index > -1) {
+            breakpoints.value.splice(index, 1);
+        }
     });
 
     setTimeout(() => continueDebug(), 100);
@@ -384,8 +381,6 @@ const parseResponse = async (xml) => {
 
             const fileuri = initEvent[0].getAttribute("fileuri");
 
-            console.log("File URI:", fileuri);
-
             if (fileuri && fileuri.includes("phpcs")) {
                 console.log("ignore phpcs");
                 continue;
@@ -399,7 +394,6 @@ const parseResponse = async (xml) => {
 
             setTimeout(async () => {
                 setBreakpoints(fileuri);
-                // continueDebug();
             }, 100);
         }
 
@@ -421,7 +415,6 @@ const parseResponse = async (xml) => {
                     console.error(`Error: (${errorCode}): ${errorMessage}`);
 
                     continue;
-                    // return;
                 }
             }
 
@@ -437,16 +430,14 @@ const parseResponse = async (xml) => {
             }
 
             if (command === "run" && status === "stopping") {
-                handleStop();
-                continueDebug();
+                window.ipcRenderer.send("disconnect-xdebug");
             }
 
             if (command === "context_get") {
                 handleContextGet(responseElement);
 
                 if (status === "stopping") {
-                    handleStop();
-                    continueDebug();
+                    window.ipcRenderer.send("disconnect-xdebug");
                 }
             }
 
