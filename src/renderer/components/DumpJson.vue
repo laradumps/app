@@ -56,6 +56,9 @@ const shouldCollapse = computed(() => countNodes(value.value) >= 4);
 <style>
 @reference "./../styles.css";
 
+.vjs-key {
+    @apply !text-sm;
+}
 .vjs-tree-node:hover {
     background-color: transparent !important;
 }

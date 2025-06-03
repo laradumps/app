@@ -216,23 +216,29 @@ const formattedName = (name: string): string => {
             </button>
             <ul
                 tabindex="0"
-                class="dropdown-content menu bg-base-100 rounded-box shadow-sm"
+                class="dropdown-content menu bg-base-100 rounded-md shadow-sm"
             >
                 <div class="overflow-auto max-h-40">
                     <li
                         v-for="project in projects.filter((p) => p.project)"
                         :key="project.path"
                         @click="setActiveProject(project)"
+                        class="group"
+                        :class="{
+                            '!bg-base-300 rounded-md': selectedProject.path === project.path
+                        }"
                     >
                         <div class="flex justify-between">
                             <a
-                                :class="{ 'text-primary': selectedProject.path === project.path }"
+                                :class="{
+                                    'text-primary': selectedProject.path === project.path
+                                }"
                                 class="font-normal capitalize truncate !text-sm !pl-0"
                                 v-text="formattedName(project.project)"
                             />
                             <TrashIcon
-                                class="size-4 opacity-70 hover:opacity-100 hover:text-error"
-                                @click.stop="confirmProjectRemoval(project.path)"
+                                class="size-4 opacity-0 group-hover:opacity-75 text-error"
+                                @click.stop="confirmProjectRemoval"
                             />
                         </div>
                     </li>

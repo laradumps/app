@@ -676,7 +676,7 @@ const openScreenWindow = () => {
 
                                 <div
                                     v-if="dumpsBagFiltered.length === 0 && !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)"
-                                    class="absolute flex items-center justify-center w-full"
+                                    class="-ml-8 -mt-14 absolute flex items-center justify-center w-full"
                                     style="height: -webkit-fill-available"
                                 >
                                     <SvgEmpty class="w-30 opacity-25" />

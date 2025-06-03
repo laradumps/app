@@ -2,8 +2,10 @@
 import { onMounted, onUnmounted, ref, computed } from "vue";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/24/outline";
 import { useI18n } from "vue-i18n";
+import { useSettingsStore } from "@/store/settings.js";
 
 const i18n = useI18n();
+const settingsStore = useSettingsStore();
 
 const currentIndex = ref(0);
 const currentTipKey = ref(0);
@@ -11,10 +13,10 @@ const iconPath = ref();
 
 const tips = ref([
     `<div class="space-y-3 text-base-content">
-        <div class="font-semibold text-base">${i18n.t("doc.guide")}</div>
+        <div class="font-semibold text-base mb-4">${i18n.t("doc.guide")}</div>
         <li>${i18n.t(
             "doc.install_laradumps"
-        )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-blue-500 underline cursor-pointer ml-1">https://laradumps.dev</span></li>
+        )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-secondary underline cursor-pointer ml-1">https://laradumps.dev</span></li>
         <li>${i18n.t("doc.add")}
             <code class="bg-base-300 p-1 rounded">ds('Hello world!')</code>
              ${i18n.t("doc.somewhere_in_your_code")}</li>
@@ -22,15 +24,15 @@ const tips = ref([
     </div>`,
 
     `<div class="space-y-3 text-base-content">
-        <div class="font-semibold !text-base">${i18n.t("doc.support")}</div>
-        <div>⭐️ ${i18n.t("doc.give_us_start")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/app')" class="text-blue-500 text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</span></div>
-        <div>🥷🏻 ${i18n.t("doc.contribute_code")}</div>
-        <div>❤️ <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/sponsors/luanfreitasdev')" class="text-blue-500 text-sm underline cursor-pointer">${i18n.t("doc.buy_me_a_coffee")}</span></div>
+        <div class="font-semibold !text-base mb-4">${i18n.t("doc.support")}</div>
+        <li>⭐️ <span class="ml-2">${i18n.t("doc.give_us_start")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/app')" class="text-secondary text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</span></span></li>
+        <li>🥷🏻 <span class="ml-2">${i18n.t("doc.contribute_code")}</span></li>
+        <li>🙌 <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/sponsors/luanfreitasdev')" class="ml-2 text-secondary text-sm underline cursor-pointer">${i18n.t("doc.buy_me_a_coffee")}</span></li>
     </div>`,
 
     `<div class="space-y-3 text-base-content">
-        <div class="font-semibold text-base">Xdebug step debugging</div>
-        <li>${i18n.t("doc.install_php_extension")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-blue-500 underline cursor-pointer ml-1">download</span></li>
+        <div class="font-semibold text-base mb-4">Xdebug step debugging</div>
+        <li>${i18n.t("doc.install_php_extension")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-secondary underline cursor-pointer ml-1">download</span></li>
         <li>${i18n.t("doc.in_any_project_toggle")}</li>
         <li>${i18n.t("doc.add")} <code class="bg-base-300 p-1 rounded">xdebug_break()</code> ${i18n.t("doc.in_any_line_of_code")}</li>
         <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
@@ -38,7 +40,7 @@ const tips = ref([
 
     `<div>
         <div class="space-y-3 text-base-content">
-            <div class="font-semibold text-base">${i18n.t("doc.global_shortcuts")}</div>
+            <div class="font-semibold text-base mb-4">${i18n.t("doc.global_shortcuts")}</div>
             <li>${i18n.t("doc.customize_shortcuts")}</li>
             <li>${i18n.t("doc.available")}: <span class="italic font-light">${i18n.t("doc.shortcuts_list")}</span></li>
         </div>
@@ -54,7 +56,7 @@ const tips = ref([
 
     `<div>
         <div class="space-y-3 text-base-content">
-            <div class="font-semibold text-base">${i18n.t("doc.change_your_ide_at_runtime")}</div>
+            <div class="font-semibold text-base mb-4">${i18n.t("doc.change_your_ide_at_runtime")}</div>
             <li><span>Menu -> IDE</span></li>
             <li><span>PHPStorm, vs code, vs code remote ...</span></li>
         </div>
@@ -130,18 +132,33 @@ function nextRandom() {
             >
                 <ChevronLeftIcon class="w-5" />
             </button>
-            <div class="content space-y-10">
-                <div class="w-full flex justify-start items-left text-lg">
+            <div
+                class="content space-y-10"
+                :class="{
+                    'mt-10': !settingsStore.settings.show_tips,
+                    '-mt-6': settingsStore.settings.show_tips
+                }"
+            >
+                <div class="w-full flex justify-center text-lg items-center gap-3">
                     <img
                         :src="iconPath"
                         alt=""
-                        class="size-7 mr-2"
+                        class="size-10"
                     />
-                    LaraDumps
+                    <div class="flex flex-col">
+                        <span>LaraDumps</span>
+                        <span
+                            v-show="!settingsStore.settings.show_tips"
+                            onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')"
+                            class="text-xs underline cursor-pointer"
+                            >https://laradumps.dev</span
+                        >
+                    </div>
                 </div>
 
                 <div
                     :key="currentTipKey"
+                    v-show="settingsStore.settings.show_tips"
                     class="mt-8 text-xs font-normal"
                 >
                     <div
