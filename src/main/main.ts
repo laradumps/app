@@ -433,10 +433,10 @@ ipcMain.on("settings:enable-xdebug-session", (event, args) => {
             return;
         }
 
-        let lines = data.split("\n").filter(line => !line.startsWith("XDEBUG_SESSION="));
+        let lines = data.split("\n").filter((line) => !line.startsWith("XDEBUG_SESSION="));
         lines.push("XDEBUG_SESSION=" + (enabled ? "1" : "0"));
 
-        fs.writeFile(envFile, lines.join("\n"), "utf8", err => {
+        fs.writeFile(envFile, lines.join("\n"), "utf8", (err) => {
             if (err) {
                 console.error("Error writing to .env file:", err);
             } else {

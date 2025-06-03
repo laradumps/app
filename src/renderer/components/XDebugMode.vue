@@ -6,7 +6,6 @@ import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
 import "tippy.js/themes/light.css";
 import XDebugPropertyNode from "@/components/XDebugPropertyNode.vue";
-import SvgXDebug from "@/components/Svg/SvgXDebug.vue";
 import DumpLink from "@/components/DumpLink.vue";
 import { useXDebug } from "@/store/xdebug";
 import IconContinue from "@/components/Icons/IconContinue.vue";
@@ -16,10 +15,8 @@ import IconStop from "@/components/Icons/IconStop.vue";
 import { Pane, Splitpanes } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import IconLoading from "@/components/Icons/IconLoading.vue";
-import { useI18n } from "vue-i18n";
 
 const xDebugStore = useXDebug();
-const i18n = useI18n();
 
 const error = ref("");
 const transactionId = ref(1);
@@ -98,7 +95,7 @@ const continueDebug = () => {
 
     const id = getNextTransactionId();
 
-    sendCommand(`run -i ${id}`);
+    sendCommand(`continue -i ${id}`);
 };
 
 const propertyGet = (variableName) => {
@@ -114,7 +111,7 @@ const evaluateExpression = () => {
         const id = getNextTransactionId();
         sendCommand(`eval -i ${id} -- ${btoa(evaluate.value)}`);
 
-        setTimeout(() => modal_property_get.showModal(), 200);
+        setTimeout(() => modal_property_get.showModal(), 100);
     }, 300);
 };
 
@@ -123,7 +120,24 @@ const source = (filePath) => {
     sendCommand(`source -i ${id} -f ${filePath}`);
 };
 
-const handleResponse = (event, response) => {
+const setBreakpoints = () => {
+    console.log(breakpoints.value);
+    breakpoints.value.forEach((breakpoint) => {
+        const id = getNextTransactionId();
+        const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
+        const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
+
+        console.log(cmd);
+        sendCommand(cmd);
+    });
+
+    setTimeout(() => {
+        const id = getNextTransactionId();
+        sendCommand(`run -i ${id}`);
+    }, 100);
+};
+
+const handleResponse = (_, response) => {
     loading.value = true;
     setTimeout(() => parseResponse(response), 100);
 };
@@ -291,7 +305,7 @@ const handleFileContent = (messageElement) => {
 
     ipcRenderer.send("read-file", filename.replace(isWindows ? "file:///" : "file://", ""));
 
-    ipcRenderer.on("file-read-success", (event, data) => {
+    ipcRenderer.on("file-read-success", (_, data) => {
         nextTick(() => {
             fileContent.value = convertHTMLTextToArray(data);
 
@@ -327,6 +341,8 @@ const handleStop = () => {
     propertiesContextTree.value = [];
     propertiesEvalTree.value = [];
     propertiesTree.value = [];
+    initialized.value = false;
+    breakpoints.value = [];
 };
 
 const convertHTMLTextToArray = (data) => {
@@ -340,25 +356,6 @@ const convertHTMLTextToArray = (data) => {
     }
 
     return result;
-};
-
-const setBreakpoints = () => {
-    console.log(breakpoints.value);
-    breakpoints.value.forEach((breakpoint) => {
-        const id = getNextTransactionId();
-        const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
-        const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
-
-        console.log(cmd);
-        sendCommand(cmd);
-
-        const index = breakpoints.value.indexOf(breakpoint);
-        if (index > -1) {
-            breakpoints.value.splice(index, 1);
-        }
-    });
-
-    setTimeout(() => continueDebug(), 100);
 };
 
 const parseResponse = async (xml) => {
@@ -430,14 +427,14 @@ const parseResponse = async (xml) => {
             }
 
             if (command === "run" && status === "stopping") {
-                window.ipcRenderer.send("disconnect-xdebug");
+                disconnect();
             }
 
             if (command === "context_get") {
                 handleContextGet(responseElement);
 
                 if (status === "stopping") {
-                    window.ipcRenderer.send("disconnect-xdebug");
+                    disconnect();
                 }
             }
 
@@ -535,7 +532,7 @@ const handleClick = (event) => {
     }
 };
 
-const handleError = (event, err) => {
+const handleError = (_, err) => {
     error.value = err;
     console.error(err);
 };
@@ -569,7 +566,7 @@ onMounted(() => {
 
     window.addEventListener("keydown", handleKeyboardEvent);
 
-    window.ipcRenderer.on("xdebug-breakpoints", (_, args) => {
+    window.ipcRenderer.on("xdebug-breakpoints", async (_, args) => {
         breakpoints.value = args;
 
         if (transactionId.value > 1) {
@@ -582,6 +579,8 @@ onMounted(() => {
                 sendCommand(cmd);
             });
         }
+
+        await nextTick();
     });
 });
 
@@ -651,7 +650,31 @@ onBeforeUnmount(() => {
                         </button>
                     </div>
 
-                    <div class="flex gap-2">
+                    <button
+                        v-if="variablesNames.length === 0"
+                        @click="disconnect"
+                        class="btn btn-error btn-outline btn-sm inline-flex text-sm w-max min-w-max items-center justify-center rounded-full disabled:opacity-25 !px-3"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            class="size-4"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M15.22 3.22a.75.75 0 0 1 1.06 0L18 4.94l1.72-1.72a.75.75 0 1 1 1.06 1.06L19.06 6l1.72 1.72a.75.75 0 0 1-1.06 1.06L18 7.06l-1.72 1.72a.75.75 0 1 1-1.06-1.06L16.94 6l-1.72-1.72a.75.75 0 0 1 0-1.06ZM1.5 4.5a3 3 0 0 1 3-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 0 1-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 0 0 6.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 0 1 1.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 0 1-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5Z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+
+                        <span class="text-xs">Disconnect</span>
+                    </button>
+
+                    <div
+                        class="flex gap-2"
+                        v-if="variablesNames.length > 0"
+                    >
                         <IconLoading
                             class="text-base-content/70 w-5"
                             :class="{ 'opacity-100': loading }"
@@ -685,36 +708,66 @@ onBeforeUnmount(() => {
 
                 <div
                     v-if="variablesNames.length === 0"
-                    class="flex h-[calc(100vh-135px)] w-full items-center justify-center"
+                    class="flex h-[calc(100vh-180px)] w-full items-center justify-center"
                 >
                     <div
                         type="button"
-                        class="select-none flex gap-7 flex-col items-center text-xs tracking-wide"
+                        class="select-none flex gap-3 flex-col items-center text-xs tracking-wide"
                     >
-                        <SvgXDebug />
-
-                        <div class="flex gap-2">
-                            <span
-                                class="link"
-                                @click="openXDebugLink"
+                        <div class="space-y-7 text-base-content text-sm font-normal">
+                            <div
+                                v-show="breakpoints.length > 0"
+                                class="overflow-x-auto"
                             >
-                                https://xdebug.org
-                            </span>
+                                <span class="text-primary text-sm">Breakpoints Enabled</span>
+                                <table class="table table-zebra table-sm mt-2">
+                                    <thead class="bg-base-300">
+                                        <tr>
+                                            <th>URL</th>
+                                            <th>Line</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            v-for="(breakpoint, index) in breakpoints"
+                                            :key="index"
+                                        >
+                                            <td>{{ breakpoint.url }}</td>
+                                            <td>{{ breakpoint.line }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
 
-                            (unofficial feature)
+                            <div
+                                v-show="breakpoints.length > 0"
+                                class="overflow-x-auto"
+                            >
+                                <span class="text-primary text-sm">Shortcuts</span>
+                                <table class="table table-zebra table-xs mt-2">
+                                    <thead class="bg-base-300">
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            v-for="(shortcut, index) in [
+                                                { key: 'F5', value: 'Continue' },
+                                                { key: 'F8', value: 'Step Over' },
+                                                { key: 'F7', value: 'Step Into' },
+                                                { key: 'F2', value: 'Stop' }
+                                            ]"
+                                            :key="index"
+                                        >
+                                            <td>{{ shortcut.key }}</td>
+                                            <td>{{ shortcut.value }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-
-                        <div class="space-y-3 text-base-content text-sm font-normal">
-                            <li>{{ i18n.t("doc.add") }} <span class="font-semibold">xdebug_break()</span> {{ i18n.t("doc.in_any_line_of_code") }}</li>
-                            <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
-                        </div>
-
-                        <button
-                            @click="disconnect"
-                            class="select-none inline-flex h-6 text-sm w-max min-w-max items-center justify-center badge-outline badge badge-warning p-1 transition hover:bg-opacity-50 disabled:opacity-25 !px-2"
-                        >
-                            <span class="text-xs">Disconnect</span>
-                        </button>
                     </div>
                 </div>
 

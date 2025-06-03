@@ -186,7 +186,7 @@ window.ipcRenderer.on("settings:env-xdebug-file-contents", (event: Event, config
 
 window.ipcRenderer.on("xdebug-session-updated", (_, args) => {
     args.enabled ? connectToXdebug() : disconnectFromXdebug();
-})
+});
 
 const formattedName = (name: string): string => {
     if (!name) return "No project selected";
