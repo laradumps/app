@@ -16,7 +16,7 @@ const tips = ref([
         <div class="font-semibold text-base mb-4">${i18n.t("doc.guide")}</div>
         <li>${i18n.t(
             "doc.install_laradumps"
-        )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-secondary underline cursor-pointer ml-1">https://laradumps.dev</span></li>
+        )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-info underline cursor-pointer ml-1">https://laradumps.dev</span></li>
         <li>${i18n.t("doc.add")}
             <code class="bg-base-300 p-1 rounded">ds('Hello world!')</code>
              ${i18n.t("doc.somewhere_in_your_code")}</li>
@@ -25,14 +25,14 @@ const tips = ref([
 
     `<div class="space-y-3 text-base-content">
         <div class="font-semibold !text-base mb-4">${i18n.t("doc.support")}</div>
-        <li>⭐️ <span class="ml-2">${i18n.t("doc.give_us_start")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/app')" class="text-secondary text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</span></span></li>
+        <li>⭐️ <span class="ml-2">${i18n.t("doc.give_us_start")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/app')" class="text-info text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</span></span></li>
         <li>🥷🏻 <span class="ml-2">${i18n.t("doc.contribute_code")}</span></li>
-        <li>🙌 <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/sponsors/luanfreitasdev')" class="ml-2 text-secondary text-sm underline cursor-pointer">${i18n.t("doc.buy_me_a_coffee")}</span></li>
+        <li>🙌 <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/sponsors/luanfreitasdev')" class="ml-2 text-info text-sm underline cursor-pointer">${i18n.t("doc.buy_me_a_coffee")}</span></li>
     </div>`,
 
     `<div class="space-y-3 text-base-content">
         <div class="font-semibold text-base mb-4">Xdebug step debugging</div>
-        <li>${i18n.t("doc.install_php_extension")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-secondary underline cursor-pointer ml-1">download</span></li>
+        <li>${i18n.t("doc.install_php_extension")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-info underline cursor-pointer ml-1">download</span></li>
         <li>${i18n.t("doc.in_any_project_toggle")}</li>
         <li>${i18n.t("doc.add")} <code class="bg-base-300 p-1 rounded">xdebug_break()</code> ${i18n.t("doc.in_any_line_of_code")}</li>
         <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
@@ -133,7 +133,7 @@ function nextRandom() {
                 <ChevronLeftIcon class="w-5" />
             </button>
             <div
-                class="content space-y-10"
+                class="content space-y-6"
                 :class="{
                     'mt-10': !settingsStore.settings.show_tips,
                     '-mt-6': settingsStore.settings.show_tips
