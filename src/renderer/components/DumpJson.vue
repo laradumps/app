@@ -47,7 +47,6 @@ const shouldCollapse = computed(() => countNodes(value.value) >= 4);
             :show-lenght="true"
             :show-line="false"
             :show-line-number="true"
-            :item-height="28"
             v-bind:collapsed-node-length="shouldCollapse ? 4 : undefined"
             :show-double-quotes="false"
         />
