@@ -189,7 +189,7 @@ const dumpListeners = () => {
             return;
         }
 
-        if (applicationPath.value != content.application_path) {
+        if (content.application_path && applicationPath.value != content.application_path) {
             window.ipcRenderer.send("storage.check", {
                 applicationPath: content.application_path
             });
@@ -205,7 +205,7 @@ const dumpListeners = () => {
             return;
         }
 
-        if (applicationPath.value != content.application_path) {
+        if (content.application_path && applicationPath.value != content.application_path) {
             window.ipcRenderer.send("storage.check", {
                 applicationPath: content.application_path
             });
@@ -250,7 +250,7 @@ const dumpListeners = () => {
             return;
         }
 
-        if (applicationPath.value != content.application_path) {
+        if (content.application_path && applicationPath.value != content.application_path) {
             window.ipcRenderer.send("storage.check", {
                 applicationPath: content.application_path
             });
@@ -281,7 +281,7 @@ const dumpListeners = () => {
             return;
         }
 
-        if (applicationPath.value != content.application_path) {
+        if (content.application_path && applicationPath.value != content.application_path) {
             window.ipcRenderer.send("storage.check", {
                 applicationPath: content.application_path
             });
@@ -385,7 +385,7 @@ const dumpListeners = () => {
 
                 content.queries && timeStore.increment(content.request_id, content.id, content.queries);
 
-                if (applicationPath.value != content.application_path) {
+                if (content.application_path && applicationPath.value != content.application_path) {
                     window.ipcRenderer.send("storage.check", {
                         applicationPath: content.application_path
                     });
@@ -479,7 +479,7 @@ const dispatch = (content: any): void => {
 
     content.rendered = false;
 
-    if (applicationPath.value != content.application_path) {
+    if (content.application_path && applicationPath.value != content.application_path) {
         window.ipcRenderer.send("storage.check", {
             applicationPath: content.application_path
         });

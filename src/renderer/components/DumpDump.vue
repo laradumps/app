@@ -12,8 +12,8 @@ const isExplainPlan = computed(() => {
 });
 
 const formattedDump = computed(() => {
-    if (props.payload.dump?.variable_type === "string") {
-        return props.payload.dump.dump.replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;").replace(/\n/g, "<br>").replace(/->/g, "→");
+    if (isExplainPlan && props.payload.dump?.variable_type === "string") {
+        return props.payload.dump?.dump.replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;").replace(/\n/g, "<br>").replace(/->/g, "→");
     }
     return props.payload.dump?.dump;
 });
@@ -58,13 +58,13 @@ const rawDumpContent = computed(() => {
             <template v-else>
                 <span
                     v-if="payload.dump?.variable_type === 'string'"
-                    x-text="payload.dump?.dump"
                     style="white-space: pre"
-                ></span>
+                    >{{ payload.dump?.dump }}</span
+                >
                 <span
                     v-else
                     :id="`dump-content-${payload.sf_dump_id}`"
-                    v-text="rawDumpContent"
+                    v-html="rawDumpContent"
                 ></span>
             </template>
         </div>
