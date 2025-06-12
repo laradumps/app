@@ -60,7 +60,7 @@ const clearAll = (): void => {
 
 const hasPayload = computed(() => {
     return (
-        livewireStore.payload.length > 0 ||
+        livewireStore.requests.length > 0 ||
         payloadStore.payload.length > 0 ||
         Object.values(logStore.logs).length > 0 ||
         Object.values(jobStore.jobs).length > 0 ||

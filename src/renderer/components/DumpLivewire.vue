@@ -3,44 +3,41 @@ import { computed, nextTick, onMounted, ref } from "vue";
 import DumpQuery from "@/components/DumpQuery.vue";
 import VueJsonPretty from "vue-json-pretty";
 import { useLivewireStore } from "@/store/livewire";
-import { Payload } from "@/types/Payload";
+import { LivewirePayload } from "@/types/Payload";
 import { Pane, Splitpanes } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 
 const livewireStore = useLivewireStore();
 
-const selected = ref<Payload | null>(null);
+const selected = ref<LivewirePayload | null>(null);
 const updating = ref(false);
 const focus = ref<string | null>(null);
 
 const select = (value: string | undefined) => {
     nextTick(() => {
-        const match = livewireStore.payload.find((request: Payload) => request.livewire && request.livewire.request === value);
+        const match = livewireStore.requests.find((request: LivewirePayload) => request.request === value);
         if (!match) return;
 
         selected.value = match;
         updating.value = true;
 
-        const { livewire } = selected.value;
-        if (!livewire) return;
-
-        const sfDumpsErrorsId = livewire.errors?.[1];
-        const sfDumpsPropertiesId = livewire.properties?.[1];
+        const sfDumpsErrorsId = selected.value.errors?.[1];
+        const sfDumpsPropertiesId = selected.value.properties?.[1];
 
         let sfDump: HTMLElement | null;
 
         setTimeout(() => {
-            if (sfDumpsErrorsId) {
+            if (sfDumpsErrorsId && selected.value) {
                 sfDump = document.getElementById(`sf-dump-${sfDumpsErrorsId}`);
-                if (sfDump && !sfDump.hasAttribute("has-dump-js") && livewire.errors.length > 0) {
+                if (sfDump && !sfDump.hasAttribute("has-dump-js") && selected.value.errors.length > 0) {
                     window.Sfdump?.(`sf-dump-${sfDumpsErrorsId}`);
                     sfDump.setAttribute("has-dump-js", "true");
                 }
             }
 
-            if (sfDumpsPropertiesId) {
+            if (sfDumpsPropertiesId && selected.value) {
                 sfDump = document.getElementById(`sf-dump-${sfDumpsPropertiesId}`);
-                if (sfDump && !sfDump.hasAttribute("has-dump-js") && livewire.properties.length > 0) {
+                if (sfDump && !sfDump.hasAttribute("has-dump-js") && selected.value.properties.length > 0) {
                     window.Sfdump?.(`sf-dump-${sfDumpsPropertiesId}`);
                     sfDump.setAttribute("has-dump-js", "true");
                 }
@@ -50,9 +47,9 @@ const select = (value: string | undefined) => {
 };
 
 const totalDuration = computed(() => {
-    if (!selected.value?.livewire?.profile) return 0;
+    if (!selected.value || !selected.value.profile) return 0;
 
-    const profile = selected.value.livewire.profile;
+    const profile = selected.value.profile;
     let duration = 0;
 
     for (const method in profile) {
@@ -72,24 +69,28 @@ const focusItem = (item: { method: string }) => {
 };
 
 onMounted(() => {
-    if (!updating.value && livewireStore.payload.length > 0) {
-        const last = [...livewireStore.payload].reverse()[0];
-        selected.value = last;
-        last.livewire && select(last.livewire.request);
-    }
+    nextTick(() => {
+        if (!updating.value && livewireStore.requests.length > 0) {
+            const last = [...livewireStore.requests].at(-1);
+            if (last) {
+                selected.value = last;
+                select(last.request);
+            }
+        }
+    });
 });
 
-const items = computed(() => {
-    const items: Payload[] = livewireStore.payload.slice().reverse();
+const requests = computed(() => {
+    const requests: LivewirePayload[] = livewireStore.requests.slice().reverse();
 
-    return items;
+    return requests;
 });
 </script>
 
 <template>
     <div
         class="px-3 text-sm"
-        v-if="livewireStore.payload.length > 0"
+        v-if="livewireStore.requests.length > 0"
     >
         <div class="space-y-3 h-[calc(100vh-140px)]">
             <Splitpanes vertical>
@@ -102,21 +103,21 @@ const items = computed(() => {
                         style="height: -webkit-fill-available"
                     >
                         <div
-                            v-for="request in items"
-                            :key="request.livewire?.request"
-                            :id="request.livewire?.request"
+                            v-for="request in requests"
+                            :key="request.request"
+                            :id="request.request"
                             :class="{
-                                'hover:bg-base-300 hover:rounded-md': request?.livewire?.request !== selected?.livewire?.request,
-                                'bg-neutral text-neutral-content rounded-md': request?.livewire?.request == selected?.livewire?.request
+                                'hover:bg-base-300 hover:rounded-md': request.request !== selected?.request,
+                                'bg-neutral text-neutral-content rounded-md': request.request == selected?.request
                             }"
                             class="p-2 space-y-2 cursor-pointer focus:bg-primary"
-                            @click="select(request.livewire?.request)"
+                            @click="select(request.request)"
                         >
                             <div class="flex justify-between items-center cursor-pointer">
-                                <div class="truncate">{{ request.livewire?.name }}</div>
+                                <div class="truncate">{{ request.name }}</div>
                             </div>
                             <div class="font-semibold truncate">
-                                {{ request.livewire?.size }}
+                                {{ request.size }}
                             </div>
                         </div>
                     </div>
@@ -124,8 +125,8 @@ const items = computed(() => {
 
                 <pane class="overflow-auto ml-2 text-sm">
                     <div
-                        v-if="selected?.livewire"
-                        class="flex flex-col w-full space-y-2 !h-[calc(100vh-150px)]"
+                        v-if="selected"
+                        class="flex flex-col w-full space-y-2 !h-[calc(100vh-100px)]"
                     >
                         <div
                             role="tablist"
@@ -147,7 +148,7 @@ const items = computed(() => {
                                 <div class="overflow-x-auto flex flex-col gap-3 w-full">
                                     <div class="progress-container">
                                         <div
-                                            v-for="(profile, index) in selected?.livewire.profile"
+                                            v-for="(profile, index) in selected.profile"
                                             :key="index"
                                             :class="[profile?.graphic_classes, { 'h-[32px] !opacity-100 shadow-lg': focus === profile?.method }]"
                                             class="progress-bar cursor-pointer opacity-60"
@@ -159,7 +160,7 @@ const items = computed(() => {
                                     </div>
 
                                     <div
-                                        v-for="profile in selected?.livewire.profile"
+                                        v-for="profile in selected.profile"
                                         @mouseover="focusItem(profile)"
                                         @mouseleave="focus = ''"
                                         :class="[profile?.classes || {}, { 'bg-base-300 shadow-lg': focus === profile.method }, { hidden: !profile.hasOwnProperty('method') }]"
@@ -185,11 +186,11 @@ const items = computed(() => {
                                 role="tabpanel"
                                 class="tab-content bg-base-100 border-base-300 p-3 overflow-auto"
                             >
-                                <div v-html="selected.livewire.properties[0]"></div>
+                                <div v-html="selected.properties[0]"></div>
                             </div>
 
                             <input
-                                v-if="selected.livewire.errors.length > 0"
+                                v-if="selected.errors.length > 0"
                                 type="radio"
                                 name="livewire_tab"
                                 role="tab"
@@ -200,11 +201,11 @@ const items = computed(() => {
                                 role="tabpanel"
                                 class="tab-content bg-base-100 border-base-300 p-4"
                             >
-                                <div v-html="selected.livewire.errors[0]"></div>
+                                <div v-html="selected.errors[0]"></div>
                             </div>
 
                             <input
-                                v-if="selected.livewire.queries.length > 0"
+                                v-if="selected.queries.length > 0"
                                 type="radio"
                                 name="livewire_tab"
                                 role="tab"
@@ -213,17 +214,19 @@ const items = computed(() => {
                             />
                             <div
                                 role="tabpanel"
-                                class="tab-content bg-base-100 border-base-300 p-4 overflow-auto"
+                                class="tab-content bg-base-100 border-base-300 p-4 overflow-auto max-h-[calc(100vh-0px)]"
                             >
-                                <DumpQuery
-                                    v-for="query in selected.livewire.queries"
-                                    class="w-full border-b border-base-300 mb-3 pb-3"
-                                    :query="query"
-                                />
+                                <div>
+                                    <DumpQuery
+                                        v-for="query in selected.queries"
+                                        class="w-full border-b border-base-300 mb-3 pb-3"
+                                        :query="query"
+                                    />
+                                </div>
                             </div>
 
                             <input
-                                v-if="selected.livewire.events.length > 0"
+                                v-if="selected.events.length > 0"
                                 type="radio"
                                 name="livewire_tab"
                                 role="tab"
@@ -234,7 +237,7 @@ const items = computed(() => {
                                 role="tabpanel"
                                 class="tab-content bg-base-100 border-base-300 p-4"
                             >
-                                <div v-for="event in selected.livewire.events">
+                                <div v-for="event in selected.events">
                                     <div class="font-normal tracking-wider text-sm">{{ event.name }}</div>
 
                                     <div class="p-3 rounded-sm">

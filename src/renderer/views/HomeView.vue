@@ -195,7 +195,7 @@ const dumpListeners = () => {
             applicationPath.value = content.application_path;
         }
 
-        livewireStore.add(content);
+        livewireStore.add(content.livewire);
         dispatch(content);
     });
 
