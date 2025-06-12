@@ -156,9 +156,6 @@ const closeModal = () => {
                         :placeholder="$t('search')"
                     />
                 </label>
-                <div class="flex items-center justify-center">
-                    <HeaderColorsFilter has-color="has-color" />
-                </div>
                 <button
                     @click="clear()"
                     class="btn btn-sm p-[0.5rem]"

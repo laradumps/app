@@ -18,7 +18,7 @@ const props = defineProps<{
 }>();
 
 const formattedSql = computed(() => {
-    const sql = props.query.sql;
+    const sql = props.query.sql ?? props.query.query;
 
     let language = "sql";
 

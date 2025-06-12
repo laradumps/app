@@ -29,13 +29,12 @@ import { useQueriesPayloadStore } from "@/store/queries";
 import QueriesView from "@/components/laravel/QueriesView.vue";
 import { deepClone } from "@/lib/deep_clone";
 import { usePausePayloadStore } from "@/store/pause";
-import tippy from "tippy.js";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { usePauseQueriesStore } from "@/store/pause-queries";
-import { ArrowsRightLeftIcon } from "@heroicons/vue/24/solid";
 import { useCurrentProject } from "@/store/current-project";
 import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
+import { useLivewireStore } from "@/store/livewire";
 
 markRaw(TheUpdateModalInfo);
 
@@ -49,6 +48,7 @@ const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 const queriesStore = useQueriesPayloadStore();
 const pausePayloadStore = usePausePayloadStore();
+const livewireStore = useLivewireStore();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
@@ -74,7 +74,6 @@ const mailScreen = ref([]);
 const logScreen = ref({});
 const queriesScreen = ref([]);
 const applicationPath = ref("");
-const livewireRequests = ref([]);
 
 const xdebugMode = ref(false);
 
@@ -196,7 +195,7 @@ const dumpListeners = () => {
             applicationPath.value = content.application_path;
         }
 
-        livewireRequests.value.push(content);
+        livewireStore.add(content.livewire);
         dispatch(content);
     });
 
@@ -670,7 +669,6 @@ const openScreenWindow = () => {
                                     <DumpLivewire
                                         v-if="screenStore.screen === 'livewire'"
                                         class="pt-2"
-                                        v-model:livewire-requests="livewireRequests"
                                     />
                                 </div>
 

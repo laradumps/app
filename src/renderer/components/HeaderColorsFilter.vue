@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useColorStore } from "@/store/colors";
 import { useScreenStore } from "@/store/screen";
+import { FunnelIcon } from "@heroicons/vue/24/outline/index.js";
 
 const selectedColors = useColorStore();
 const screenStore = useScreenStore();
@@ -10,6 +11,10 @@ defineProps({
     hasColor: {
         type: Boolean,
         required: true
+    },
+    dropdownMode: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -47,40 +52,33 @@ const isOrange = computed(() => ({
             <button
                 :class="isDark"
                 @click="selectedColors.add('black')"
-                value="black"
                 type="button"
                 class="rounded-full size-3 border border-black"
             ></button>
-
             <button
                 :class="isRed"
                 @click="selectedColors.add('red')"
-                value="red"
                 type="button"
                 class="rounded-full size-3 border border-red-600"
             ></button>
-
             <button
                 :class="isOrange"
                 @click="selectedColors.add('orange')"
                 type="button"
                 class="rounded-full size-3 border border-orange-400"
             ></button>
-
             <button
                 :class="isBlue"
                 @click="selectedColors.add('blue')"
                 type="button"
                 class="rounded-full size-3 border border-blue-600"
             ></button>
-
             <button
                 :class="isGreen"
                 @click="selectedColors.add('green')"
                 type="button"
                 class="rounded-full size-3 border border-green-600"
             ></button>
-
             <button
                 :class="isGray"
                 @click="selectedColors.add('gray')"

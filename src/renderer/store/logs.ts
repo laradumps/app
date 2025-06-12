@@ -41,6 +41,7 @@ export const useLogStore = defineStore("logStore", {
         },
         clear() {
             this.logs = {};
+            localStorage.removeItem("logs");
             this.store();
         },
         _initialize(payload: Payload) {
