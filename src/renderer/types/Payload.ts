@@ -129,6 +129,17 @@ export interface ContextPayload {
     context: [];
 }
 
+export interface LivewirePayload {
+    name: string;
+    size: string;
+    request: string;
+    errors: Array<any>;
+    properties: Array<any>;
+    profile: Array<any>;
+    queries: Array<any>;
+    events: Array<any>;
+}
+
 export interface Payload {
     id: string;
     type: string;
@@ -163,4 +174,5 @@ export interface Payload {
     show_badge_count: boolean;
     extra: Record<string, any>;
     context?: ContextPayload;
+    livewire?: LivewirePayload;
 }

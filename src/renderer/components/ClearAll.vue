@@ -12,6 +12,7 @@ import { useLogStore } from "@/store/logs";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useScreenStore } from "@/store/screen";
+import { useLivewireStore } from "@/store/livewire";
 
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
@@ -24,6 +25,7 @@ const mailStore = useMailStore();
 const pendingRequestsStore = usePendingRequestsStore();
 const duplicatesStore = useQueryDuplicated();
 const screenStore = useScreenStore();
+const livewireStore = useLivewireStore();
 
 const clearAll = (): void => {
     // store
@@ -37,7 +39,7 @@ const clearAll = (): void => {
     queryStore.clear();
     duplicatesStore.clear();
     screenStore.clearAll();
-
+    livewireStore.clear();
     pendingRequestsStore.clear("queries");
 
     setTimeout(() => {
@@ -57,7 +59,14 @@ const clearAll = (): void => {
 };
 
 const hasPayload = computed(() => {
-    return payloadStore.payload.length > 0 || Object(logStore.logs).length > 0 || Object(jobStore.jobs).length > 0 || Object(mailStore.mails).length > 0 || Object(queryStore.payload).length > 0;
+    return (
+        livewireStore.payload.length > 0 ||
+        payloadStore.payload.length > 0 ||
+        Object.values(logStore.logs).length > 0 ||
+        Object.values(jobStore.jobs).length > 0 ||
+        Object.values(mailStore.mails).length > 0 ||
+        Object.values(queryStore.payload).length > 0
+    );
 });
 
 onMounted(() => {
