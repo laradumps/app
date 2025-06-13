@@ -204,5 +204,4 @@ function nextRandom() {
 .arrow.right {
     @apply right-2;
 }
-
 </style>

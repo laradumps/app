@@ -9,6 +9,7 @@ import { XDebugYml } from "@/types/XDebug";
 import { IpcRendererEvent } from "electron";
 
 const xDebugStore = useXDebug();
+const currentProjectStore = useCurrentProject();
 
 interface Project {
     path: string;
@@ -28,14 +29,17 @@ const isNewProject = ref(false);
 const projects = ref<Project[]>([]);
 const environments = ref<Environment[]>([]);
 
-const currentProjectStore = useCurrentProject();
+onMounted(() => {
+    initializeProjectData();
+    setupEventListeners();
+});
+
+const formattedName = (name: string): string => name?.replace(/[-_.]/g, " ") || "No project selected";
 
 const handleProjectAdded = (_: IpcRendererEvent, project: Project) => {
     window.ipcRenderer.send("storage.get");
-    const jsConfetti = new JSConfetti();
-    jsConfetti.addConfetti();
+    new JSConfetti().addConfetti();
     isNewProject.value = true;
-
     setActiveProject(project);
     setTimeout(() => (isNewProject.value = false), 5000);
 };
@@ -46,34 +50,22 @@ const handleActiveProjectSet = (_: IpcRendererEvent, project: Project) => {
 };
 
 const handleProjectsRetrieved = (_: IpcRendererEvent, storedProjects: Record<string, string>) => {
-    const projectsArray = Object.keys(storedProjects).map((key) => ({
-        project: key,
-        path: storedProjects[key]
-    }));
-
+    const projectsArray = Object.entries(storedProjects).map(([project, path]) => ({ project, path }));
     projects.value = projectsArray;
 
-    if (projectsArray.length > 0) {
-        const foundProject = projectsArray.find((p) => p.path === currentProjectStore.projectInfo.path);
-        if (foundProject) {
-            selectedProject.value = foundProject;
-            currentProjectStore.set(foundProject);
-            window.ipcRenderer.send("storage.get-environments", foundProject.path);
-        }
+    const found = projectsArray.find((p) => p.path === currentProjectStore.projectInfo.path);
+    if (found) {
+        setActiveProject(found);
     }
 };
 
-const handleEnvironmentsRetrieved = (_: IpcRendererEvent, environmentsData: Environment[]) => {
-    if (!environmentsData) return;
+const handleEnvironmentsRetrieved = (_: IpcRendererEvent, envs: Environment[]) => {
+    if (!envs) return;
 
-    environments.value = environmentsData.map((entry: Environment) => ({
-        id: entry.id,
-        value: entry.value,
-        selected: entry.selected
-    }));
+    environments.value = envs.map((env) => ({ ...env }));
 
     environments.value.forEach((env) => {
-        if (!["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(env.value)) {
+        if (!ignoredEnvironment(env.value)) {
             window.dispatchEvent(new CustomEvent("add-screen", { detail: env }));
         }
     });
@@ -85,12 +77,13 @@ const setActiveProject = (project: Project) => {
     window.ipcRenderer.send("storage.get-environments", project.path);
 };
 
+const ignoredEnvironment = (value: string): boolean => ["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(value);
+
 const initializeProjectData = () => {
-    isXdebugActive.value = !!xDebugStore.current.project_path;
+    isXdebugActive.value = Boolean(xDebugStore.current.project_path);
 
     if (currentProjectStore.projectInfo) {
-        selectedProject.value = currentProjectStore.projectInfo;
-        window.ipcRenderer.send("storage.get-environments", currentProjectStore.projectInfo.path);
+        setActiveProject(currentProjectStore.projectInfo);
     }
 
     window.ipcRenderer.send("storage.get");
@@ -101,32 +94,18 @@ const setupEventListeners = () => {
     window.ipcRenderer.on("storage.set-active.reply", handleActiveProjectSet);
     window.ipcRenderer.on("storage.get.reply", handleProjectsRetrieved);
     window.ipcRenderer.on("storage.get-environments.reply", handleEnvironmentsRetrieved);
-    window.ipcRenderer.on("xdebug-error", handleError);
+    window.ipcRenderer.on("xdebug-error", (_: IpcRendererEvent, error: Error) => console.error("Xdebug error:", error));
     window.ipcRenderer.on("xdebug-connector::disconnect", disconnectFromXdebug);
-    window.ipcRenderer.on("xdebug-connect-closed", () => {
-        setTimeout(() => {
-            isXdebugActive.value = false;
-        }, 800);
+    window.ipcRenderer.on("xdebug-connect-closed", () => setTimeout(() => (isXdebugActive.value = false), 800));
+    window.ipcRenderer.on("settings:env-xdebug-file-contents", (_: Event, config: XDebugYml) => {
+        xDebugStore.setCurrent(config);
+        window.ipcRenderer.send("connect-xdebug", config);
     });
 };
 
-onMounted(() => {
-    initializeProjectData();
-    setupEventListeners();
-});
+const selectedEnvironments = computed(() => environments.value.map(({ value, selected }) => ({ value, selected })));
 
-const handleError = (_: IpcRendererEvent, error: Error) => {
-    console.error("Xdebug error:", error);
-};
-
-const selectedEnvironments = computed(() => {
-    return environments.value.map((env) => ({
-        value: env.value,
-        selected: env.selected
-    }));
-});
-
-const saveEnvironment = async (env: null | Environment): Promise<void> => {
+const saveEnvironment = async (env: Environment | null): Promise<void> => {
     if (!env) return;
 
     window.ipcRenderer.send("storage.update", {
@@ -134,7 +113,7 @@ const saveEnvironment = async (env: null | Environment): Promise<void> => {
         path: currentProjectStore.projectInfo.path
     });
 
-    if (!["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(env.value)) {
+    if (!ignoredEnvironment(env.value)) {
         window.dispatchEvent(new CustomEvent("add-screen", { detail: env }));
     }
 };
@@ -150,11 +129,10 @@ const confirmProjectRemoval = (projectPath: string) => {
         if (choice === 0) {
             window.ipcRenderer.send("storage.remove", projectPath);
             window.ipcRenderer.send("storage.get");
-            if (projects.value.length > 0) {
-                const firstProject = projects.value[0];
-                currentProjectStore.set(firstProject);
-                selectedProject.value = firstProject;
-                window.ipcRenderer.send("storage.get-environments", firstProject.path);
+
+            const [firstProject] = projects.value;
+            if (firstProject) {
+                setActiveProject(firstProject);
             }
         }
         window.ipcRenderer.off("main:dialog-choice", removeHandler);
@@ -163,33 +141,23 @@ const confirmProjectRemoval = (projectPath: string) => {
     window.ipcRenderer.on("main:dialog-choice", removeHandler);
 };
 
-const connectToXdebug = () => {
-    window.ipcRenderer.send("main:setting-get-xdebug-environments", selectedProject.value.path);
-};
+const connectToXdebug = () => window.ipcRenderer.send("main:setting-get-xdebug-environments", selectedProject.value.path);
+const disconnectFromXdebug = () => window.ipcRenderer.send("disconnect-xdebug");
 
-const disconnectFromXdebug = () => {
-    window.ipcRenderer.send("disconnect-xdebug");
-};
+watch(isXdebugActive, (active) => (active ? connectToXdebug() : disconnectFromXdebug()));
+watch(xDebugStore, (store) => (isXdebugActive.value = Boolean(store.current.project_path)));
 
-watch(isXdebugActive, (shouldConnect) => {
-    shouldConnect ? connectToXdebug() : disconnectFromXdebug();
+const sortedProjects = computed(() => {
+    return [...projects.value].sort((a, b) =>
+        a.project.localeCompare(b.project, undefined, { sensitivity: "base" })
+    );
 });
 
-watch(xDebugStore, (store) => {
-    if (store.current.project_path === "") {
-        isXdebugActive.value = false;
-    }
+const sortedEnvironments = computed(() => {
+    return [...environments.value].sort((a, b) =>
+        a.value.localeCompare(b.value, undefined, { sensitivity: 'base' })
+    );
 });
-
-window.ipcRenderer.on("settings:env-xdebug-file-contents", (event: Event, config: XDebugYml) => {
-    xDebugStore.setCurrent(config);
-    window.ipcRenderer.send("connect-xdebug", config);
-});
-
-const formattedName = (name: string): string => {
-    if (!name) return "No project selected";
-    return name.replace(/[-_.]/g, " ");
-};
 </script>
 
 <template>
@@ -214,69 +182,68 @@ const formattedName = (name: string): string => {
                     class="size-4"
                 />
             </button>
+
             <ul
                 tabindex="0"
-                class="dropdown-content menu bg-base-100 rounded-md shadow-sm"
+                class="-mr-[44px] dropdown-content menu bg-base-100 rounded-md shadow-sm"
             >
-                <div class="overflow-auto max-h-40">
+                <div class="overflow-auto">
                     <li
-                        v-for="project in projects.filter((p) => p.project)"
-                        :key="project.path"
+                        v-for="project in sortedProjects.filter((p) => p.project)"                        :key="project.path"
                         @click="setActiveProject(project)"
                         class="group"
-                        :class="{
-                            '!bg-base-300 rounded-md': selectedProject.path === project.path
-                        }"
+                        :class="{ '!bg-base-300 rounded-md': selectedProject.path === project.path }"
                     >
                         <div class="flex justify-between">
                             <a
-                                :class="{
-                                    'text-primary': selectedProject.path === project.path
-                                }"
                                 class="font-normal capitalize truncate !text-sm !pl-0"
+                                :class="{ 'text-primary': selectedProject.path === project.path }"
                                 v-text="formattedName(project.project)"
                             />
+
                             <TrashIcon
                                 class="size-4 opacity-0 group-hover:opacity-75 text-error"
-                                @click.stop="confirmProjectRemoval"
+                                @click.stop="confirmProjectRemoval(project.path)"
                             />
                         </div>
                     </li>
                 </div>
-                <li
-                    class="mt-1"
-                    v-if="selectedProject.project"
-                >
-                    <label class="text-sm space-x-1">
-                        <input
-                            v-model="isXdebugActive"
-                            type="checkbox"
-                            class="checkbox checkbox-sm"
-                            :class="{ 'checkbox-primary': isXdebugActive }"
-                            @change.stop="saveEnvironment(null)"
-                        />
-                        <span>Xdebug</span>
-                    </label>
-                </li>
 
-                <li
-                    v-for="env in environments"
-                    :key="env.id"
-                >
-                    <label
-                        :title="formattedName(env.value)"
-                        class="capitalize text-sm space-x-1"
+                <div class="bg-base-200/70 mx-1 mt-1 rounded-lg h-[calc(100vh-250px)] overflow-auto">
+                    <li
+                        v-if="selectedProject.project"
+                        class="mt-1"
                     >
-                        <input
-                            v-model="env.selected"
-                            type="checkbox"
-                            class="checkbox checkbox-sm"
-                            :class="{ 'checkbox-primary': env.selected }"
-                            @change.stop="saveEnvironment(env)"
-                        />
-                        <span class="truncate">{{ formattedName(env.value) }}</span>
-                    </label>
-                </li>
+                        <label class="text-sm space-x-1">
+                            <input
+                                v-model="isXdebugActive"
+                                type="checkbox"
+                                class="checkbox checkbox-sm"
+                                :class="{ 'checkbox-primary': isXdebugActive }"
+                                @change.stop="saveEnvironment(null)"
+                            />
+                            <span class="text-base-content">Xdebug</span>
+                        </label>
+                    </li>
+                    <li
+                        v-for="env in sortedEnvironments"
+                        :key="env.id"
+                    >
+                        <label
+                            :title="formattedName(env.value)"
+                            class="capitalize text-sm space-x-1"
+                        >
+                            <input
+                                v-model="env.selected"
+                                type="checkbox"
+                                class="checkbox checkbox-sm"
+                                :class="{ 'checkbox-primary': env.selected }"
+                                @change.stop="saveEnvironment(env)"
+                            />
+                            <span class="text-base-content truncate">{{ formattedName(env.value) }}</span>
+                        </label>
+                    </li>
+                </div>
             </ul>
         </div>
     </div>

@@ -34,5 +34,5 @@ export const DEFAULT_SETTINGS: Settings = {
     custom_css: "",
     show_badge_count: true,
     show_context: true,
-    show_tips: true
+    show_tips: false
 };
