@@ -22,7 +22,12 @@ const tips = ref([
              ${i18n.t("doc.somewhere_in_your_code")}</li>
         <li>${i18n.t("doc.run_your_application_and_see_what_happens_here")}</li>
     </div>`,
-
+    `<div class="space-y-3 text-base-content">
+      <div class="font-semibold text-base mb-4">LaraDumps JS</div>
+      <li>${i18n.t("doc.install_laradumps_js")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/laradumps-js')" class="text-info underline cursor-pointer ml-1">https://github.com/laradumps/laradumps-js</span></li>
+      <li><code class="bg-base-300 p-1 rounded">import { ds } from 'laradumps-js'</code></li>
+      <li>${i18n.t("doc.use_ds_in_browser")}</li>
+     </div>`,
     `<div class="space-y-3 text-base-content">
         <div class="font-semibold !text-base mb-4">${i18n.t("doc.support")}</div>
         <li>⭐️ <span class="ml-2">${i18n.t("doc.give_us_start")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/app')" class="text-info text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</span></span></li>
@@ -139,13 +144,13 @@ function nextRandom() {
                     '-mt-6': settingsStore.settings.show_tips
                 }"
             >
-                <div class="w-full flex justify-center text-lg items-center gap-3">
+                <div class="w-full flex flex-col justify-center text-lg items-center gap-3">
                     <img
                         :src="iconPath"
                         alt=""
-                        class="size-10"
+                        class="size-12"
                     />
-                    <div class="flex flex-col">
+                    <div class="flex gap-1 justify-center items-center flex-col">
                         <span>LaraDumps</span>
                         <span
                             v-show="!settingsStore.settings.show_tips"
@@ -181,30 +186,23 @@ function nextRandom() {
 @reference "./../styles.css";
 
 .carousel1 {
-    @apply h-[250px] flex items-center justify-center relative;
+    @apply h-full min-h-[250px] w-full flex items-center justify-center relative px-4;
 }
 
 .carousel1 .content {
-    @apply max-w-sm absolute w-full top-0;
-}
-
-.carousel1 > div.active {
-    @apply block;
+    @apply max-w-md w-full transition-all duration-300;
 }
 
 .arrow {
-    @apply absolute top-[50%] bg-transparent border-0 cursor-pointer;
+    @apply absolute top-1/2 transform -translate-y-1/2 bg-transparent p-1 rounded-full hover:bg-base-200 transition-colors duration-200;
 }
 
 .arrow.left {
-    @apply left-[-30px];
+    @apply left-2;
 }
 
 .arrow.right {
-    @apply right-[-30px];
+    @apply right-2;
 }
 
-.active {
-    @apply !block;
-}
 </style>

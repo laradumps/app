@@ -6,7 +6,7 @@ import AppGuide from "@/components/AppGuide.vue";
         <div class="h-full right-0 flex justify-center items-center">
             <div id="output"></div>
             <!-- welcome page -->
-            <div class="w-full px-4 text-sm space-y-5">
+            <div class="w-full px-4 text-sm space-y-5 -top-[80px] relative">
                 <!-- app guide -->
                 <AppGuide />
             </div>

@@ -22,7 +22,9 @@ export default {
         contribute_code: "Contribua com código e ajude-nos a crescer",
         install_php_extension: "Instalar a extensão PHP",
         in_any_line_of_code: "em qualquer linha de código.",
-        in_any_project_toggle: "em qualquer projeto, habilite o xdebug"
+        in_any_project_toggle: "em qualquer projeto, habilite o xdebug",
+        install_laradumps_js: "Instale o laradumps‑js",
+        use_ds_in_browser: "Use `ds(...)` no console do navegador"
     },
     clear: "Limpar",
     menu: {
