@@ -126,11 +126,11 @@ const requests = computed(() => {
                 <pane class="overflow-auto ml-2 text-sm">
                     <div
                         v-if="selected"
-                        class="flex flex-col w-full space-y-2 !h-[calc(100vh-100px)]"
+                        class="flex flex-col w-full space-y-2"
                     >
                         <div
                             role="tablist"
-                            class="tabs tabs-box w-full"
+                            class="tabs tabs-lift w-full"
                         >
                             <input
                                 type="radio"
@@ -214,9 +214,13 @@ const requests = computed(() => {
                             />
                             <div
                                 role="tabpanel"
-                                class="tab-content bg-base-100 border-base-300 p-4 overflow-auto max-h-[calc(100vh-0px)]"
+                                class="tab-content bg-base-100 border-base-300 p-4 overflow-auto max-h-[calc(100vh-184px)]"
                             >
                                 <div>
+                                    <div class="text-sm font-semibold text-base-content mb-2">
+                                        {{ selected.queries.length }} Queries
+                                    </div>
+
                                     <DumpQuery
                                         v-for="query in selected.queries"
                                         class="w-full border-b border-base-300 mb-3 pb-3"

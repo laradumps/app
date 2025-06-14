@@ -1,31 +1,14 @@
 @import "./sf-dump.css";
 
 @import "tailwindcss";
-@plugin "@tailwindcss/typography";
-@plugin "daisyui" {
-    themes:
-        light --default,
-        dark --prefersdark,
-        nord,
-        silk,
-        luxury,
-        cyberpunk,
-        retro,
-        cyberpunk,
-        valentine,
-        aqua,
-        dracula,
-        halloween,
-        lemonade,
-        dim,
-        cupcake,
-        emerald,
-        forest,
-        midnight,
-        caramellatte;
-}
 
 @config "../../tailwind.config.js";
+
+@plugin "@tailwindcss/typography";
+
+@plugin "daisyui" {
+    themes: all
+}
 
 @layer base {
     button:not(:disabled),
