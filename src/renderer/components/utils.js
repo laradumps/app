@@ -3,7 +3,7 @@ export const modifyHtml = (html, id) => {
         <script type="module">
         document.addEventListener("DOMContentLoaded", function () {
             document.body.addEventListener("click", function (event) {
-                var target = event.target.closest("a");
+                const target = event.target.closest("a");
                 if (target && target.href.startsWith("http")) {
                     event.preventDefault();
                     window.parent.postMessage({ type: "open-external-link-${id}", url: target.href }, "*");
