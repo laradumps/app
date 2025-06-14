@@ -75,24 +75,28 @@ const clear = () => {
 };
 
 const openModal = (id: string) => {
-    const findLog: Log = logs.value.find((log: Log) => log.log_id === id);
+    const findLog: Log | undefined = logs.value.find((log: Log) => log.log_id === id);
+
+    if (!findLog) {
+        return;
+    }
 
     selectedLogDetail.value = {
-        id: findLog?.log_id,
-        code_snippet: findLog?.code_snippet,
-        message: findLog?.message,
-        context: findLog?.context[0],
-        level: findLog?.level,
-        ide_handle: findLog?.ide_handle
+        id: findLog.log_id,
+        code_snippet: findLog.code_snippet,
+        message: findLog.message,
+        context: findLog.context[0],
+        level: findLog.level,
+        ide_handle: findLog.ide_handle
     };
 
-    const sfDumpId = findLog?.context[1];
+    const sfDumpId = findLog.context[1];
 
     nextTick(() => {
         const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
 
-        if (sfDump && !sfDump?.hasAttribute("has-dump-js")) {
-            sfDump?.setAttribute("has-dump-js", "true");
+        if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
+            sfDump.setAttribute("has-dump-js", "true");
             window.Sfdump(`sf-dump-${sfDumpId}`);
         }
 
@@ -176,13 +180,14 @@ const closeModal = () => {
                             <th class="w-4">Level</th>
                             <th>Message</th>
                             <th class="w-6">Time</th>
-                            <th class="w-6"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr
                             v-for="(log, index) in logs"
                             :key="`log-${index}`"
+                            class="hover:bg-base-100 cursor-pointer"
+                            @click="openModal(log.log_id)"
                         >
                             <td>
                                 <span
@@ -248,14 +253,6 @@ const closeModal = () => {
                                     <span class="opacity-65 text-xs">{{ moment(log.created_at).format("HH:mm:ss") }}</span>
                                 </div>
                             </td>
-                            <td class="w-[64px] ma-w-[64px]">
-                                <button
-                                    class="btn btn-sm btn-soft btn-circle"
-                                    @click="openModal(log.log_id)"
-                                >
-                                    <EyeIcon class="w-5 text-primary" />
-                                </button>
-                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -274,3 +271,12 @@ const closeModal = () => {
         </div>
     </div>
 </template>
+<style scoped>
+@reference "./../../styles.css";
+
+::v-deep(.table) {
+    :where(th, td) {
+        @apply p-1.5;
+    }
+}
+</style>

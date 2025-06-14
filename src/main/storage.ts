@@ -3,6 +3,7 @@ import path from "path";
 import Store from "electron-store";
 import yaml from "js-yaml";
 import fs from "fs";
+
 interface DataStructure {
     app: {
         primary_host: string;
@@ -22,6 +23,12 @@ interface DataStructure {
     observers: {
         [key: string]: boolean;
     };
+}
+
+export interface Environment {
+    id: number;
+    value: string;
+    selected: boolean;
 }
 
 const store = new Store();

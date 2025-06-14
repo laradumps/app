@@ -35,6 +35,7 @@ import { usePauseQueriesStore } from "@/store/pause-queries";
 import { useCurrentProject } from "@/store/current-project";
 import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
 import { useLivewireStore } from "@/store/livewire";
+import { Environment } from "../../main/storage";
 
 markRaw(TheUpdateModalInfo);
 
@@ -82,7 +83,7 @@ onBeforeMount(() => {
 });
 
 onBeforeUnmount(() => {
-    [
+    const events = [
         "dump",
         "livewire",
         "jobs",
@@ -103,7 +104,9 @@ onBeforeUnmount(() => {
         "queries",
         "query",
         "time_track"
-    ].forEach((event) => {
+    ];
+
+    events.forEach((event) => {
         window.ipcRenderer.removeAllListeners(event);
     });
 });
@@ -115,17 +118,17 @@ onMounted(() => {
 
     addScreen(defaultScreen.value);
 
-    window.ipcRenderer.on("dump", (event, { content }) => {
+    window.ipcRenderer.on("dump", (_, { content }) => {
         dispatch(content);
     });
 
     window.ipcRenderer.send("main:app-version");
 
-    window.ipcRenderer.on("main:app-version.reply", (event, arg) => {
+    window.ipcRenderer.on("main:app-version.reply", (_, arg) => {
         document.title = "LaraDumps - " + `v${arg.version}`;
     });
 
-    window.ipcRenderer.on("app:screen-window-enable", async (event, args) => {
+    window.ipcRenderer.on("app:screen-window-enable", async (_, args) => {
         inScreenWindow.value = args.screen;
         payloadScreen.value = args.payload;
         jobScreen.value = args.jobs;
@@ -136,7 +139,7 @@ onMounted(() => {
         setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
     });
 
-    window.ipcRenderer.on("app:screen-window-update", async (event, args) => {
+    window.ipcRenderer.on("app:screen-window-update", async (_, args) => {
         payloadScreen.value = args.payload;
         jobScreen.value = args.jobs;
         mailScreen.value = args.mails;
@@ -146,18 +149,18 @@ onMounted(() => {
 
     window.ipcRenderer.send("local-shortcut:get");
 
-    window.ipcRenderer.on("xdebug-connected", (event, arg) => {
+    window.ipcRenderer.on("xdebug-connected", (_, arg) => {
         xdebugMode.value = true;
     });
 
-    window.ipcRenderer.on("xdebug-disconnected", (event, arg) => {
+    window.ipcRenderer.on("xdebug-disconnected", (_, arg) => {
         if (xDebugStore.current) {
             xDebugStore.current.project_path = "";
         }
         xdebugMode.value = false;
     });
 
-    window.ipcRenderer.on("xdebug", (event, { content }) => dispatch(content));
+    window.ipcRenderer.on("xdebug", (_, { content }) => dispatch(content));
 
     dumpListeners();
 
@@ -166,24 +169,26 @@ onMounted(() => {
     toggleScreen("home");
 
     window.addEventListener("add-screen", (event: Event) => {
-        const detail = (event as CustomEvent).detail as string[];
+        const detail: Environment = (event as CustomEvent).detail;
+
+        const screenName = detail.value.replace("_", " ");
 
         if (detail.selected) {
             addScreen({
-                screen_name: detail.value.replace("_", " "),
+                screen_name: screenName,
                 raise_in: 0,
                 visible: true,
                 pinned: false,
                 new_window: false
             });
         } else {
-            screenStore.remove(detail.value);
+            screenStore.remove(screenName);
         }
     });
 });
 
 const dumpListeners = () => {
-    window.ipcRenderer.on("livewire", (event, { content }) => {
+    window.ipcRenderer.on("livewire", (_, { content }) => {
         if (pausePayloadStore.is_paused) {
             return;
         }

@@ -7,6 +7,7 @@ import { useCurrentProject } from "@/store/current-project";
 import { useXDebug } from "@/store/xdebug";
 import { XDebugYml } from "@/types/XDebug";
 import { IpcRendererEvent } from "electron";
+import { Environment } from "../../main/storage";
 
 const xDebugStore = useXDebug();
 const currentProjectStore = useCurrentProject();
@@ -16,13 +17,6 @@ interface Project {
     project: string;
 }
 
-interface Environment {
-    id: number;
-    value: string;
-    selected: boolean;
-}
-
-const isDropdownOpen = ref(false);
 const isXdebugActive = ref(false);
 const selectedProject = ref<Project>({} as Project);
 const isNewProject = ref(false);
@@ -148,24 +142,17 @@ watch(isXdebugActive, (active) => (active ? connectToXdebug() : disconnectFromXd
 watch(xDebugStore, (store) => (isXdebugActive.value = Boolean(store.current.project_path)));
 
 const sortedProjects = computed(() => {
-    return [...projects.value].sort((a, b) =>
-        a.project.localeCompare(b.project, undefined, { sensitivity: "base" })
-    );
+    return [...projects.value].sort((a, b) => a.project.localeCompare(b.project, undefined, { sensitivity: "base" }));
 });
 
 const sortedEnvironments = computed(() => {
-    return [...environments.value].sort((a, b) =>
-        a.value.localeCompare(b.value, undefined, { sensitivity: 'base' })
-    );
+    return [...environments.value].sort((a, b) => a.value.localeCompare(b.value, undefined, { sensitivity: "base" }));
 });
 </script>
 
 <template>
     <div class="mr-0.5">
-        <div
-            class="dropdown dropdown-end dropdown-hover"
-            :class="{ 'dropdown-open': isDropdownOpen }"
-        >
+        <div class="dropdown dropdown-end dropdown-hover">
             <button class="flex font-normal capitalize truncate text-xs btn btn-soft justify-between !px-2.5 !m-0 !h-6.5 gap-2">
                 <span
                     v-if="selectedProject.project"
@@ -189,14 +176,15 @@ const sortedEnvironments = computed(() => {
             >
                 <div class="overflow-auto">
                     <li
-                        v-for="project in sortedProjects.filter((p) => p.project)"                        :key="project.path"
+                        v-for="project in sortedProjects.filter((p) => p.project)"
+                        :key="project.path"
                         @click="setActiveProject(project)"
                         class="group"
                         :class="{ '!bg-base-300 rounded-md': selectedProject.path === project.path }"
                     >
                         <div class="flex justify-between">
-                            <a
-                                class="font-normal capitalize truncate !text-sm !pl-0"
+                            <span
+                                class="font-normal capitalize text-xs truncate !pl-0"
                                 :class="{ 'text-primary': selectedProject.path === project.path }"
                                 v-text="formattedName(project.project)"
                             />
@@ -209,16 +197,16 @@ const sortedEnvironments = computed(() => {
                     </li>
                 </div>
 
-                <div class="bg-base-200/70 mx-1 mt-1 rounded-lg h-[calc(100vh-250px)] overflow-auto">
+                <div class="bg-base-200/70 text-xs mx-1 mt-1 rounded-lg h-[calc(100vh-250px)] overflow-auto">
                     <li
                         v-if="selectedProject.project"
                         class="mt-1"
                     >
-                        <label class="text-sm space-x-1">
+                        <label class="space-x-1">
                             <input
                                 v-model="isXdebugActive"
                                 type="checkbox"
-                                class="checkbox checkbox-sm"
+                                class="checkbox checkbox-xs"
                                 :class="{ 'checkbox-primary': isXdebugActive }"
                                 @change.stop="saveEnvironment(null)"
                             />
@@ -231,12 +219,12 @@ const sortedEnvironments = computed(() => {
                     >
                         <label
                             :title="formattedName(env.value)"
-                            class="capitalize text-sm space-x-1"
+                            class="capitalize space-x-1"
                         >
                             <input
                                 v-model="env.selected"
                                 type="checkbox"
-                                class="checkbox checkbox-sm"
+                                class="checkbox checkbox-xs"
                                 :class="{ 'checkbox-primary': env.selected }"
                                 @change.stop="saveEnvironment(env)"
                             />
