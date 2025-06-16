@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { ArrowPathIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/outline";
-import { ServerIcon } from "@heroicons/vue/24/outline";
+import { ServerIcon } from "@heroicons/vue/24/solid";
+import { ServerIcon as ServerIconOutline } from "@heroicons/vue/24/outline";
 
 import { useSSHStore } from "@/store/ssh";
 import Modal from "./Modal.vue";
@@ -154,10 +155,12 @@ const editConnection = (id: number) => {
             class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         >
             <ServerIcon
+                v-if="connected"
+                class="w-4 text-primary"
+            />
+            <ServerIconOutline
+                v-else
                 class="w-4"
-                :class="{
-                    'text-primary': connected,
-                }"
             />
         </button>
 
