@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { ArrowPathIcon, PencilIcon, ServerIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { ArrowPathIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { ServerIcon } from "@heroicons/vue/24/solid";
 import { ServerIcon as ServerIconOutline } from "@heroicons/vue/24/outline";
 
 import { useSSHStore } from "@/store/ssh";
@@ -153,11 +154,14 @@ const editConnection = (id: number) => {
             :title="$t('menu.ssh')"
             class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
         >
-            <ServerIconOutline
+            <ServerIcon
                 v-if="connected"
                 class="w-4 text-primary"
             />
-            <ServerIcon class="w-4" />
+            <ServerIconOutline
+                v-else
+                class="w-4"
+            />
         </button>
 
         <ul
