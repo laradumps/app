@@ -72,7 +72,7 @@ const percentage = computed(() => {
         return 0;
     }
 
-    return Number(((100 * props.payload.queries?.time) / total.value).toFixed(2));
+    return Number(((100 * props.payload.queries?.query.time) / total.value).toFixed(2));
 });
 
 const isDuplicated = (sql) => {
@@ -82,7 +82,7 @@ const isDuplicated = (sql) => {
 const formattedSql = computed(() => {
     if (!props.payload.queries) return;
 
-    const sql = props.payload.queries.sql;
+    const sql = props.payload.queries.query.sql;
 
     let language = "sql";
 
@@ -120,8 +120,8 @@ const formattedSql = computed(() => {
             />
 
             <span
-                v-if="payload.queries && payload.queries.connectionName"
-                v-text="payload.queries.connectionName"
+                v-if="payload.queries && payload.queries.query.connectionName"
+                v-text="payload.queries.query.connectionName"
             >
             </span>
 
@@ -135,7 +135,7 @@ const formattedSql = computed(() => {
 
             <span class="opacity-30">|</span>
 
-            <span v-if="payload.queries && payload.queries.time"> {{ payload.queries.time }}<span class="font-semibold text-[10px]">ms</span> </span>
+            <span v-if="payload.queries && payload.queries.query.time"> {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span> </span>
         </div>
 
         <pre

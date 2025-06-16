@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Divider from "../components/Divider.vue";
+import Divider from "@/components/common/Divider.vue";
 import { nextTick, onMounted, onUpdated, ref, watch } from "vue";
 import { useSettingsStore } from "@/store/settings";
-import SelectInput from "@/components/SelectInput.vue";
+import SelectInput from "@/components/common/SelectInput.vue";
 import { useI18n } from "vue-i18n";
 import { useI18nStore } from "@/store/i18n";
 import hotkeys from "hotkeys-js";

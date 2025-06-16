@@ -138,7 +138,7 @@ onUnmounted(() => {
 </template>
 
 <style>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 
 #release-notes h2 {
     font-size: 1.125rem !important;

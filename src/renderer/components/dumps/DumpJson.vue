@@ -53,7 +53,7 @@ const shouldCollapse = computed(() => countNodes(value.value) >= 4);
     </div>
 </template>
 <style>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 
 .vjs-key {
     @apply !text-sm;

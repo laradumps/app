@@ -8,10 +8,9 @@ import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
 import { Log, useLogStore } from "@/store/logs";
 import CodeSnippet from "@/components/CodeSnippet.vue";
-import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
 import { useColorStore } from "@/store/colors";
 import { useSettingsStore } from "@/store/settings";
-import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
+import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 
 const logStore = useLogStore();
 const currentProjectStore = useCurrentProject();

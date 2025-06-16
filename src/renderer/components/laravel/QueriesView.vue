@@ -4,7 +4,7 @@ import QueriesHeader from "@/components/laravel/QueriesHeader.vue";
 import { computed, defineProps, nextTick, onMounted, ref } from "vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useTimeStore } from "@/store/time";
-import DumpItem from "@/components/DumpItem.vue";
+import DumpItem from "@/components/dumps/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
@@ -16,7 +16,7 @@ import "splitpanes/dist/splitpanes.css";
 import QueriesRequests from "@/components/laravel/QueriesRequests.vue";
 import IconPause from "@/components/Icons/IconPause.vue";
 import { usePauseQueriesStore } from "@/store/pause-queries";
-import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
+import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
@@ -43,8 +43,8 @@ const queries = computed(() => {
 
         const isReversed = order !== "asc";
         return (a: Payload, b: Payload) => {
-            const aTime = a?.queries?.time || 0;
-            const bTime = b?.queries?.time || 0;
+            const aTime = a?.queries?.query.time || 0;
+            const bTime = b?.queries?.query.time || 0;
             return (aTime - bTime) * (isReversed ? -1 : 1);
         };
     };
@@ -53,9 +53,9 @@ const queries = computed(() => {
     const queryDuplicatedStore = useQueryDuplicated();
 
     items.forEach((dump: Payload) => {
-        const sql = dump.queries?.sql || "";
+        const sql = dump.queries?.query?.sql || "";
 
-        const isDuplicate = items.filter((d: Payload) => d.request_id === dump.request_id && d.queries.sql === sql);
+        const isDuplicate = items.filter((d: Payload) => d.request_id === dump.request_id && d.queries.query?.sql === sql);
 
         queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
     });
@@ -63,7 +63,7 @@ const queries = computed(() => {
     return items
         .filter((dump: Payload) => {
             if (queryDuplicatedStore.showOnlyDuplicated) {
-                return queryDuplicatedStore.isDuplicated(dump.request_id, dump.queries?.sql);
+                return queryDuplicatedStore.isDuplicated(dump.request_id, dump.queries?.query?.sql);
             }
             return true;
         })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from "vue";
-import DumpQuery from "@/components/DumpQuery.vue";
+import DumpQuery from "@/components/laravel/DumpQuery.vue";
 import VueJsonPretty from "vue-json-pretty";
 import { useLivewireStore } from "@/store/livewire";
 import { LivewirePayload } from "@/types/Payload";
@@ -263,7 +263,7 @@ const requests = computed(() => {
     </div>
 </template>
 <style>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 
 .progress-container {
     display: flex;

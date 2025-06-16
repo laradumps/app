@@ -1,19 +1,20 @@
 import { IdeHandle } from "@/types/IdeHandle";
 
+export interface QueryPayload {
+    sql: string;
+    bindings: string[];
+    time: number;
+    connection: any,
+    connectionName: any;
+}
+
 export interface QueriesPayload {
-    connectionName: string;
     driver: string;
     database: string;
-    time: number;
-    sql: string;
-    duplicated: boolean;
+    query: QueryPayload;
     origin: string;
     uri: string;
     method: string;
-}
-
-export interface QueryPayload {
-    sql: string;
 }
 
 export interface ModelPayload {

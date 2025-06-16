@@ -51,5 +51,5 @@ const formattedSql = computed(() => {
 </template>
 
 <style scoped>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 </style>

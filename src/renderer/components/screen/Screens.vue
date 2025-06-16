@@ -149,7 +149,7 @@ const pinScreen = (screen) => {
 </template>
 
 <style scoped>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 
 .tab {
     @apply px-3;

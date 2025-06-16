@@ -11,7 +11,7 @@ import { Payload } from "@/types/Payload";
 import { SparklesIcon, ChartBarIcon, LockClosedIcon, AdjustmentsHorizontalIcon } from "@heroicons/vue/20/solid";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import DumpQueries from "@/components/laravel/DumpQueries.vue";
-import DumpLink from "@/components/DumpLink.vue";
+import DumpLink from "@/components/dumps/DumpLink.vue";
 import IconWarning from "@/components/Icons/IconWarning.vue";
 import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
 
@@ -57,7 +57,7 @@ watch(
                     .map(
                         (payload: Payload): CharPoint => ({
                             time: payload.date_time,
-                            value: payload.queries?.time,
+                            value: payload.queries?.query.time,
                             id: payload.id
                         })
                     );
@@ -69,7 +69,7 @@ watch(
                 getDataPoints.value = queriesStore.payload.map(
                     (payload: Payload): CharPoint => ({
                         time: payload.date_time,
-                        value: payload.queries?.time,
+                        value: payload.queries?.query.time,
                         id: payload.id
                     })
                 );
@@ -88,7 +88,7 @@ watch(
                     .filter((payload: Payload) => payload.request_id === timeStore.selected)
                     .map((payload: Payload) => ({
                         time: payload.date_time,
-                        value: payload.queries.time,
+                        value: payload.queries.query.time,
                         id: payload.id
                     }));
             }, 200);
@@ -98,7 +98,7 @@ watch(
             setTimeout(() => {
                 getDataPoints.value = queriesStore.payload.map((payload: Payload) => ({
                     time: payload.date_time,
-                    value: payload.queries.time,
+                    value: payload.queries.query.time,
                     id: payload.id
                 }));
             }, 200);
@@ -142,9 +142,9 @@ const orderLabel = computed(() => {
                         :ide-handler="selectedChartPoint.ide_handle"
                     />
                     <div class="flex gap-2">
-                        <div class="badge badge-soft badge-ghost">{{ selectedChartPoint.queries?.time }}ms</div>
+                        <div class="badge badge-soft badge-ghost">{{ selectedChartPoint.queries?.query.time }}ms</div>
                         <div class="badge badge-soft badge-ghost">{{ selectedChartPoint.queries?.origin }}</div>
-                        <div class="badge badge-soft badge-ghost">{{ selectedChartPoint.queries?.connectionName }}</div>
+                        <div class="badge badge-soft badge-ghost">{{ selectedChartPoint.queries?.query.connectionName }}</div>
                         <div class="badge badge-soft badge-ghost">{{ selectedChartPoint.queries?.database }}</div>
                     </div>
 

@@ -118,7 +118,7 @@ export const useTimeStore = defineStore("timeStore", {
                 };
             }
 
-            const total = (this.requests[requestId].total += queriesPayload.time);
+            const total = (this.requests[requestId].total += queriesPayload.query.time);
 
             this.requests[requestId] = {
                 requestId,

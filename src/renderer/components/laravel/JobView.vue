@@ -9,7 +9,7 @@ import { TrashIcon } from "@heroicons/vue/24/outline";
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
 import { useSettingsStore } from "@/store/settings";
-import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
+import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 
 const jobStore = useJobStore();
 const currentProjectStore = useCurrentProject();

@@ -1,5 +1,5 @@
 <script setup>
-import AppGuide from "@/components/AppGuide.vue";
+import AppGuide from "@/components/app/AppGuide.vue";
 </script>
 <template>
     <div>

@@ -183,7 +183,7 @@ function nextRandom() {
 </template>
 
 <style>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 
 .carousel1 {
     @apply h-full min-h-[250px] w-full flex items-center justify-center relative px-4;

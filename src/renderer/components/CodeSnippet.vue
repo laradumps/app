@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, defineProps, onMounted, onUnmounted, ref } from "vue";
-import { CodeSnippet, Payload } from "@/types/Payload";
+import { CodeSnippet } from "@/types/Payload";
 import hljs from "highlight.js/lib/core";
-import DumpLink from "@/components/DumpLink.vue";
+import DumpLink from "@/components/dumps/DumpLink.vue";
 import { IdeHandle } from "@/types/IdeHandle";
 import IconArrowLight from "@/components/Icons/IconArrowLight.vue";
 
