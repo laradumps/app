@@ -115,7 +115,7 @@ const formattedSql = computed(() => {
     >
         <div class="flex items-center opacity-80 justify-end gap-2">
             <IconWarning
-                v-if="isDuplicated(payload.queries?.sql)"
+                v-if="isDuplicated(payload.queries?.query.sql)"
                 class="text-warning w-4"
             />
 

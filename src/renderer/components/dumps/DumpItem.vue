@@ -47,8 +47,8 @@ const props = defineProps<{
 
 const copyDump = () => {
     nextTick(() => {
-        if (props.payload.type === "queries" && props.payload.queries?.sql) {
-            navigator.clipboard.writeText(props.payload.queries?.sql).then(() => {});
+        if (props.payload.type === "queries" && props.payload.queries?.query.sql) {
+            navigator.clipboard.writeText(props.payload.queries?.query.sql).then(() => {});
 
             return;
         }
@@ -119,10 +119,10 @@ const getLabel = computed(() => {
 });
 
 const block = () => {
-    props.payload.queries?.sql && queriesBlockedStore.toggle(props.payload.queries?.sql);
+    props.payload.queries?.query.sql && queriesBlockedStore.toggle(props.payload.queries?.query.sql);
 };
 
-const isDuplicated = (sql) => {
+const isDuplicated = (sql: string) => {
     return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
 };
 
@@ -219,7 +219,7 @@ const shouldDisplayContext = computed(() => {
                     <div v-show="!open">
                         <div class="flex items-center opacity-80 justify-end gap-2">
                             <IconWarning
-                                v-if="isDuplicated(payload.queries?.sql)"
+                                v-if="isDuplicated(payload.queries?.query.sql)"
                                 class="text-warning w-4"
                             />
 
