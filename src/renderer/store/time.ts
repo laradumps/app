@@ -85,6 +85,7 @@ export const useTimeStore = defineStore("timeStore", {
 
             return this.requests[requestId].origin;
         },
+
         getMethod(requestId: never) {
             if (typeof this.requests[requestId] === "undefined") {
                 return 0;
@@ -118,7 +119,7 @@ export const useTimeStore = defineStore("timeStore", {
                 };
             }
 
-            const total = (this.requests[requestId].total += queriesPayload.query.time);
+            const total = (this.requests[requestId].total += queriesPayload.time);
 
             this.requests[requestId] = {
                 requestId,
