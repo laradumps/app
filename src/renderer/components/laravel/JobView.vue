@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { Job, useJobStore } from "@/store/jobs";
-import { computed, defineProps, nextTick, ref } from "vue";
+import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import moment from "moment";
-import { EyeIcon, MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
-import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
-import { TrashIcon } from "@heroicons/vue/24/outline";
+import { MagnifyingGlassIcon, PlayIcon } from "@heroicons/vue/24/outline";
+import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon, TrashIcon } from "@heroicons/vue/24/solid";
 
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
 import { useSettingsStore } from "@/store/settings";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
+import { usePauseJobsStore } from "@/store/pause-jobs";
+import IconPause from "@/components/Icons/IconPause.vue";
 
 const jobStore = useJobStore();
 const currentProjectStore = useCurrentProject();
 const settingsStore = useSettingsStore();
+const pauseJobsStore = usePauseJobsStore();
 
 const selectedJobDetail = ref();
 const search = ref("");
@@ -24,9 +26,9 @@ const props = defineProps<{
 }>();
 
 const generateLink = (ideHandler: IdeHandle) => {
-    const ide_handler = settingsStore.settings.ide_handler ? settingsStore.settings.ide_handler : "phpstorm://open?file={filepath}&line={line}";
-
+    const ide_handler = settingsStore.settings.ide_handler || "phpstorm://open?file={filepath}&line={line}";
     const { project_path, real_path, workdir, wsl_config, base_path, line } = ideHandler;
+
     const relativePath = real_path?.replace(workdir, "").replace(project_path, "");
     let linkPath = project_path + relativePath;
 
@@ -44,7 +46,7 @@ const generateLink = (ideHandler: IdeHandle) => {
 };
 
 const jobs = computed(() => {
-    const items = props.items ? props.items : jobStore.jobs;
+    const items = props.items || jobStore.jobs;
 
     return Object.values(items)
         .filter((job) => {
@@ -58,28 +60,40 @@ const jobs = computed(() => {
         });
 });
 
+const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+        const drawerToggle = document.getElementById("my-drawer") as HTMLInputElement;
+        if (drawerToggle) {
+            drawerToggle.checked = false;
+        }
+    }
+};
+
 const openModal = (id: string) => {
     const findJob = jobs.value.find((job) => job.job_id === id);
+    if (!findJob) return;
 
     selectedJobDetail.value = {
-        id: findJob?.job_id,
-        html: findJob?.job[0],
-        display_name: findJob?.display_name,
-        start_time: findJob?.start_time,
-        end_time: findJob?.end_time
+        id: findJob.job_id,
+        html: findJob.job[0],
+        display_name: findJob.display_name,
+        start_time: findJob.start_time,
+        end_time: findJob.end_time
     };
 
-    const sfDumpId = findJob?.job[1];
+    const sfDumpId = findJob.job[1];
 
     nextTick(() => {
         const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
-
-        if (!sfDump?.hasAttribute("has-dump-js")) {
-            sfDump?.setAttribute("has-dump-js", "true");
+        if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
+            sfDump.setAttribute("has-dump-js", "true");
             window.Sfdump(`sf-dump-${sfDumpId}`);
         }
 
-        modal.showModal();
+        const toggle = document.getElementById("my-drawer") as HTMLInputElement;
+        if (toggle) {
+            toggle.checked = true;
+        }
     });
 };
 
@@ -89,66 +103,65 @@ const clear = () => {
 };
 
 const duration = (startTime: any, endTime: any) => {
-    if (!startTime || !endTime) {
-        return "-";
-    }
+    if (!startTime || !endTime) return "-";
 
-    startTime = new Date(startTime);
-    endTime = new Date(endTime);
+    const durationMs = new Date(endTime).getTime() - new Date(startTime).getTime();
+    if (durationMs < 1000) return `${durationMs} ms`;
 
-    const jobStartTime = new Date(startTime);
-    const durationMs = endTime.getTime() - jobStartTime.getTime();
-
-    if (durationMs < 1000) {
-        return `${durationMs} ms`;
-    }
-
-    const durationSeconds = (durationMs / 1000).toFixed(2);
-    return `${durationSeconds} s`;
+    return `${(durationMs / 1000).toFixed(2)} s`;
 };
+
+onMounted(() => {
+    window.addEventListener("keydown", handleEscape);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener("keydown", handleEscape);
+});
 </script>
 
 <template>
     <div class="px-3">
-        <dialog
-            id="modal"
-            class="modal"
-            v-if="selectedJobDetail"
-        >
-            <div class="modal-box max-w-2xl">
-                <h3
-                    class="text-lg font-bold"
-                    v-text="selectedJobDetail.display_name"
-                ></h3>
-                <div class="py-4 space-y-2">
-                    <div v-html="selectedJobDetail.html"></div>
-                    <table class="table table-zebra">
-                        <thead>
-                            <tr>
-                                <td class="bg-base-200">Job ID</td>
-                                <td>Start Time</td>
-                                <td>End Time</td>
-                                <td>Duration</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="bg-base-200">{{ selectedJobDetail.id }}</td>
-                                <td>{{ moment(selectedJobDetail.start_time).format("hh:mm:ss a") }}</td>
-                                <td>{{ moment(selectedJobDetail.end_time).format("hh:mm:ss a") }}</td>
-                                <td>{{ duration(selectedJobDetail.start_time, selectedJobDetail.end_time) }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <div class="drawer drawer-end">
+            <input
+                id="my-drawer"
+                type="checkbox"
+                class="drawer-toggle hidden"
+            />
+
+            <div class="drawer-side">
+                <label
+                    for="my-drawer"
+                    class="drawer-overlay"
+                ></label>
+                <div class="menu bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-4">
+                    <div v-if="selectedJobDetail">
+                        <h3 class="nav-bar text-base font-bold">{{ selectedJobDetail.display_name }}</h3>
+                        <div class="py-4 space-y-5">
+                            <table class="table table-zebra">
+                                <thead>
+                                    <tr>
+                                        <td>Job ID</td>
+                                        <td>Start Time</td>
+                                        <td>End Time</td>
+                                        <td>Duration</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ selectedJobDetail.id }}</td>
+                                        <td class="whitespace-nowrap">{{ moment(selectedJobDetail.start_time).format("hh:mm:ss a") }}</td>
+                                        <td class="whitespace-nowrap">{{ moment(selectedJobDetail.end_time).format("hh:mm:ss a") }}</td>
+                                        <td>{{ duration(selectedJobDetail.start_time, selectedJobDetail.end_time) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div v-html="selectedJobDetail.html"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
+        </div>
 
         <div
             class="space-y-3"
@@ -165,7 +178,21 @@ const duration = (startTime: any, endTime: any) => {
                     />
                 </label>
                 <button
-                    @click="clear()"
+                    @click="pauseJobsStore.toggle()"
+                    class="btn btn-sm p-[0.5rem]"
+                    :data-tippy-content="$t('pause')"
+                >
+                    <PlayIcon
+                        v-if="pauseJobsStore.is_paused"
+                        class="w-4 text-warning"
+                    />
+                    <IconPause
+                        v-else
+                        class="w-4"
+                    />
+                </button>
+                <button
+                    @click="clear"
                     class="btn btn-sm p-[0.5rem]"
                     data-tippy-content="Clear"
                 >
@@ -183,33 +210,34 @@ const duration = (startTime: any, endTime: any) => {
                         <tr>
                             <th class="w-4">#</th>
                             <th>Job</th>
-                            <th>Duration</th>
+                            <th class="text-right">Duration</th>
                             <th>Date</th>
-                            <th class="w-6"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr
                             v-for="job in jobs"
                             :key="job.job_id"
+                            @click="openModal(job.job_id)"
+                            class="hover:bg-base-100 cursor-pointer"
                         >
                             <td>
                                 <div class="flex items-center justify-center">
                                     <ArrowPathIcon
-                                        class="w-6 text-primary"
                                         v-if="job.status === 'Processing'"
+                                        class="w-6 text-primary"
                                     />
                                     <CheckIcon
-                                        class="w-6 text-success"
                                         v-if="job.status === 'Processed'"
+                                        class="w-6 text-success"
                                     />
                                     <XMarkIcon
-                                        class="w-6 text-error"
                                         v-if="job.status === 'Failed'"
+                                        class="w-6 text-error"
                                     />
                                     <InformationCircleIcon
-                                        class="w-6 text-warning"
                                         v-if="job.status === 'Queued'"
+                                        class="w-6 text-warning"
                                     />
                                 </div>
                             </td>
@@ -218,9 +246,9 @@ const duration = (startTime: any, endTime: any) => {
                                 <a
                                     v-if="job.ide_handle.class_name !== 'empty'"
                                     :href="generateLink(job.ide_handle)"
-                                    v-text="`${job.ide_handle.class_name}:${job.ide_handle.line}`"
                                     class="link text-xs opacity-60"
                                 >
+                                    {{ job.ide_handle.class_name }}:{{ job.ide_handle.line }}
                                 </a>
                             </td>
                             <td class="whitespace-nowrap text-right">{{ duration(job.start_time, job.end_time) }}</td>
@@ -229,11 +257,6 @@ const duration = (startTime: any, endTime: any) => {
                                     <span>{{ moment(job.pushed_time ?? job.start_time).fromNow() }}</span>
                                     <span class="opacity-65 text-xs">{{ moment(job.pushed_time ?? job.start_time).format("HH:mm:ss") }}</span>
                                 </div>
-                            </td>
-                            <td class="w-[64px] ma-w-[64px]">
-                                <button @click="openModal(job.job_id)">
-                                    <EyeIcon class="w-5 text-primary" />
-                                </button>
                             </td>
                         </tr>
                     </tbody>
@@ -253,3 +276,13 @@ const duration = (startTime: any, endTime: any) => {
         </div>
     </div>
 </template>
+
+<style scoped>
+@reference "./../../styles.css";
+
+::v-deep(.table) {
+    :where(th, td) {
+        @apply p-1.5 px-2;
+    }
+}
+</style>

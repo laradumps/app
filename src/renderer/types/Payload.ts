@@ -4,7 +4,7 @@ export interface QueryPayload {
     sql: string;
     bindings: string[];
     time: number;
-    connection: any,
+    connection: any;
     connectionName: any;
 }
 

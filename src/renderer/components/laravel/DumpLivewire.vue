@@ -217,9 +217,7 @@ const requests = computed(() => {
                                 class="tab-content bg-base-100 border-base-300 p-4 overflow-auto max-h-[calc(100vh-184px)]"
                             >
                                 <div>
-                                    <div class="text-sm font-semibold text-base-content mb-2">
-                                        {{ selected.queries.length }} Queries
-                                    </div>
+                                    <div class="text-sm font-semibold text-base-content mb-2">{{ selected.queries.length }} Queries</div>
 
                                     <DumpQuery
                                         v-for="query in selected.queries"

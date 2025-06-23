@@ -57,9 +57,7 @@ const display = (id: string) => {
                         >{{ request.method }}
                     </span>
                 </div>
-                <span>
-                   -
-                </span>
+                <span> - </span>
             </div>
         </div>
     </div>

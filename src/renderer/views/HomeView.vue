@@ -35,6 +35,7 @@ import { useCurrentProject } from "@/store/current-project";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { useLivewireStore } from "@/store/livewire";
 import { Environment } from "../../main/storage";
+import { usePauseJobsStore } from "@/store/pause-jobs";
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -56,6 +57,7 @@ const pendingRequestsStore = usePendingRequestsStore();
 const blockedStore = useQueriesBlockedStore();
 const pauseQueries = usePauseQueriesStore();
 const currentProjectStore = useCurrentProject();
+const pauseJobsStore = usePauseJobsStore();
 
 const defaultScreen = ref({
     screen_name: "home",
@@ -202,7 +204,7 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("jobs", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
+        if (pauseJobsStore.is_paused) {
             return;
         }
 

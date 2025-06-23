@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onMounted, ref } from "vue";
+import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import moment from "moment";
 import { EyeIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import { ExclamationCircleIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
@@ -99,51 +99,69 @@ const openModal = (id: string) => {
             window.Sfdump(`sf-dump-${sfDumpId}`);
         }
 
-        modal.showModal();
+        const toggle = document.getElementById("my-drawer") as HTMLInputElement;
+        if (toggle) {
+            toggle.checked = true;
+        }
     });
 };
 
 onMounted(() => {
     setInterval(() => {
         forceUpdate.value++;
+        window.addEventListener("keydown", handleEscape);
     }, 60_000);
 });
 
-const closeModal = () => {
-    selectedLogDetail.value = null;
+onBeforeUnmount(() => {
+    window.removeEventListener("keydown", handleEscape);
+});
+
+const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+        const drawerToggle = document.getElementById("my-drawer") as HTMLInputElement;
+        if (drawerToggle) {
+            drawerToggle.checked = false;
+            selectedLogDetail.value = null;
+        }
+    }
 };
 </script>
 
 <template>
     <div class="px-3">
-        <dialog
-            id="modal"
-            class="modal"
-            v-if="selectedLogDetail"
-            @close="closeModal"
-        >
-            <div class="modal-box max-w-3xl max-h-[calc(100vh-74px)]">
-                <div class="py-4 space-y-5">
-                    <div>{{ selectedLogDetail.message }}</div>
-                    <div>
-                        <CodeSnippet
-                            v-if="selectedLogDetail.code_snippet.length > 0"
-                            :code_snippet="selectedLogDetail.code_snippet"
-                            :ide_handle="selectedLogDetail.ide_handle"
-                        />
-                        <div v-else>
-                            <div v-html="selectedLogDetail.context"></div>
+        <div class="drawer drawer-end">
+            <input
+                id="my-drawer"
+                type="checkbox"
+                class="drawer-toggle hidden"
+            />
+
+            <div class="drawer-side">
+                <label
+                    for="my-drawer"
+                    class="drawer-overlay"
+                ></label>
+                <div class="bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-5">
+                    <div
+                        class="space-y-5"
+                        v-if="selectedLogDetail"
+                    >
+                        <div class="nav-bar text-base">{{ selectedLogDetail.message }}</div>
+                        <div class="h-auto overflow-auto">
+                            <CodeSnippet
+                                v-if="selectedLogDetail.code_snippet.length > 0"
+                                :code_snippet="selectedLogDetail.code_snippet"
+                                :ide_handle="selectedLogDetail.ide_handle"
+                            />
+                            <div v-else>
+                                <div v-html="selectedLogDetail.context"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
+        </div>
 
         <div
             class="space-y-3"

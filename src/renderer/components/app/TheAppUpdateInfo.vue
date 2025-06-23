@@ -49,7 +49,7 @@ const onUpdateInfo = (_: any, args: UpdateInfo): void => {
     const tag = args.tag;
     const files = args.files;
 
-    const dmgFile = files.find(file => file.url.includes("dmg"));
+    const dmgFile = files.find((file) => file.url.includes("dmg"));
     if (!dmgFile) return;
 
     const downloadURL = `${baseURL}${tag}/${dmgFile.url}`;
@@ -84,11 +84,12 @@ onUnmounted(() => {
 
 <template>
     <div class="text-sm space-y-3 text-base-content">
-        <dialog id="update_modal" class="modal">
+        <dialog
+            id="update_modal"
+            class="modal"
+        >
             <div class="modal-box w-11/12 max-w-5xl">
-                <div class="font-bold text-lg text-center">
-                    ✨ {{ $t("app_update_info.update_available") }}
-                </div>
+                <div class="font-bold text-lg text-center">✨ {{ $t("app_update_info.update_available") }}</div>
 
                 <div class="mt-2 space-y-3">
                     <div class="card card-side bg-neutral shadow-xl">
@@ -123,11 +124,18 @@ onUnmounted(() => {
 
                 <div class="modal-action">
                     <form method="dialog">
-                        <button class="btn btn-secondary" :disabled="downloading">
+                        <button
+                            class="btn btn-secondary"
+                            :disabled="downloading"
+                        >
                             {{ $t("app_update_info.not_now") }}
                         </button>
                     </form>
-                    <button class="btn btn-primary" :disabled="downloading" @click="install">
+                    <button
+                        class="btn btn-primary"
+                        :disabled="downloading"
+                        @click="install"
+                    >
                         <IconDownload class="w-5" />
                         {{ $t("app_update_info.install") }}
                     </button>
