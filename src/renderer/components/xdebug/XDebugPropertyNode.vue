@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
 import { defineProps, ref } from "vue";
-import XDebugLoadingChildren from "./XDebugLoadingChildren.vue";
+import XDebugLoadingChildren from "@/components/xdebug/XDebugLoadingChildren.vue";
 import IconArrowRight from "@/components/Icons/IconArrowRight.vue";
 import IconArrowDown from "@/components/Icons/IconArrowDown.vue";
 import IconListBullet from "@/components/Icons/IconListBullet.vue";
@@ -128,7 +128,7 @@ const sendCommand = (cmd): void => {
 </script>
 
 <style scoped>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 
 .property-node {
     @apply p-1.5 text-sm rounded-md whitespace-nowrap;

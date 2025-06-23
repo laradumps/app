@@ -9,7 +9,7 @@ const props = defineProps<{
     ideHandler: IdeHandle;
     label?: string;
     showIcon?: boolean;
-    breakpoint: boolean;
+    breakpoint?: boolean;
 }>();
 
 const emit = defineEmits();

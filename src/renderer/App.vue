@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import TheNavBar from "@/components/TheNavBar.vue";
+import TheNavBar from "@/components/navbar/TheNavBar.vue";
 import { usePayloadStore } from "@/store/payload";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 import { useSettingsStore } from "@/store/settings";
 
 const payloadStore = usePayloadStore();

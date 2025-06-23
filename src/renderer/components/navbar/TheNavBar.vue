@@ -1,15 +1,15 @@
 <script setup>
 import { defineProps, computed, onMounted, ref } from "vue";
-import NavBarAlwaysOnTop from "@/components/NavBarAlwaysOnTop.vue";
-import NavBarGlobalSearch from "@/components/NavBarGlobalSearch.vue";
-import NavBarListening from "@/components/NavBarListening.vue";
-import NavBarPause from "@/components/NavBarPause.vue";
-import NavBarCollapse from "@/components/NavBarCollapse.vue";
-import NavBarSSH from "@/components/NavBarSSH.vue";
-import NavBarSettings from "@/components/NavBarSettings.vue";
+import NavBarAlwaysOnTop from "@/components/navbar/NavBarAlwaysOnTop.vue";
+import NavBarGlobalSearch from "@/components/navbar/NavBarGlobalSearch.vue";
+import NavBarListening from "@/components/navbar/NavBarListening.vue";
+import NavBarPause from "@/components/navbar/NavBarPause.vue";
+import NavBarCollapse from "@/components/navbar/NavBarCollapse.vue";
+import NavBarSSH from "@/components/navbar/NavBarSSH.vue";
+import NavBarSettings from "@/components/navbar/NavBarSettings.vue";
 import { usePayloadStore } from "@/store/payload";
-import ClearAll from "@/components/ClearAll.vue";
-import HeaderColorsFilter from "@/components/HeaderColorsFilter.vue";
+import ClearAll from "@/components/common/ClearAll.vue";
+import HeaderColorsFilter from "@/components/app/HeaderColorsFilter.vue";
 import { useSettingsStore } from "@/store/settings";
 import { useXDebug } from "@/store/xdebug.js";
 import { useLogStore } from "@/store/logs.js";

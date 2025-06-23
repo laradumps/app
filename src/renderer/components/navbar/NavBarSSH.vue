@@ -5,13 +5,13 @@ import { ServerIcon } from "@heroicons/vue/24/solid";
 import { ServerIcon as ServerIconOutline } from "@heroicons/vue/24/outline";
 
 import { useSSHStore } from "@/store/ssh";
-import Modal from "./Modal.vue";
+import Modal from "@/components/common/Modal.vue";
 import { Ref } from "vue";
 import { ConnectionConfig } from "@/types/ssh.type";
 import { onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { PlusIcon } from "@heroicons/vue/24/outline";
-import Divider from "@/components/Divider.vue";
+import Divider from "@/components/common/Divider.vue";
 
 const i18n = useI18n();
 const sshModal = ref();

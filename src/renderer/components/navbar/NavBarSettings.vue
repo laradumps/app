@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { CogIcon, HomeIcon } from "@heroicons/vue/24/outline";
-import router from "../router";
+import router from "../../router";
 import { useXDebug } from "@/store/xdebug";
 
 const xDebugStore = useXDebug();

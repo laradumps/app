@@ -14,7 +14,7 @@ export const useQueriesPayloadStore = defineStore("queriesPayload", {
     actions: {
         add(payload: Payload) {
             const queriesBlockedStore = useQueriesBlockedStore();
-            if (queriesBlockedStore.blocked.includes(payload.queries.sql)) {
+            if (queriesBlockedStore.blocked.includes(payload.queries.query?.sql)) {
                 return;
             }
 

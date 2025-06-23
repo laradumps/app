@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { computed, defineProps, nextTick, onMounted, ref, watch } from "vue";
-import DumpLink from "@/components/DumpLink.vue";
+import DumpLink from "@/components/dumps/DumpLink.vue";
 import DumpQueries from "@/components/laravel/DumpQueries.vue";
-import DumpJson from "@/components/DumpJson.vue";
-import DumpModel from "@/components/DumpModel.vue";
-import DumpTable from "@/components/DumpTable.vue";
-import DumpHTML from "@/components/DumpHTML.vue";
-import DumpTimeTrack from "@/components/DumpTimeTrack.vue";
-import DumpContains from "@/components/DumpContains.vue";
-import DumpMailable from "@/components/DumpMailable.vue";
-import DumpIsJson from "@/components/DumpIsJson.vue";
-import DumpTableV2 from "@/components/DumpTableV2.vue";
-import DumpQuery from "@/components/DumpQuery.vue";
+import DumpJson from "@/components/dumps/DumpJson.vue";
+import DumpModel from "@/components/laravel/DumpModel.vue";
+import DumpTable from "@/components/dumps/DumpTable.vue";
+import DumpHTML from "@/components/dumps/DumpHTML.vue";
+import DumpTimeTrack from "@/components/dumps/DumpTimeTrack.vue";
+import DumpContains from "@/components/dumps/DumpContains.vue";
+import DumpMailable from "@/components/laravel/DumpMailable.vue";
+import DumpIsJson from "@/components/dumps/DumpIsJson.vue";
+import DumpTableV2 from "@/components/dumps/DumpTableV2.vue";
+import DumpQuery from "@/components/laravel/DumpQuery.vue";
 import { Payload } from "@/types/Payload";
-import CopyToClick from "@/components/CopyToClick.vue";
-import DumpDump from "@/components/DumpDump.vue";
+import ClickToCopy from "@/components/common/ClickToCopy.vue";
+import DumpDump from "@/components/dumps/DumpDump.vue";
 import { useCollapse } from "@/store/collapse";
 import { useSettingsStore } from "@/store/settings";
 import moment from "moment";
@@ -47,8 +47,8 @@ const props = defineProps<{
 
 const copyDump = () => {
     nextTick(() => {
-        if (props.payload.type === "queries" && props.payload.queries?.sql) {
-            navigator.clipboard.writeText(props.payload.queries?.sql).then(() => {});
+        if (props.payload.type === "queries" && props.payload.queries?.query.sql) {
+            navigator.clipboard.writeText(props.payload.queries?.query.sql).then(() => {});
 
             return;
         }
@@ -119,10 +119,10 @@ const getLabel = computed(() => {
 });
 
 const block = () => {
-    props.payload.queries?.sql && queriesBlockedStore.toggle(props.payload.queries?.sql);
+    props.payload.queries?.query.sql && queriesBlockedStore.toggle(props.payload.queries?.query.sql);
 };
 
-const isDuplicated = (sql) => {
+const isDuplicated = (sql: string) => {
     return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
 };
 
@@ -212,18 +212,18 @@ const shouldDisplayContext = computed(() => {
                             @click.stop="copyDump"
                             :data-tippy-content="$t('click_to_copy')"
                         >
-                            <CopyToClick />
+                            <ClickToCopy />
                         </div>
                     </div>
 
                     <div v-show="!open">
                         <div class="flex items-center opacity-80 justify-end gap-2">
                             <IconWarning
-                                v-if="isDuplicated(payload.queries?.sql)"
+                                v-if="isDuplicated(payload.queries?.query.sql)"
                                 class="text-warning w-4"
                             />
 
-                            <span v-if="payload.queries && payload.queries.time"> {{ payload.queries.time }}<span class="font-semibold text-[10px]">ms</span> </span>
+                            <span v-if="payload.queries && payload.queries.query.time"> {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span> </span>
                         </div>
                     </div>
 
@@ -366,7 +366,7 @@ const shouldDisplayContext = computed(() => {
     </div>
 </template>
 <style>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 
 .card {
     display: grid !important;

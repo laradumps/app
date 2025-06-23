@@ -70,7 +70,6 @@ export const usePayloadStore = defineStore("payload", {
                 this.filteredPayload[indexFiltered].is_json = toValidate ? Helper.isJson(toValidate) : false;
             }
         },
-
         updateValidatePayload(content: { id: string; validate: ValidatePayload }) {
             const indexPayload = this.findById(content.id);
             const indexFiltered = this.findPayloadIndex(content.id);
@@ -91,7 +90,6 @@ export const usePayloadStore = defineStore("payload", {
                 });
             }
         },
-
         updateTimeTrackPayload(content: { id: string; with_label: { label: string }; time_track: TimeTrackPayload }) {
             const exist = this.payload.find((payload) => payload.with_label.label === content.with_label.label);
 
@@ -116,6 +114,10 @@ export const usePayloadStore = defineStore("payload", {
         },
         updateLabelPayload(content: { id: string; label: any }) {
             this.updatePayload(content, "with_label");
+        },
+        clearCache() {
+            this.payload = this.payload.filter((payload) => payload.to_screen.screen_name !== "cache");
+            this.filteredPayload = this.filteredPayload.filter((payload) => payload.to_screen.screen_name !== "cache");
         }
     }
 });

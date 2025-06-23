@@ -85,6 +85,7 @@ export const useTimeStore = defineStore("timeStore", {
 
             return this.requests[requestId].origin;
         },
+
         getMethod(requestId: never) {
             if (typeof this.requests[requestId] === "undefined") {
                 return 0;

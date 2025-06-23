@@ -5,9 +5,9 @@ import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
 import "tippy.js/themes/light.css";
-import XDebugPropertyNode from "@/components/XDebugPropertyNode.vue";
-import SvgXDebug from "@/components/Svg/SvgXDebug.vue";
-import DumpLink from "@/components/DumpLink.vue";
+import XDebugPropertyNode from "@/components/xdebug/XDebugPropertyNode.vue";
+import SvgXDebug from "@/components/svg/SvgXDebug.vue";
+import DumpLink from "@/components/dumps/DumpLink.vue";
 import { useXDebug } from "@/store/xdebug";
 import IconContinue from "@/components/Icons/IconContinue.vue";
 import IconStepOver from "@/components/Icons/IconStepOver.vue";
@@ -920,7 +920,7 @@ onBeforeUnmount(() => {
     </div>
 </template>
 <style>
-@reference "./../styles.css";
+@reference "./../../styles.css";
 
 .variable-name {
     @apply text-[#61aeee];

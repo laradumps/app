@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import { computed, markRaw, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
-import TheUpdateModalInfo from "@/components/TheUpdateModalInfo.vue";
+import { computed, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import { useScreenStore } from "@/store/screen";
 import { useI18nStore } from "@/store/i18n";
 import { useTimeStore } from "@/store/time";
@@ -8,15 +7,15 @@ import { useGlobalSearchStore } from "@/store/global-search";
 import { useI18n } from "vue-i18n";
 import { useColorStore } from "@/store/colors";
 import { Payload, ScreenPayload } from "@/types/Payload";
-import DumpItem from "@/components/DumpItem.vue";
-import WelcomePage from "@/components/WelcomePage.vue";
-import Screens from "@/components/Screens.vue";
-import TheAppUpdateInfo from "@/components/TheAppUpdateInfo.vue";
-import DumpLivewire from "@/components/DumpLivewire.vue";
-import ScreenWindow from "@/components/ScreenWindow.vue";
+import DumpItem from "@/components/dumps/DumpItem.vue";
+import WelcomePage from "@/components/app/WelcomePage.vue";
+import Screens from "@/components/screen/Screens.vue";
+import TheAppUpdateInfo from "@/components/app/TheAppUpdateInfo.vue";
+import DumpLivewire from "@/components/laravel/DumpLivewire.vue";
+import ScreenWindow from "@/components/screen/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
 import { useSettingsStore } from "@/store/settings";
-import XDebugMode from "@/components/XDebugMode.vue";
+import XDebugMode from "@/components/xdebug/XDebugMode.vue";
 import { useXDebug } from "@/store/xdebug";
 import JobView from "@/components/laravel/JobView.vue";
 import { useJobStore } from "@/store/jobs";
@@ -33,11 +32,9 @@ import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { usePauseQueriesStore } from "@/store/pause-queries";
 import { useCurrentProject } from "@/store/current-project";
-import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
+import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { useLivewireStore } from "@/store/livewire";
 import { Environment } from "../../main/storage";
-
-markRaw(TheUpdateModalInfo);
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -376,7 +373,7 @@ const dumpListeners = () => {
 
             args.contents.forEach(({ content }) => {
                 const requestId = content.request_id;
-                const sqlQuery = content.queries.sql;
+                const sqlQuery = content.queries.query?.sql;
 
                 pendingRequestsStore.add(requestId, "queries", sqlQuery);
 
@@ -679,7 +676,7 @@ const openScreenWindow = () => {
 
                                 <div
                                     v-if="dumpsBagFiltered.length === 0 && !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)"
-                                    class="-ml-8 -mt-14 absolute flex items-center justify-center w-full"
+                                    class="-ml-8 absolute flex items-center justify-center w-full"
                                     style="height: -webkit-fill-available"
                                 >
                                     <SvgEmpty class="w-30 opacity-25" />

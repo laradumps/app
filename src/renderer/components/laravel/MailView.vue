@@ -6,9 +6,9 @@ import moment from "moment";
 import { computed, defineProps, nextTick, ref } from "vue";
 import { CloudArrowDownIcon, TrashIcon, DevicePhoneMobileIcon, DeviceTabletIcon, ComputerDesktopIcon, MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
-import DumpLink from "@/components/DumpLink.vue";
+import DumpLink from "@/components/dumps/DumpLink.vue";
 import { modifyHtml } from "./../utils";
-import SvgEmpty from "@/components/Svg/SvgEmpty.vue";
+import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { useCurrentProject } from "@/store/current-project";
 import VueJsonPretty from "vue-json-pretty";
 
@@ -426,7 +426,7 @@ const setPreviewMode = (mode: string) => {
 
             <div
                 v-else
-                class="-ml-8 -mt-14 absolute flex items-center justify-center w-full"
+                class="-ml-8 absolute flex items-center justify-center w-full"
                 style="height: -webkit-fill-available"
             >
                 <SvgEmpty class="w-30 opacity-25" />
