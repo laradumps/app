@@ -11,6 +11,7 @@ import { useSettingsStore } from "@/store/settings";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { usePauseJobsStore } from "@/store/pause-jobs";
 import IconPause from "@/components/Icons/IconPause.vue";
+import Divider from "@/components/common/Divider.vue";
 
 const jobStore = useJobStore();
 const currentProjectStore = useCurrentProject();
@@ -135,12 +136,20 @@ onBeforeUnmount(() => {
                     class="drawer-overlay"
                 ></label>
                 <div class="menu bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-4">
-                    <div v-if="selectedJobDetail">
-                        <h3 class="nav-bar text-base font-bold">{{ selectedJobDetail.display_name }}</h3>
-                        <div class="py-4 space-y-5">
-                            <table class="table table-zebra">
+                    <div
+                        class="space-y-3"
+                        v-if="selectedJobDetail"
+                    >
+                        <div>
+                            <h4 class="nav-bar text-base font-semibold">Job</h4>
+                            <span class="text-sm">{{ selectedJobDetail.display_name }}</span>
+                        </div>
+                        <Divider />
+                        <div>
+                            <h4 class="nav-bar text-base font-semibold">Details</h4>
+                            <table class="table">
                                 <thead>
-                                    <tr>
+                                    <tr class="text-base-content bg-base-100">
                                         <td>Job ID</td>
                                         <td>Start Time</td>
                                         <td>End Time</td>
@@ -156,6 +165,9 @@ onBeforeUnmount(() => {
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                        <div>
+                            <h4 class="nav-bar text-base font-semibold">Payload</h4>
                             <div v-html="selectedJobDetail.html"></div>
                         </div>
                     </div>
