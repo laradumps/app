@@ -50,7 +50,8 @@ const ideHandlerOptions = {
     "vscode-insiders://file/{filepath}:{line}": "VS Code Insiders",
     "cursor://file/{filepath}:{line}": "Cursor",
     "subl://open?url=file://{filepath}&line={line}": "Sublime",
-    "atom://core/open/file?filename={filepath}&line={line}": "Atom"
+    "atom://core/open/file?filename={filepath}&line={line}": "Atom",
+    "windsurf://file/{filepath}:{line}": "WindSurf"
 };
 
 const checkForUpdateOptions = {
