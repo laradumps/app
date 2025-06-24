@@ -11,6 +11,7 @@ import CodeSnippet from "@/components/CodeSnippet.vue";
 import { useColorStore } from "@/store/colors";
 import { useSettingsStore } from "@/store/settings";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
+import Divider from "@/components/common/Divider.vue";
 
 const logStore = useLogStore();
 const currentProjectStore = useCurrentProject();
@@ -144,11 +145,16 @@ const handleEscape = (e: KeyboardEvent) => {
                 ></label>
                 <div class="bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-5">
                     <div
-                        class="space-y-5"
+                        class="space-y-3"
                         v-if="selectedLogDetail"
                     >
-                        <div class="nav-bar text-base">{{ selectedLogDetail.message }}</div>
+                        <div>
+                            <h4 class="nav-bar text-base font-semibold">Message</h4>
+                            <span class="text-sm">{{ selectedLogDetail.message }}</span>
+                        </div>
+                        <Divider />
                         <div class="h-auto overflow-auto">
+                            <h4 class="nav-bar text-base font-semibold">Code Snippet / Payload</h4>
                             <CodeSnippet
                                 v-if="selectedLogDetail.code_snippet.length > 0"
                                 :code_snippet="selectedLogDetail.code_snippet"
