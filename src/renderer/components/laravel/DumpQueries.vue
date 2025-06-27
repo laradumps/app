@@ -8,7 +8,7 @@ import { useFormattedQueriesStore } from "@/store/formatted-queries";
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
 import { useQueryDuplicated } from "@/store/query-duplicated";
-import IconWarning from "@/components/Icons/IconWarning.vue";
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
 
 hljs.registerLanguage("sql", sql);
@@ -113,31 +113,6 @@ const formattedSql = computed(() => {
         v-if="payload.queries"
         class="rounded-sm"
     >
-        <div class="flex items-center opacity-80 justify-end gap-2">
-            <IconWarning
-                v-if="isDuplicated(payload.queries?.query.sql)"
-                class="text-warning w-4"
-            />
-
-            <span
-                v-if="payload.queries && payload.queries.query.connectionName"
-                v-text="payload.queries.query.connectionName"
-            >
-            </span>
-
-            <span class="opacity-30">|</span>
-            <span
-                class="text-xs"
-                v-if="payload.queries && payload.queries.origin"
-                v-text="payload.queries.origin"
-            >
-            </span>
-
-            <span class="opacity-30">|</span>
-
-            <span v-if="payload.queries && payload.queries.query.time"> {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span> </span>
-        </div>
-
         <pre
             v-if="formattedQueriesStore.formatted"
             class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
@@ -145,7 +120,7 @@ const formattedSql = computed(() => {
             <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
         </pre>
 
-        <div class="relative">
+        <div class="relative break-all flex gap-2 flex-col">
             <code
                 ref="codeContainer"
                 v-if="!formattedQueriesStore.formatted"
@@ -170,9 +145,33 @@ const formattedSql = computed(() => {
                     stroke-width="2.5"
                 />
             </button>
+
+            <div class="flex items-center z-100 opacity-80 justify-end gap-1.5 select-none">
+                <ExclamationTriangleIcon
+                    v-if="isDuplicated(payload.queries?.query.sql)"
+                    class="text-warning w-4"
+                />
+
+                <span
+                    v-if="payload.queries && payload.queries.query.connectionName"
+                    v-text="payload.queries.query.connectionName"
+                >
+                </span>
+
+                <span class="opacity-30">|</span>
+                <span
+                    class="text-xs"
+                    v-if="payload.queries && payload.queries.origin"
+                    v-text="payload.queries.origin"
+                >
+                </span>
+                <span class="opacity-30">|</span>
+
+                <span v-if="payload.queries && payload.queries.query.time"> {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span> </span>
+            </div>
         </div>
 
-        <div class="group items-center mt-1">
+        <div class="group items-center mt-1 z-100">
             <div class="flex items-center select-none">
                 <div
                     class="w-full"

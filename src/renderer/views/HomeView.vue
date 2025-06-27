@@ -36,6 +36,7 @@ import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { useLivewireStore } from "@/store/livewire";
 import { Environment } from "../../main/storage";
 import { usePauseJobsStore } from "@/store/pause-jobs";
+import { usePauseLogsStore } from "@/store/pause-logs";
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -47,6 +48,7 @@ const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 const queriesStore = useQueriesPayloadStore();
 const pausePayloadStore = usePausePayloadStore();
+const pauseLogsStore = usePauseLogsStore();
 const livewireStore = useLivewireStore();
 
 const { locale } = useI18n({ useScope: "global" });
@@ -215,7 +217,7 @@ const dumpListeners = () => {
             applicationPath.value = content.application_path;
         }
 
-        jobStore.addOrUpdateJob(content.jobs, content.ide_handle);
+        jobStore.addOrUpdateJob(content);
 
         const serializableJobs = deepClone(jobStore.jobs);
 
@@ -280,7 +282,7 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("log_application", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
+        if (pausePayloadStore.is_paused || pauseLogsStore.is_paused) {
             return;
         }
 
@@ -609,13 +611,20 @@ const openScreenWindow = () => {
                             <div class="flex mt-1 px-1 items-center justify-between w-full overflow-x-auto">
                                 <Screens @toggleScreen="toggleScreen" />
 
-                                <button
-                                    v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
-                                    @click="openScreenWindow"
-                                    class="btn btn-xs btn-ghost"
-                                >
-                                    <IconExternalLink class="w-4 opacity-90" />
-                                </button>
+                                <div class="flex gap-1 items-center">
+                                    <div
+                                        id="dumps-actions"
+                                        class="flex gap-1 items-center"
+                                    ></div>
+
+                                    <button
+                                        v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
+                                        @click="openScreenWindow"
+                                        class="btn btn-sm p-[0.5rem]"
+                                    >
+                                        <IconExternalLink class="w-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -632,7 +641,7 @@ const openScreenWindow = () => {
                         </div>
 
                         <div v-if="screenStore.screen === 'queries'">
-                            <QueriesView class="w-[100vw] text-base" />
+                            <QueriesView class="h-[calc(100vh-85px)] text-base" />
                         </div>
 
                         <div
@@ -683,7 +692,7 @@ const openScreenWindow = () => {
                                 >
                                     <SvgEmpty class="w-30 opacity-25" />
                                     <div class="text-base-content/70">
-                                        <h1 class="text-lg font-semibold mb-2">No {{ screenStore.screen }}</h1>
+                                        <h1 class="text-lg font-semibold mb-2">Empty</h1>
                                     </div>
                                 </div>
                             </div>

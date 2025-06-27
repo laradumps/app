@@ -124,6 +124,7 @@ export interface JobPayload {
     status: string;
     job: any;
     display_name: string;
+    exception: string[];
 }
 
 export interface ContextPayload {
@@ -171,7 +172,7 @@ export interface Payload {
     to_screen: ScreenPayload;
     with_label: LabelPayload;
     code_snippet: CodeSnippet[];
-    jobs: JobPayload[];
+    jobs: JobPayload;
     show_badge_count: boolean;
     extra: Record<string, any>;
     context?: ContextPayload;

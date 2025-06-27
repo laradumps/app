@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import moment from "moment";
-import { EyeIcon, TrashIcon } from "@heroicons/vue/24/outline";
-import { ExclamationCircleIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
+import { FunnelIcon, PlayIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
 
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
@@ -12,13 +12,18 @@ import { useColorStore } from "@/store/colors";
 import { useSettingsStore } from "@/store/settings";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import Divider from "@/components/common/Divider.vue";
+import { useGlobalSearchStore } from "@/store/global-search";
+import IconPause from "@/components/Icons/IconPause.vue";
+import { usePauseLogsStore } from "@/store/pause-logs";
+import HeaderColorsFilter from "@/components/app/HeaderColorsFilter.vue";
 
 const logStore = useLogStore();
 const currentProjectStore = useCurrentProject();
 const colorStore = useColorStore();
 const settingsStore = useSettingsStore();
+const globalSearchStore = useGlobalSearchStore();
+const pauseLogsStore = usePauseLogsStore();
 
-const search = ref("");
 const forceUpdate = ref(0);
 const selectedLogDetail = ref();
 
@@ -55,12 +60,12 @@ const logs = computed(() => {
     return Object.values(items)
         .filter((log: Log) => {
             if (colorStore.colors.length > 0) {
-                return colorStore.colors.includes(log.color);
+                return colorStore.colors.includes(colorStore.match(log.color));
             }
             return true;
         })
         .filter((log: Log) => {
-            const searchTerm = search.value.toLowerCase();
+            const searchTerm = globalSearchStore.search.toLowerCase();
             return log.message.toLowerCase().includes(searchTerm) || log.level.includes(searchTerm) || log.context[0].includes(searchTerm);
         })
         .sort((a, b) => {
@@ -138,7 +143,7 @@ const handleEscape = (e: KeyboardEvent) => {
                 class="drawer-toggle hidden"
             />
 
-            <div class="drawer-side">
+            <div class="drawer-side z-[400]">
                 <label
                     for="my-drawer"
                     class="drawer-overlay"
@@ -170,26 +175,39 @@ const handleEscape = (e: KeyboardEvent) => {
         </div>
 
         <div
-            class="space-y-3"
+            class="space-y-2"
             :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }"
         >
-            <div class="flex items-center gap-1 justify-between mt-1">
-                <label class="input w-full input-sm">
-                    <MagnifyingGlassIcon class="size-4" />
-                    <input
-                        v-model="search"
-                        type="search"
-                        class="grow"
-                        :placeholder="$t('search')"
-                    />
-                </label>
-                <button
-                    @click="clear()"
-                    class="btn btn-sm p-[0.5rem]"
-                    data-tippy-content="Clear"
-                >
-                    <TrashIcon class="w-4" />
-                </button>
+            <div class="flex items-center gap-1 justify-end">
+                <div class="flex w-full justify-center">
+                    <HeaderColorsFilter class="text-xs bg-base-300 shadow border border-base-content/10 rounded-box py-1.5 px-2 h-[34px]">
+                        <FunnelIcon class="w-4" />
+                        <span class="flex gap-1.5 text-xs">Filter</span>
+                    </HeaderColorsFilter>
+                    <Teleport to="#dumps-actions">
+                        <button
+                            @click="pauseLogsStore.toggle()"
+                            class="btn btn-sm p-[0.5rem]"
+                            :data-tippy-content="$t('pause')"
+                        >
+                            <PlayIcon
+                                v-if="pauseLogsStore.is_paused"
+                                class="w-4 text-warning"
+                            />
+                            <IconPause
+                                v-else
+                                class="w-4"
+                            />
+                        </button>
+                        <button
+                            @click="clear()"
+                            class="btn btn-sm p-[0.5rem]"
+                            data-tippy-content="Clear"
+                        >
+                            <TrashIcon class="w-4" />
+                        </button>
+                    </Teleport>
+                </div>
             </div>
 
             <div
@@ -197,9 +215,9 @@ const handleEscape = (e: KeyboardEvent) => {
                 class="overflow-auto"
                 style="height: -webkit-fill-available"
             >
-                <table class="table">
+                <table class="table table-pin-rows table-zebra">
                     <thead>
-                        <tr>
+                        <tr class="text-xs !bg-base-300 font-light text-base-content">
                             <th class="w-4">Level</th>
                             <th>Message</th>
                             <th class="w-6">Time</th>
@@ -223,7 +241,6 @@ const handleEscape = (e: KeyboardEvent) => {
                                     v-else-if="log.level === 'notice'"
                                     ><InformationCircleIcon class="w-5" /> Notice</span
                                 >
-
                                 <span
                                     class="badge text-xs !text-semibold badge-warning p-1.5"
                                     v-else-if="log.level === 'warning'"
@@ -288,7 +305,7 @@ const handleEscape = (e: KeyboardEvent) => {
             >
                 <SvgEmpty class="w-30 opacity-25" />
                 <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">No Logs</h1>
+                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
                 </div>
             </div>
         </div>
@@ -299,7 +316,7 @@ const handleEscape = (e: KeyboardEvent) => {
 
 ::v-deep(.table) {
     :where(th, td) {
-        @apply p-1.5;
+        @apply p-1.5 px-2;
     }
 }
 </style>

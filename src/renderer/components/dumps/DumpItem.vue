@@ -22,7 +22,7 @@ import { useScreenStore } from "@/store/screen";
 import { LockClosedIcon } from "@heroicons/vue/20/solid";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { useQueriesChart } from "@/store/queries-chart";
-import IconWarning from "@/components/Icons/IconWarning.vue";
+import { ExclamationTriangleIcon} from "@heroicons/vue/24/outline";
 import { useTimeStore } from "@/store/time";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { usePayloadStore } from "@/store/payload";
@@ -218,7 +218,7 @@ const shouldDisplayContext = computed(() => {
 
                     <div v-show="!open">
                         <div class="flex items-center opacity-80 justify-end gap-2">
-                            <IconWarning
+                            <ExclamationTriangleIcon
                                 v-if="isDuplicated(payload.queries?.query.sql)"
                                 class="text-warning w-4"
                             />

@@ -18,6 +18,20 @@ export const useColorStore = defineStore("colorStore", {
         },
         clear() {
             this.colors = [];
+        },
+        match(color: string) {
+            switch (color) {
+                case "blue":
+                    return "info";
+                case "red":
+                    return "error";
+                case "orange":
+                    return "warning";
+                case "green":
+                    return "success";
+                default:
+                    return "gray";
+            }
         }
     }
 });

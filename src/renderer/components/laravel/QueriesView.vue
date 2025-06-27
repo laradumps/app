@@ -8,7 +8,7 @@ import DumpItem from "@/components/dumps/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { MagnifyingGlassIcon, TrashIcon, PlayIcon, LockOpenIcon } from "@heroicons/vue/24/outline";
+import { TrashIcon, PlayIcon, LockOpenIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { Pane, Splitpanes } from "splitpanes";
@@ -17,6 +17,11 @@ import QueriesRequests from "@/components/laravel/QueriesRequests.vue";
 import IconPause from "@/components/Icons/IconPause.vue";
 import { usePauseQueriesStore } from "@/store/pause-queries";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
+import { useGlobalSearchStore } from "@/store/global-search";
+import { useQueriesChart } from "@/store/queries-chart";
+import QueriesChart from "@/components/laravel/QueriesChart.vue";
+import DumpLink from "@/components/dumps/DumpLink.vue";
+import DumpQueries from "@/components/laravel/DumpQueries.vue";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
@@ -25,13 +30,15 @@ const blockedQueriesStore = useQueriesBlockedStore();
 const queryDuplicatedStore = useQueryDuplicated();
 const pendingRequestsStore = usePendingRequestsStore();
 const pauseQueries = usePauseQueriesStore();
-
-const search = ref("");
+const globalSearchStore = useGlobalSearchStore();
+const queriesChart = useQueriesChart();
 
 const props = defineProps<{
     items: [];
     inScreenWindow: boolean;
 }>();
+
+const selectedChartPoint = ref<Payload | null>(null);
 
 const queries = computed(() => {
     const items = props.items ? props.items : queriesStore.payload;
@@ -71,7 +78,7 @@ const queries = computed(() => {
             (payload: Payload) =>
                 JSON.stringify(payload[payload.type] ?? "")
                     .toLowerCase()
-                    .includes(search.value.toLowerCase()) || payload.label?.toLowerCase().includes(search.value.toLowerCase())
+                    .includes(globalSearchStore.search.toLowerCase()) || payload.label?.toLowerCase().includes(search.value.toLowerCase())
         )
         .filter((dump: Payload) => {
             if (dump.type === "queries" && dump.queries?.origin) {
@@ -100,10 +107,54 @@ onMounted(() => {
         });
     });
 });
+
+const handlePointClick = (point) => {
+    if (!point?.id) return;
+
+    selectedChartPoint.value = queriesStore.payload.find((payload: Payload) => payload.id === point.id);
+    chart_selected_query.showModal();
+};
 </script>
 
 <template>
     <div class="px-3">
+        <!-- Chart Modal -->
+        <dialog
+            id="chart_selected_query"
+            class="modal"
+        >
+            <div
+                v-if="selectedChartPoint"
+                class="modal-box relative w-full max-w-2xl"
+            >
+                <div class="py-4 space-y-4 text-sm">
+                    <DumpLink
+                        v-if="selectedChartPoint.ide_handle"
+                        :ide-handler="selectedChartPoint.ide_handle"
+                    />
+                    <div class="flex gap-2">
+                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.time }}ms</div>
+                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.origin }}</div>
+                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.connectionName }}</div>
+                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.database }}</div>
+                    </div>
+
+                    <!-- dump queries -->
+                    <DumpQueries
+                        v-if="selectedChartPoint"
+                        class="w-full mr-"
+                        :payload="selectedChartPoint"
+                    />
+                </div>
+            </div>
+            <form
+                method="dialog"
+                class="modal-backdrop"
+            >
+                <button>close</button>
+            </form>
+        </dialog>
+
         <dialog
             id="blocked_queries"
             class="modal modal-middle"
@@ -152,18 +203,7 @@ onMounted(() => {
             </form>
         </dialog>
 
-        <div class="flex items-center gap-1 justify-between mt-1 mb-2">
-            <div class="flex gap-2 w-full">
-                <label class="input w-full input-sm">
-                    <MagnifyingGlassIcon class="size-4" />
-                    <input
-                        v-model="search"
-                        type="search"
-                        class="grow"
-                        :placeholder="$t('search')"
-                    />
-                </label>
-            </div>
+        <Teleport to="#dumps-actions">
             <button
                 @click="pauseQueries.toggle()"
                 class="btn btn-sm p-[0.5rem]"
@@ -186,45 +226,59 @@ onMounted(() => {
             >
                 <TrashIcon class="w-4" />
             </button>
-        </div>
+        </Teleport>
 
-        <Splitpanes
+        <div
+            class="space-y-2"
             v-if="queriesStore.payload.length > 0"
-            vertical
         >
-            <pane
-                size="28"
-                class="text-sm mt-1"
-            >
-                <div class="overflow-auto h-[calc(100vh-155px)]">
-                    <QueriesRequests />
-                </div>
-            </pane>
-
-            <pane class="text-sm">
-                <div
-                    v-if="timeStore.selected"
-                    class="pl-2 space-y-1"
-                >
-                    <QueriesHeader />
-
-                    <div class="overflow-auto h-[calc(100vh-204px)]">
-                        <div
-                            v-for="(payload, index) in queries"
-                            :key="payload.sf_dump_id"
-                            :id="payload.id"
-                            class="w-full"
-                        >
-                            <DumpItem
-                                class="w-full group text-sm mb-3"
-                                v-show="payload.request_id === timeStore.selected"
-                                :payload="payload"
-                            />
-                        </div>
+            <div>
+                <div class="flex w-full justify-center">
+                    <div class="w-62 flex items-center bg-base-300 shadow border border-base-content/10 rounded-box py-1.5 px-2 h-[34px]">
+                        <QueriesHeader />
                     </div>
                 </div>
-            </pane>
-        </Splitpanes>
+            </div>
+
+            <Splitpanes vertical>
+                <pane
+                    size="28"
+                    class="text-sm mt-1"
+                >
+                    <div class="overflow-auto h-[calc(100vh-100px)]">
+                        <QueriesRequests />
+                    </div>
+                </pane>
+
+                <pane class="text-sm">
+                    <div
+                        v-if="timeStore.selected"
+                        class="pl-2 space-y-1"
+                    >
+                        <div id="query-chart-result"></div>
+                        <QueriesChart
+                            v-if="queriesChart.type !== 'none'"
+                            @point-click="handlePointClick"
+                        />
+
+                        <div class="overflow-auto h-[calc(100vh-144px)]">
+                            <div
+                                v-for="(payload, index) in queries"
+                                :key="payload.sf_dump_id"
+                                :id="payload.id"
+                                class="w-full"
+                            >
+                                <DumpItem
+                                    class="w-full group text-sm mb-3"
+                                    v-show="payload.request_id === timeStore.selected"
+                                    :payload="payload"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </pane>
+            </Splitpanes>
+        </div>
 
         <div
             v-else
@@ -233,7 +287,7 @@ onMounted(() => {
         >
             <SvgEmpty class="w-30 opacity-25" />
             <div class="text-base-content/70">
-                <h1 class="text-lg font-semibold mb-2">No Queries</h1>
+                <h1 class="text-lg font-semibold mb-2">Empty</h1>
             </div>
         </div>
     </div>
