@@ -15,6 +15,7 @@ import Divider from "@/components/common/Divider.vue";
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import { useGlobalSearchStore } from "@/store/global-search";
 import { FunnelIcon } from "@heroicons/vue/24/outline";
+import { FunnelIcon as FunnelSolidIcon } from "@heroicons/vue/24/solid";
 
 const jobStore = useJobStore();
 const currentProjectStore = useCurrentProject();
@@ -22,15 +23,21 @@ const settingsStore = useSettingsStore();
 const pauseJobsStore = usePauseJobsStore();
 const globalSearchStore = useGlobalSearchStore();
 
+const forceUpdate = ref(0);
 const selected = ref();
 const statusFilter = ref<string | null>(null);
 const sortBy = ref<"display_name" | "duration" | "pushed_time">("pushed_time");
 const sortDirection = ref<"asc" | "desc">("desc");
+const collapsedGroups = ref<Record<string, boolean>>({});
 
 const props = defineProps<{
     items: Record<string, Job>;
     inScreenWindow: boolean;
 }>();
+
+const toggleGroup = (timeKey: string) => {
+    collapsedGroups.value[timeKey] = !collapsedGroups.value[timeKey];
+};
 
 const generateLink = (ideHandler: IdeHandle) => {
     const ide_handler = settingsStore.settings.ide_handler || "phpstorm://open?file={filepath}&line={line}";
@@ -52,7 +59,19 @@ const generateLink = (ideHandler: IdeHandle) => {
     }
 };
 
+const selectedStatus = (status: string) => {
+    if (statusFilter.value === status) {
+        statusFilter.value = null;
+
+        return;
+    }
+
+    statusFilter.value = status;
+};
+
 const jobs = computed(() => {
+    forceUpdate.value;
+
     const items = props.items || jobStore.jobs;
 
     return Object.values(items)
@@ -86,13 +105,29 @@ const jobs = computed(() => {
         });
 });
 
+const groupedJobsByRelativeTime = computed(() => {
+    const groups: Record<string, Job[]> = {};
+
+    for (const job of jobs.value) {
+        const timeKey = moment(job.pushed_time ?? job.start_time).fromNow();
+        if (!groups[timeKey]) {
+            groups[timeKey] = [];
+        }
+        groups[timeKey].push(job);
+    }
+
+    return groups;
+});
+
 const toggleSort = (field: typeof sortBy.value) => {
     if (sortBy.value === field) {
         sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc";
-    } else {
-        sortBy.value = field;
-        sortDirection.value = "asc";
+
+        return;
     }
+
+    sortBy.value = field;
+    sortDirection.value = "asc";
 };
 
 const statusCounts = computed(() => {
@@ -129,7 +164,8 @@ const openModal = (id: string) => {
         end_time: findJob.end_time,
         status: findJob.status,
         code_snippet: findJob.code_snippet ?? null,
-        ide_handle: findJob.ide_handle
+        ide_handle: findJob.ide_handle,
+        created_at: findJob.pushed_time
     };
 
     const sfDumpId = findJob.job[1];
@@ -163,11 +199,18 @@ const duration = (startTime: any, endTime: any) => {
 };
 
 onMounted(() => {
-    window.addEventListener("keydown", handleEscape);
+    setInterval(() => {
+        forceUpdate.value++;
+        window.addEventListener("keydown", handleEscape);
+    }, 60_000);
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener("keydown", handleEscape);
+});
+
+const actionsElementExists = computed(() => {
+    return !!document.getElementById("actions");
 });
 </script>
 
@@ -191,32 +234,15 @@ onBeforeUnmount(() => {
                         class="space-y-3"
                         v-if="selected"
                     >
-                        <div>
-                            <div class="nav-bar flex justify-between">
-                                <span class="text-base font-semibold">Job</span>
+                        <div class="flex justify-between nav-bar p-0 mb-0">
+                            <h5 class="font-semibold">Pushed At</h5>
+                            <span>{{ moment(selected.created_at).format("HH:mm:ss a") }}</span>
+                        </div>
+                        <Divider />
 
-                                <span
-                                    v-if="selected.status === 'Processing'"
-                                    class="badge badge-sm text-primary-content bg-primary"
-                                    >Processing</span
-                                >
-                                <span
-                                    v-if="selected.status === 'Processed'"
-                                    class="badge badge-sm text-success-content bg-success"
-                                    >Processed</span
-                                >
-                                <span
-                                    v-if="selected.status === 'Failed'"
-                                    class="badge badge-sm text-error-content bg-error"
-                                    >Failed</span
-                                >
-                                <span
-                                    v-if="selected.status === 'Queued'"
-                                    class="badge badge-sm text-warning-content bg-warning"
-                                    >Queued</span
-                                >
-                            </div>
-                            <span class="text-sm">{{ selected.display_name }}</span>
+                        <div class="flex justify-between nav-bar mb-0">
+                            <h4 class="font-semibold">Job</h4>
+                            <span>{{ selected.display_name }}</span>
                         </div>
                         <Divider />
 
@@ -283,72 +309,71 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Header -->
-        <div
-            class="space-y-2"
-            :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }"
-        >
+        <div class="h-[calc(100vh-100px)]">
             <div class="flex items-center gap-1 justify-center">
-                <div class="flex items-center gap-2 text-xs bg-base-300 shadow border border-base-content/10 rounded-box py-1.5 px-2 h-[34px]">
-                    <span class="flex gap-1.5 text-xs">
-                        <FunnelIcon class="w-4" />
-                        {{ isFiltering ? "Filtering" : "Filter" }}
-                    </span>
-                    <form class="filter text-xs items-center">
-                        <input
-                            class="btn btn-xs btn-square"
-                            id="filter-by-status"
-                            type="reset"
-                            value="×"
-                            @click.prevent="statusFilter = null"
-                        />
-                        <div>
-                            <input
-                                :class="{
-                                    'text-warning': statusFilter == 'Queued'
-                                }"
-                                class="btn btn-xs font-normal"
-                                type="radio"
-                                id="filter-queued"
-                                name="status"
-                                value="Queued"
-                                v-model="statusFilter"
-                                :aria-label="`Queued (${statusCounts.Queued || 0})`"
+                <Teleport
+                    to="#actions"
+                    v-if="actionsElementExists"
+                >
+                    <div class="dropdown dropdown-bottom dropdown-end">
+                        <button
+                            tabindex="0"
+                            role="button"
+                            class="btn btn-sm p-[0.5rem] bg-transparent"
+                        >
+                            <FunnelIcon
+                                v-if="!isFiltering"
+                                class="w-4"
                             />
-                        </div>
-                        <div>
-                            <input
-                                :class="{
-                                    'text-success': statusFilter == 'Processed'
-                                }"
-                                class="btn btn-xs font-normal"
-                                type="radio"
-                                id="filter-processed"
-                                name="status"
-                                value="Processed"
-                                v-model="statusFilter"
-                                :aria-label="`Processed (${statusCounts.Processed || 0})`"
+                            <FunnelSolidIcon
+                                v-else
+                                class="w-4 text-primary"
                             />
-                        </div>
-                        <div>
-                            <input
+                        </button>
+
+                        <ul
+                            tabindex="0"
+                            class="dropdown-content menu bg-base-300 rounded-box z-100 w-52 p-2 shadow-sm"
+                        >
+                            <li
                                 :class="{
-                                    'text-error': statusFilter == 'Failed'
+                                    'text-primary': statusFilter === 'Queued'
                                 }"
-                                class="btn btn-xs font-normal"
-                                type="radio"
-                                id="filter-failed"
-                                name="status"
-                                value="Failed"
-                                v-model="statusFilter"
-                                :aria-label="`Failed (${statusCounts.Failed || 0})`"
-                            />
-                        </div>
-                    </form>
-                </div>
-                <Teleport to="#dumps-actions">
+                                @click="selectedStatus('Queued')"
+                            >
+                                <a
+                                    class="!text-xs"
+                                    v-text="`Queued (${statusCounts.Queued || 0})`"
+                                ></a>
+                            </li>
+                            <li
+                                :class="{
+                                    'text-primary': statusFilter == 'Processed'
+                                }"
+                                @click="selectedStatus('Processed')"
+                            >
+                                <a
+                                    class="!text-xs"
+                                    v-text="`Processed (${statusCounts.Processed || 0})`"
+                                ></a>
+                            </li>
+                            <li
+                                :class="{
+                                    'text-primary': statusFilter === 'Failed'
+                                }"
+                                @click="selectedStatus('Failed')"
+                            >
+                                <a
+                                    class="!text-xs"
+                                    v-text="`Failed (${statusCounts.Failed || 0})`"
+                                ></a>
+                            </li>
+                        </ul>
+                    </div>
+
                     <button
                         @click="pauseJobsStore.toggle()"
-                        class="btn btn-sm p-[0.5rem]"
+                        class="btn btn-sm p-[0.5rem] bg-transparent"
                         :data-tippy-content="$t('pause')"
                     >
                         <PlayIcon
@@ -362,7 +387,7 @@ onBeforeUnmount(() => {
                     </button>
                     <button
                         @click="clear"
-                        class="btn btn-sm p-[0.5rem]"
+                        class="btn btn-sm p-[0.5rem] bg-transparent"
                         data-tippy-content="Clear"
                     >
                         <TrashIcon class="w-4" />
@@ -393,67 +418,72 @@ onBeforeUnmount(() => {
                                 <span>Duration</span>
                                 <span v-if="sortBy === 'duration'">{{ sortDirection === "asc" ? "▲" : "▼" }}</span>
                             </th>
-                            <th
-                                @click="toggleSort('pushed_time')"
-                                class="space-x-1.5 cursor-pointer"
-                            >
-                                <span>Date</span>
-                                <span v-if="sortBy === 'pushed_time'">{{ sortDirection === "asc" ? "▲" : "▼" }}</span>
-                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr
-                            v-for="job in jobs"
-                            :key="job.job_id"
-                            @click="openModal(job.job_id)"
-                            class="hover:bg-base-100 cursor-pointer"
-                            :class="{
-                                'bg-neutral text-neutral-content hover:bg-neutral/70': selected && selected.id === job.job_id
-                            }"
+                        <template
+                            v-for="(jobsOnRelativeTime, timeKey) in groupedJobsByRelativeTime"
+                            :key="timeKey"
                         >
-                            <td>
-                                <div class="flex items-center justify-center">
-                                    <ArrowPathIcon
-                                        v-if="job.status === 'Processing'"
-                                        class="w-6 text-primary"
-                                        title="Processing"
-                                    />
-                                    <CheckIcon
-                                        v-if="job.status === 'Processed'"
-                                        class="w-6 text-success"
-                                        title="Processed"
-                                    />
-                                    <XMarkIcon
-                                        v-if="job.status === 'Failed'"
-                                        class="w-6 text-error"
-                                        title="Failed"
-                                    />
-                                    <InformationCircleIcon
-                                        v-if="job.status === 'Queued'"
-                                        class="w-6 text-warning"
-                                        title="Queued"
-                                    />
-                                </div>
-                            </td>
-                            <td class="break-all">
-                                <div>{{ job.display_name }}</div>
-                                <a
-                                    v-if="job.ide_handle.class_name !== 'empty'"
-                                    :href="generateLink(job.ide_handle)"
-                                    class="link text-xs link-hover opacity-60"
+                            <tr
+                                class="bg-base-200 text-xs font-semibold text-center cursor-pointer"
+                                @click="toggleGroup(timeKey)"
+                            >
+                                <td
+                                    colspan="3"
+                                    class="select-none hover:link"
                                 >
-                                    {{ job.ide_handle.class_name }}:{{ job.ide_handle.line }}
-                                </a>
-                            </td>
-                            <td class="whitespace-nowrap text-right">{{ duration(job.start_time, job.end_time) }}</td>
-                            <td class="w-[120px] whitespace-nowrap">
-                                <div class="flex flex-col">
-                                    <span>{{ moment(job.pushed_time ?? job.start_time).fromNow() }}</span>
-                                    <span class="opacity-65 text-xs">{{ moment(job.pushed_time ?? job.start_time).format("HH:mm:ss") }}</span>
-                                </div>
-                            </td>
-                        </tr>
+                                    <span>{{ timeKey }}</span>
+                                    <span class="ml-1.5">{{ collapsedGroups[timeKey] ? "▼" : "▲" }}</span>
+                                </td>
+                            </tr>
+                            <tr
+                                v-for="job in jobsOnRelativeTime"
+                                v-if="!collapsedGroups[timeKey]"
+                                :key="job.job_id"
+                                @click="openModal(job.job_id)"
+                                class="hover:bg-base-100 cursor-pointer"
+                                :class="{
+                                    'bg-base-300 hover:bg-neutral/70': selected && selected.id === job.job_id
+                                }"
+                            >
+                                <td>
+                                    <div class="flex items-center justify-center">
+                                        <ArrowPathIcon
+                                            v-if="job.status === 'Processing'"
+                                            class="w-6 text-primary"
+                                            title="Processing"
+                                        />
+                                        <CheckIcon
+                                            v-if="job.status === 'Processed'"
+                                            class="w-6 text-success"
+                                            title="Processed"
+                                        />
+                                        <XMarkIcon
+                                            v-if="job.status === 'Failed'"
+                                            class="w-6 text-error"
+                                            title="Failed"
+                                        />
+                                        <InformationCircleIcon
+                                            v-if="job.status === 'Queued'"
+                                            class="w-6 text-warning"
+                                            title="Queued"
+                                        />
+                                    </div>
+                                </td>
+                                <td class="break-all">
+                                    <div>{{ job.display_name }}</div>
+                                    <a
+                                        v-if="job.ide_handle.class_name !== 'empty'"
+                                        :href="generateLink(job.ide_handle)"
+                                        class="link text-xs link-hover opacity-60"
+                                    >
+                                        {{ job.ide_handle.class_name }}:{{ job.ide_handle.line }}
+                                    </a>
+                                </td>
+                                <td class="whitespace-nowrap text-right">{{ duration(job.start_time, job.end_time) }}</td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
@@ -475,7 +505,13 @@ onBeforeUnmount(() => {
 <style scoped>
 @reference "./../../styles.css";
 
-::v-deep(.table) {
+::v-deep(.table thead) {
+    :where(th, td) {
+        @apply p-2;
+    }
+}
+
+::v-deep(.table tbody) {
     :where(th, td) {
         @apply p-1.5 px-2;
     }

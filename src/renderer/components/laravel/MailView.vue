@@ -231,7 +231,7 @@ const setPreviewMode = (mode: string) => {
 
         <div class="space-y-3 h-[calc(100vh-140px)]">
             <div class="absolute right-3 z-100">
-                <Teleport to="#dumps-actions">
+                <Teleport to="#actions">
                     <button
                         @click="clear()"
                         class="btn btn-sm p-[0.5rem]"

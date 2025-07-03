@@ -144,6 +144,7 @@ export interface LivewirePayload {
 
 export interface Payload {
     id: string;
+    index: string;
     type: string;
     request_id: never;
     ide_handle: IdeHandle;

@@ -4,6 +4,7 @@ import * as Helper from "@/helpers";
 import moment from "moment";
 import humanizeDuration from "humanize-duration";
 
+let payloadIds = [];
 export const usePayloadStore = defineStore("payload", {
     state: () => ({
         payload: [] as Payload[],
@@ -14,6 +15,11 @@ export const usePayloadStore = defineStore("payload", {
             return this.filteredPayload.findIndex((payload) => payload.id === id);
         },
         add(object: Payload) {
+            if (!object.index) {
+                object.index = String(payloadIds.length + 1);
+                payloadIds.push(object.index);
+            }
+
             this.payload.push(object);
         },
         get(screen: String) {
@@ -27,6 +33,7 @@ export const usePayloadStore = defineStore("payload", {
             this.filteredPayload = this.filteredPayload.filter((payload) => payload.to_screen.screen_name !== screen);
         },
         clearAll() {
+            payloadIds = [];
             this.payload = [];
             this.filteredPayload = [];
         },

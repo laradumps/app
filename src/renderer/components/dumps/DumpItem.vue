@@ -20,9 +20,8 @@ import { useSettingsStore } from "@/store/settings";
 import moment from "moment";
 import { useScreenStore } from "@/store/screen";
 import { LockClosedIcon } from "@heroicons/vue/20/solid";
-import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { useQueriesChart } from "@/store/queries-chart";
-import { ExclamationTriangleIcon} from "@heroicons/vue/24/outline";
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import { useTimeStore } from "@/store/time";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { usePayloadStore } from "@/store/payload";
@@ -32,7 +31,6 @@ const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 const screenStore = useScreenStore();
-const queriesBlockedStore = useQueriesBlockedStore();
 const queriesChart = useQueriesChart();
 const timeStore = useTimeStore();
 const duplicatesStore = useQueryDuplicated();
@@ -43,6 +41,7 @@ const showContext = ref(true);
 
 const props = defineProps<{
     payload: Payload;
+    showTime: boolean;
 }>();
 
 const copyDump = () => {
@@ -118,10 +117,6 @@ const getLabel = computed(() => {
     return props.payload.type;
 });
 
-const block = () => {
-    props.payload.queries?.query.sql && queriesBlockedStore.toggle(props.payload.queries?.query.sql);
-};
-
 const isDuplicated = (sql: string) => {
     return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
 };
@@ -174,7 +169,7 @@ const shouldDisplayContext = computed(() => {
             :class="{
                 'collapse-open': open
             }"
-            class="card card-border border-base-300 collapse bg-base-100 bg-laravel"
+            class="border-base-300 collapse rounded-none bg-base-100 bg-laravel"
         >
             <div
                 @click="open = !open"
@@ -183,9 +178,12 @@ const shouldDisplayContext = computed(() => {
             >
                 <ul
                     class="flex items-center gap-5 whitespace-nowrap"
-                    v-bind:style="payload.ide_handle?.real_path ? 'list-style-type: disc;' : ''"
+                    v-bind:style="payload.ide_handle?.real_path && showTime ? 'list-style-type: disc;' : ''"
                 >
-                    <li class="list-none opacity-70">
+                    <li
+                        class="list-none opacity-70"
+                        v-if="showTime"
+                    >
                         {{ moment(payload.date_time).format("hh:mm:ss a") }}
                     </li>
                     <li class="select-none opacity-70">
@@ -196,19 +194,10 @@ const shouldDisplayContext = computed(() => {
                 <div class="group flex justify-center items-center gap-2">
                     <div
                         v-show="open"
-                        class="mr-1 flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
+                        class="flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
                     >
                         <div
-                            v-if="payload.queries && open"
-                            :data-tippy-content="$t('click_to_block')"
-                            @click.stop="block"
-                            class="opacity-0 transition-all group-hover:opacity-100"
-                        >
-                            <LockClosedIcon class="size-4 hover:opacity-75" />
-                        </div>
-
-                        <div
-                            v-if="!['table'].includes(screenStore.screen)"
+                            v-if="!['table', 'table_v2'].includes(payload.type)"
                             @click.stop="copyDump"
                             :data-tippy-content="$t('click_to_copy')"
                         >
@@ -216,7 +205,7 @@ const shouldDisplayContext = computed(() => {
                         </div>
                     </div>
 
-                    <div v-show="!open">
+                    <div v-show="!open && payload.queries">
                         <div class="flex items-center opacity-80 justify-end gap-2">
                             <ExclamationTriangleIcon
                                 v-if="isDuplicated(payload.queries?.query.sql)"
@@ -384,7 +373,15 @@ const shouldDisplayContext = computed(() => {
     @apply !w-6;
 }
 
+.vjs-tree {
+    @apply !text-xs;
+}
+
+.vjs-key {
+    @apply !text-xs;
+}
+
 .vjs-value-string {
-    @apply !text-secondary;
+    @apply !text-secondary !text-xs;
 }
 </style>

@@ -96,7 +96,7 @@ const pinScreen = (screen) => {
 };
 </script>
 <template>
-    <div class="flex mb-1">
+    <div class="flex">
         <div
             role="tablist"
             class="tabs tabs-border"

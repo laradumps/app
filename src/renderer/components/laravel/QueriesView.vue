@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Payload } from "@/types/Payload";
-import QueriesHeader from "@/components/laravel/QueriesHeader.vue";
 import { computed, defineProps, nextTick, onMounted, ref } from "vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useTimeStore } from "@/store/time";
@@ -8,7 +7,7 @@ import DumpItem from "@/components/dumps/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { TrashIcon, PlayIcon, LockOpenIcon } from "@heroicons/vue/24/outline";
+import { TrashIcon, PlayIcon, LockOpenIcon, FunnelIcon, ChartBarIcon, SparklesIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { Pane, Splitpanes } from "splitpanes";
@@ -22,6 +21,9 @@ import { useQueriesChart } from "@/store/queries-chart";
 import QueriesChart from "@/components/laravel/QueriesChart.vue";
 import DumpLink from "@/components/dumps/DumpLink.vue";
 import DumpQueries from "@/components/laravel/DumpQueries.vue";
+import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
+import moment from "moment";
+import { useFormattedQueriesStore } from "@/store/formatted-queries";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
@@ -32,6 +34,8 @@ const pendingRequestsStore = usePendingRequestsStore();
 const pauseQueries = usePauseQueriesStore();
 const globalSearchStore = useGlobalSearchStore();
 const queriesChart = useQueriesChart();
+const duplicatesStore = useQueryDuplicated();
+const formattedQueriesStore = useFormattedQueriesStore();
 
 const props = defineProps<{
     items: [];
@@ -62,7 +66,7 @@ const queries = computed(() => {
     items.forEach((dump: Payload) => {
         const sql = dump.queries?.query?.sql || "";
 
-        const isDuplicate = items.filter((d: Payload) => d.request_id === dump.request_id && d.queries.query?.sql === sql);
+        const isDuplicate = items.filter((d: Payload) => d.request_id === dump.request_id && d.queries?.query?.sql === sql);
 
         queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
     });
@@ -70,7 +74,7 @@ const queries = computed(() => {
     return items
         .filter((dump: Payload) => {
             if (queryDuplicatedStore.showOnlyDuplicated) {
-                return queryDuplicatedStore.isDuplicated(dump.request_id, dump.queries?.query?.sql);
+                return queryDuplicatedStore.isDuplicated(dump.request_id, dump.queries?.query?.sql || "");
             }
             return true;
         })
@@ -78,12 +82,13 @@ const queries = computed(() => {
             (payload: Payload) =>
                 JSON.stringify(payload[payload.type] ?? "")
                     .toLowerCase()
-                    .includes(globalSearchStore.search.toLowerCase()) || payload.label?.toLowerCase().includes(search.value.toLowerCase())
+                    .includes(globalSearchStore.search.toLowerCase()) || payload.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
         )
         .filter((dump: Payload) => {
             if (dump.type === "queries" && dump.queries?.origin) {
                 return queriesOriginFilter.origin.includes(dump.queries?.origin);
             }
+            return true;
         })
         .sort(sort);
 });
@@ -114,6 +119,28 @@ const handlePointClick = (point) => {
     selectedChartPoint.value = queriesStore.payload.find((payload: Payload) => payload.id === point.id);
     chart_selected_query.showModal();
 };
+
+const orderLabel = computed(() => {
+    if (!timeStore.order) return "Default order";
+    return timeStore.order === "desc" ? "Order by desc" : "Order by asc";
+});
+
+const groupedQueries = computed(() => {
+    return queries.value.reduce(
+        (groups, payload) => {
+            if (payload.request_id !== timeStore.selected) {
+                return groups;
+            }
+            const groupKey = moment(payload.date_time).format("YYYY-MM-DD HH:mm:ss");
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
+            }
+            groups[groupKey].push(payload);
+            return groups;
+        },
+        {} as Record<string, Payload[]>
+    );
+});
 </script>
 
 <template>
@@ -155,6 +182,7 @@ const handlePointClick = (point) => {
             </form>
         </dialog>
 
+        <!-- Blocked Queries Modal -->
         <dialog
             id="blocked_queries"
             class="modal modal-middle"
@@ -203,7 +231,162 @@ const handlePointClick = (point) => {
             </form>
         </dialog>
 
-        <Teleport to="#dumps-actions">
+        <Teleport
+            v-if="queries.length > 0"
+            to="#actions"
+        >
+            <!-- Prettify -->
+            <button
+                data-tippy-content="Prettify"
+                class="btn btn-sm p-[0.5rem]"
+                @click="formattedQueriesStore.toggle()"
+            >
+                <SparklesIcon
+                    :class="{
+                        'w-4': true,
+                        'w-4 text-secondary': formattedQueriesStore.formatted
+                    }"
+                />
+            </button>
+
+            <!-- Duplicated Dropdown -->
+            <div class="dropdown dropdown-bottom dropdown-end">
+                <!-- Filter -->
+                <button
+                    tabindex="0"
+                    role="button"
+                    class="btn btn-sm p-[0.5rem]"
+                >
+                    <FunnelIcon class="w-4" />
+                </button>
+
+                <ul
+                    tabindex="0"
+                    class="dropdown-content menu bg-base-300 rounded-box z-100 w-52 p-2 shadow-sm"
+                >
+                    <li
+                        v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
+                        @click="duplicatesStore.toggleShowOnlyDuplicated"
+                        :class="{
+                            '!text-primary': duplicatesStore.showOnlyDuplicated
+                        }"
+                    >
+                        <a class="!text-xs">Duplicated</a>
+                    </li>
+
+                    <li>
+                        <a
+                            href="#"
+                            class="!text-xs"
+                            >Origin</a
+                        >
+                        <ul tabindex="0">
+                            <li
+                                v-for="option in queriesOriginFilter.origin"
+                                :key="option"
+                            >
+                                <label class="!text-xs">
+                                    <input
+                                        type="checkbox"
+                                        :value="option"
+                                        :checked="queriesOriginFilter.origin.includes(option)"
+                                        @change="queriesOriginFilter.toggleFilter(option)"
+                                        class="checkbox checkbox-sm"
+                                    />
+                                    {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+                                </label>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Chart Dropdown-->
+            <div class="dropdown dropdown-end">
+                <div
+                    tabindex="0"
+                    role="button"
+                    class="btn btn-sm p-[0.5rem]"
+                    data-tippy-content="Chart Visibility"
+                >
+                    <ChartBarIcon
+                        :class="{
+                            'w-4': true,
+                            'w-4 text-secondary': queriesChart.type !== 'none'
+                        }"
+                    />
+                </div>
+                <ul
+                    tabindex="0"
+                    class="dropdown-content gap-1 menu text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
+                >
+                    <li>
+                        <a
+                            href="#"
+                            class="!text-xs"
+                            @click.prevent="queriesChart.setType('all')"
+                            :class="{
+                                'font-bold text-primary': queriesChart.type === 'all',
+                                'text-base-content': queriesChart.type !== 'all'
+                            }"
+                        >
+                            All Requests
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            class="!text-xs"
+                            href="#"
+                            @click.prevent="queriesChart.setType('by-request')"
+                            :class="{
+                                'font-bold text-primary': queriesChart.type === 'by-request',
+                                'text-base-content': queriesChart.type !== 'by-request'
+                            }"
+                        >
+                            By Request
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            class="!text-xs"
+                            href="#"
+                            @click.prevent="queriesChart.setType('none')"
+                            :class="{
+                                'font-bold text-primary': queriesChart.type === 'none',
+                                'text-base-content': queriesChart.type !== 'none'
+                            }"
+                        >
+                            Hide Chart
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Sort Order -->
+            <button
+                :class="{
+                    '!text-secondary': timeStore.order === 'desc',
+                    'text-primary': timeStore.order === 'asc'
+                }"
+                class="btn btn-sm p-[0.5rem]"
+                @click="timeStore.toggleOrder()"
+                :aria-label="orderLabel"
+                :data-tippy-content="orderLabel"
+            >
+                <IconChevronDown
+                    :class="[
+                        '!w-4 transition-transform',
+                        {
+                            'rotate-0': timeStore.order === 'desc',
+                            'rotate-180': timeStore.order === 'asc',
+                            'opacity-50': timeStore.order === null || timeStore.order === undefined
+                        }
+                    ]"
+                    stroke-width="2.2"
+                />
+            </button>
+
+            <!-- Pause -->
             <button
                 @click="pauseQueries.toggle()"
                 class="btn btn-sm p-[0.5rem]"
@@ -219,6 +402,7 @@ const handlePointClick = (point) => {
                 />
             </button>
 
+            <!-- Clear -->
             <button
                 @click="clear()"
                 class="btn btn-sm p-[0.5rem]"
@@ -232,17 +416,9 @@ const handlePointClick = (point) => {
             class="space-y-2"
             v-if="queriesStore.payload.length > 0"
         >
-            <div>
-                <div class="flex w-full justify-center">
-                    <div class="w-62 flex items-center bg-base-300 shadow border border-base-content/10 rounded-box py-1.5 px-2 h-[34px]">
-                        <QueriesHeader />
-                    </div>
-                </div>
-            </div>
-
             <Splitpanes vertical>
                 <pane
-                    size="28"
+                    size="20"
                     class="text-sm mt-1"
                 >
                     <div class="overflow-auto h-[calc(100vh-100px)]">
@@ -263,16 +439,31 @@ const handlePointClick = (point) => {
 
                         <div class="overflow-auto h-[calc(100vh-144px)]">
                             <div
-                                v-for="(payload, index) in queries"
-                                :key="payload.sf_dump_id"
-                                :id="payload.id"
+                                v-for="(group, groupKey) in groupedQueries"
+                                :key="groupKey"
                                 class="w-full"
                             >
-                                <DumpItem
-                                    class="w-full group text-sm mb-3"
-                                    v-show="payload.request_id === timeStore.selected"
-                                    :payload="payload"
-                                />
+                                <div class="bg-base-200 flex-1 text-left py-1.5 z-300 text-xs sticky top-0">
+                                    <span
+                                        class="opacity-80 px-1"
+                                        :title="groupKey"
+                                    >
+                                        {{ moment(groupKey).fromNow() }}
+                                    </span>
+                                </div>
+                                <div
+                                    v-for="payload in group"
+                                    :key="payload.sf_dump_id"
+                                    :id="payload.id"
+                                    class="w-full"
+                                >
+                                    <DumpItem
+                                        class="w-full group text-sm mb-3"
+                                        v-show="payload.request_id === timeStore.selected"
+                                        :payload="payload"
+                                        :show-time="false"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

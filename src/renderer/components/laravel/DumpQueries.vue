@@ -111,7 +111,7 @@ const formattedSql = computed(() => {
 <template>
     <div
         v-if="payload.queries"
-        class="rounded-sm"
+        class="rounded-sm space-y-3"
     >
         <pre
             v-if="formattedQueriesStore.formatted"
@@ -145,49 +145,55 @@ const formattedSql = computed(() => {
                     stroke-width="2.5"
                 />
             </button>
-
-            <div class="flex items-center z-100 opacity-80 justify-end gap-1.5 select-none">
-                <ExclamationTriangleIcon
-                    v-if="isDuplicated(payload.queries?.query.sql)"
-                    class="text-warning w-4"
-                />
-
-                <span
-                    v-if="payload.queries && payload.queries.query.connectionName"
-                    v-text="payload.queries.query.connectionName"
-                >
-                </span>
-
-                <span class="opacity-30">|</span>
-                <span
-                    class="text-xs"
-                    v-if="payload.queries && payload.queries.origin"
-                    v-text="payload.queries.origin"
-                >
-                </span>
-                <span class="opacity-30">|</span>
-
-                <span v-if="payload.queries && payload.queries.query.time"> {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span> </span>
-            </div>
         </div>
 
-        <div class="group items-center mt-1 z-100">
-            <div class="flex items-center select-none">
-                <div
-                    class="w-full"
-                    v-if="payload.to_screen.screen_name != 'Slow Queries'"
-                >
+        <div class="group items-center mt-2 z-100">
+            <div class="flex justify-between gap-3 items-center select-none w-full">
+                <div class="flex items-center z-100 justify-end gap-1.5 select-none">
+                    <ExclamationTriangleIcon
+                        v-if="isDuplicated(payload.queries?.query.sql)"
+                        class="text-warning w-4"
+                    />
+
+                    <span
+                        class="opacity-80 text-[0.70rem]"
+                        v-if="payload.queries && payload.queries.query.connectionName"
+                        v-text="payload.queries.query.connectionName"
+                    >
+                    </span>
+                    <span class="opacity-30">|</span>
+                    <span
+                        class="opacity-80 text-[0.70rem]"
+                        v-if="payload.queries && payload.queries.origin"
+                        v-text="payload.queries.origin"
+                    >
+                    </span>
+                </div>
+
+                <div class="flex items-center justify-between gap-3">
                     <div
-                        v-show="percentage <= 100"
-                        :title="percentage + `%`"
-                        :style="{ width: percentage + '%' }"
-                        :class="{
-                            'bg-red-500 dark:bg-red-400': percentage > 50,
-                            'bg-orange-500': percentage > 20 && percentage < 50,
-                            'bg-blue-500': percentage < 20
-                        }"
-                        class="h-[0.2rem] mt-1 opacity-70 relative"
-                    ></div>
+                        class="w-30 h-2 rounded-box flex items-center !bg-base-200"
+                        v-if="payload.to_screen.screen_name != 'Slow Queries'"
+                    >
+                        <div
+                            v-show="percentage <= 100"
+                            :title="percentage + `%`"
+                            :style="{ width: percentage + '%' }"
+                            :class="{
+                                'bg-error': percentage > 50,
+                                'bg-warning': percentage > 20 && percentage < 50,
+                                'bg-info': percentage < 20
+                            }"
+                            class="h-[0.2rem] opacity-70"
+                        ></div>
+                    </div>
+
+                    <span
+                        class="w-14 text-right"
+                        v-if="payload.queries && payload.queries.query.time"
+                    >
+                        {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span>
+                    </span>
                 </div>
             </div>
         </div>

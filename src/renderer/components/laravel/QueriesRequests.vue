@@ -4,7 +4,7 @@ import { Payload } from "@/types/Payload";
 import { useTimeStore } from "@/store/time";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
-import { ExclamationTriangleIcon} from '@heroicons/vue/24/outline'
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 
 const timeStore = useTimeStore();
