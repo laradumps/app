@@ -26,11 +26,20 @@ const pauseLogsStore = usePauseLogsStore();
 const forceUpdate = ref(0);
 const selected = ref();
 const collapsedLogGroups = ref<Record<string, boolean>>({});
+const levelFilter = ref<string | null>(null);
 
 const props = defineProps<{
     items: Record<string, Log>;
     inScreenWindow: boolean;
 }>();
+
+const levelCounts = computed(() => {
+    const items = props.items ? props.items : logStore.logs;
+    return Object.values(items).reduce((acc, log) => {
+        acc[log.level] = (acc[log.level] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+});
 
 const generateLink = (ideHandler: IdeHandle) => {
     const ide_handler = settingsStore.settings.ide_handler ? settingsStore.settings.ide_handler : "phpstorm://open?file={filepath}&line={line}";
@@ -66,7 +75,14 @@ const logs = computed(() => {
         })
         .filter((log: Log) => {
             const searchTerm = globalSearchStore.search.toLowerCase();
-            return log.message.toLowerCase().includes(searchTerm) || log.level.includes(searchTerm) || log.context[0].includes(searchTerm);
+            return (
+                log.message.toLowerCase().includes(searchTerm) ||
+                log.level.includes(searchTerm) ||
+                log.context[0].includes(searchTerm)
+            );
+        })
+        .filter((log: Log) => {
+            return !levelFilter.value || log.level === levelFilter.value;
         })
         .sort((a, b) => {
             const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -74,6 +90,14 @@ const logs = computed(() => {
             return dateB - dateA;
         });
 });
+
+const selectedLevel = (level: string) => {
+    if (levelFilter.value === level) {
+        levelFilter.value = null;
+        return;
+    }
+    levelFilter.value = level;
+};
 
 const groupedLogsByRelativeTime = computed(() => {
     const groups: Record<string, Log[]> = {};
@@ -203,9 +227,39 @@ const handleEscape = (e: KeyboardEvent) => {
             <div class="flex items-center gap-1 justify-end">
                 <div class="flex w-full justify-center">
                     <Teleport to="#actions">
-                        <button class="btn btn-sm p-[0.5rem]">
-                            <FunnelIcon class="w-4" />
-                        </button>
+                        <div class="dropdown dropdown-bottom dropdown-end">
+                            <button
+                                tabindex="0"
+                                role="button"
+                                class="btn btn-sm p-[0.5rem] bg-transparent"
+                            >
+                                <FunnelIcon
+                                    v-if="!levelFilter"
+                                    class="w-4"
+                                />
+                                <FunnelIcon
+                                    v-else
+                                    class="w-4 text-primary"
+                                />
+                            </button>
+                            <ul
+                                tabindex="0"
+                                class="dropdown-content menu bg-base-300 rounded-box z-100 w-52 p-2 shadow-sm"
+                            >
+                                <li
+                                    v-for="level in ['debug','info','notice','warning','error','critical','alert','emergency']"
+                                    :key="level"
+                                    :class="{ 'text-primary': levelFilter === level }"
+                                    @click="selectedLevel(level)"
+                                >
+                                    <a class="!text-xs">
+                                        {{ level.charAt(0).toUpperCase() + level.slice(1) }}
+                                        ({{ levelCounts[level] || 0 }})
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
                         <button
                             @click="pauseLogsStore.toggle()"
                             class="btn btn-sm p-[0.5rem]"
