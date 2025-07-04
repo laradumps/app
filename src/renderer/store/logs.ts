@@ -65,8 +65,6 @@ export const useLogStore = defineStore("logStore", {
                 ide_handle,
                 color: this._parseColor(log_application.level)
             };
-
-            console.log(this.logs[log_id]);
         },
         _parseColor(level: string) {
             switch (level) {

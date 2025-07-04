@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { JobPayload } from "@/types/Payload";
+import { CodeSnippet, JobPayload, Payload } from "@/types/Payload";
 import { IdeHandle } from "@/types/IdeHandle";
 import { useSettingsStore } from "@/store/settings";
 
@@ -13,6 +13,7 @@ export type Job = {
     end_time: Date | null;
     display_name: string;
     ide_handle: IdeHandle;
+    code_snippet?: CodeSnippet[];
 };
 
 type State = {
@@ -24,22 +25,30 @@ export const useJobStore = defineStore("jobStore", {
         jobs: {}
     }),
     actions: {
-        addOrUpdateJob(jobs: JobPayload, ide_handle: IdeHandle) {
+        addOrUpdateJob(payload: Payload) {
+            const job: JobPayload = payload.jobs;
+            const ide_handle: IdeHandle = payload.ide_handle;
+            const code_snippet: null | CodeSnippet[] = payload.code_snippet ? payload.code_snippet.slice(0, 10) : null;
+
             this._removeOldestIfExceedsLimit();
 
-            if (!this.jobs[jobs.job_id]) {
-                this._initializeJob(jobs, ide_handle);
+            if (!this.jobs[job.job_id]) {
+                this._initializeJob(job, ide_handle);
             }
 
-            if (this.jobs[jobs.job_id]) {
-                this.jobs[jobs.job_id].status = this.jobs[jobs.job_id].status !== "Failed" ? jobs.status : "Failed";
+            if (this.jobs[job.job_id]) {
+                this.jobs[job.job_id].status = this.jobs[job.job_id].status !== "Failed" ? job.status : "Failed";
 
-                if (jobs.status === "Processing") {
-                    this.jobs[jobs.job_id].start_time = new Date();
+                if (job.status === "Processing") {
+                    this.jobs[job.job_id].start_time = new Date();
                 }
 
-                if (["Processed", "Failed"].includes(jobs.status)) {
-                    this.jobs[jobs.job_id].end_time = new Date();
+                if (["Processed", "Failed"].includes(job.status)) {
+                    this.jobs[job.job_id].end_time = new Date();
+                }
+
+                if (job.status === "Failed" && code_snippet) {
+                    this.jobs[job.job_id].code_snippet = code_snippet;
                 }
             }
         },

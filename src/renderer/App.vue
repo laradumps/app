@@ -3,9 +3,11 @@ import TheNavBar from "@/components/navbar/TheNavBar.vue";
 import { usePayloadStore } from "@/store/payload";
 import { onMounted, ref } from "vue";
 import { useSettingsStore } from "@/store/settings";
+import { useScreenStore } from "@/store/screen";
 
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
+const screenStore = useScreenStore();
 
 const readyToLoad = ref(false);
 const screen = ref<string | null>("");
@@ -103,7 +105,15 @@ onMounted(() => {
                 </div>
             </div>
 
-            <main class="w-full overflow-auto h-[calc(100vh-50px)]">
+            <main class="w-full overflow-auto h-[calc(100vh-42px)]">
+                <div
+                    id="actions"
+                    :class="{
+                        '!right-2': screenStore.screen === 'queries'
+                    }"
+                    class="flex absolute right-[44px] z-[400] top-[47px] gap-1 items-center p-0.5 px-1"
+                ></div>
+
                 <RouterView :key="$route.fullPath" />
             </main>
         </div>

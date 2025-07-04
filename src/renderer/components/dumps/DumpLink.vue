@@ -70,7 +70,7 @@ const toggleBreakpoint = () => {
             :href="label === 'Tinker' ? '#' : link"
             :title="label"
             :class="{ 'cursor-pointer': link && label !== 'Tinker' }"
-            class="flex items-center group"
+            class="flex items-center group whitespace-pre-line"
             @click.stop
         >
             <span class="break-all tracking-wider hover:opacity-75 flex items-center">

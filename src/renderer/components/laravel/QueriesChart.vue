@@ -1,45 +1,89 @@
-<script setup>
-import { ref, onMounted, defineProps, defineEmits, watch, computed } from "vue";
+<script setup lang="ts">
+import { ref, onMounted, defineEmits, watch, computed } from "vue";
 import { Chart, LineController, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from "chart.js";
+import { useTimeStore } from "@/store/time";
+import { useQueriesChart } from "@/store/queries-chart";
+import { useQueriesPayloadStore } from "@/store/queries";
 
 Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
-const props = defineProps({
-    dataPoints: Array
+interface QueryPayload {
+    id: string;
+    request_id?: string;
+    date_time: string;
+    queries: {
+        query: {
+            time: number;
+        };
+    };
+}
+
+interface ChartPoint {
+    id: string;
+    time: string;
+    value: number;
+}
+
+const timeStore = useTimeStore();
+const queriesChart = useQueriesChart();
+const queriesStore = useQueriesPayloadStore();
+
+const emit = defineEmits<{
+    (event: "pointClick", payload: ChartPoint): void;
+}>();
+
+const chartCanvas = ref<HTMLCanvasElement | null>(null);
+let chartInstance: Chart<"line"> | null = null;
+
+const chartDataPoints = computed<ChartPoint[]>(() => {
+    const payloads = queriesStore.payload as QueryPayload[];
+
+    if (!payloads || payloads.length === 0) return [];
+
+    if (queriesChart.type === "by-request" && timeStore.selected) {
+        return payloads
+            .filter((item) => item.request_id === timeStore.selected)
+            .map((item) => ({
+                id: item.id,
+                time: item.date_time,
+                value: item.queries?.query.time ?? 0
+            }));
+    }
+
+    if (queriesChart.type === "all") {
+        return payloads.map((item) => ({
+            id: item.id,
+            time: item.date_time,
+            value: item.queries?.query.time ?? 0
+        }));
+    }
+
+    return [];
 });
 
-const emit = defineEmits(["pointClick"]);
-
-const chartCanvas = ref(null);
-let chartInstance = null;
-
 watch(
-    () => props.dataPoints,
-    (value) => {
-        if (chartInstance) {
-            chartInstance.data.labels = value.map((item) => new Date(item.time).toLocaleString());
-            chartInstance.data.datasets[0].data = value.map((item) => item.value);
-            chartInstance.update();
-        }
+    chartDataPoints,
+    (points) => {
+        if (!chartInstance) return;
+
+        chartInstance.data.labels = points.map((p) => new Date(p.time).toLocaleString());
+        chartInstance.data.datasets[0].data = points.map((p) => p.value);
+        chartInstance.update();
     },
-    { deep: true }
+    { immediate: true }
 );
 
 onMounted(() => {
-    if (!props.dataPoints || props.dataPoints.length === 0) return;
-
-    const labels = props.dataPoints.map((point) => new Date(point.time).toLocaleString());
-    const firstLabel = labels[0];
-    const lastLabel = labels[labels.length - 1];
+    if (!chartCanvas.value) return;
 
     chartInstance = new Chart(chartCanvas.value, {
         type: "line",
         data: {
-            labels,
+            labels: [],
             datasets: [
                 {
                     label: "Duration (ms)",
-                    data: props.dataPoints.map((d) => d.value),
+                    data: [],
                     borderColor: "orange",
                     borderWidth: 1.5,
                     pointRadius: 4,
@@ -53,62 +97,35 @@ onMounted(() => {
         options: {
             responsive: true,
             scales: {
-                x: {
-                    display: false
-                },
+                x: { display: false },
                 y: { title: { display: true, text: "Duration (ms)" } }
             },
             plugins: {
-                tooltip: {
-                    enabled: true
-                },
-                annotation: {
-                    annotations: [
-                        {
-                            type: "label",
-                            xValue: 0,
-                            yValue: props.dataPoints[0].value,
-                            content: firstLabel,
-                            backgroundColor: "rgba(255, 165, 0, 0.8)",
-                            color: "white",
-                            position: "top",
-                            font: { weight: "bold" },
-                            padding: 6
-                        },
-                        {
-                            type: "label",
-                            xValue: labels.length - 1,
-                            yValue: props.dataPoints[props.dataPoints.length - 1].value,
-                            content: lastLabel,
-                            backgroundColor: "rgba(255, 165, 0, 0.8)",
-                            color: "white",
-                            position: "top",
-                            font: { weight: "bold" },
-                            padding: 6
-                        }
-                    ]
-                }
+                tooltip: { enabled: true }
             },
-            onClick: (event, elements) => {
-                if (elements.length > 0) {
-                    const index = elements[0].index;
-                    emit("pointClick", index);
+            onClick(event, elements) {
+                if (!elements.length) return;
+                const index = elements[0].index;
+                const selected = chartDataPoints.value[index];
+                if (selected) {
+                    emit("pointClick", selected);
                 }
             }
         }
     });
 });
 
-const calculateTimeAvg = computed(() => {
-    if (!props.dataPoints || props.dataPoints.length === 0) return 0;
-    const total = props.dataPoints.reduce((acc, d) => acc + d.value, 0);
-    return (total / props.dataPoints.length).toFixed(2);
+const averageTime = computed<number>(() => {
+    if (chartDataPoints.value.length === 0) return 0;
+    const sum = chartDataPoints.value.reduce((total, p) => total + p.value, 0);
+    return parseFloat((sum / chartDataPoints.value.length).toFixed(2));
 });
 </script>
+
 <template>
-    <div class="bg-base-300 rounded-box p-4 !text-base-content space-y-2">
-        <div class="select-none flex justify-between">
-            <span class="badge badge-soft">Avg: {{ calculateTimeAvg }}</span>
+    <div class="py-2 !text-base-content space-y-2">
+        <div class="select-none flex justify-end">
+            <span class="badge badge-soft">Avg: {{ averageTime }}</span>
         </div>
         <canvas ref="chartCanvas"></canvas>
     </div>

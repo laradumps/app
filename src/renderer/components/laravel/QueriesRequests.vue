@@ -4,7 +4,7 @@ import { Payload } from "@/types/Payload";
 import { useTimeStore } from "@/store/time";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
-import IconWarning from "@/components/Icons/IconWarning.vue";
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 
 const timeStore = useTimeStore();
@@ -75,7 +75,7 @@ const display = (id: string) => {
                         v-if="duplicatesStore.hasDuplicatedByRequest(request.id)"
                         class="flex gap-2"
                     >
-                        <IconWarning class="text-warning w-4" />
+                        <ExclamationTriangleIcon class="text-warning w-4" />
                     </div>
                 </div>
                 <span>

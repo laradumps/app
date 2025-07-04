@@ -1,87 +1,61 @@
 <script setup>
 import { computed } from "vue";
 import { useColorStore } from "@/store/colors";
-import { useScreenStore } from "@/store/screen";
-import { FunnelIcon } from "@heroicons/vue/24/outline/index.js";
 
-const selectedColors = useColorStore();
-const screenStore = useScreenStore();
-
-defineProps({
-    hasColor: {
-        type: Boolean,
-        required: true
-    },
-    dropdownMode: {
-        type: Boolean,
-        default: false
-    }
-});
-
-const isDark = computed(() => ({
-    "bg-black": selectedColors.colors.includes("black")
-}));
+const colorStore = useColorStore();
 
 const isRed = computed(() => ({
-    "bg-red-600": selectedColors.colors.includes("red")
+    "bg-error": colorStore.colors.includes("error")
 }));
 
 const isGray = computed(() => ({
-    "bg-gray-600": selectedColors.colors.includes("gray")
+    "bg-gray-600": colorStore.colors.includes("gray")
 }));
 
 const isBlue = computed(() => ({
-    "bg-blue-600": selectedColors.colors.includes("blue")
+    "bg-info": colorStore.colors.includes("info")
 }));
 
 const isGreen = computed(() => ({
-    "bg-green-600": selectedColors.colors.includes("green")
+    "bg-success": colorStore.colors.includes("success")
 }));
 
 const isOrange = computed(() => ({
-    "bg-orange-400": selectedColors.colors.includes("orange")
+    "bg-warning": colorStore.colors.includes("warning")
 }));
 </script>
 
 <template>
-    <div
-        class="space-x-2 flex justify-end items-center"
-        v-if="screenStore.screen !== 'queries' && hasColor"
-    >
+    <div class="space-x-2 px-3 flex justify-end items-center">
+        <slot></slot>
         <div class="h-full flex items-center gap-2 px-2">
             <button
-                :class="isDark"
-                @click="selectedColors.add('black')"
-                type="button"
-                class="rounded-full size-3 border border-black"
-            ></button>
-            <button
                 :class="isRed"
-                @click="selectedColors.add('red')"
+                @click="colorStore.add('error')"
                 type="button"
-                class="rounded-full size-3 border border-red-600"
+                class="rounded-full size-3 border border-error"
             ></button>
             <button
                 :class="isOrange"
-                @click="selectedColors.add('orange')"
+                @click="colorStore.add('warning')"
                 type="button"
-                class="rounded-full size-3 border border-orange-400"
+                class="rounded-full size-3 border border-warning"
             ></button>
             <button
                 :class="isBlue"
-                @click="selectedColors.add('blue')"
+                @click="colorStore.add('info')"
                 type="button"
-                class="rounded-full size-3 border border-blue-600"
+                class="rounded-full size-3 border border-info"
             ></button>
             <button
                 :class="isGreen"
-                @click="selectedColors.add('green')"
+                @click="colorStore.add('success')"
                 type="button"
-                class="rounded-full size-3 border border-green-600"
+                class="rounded-full size-3 border border-success"
             ></button>
             <button
                 :class="isGray"
-                @click="selectedColors.add('gray')"
+                @click="colorStore.add('gray')"
                 type="button"
                 class="rounded-full size-3 border border-gray-500"
             ></button>

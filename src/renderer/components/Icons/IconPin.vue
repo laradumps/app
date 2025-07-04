@@ -2,7 +2,8 @@
     <svg
         viewBox="0 0 122.879 122.867"
         stroke="currentColor"
-        fill="currentColor"
+        stroke-linejoin="round"
+        stroke-linecap="round"
     >
         <g>
             <path
@@ -13,3 +14,4 @@
         </g>
     </svg>
 </template>
+<script setup lang="ts"></script>

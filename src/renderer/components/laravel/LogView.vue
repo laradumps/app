@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import moment from "moment";
-import { EyeIcon, TrashIcon } from "@heroicons/vue/24/outline";
-import { ExclamationCircleIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
+import { FunnelIcon, PlayIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
 
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
@@ -12,20 +12,34 @@ import { useColorStore } from "@/store/colors";
 import { useSettingsStore } from "@/store/settings";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import Divider from "@/components/common/Divider.vue";
+import { useGlobalSearchStore } from "@/store/global-search";
+import IconPause from "@/components/Icons/IconPause.vue";
+import { usePauseLogsStore } from "@/store/pause-logs";
 
 const logStore = useLogStore();
 const currentProjectStore = useCurrentProject();
 const colorStore = useColorStore();
 const settingsStore = useSettingsStore();
+const globalSearchStore = useGlobalSearchStore();
+const pauseLogsStore = usePauseLogsStore();
 
-const search = ref("");
 const forceUpdate = ref(0);
-const selectedLogDetail = ref();
+const selected = ref();
+const collapsedLogGroups = ref<Record<string, boolean>>({});
+const levelFilter = ref<string | null>(null);
 
 const props = defineProps<{
     items: Record<string, Log>;
     inScreenWindow: boolean;
 }>();
+
+const levelCounts = computed(() => {
+    const items = props.items ? props.items : logStore.logs;
+    return Object.values(items).reduce((acc, log) => {
+        acc[log.level] = (acc[log.level] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+});
 
 const generateLink = (ideHandler: IdeHandle) => {
     const ide_handler = settingsStore.settings.ide_handler ? settingsStore.settings.ide_handler : "phpstorm://open?file={filepath}&line={line}";
@@ -55,13 +69,20 @@ const logs = computed(() => {
     return Object.values(items)
         .filter((log: Log) => {
             if (colorStore.colors.length > 0) {
-                return colorStore.colors.includes(log.color);
+                return colorStore.colors.includes(colorStore.match(log.color));
             }
             return true;
         })
         .filter((log: Log) => {
-            const searchTerm = search.value.toLowerCase();
-            return log.message.toLowerCase().includes(searchTerm) || log.level.includes(searchTerm) || log.context[0].includes(searchTerm);
+            const searchTerm = globalSearchStore.search.toLowerCase();
+            return (
+                log.message.toLowerCase().includes(searchTerm) ||
+                log.level.includes(searchTerm) ||
+                log.context[0].includes(searchTerm)
+            );
+        })
+        .filter((log: Log) => {
+            return !levelFilter.value || log.level === levelFilter.value;
         })
         .sort((a, b) => {
             const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -69,6 +90,30 @@ const logs = computed(() => {
             return dateB - dateA;
         });
 });
+
+const selectedLevel = (level: string) => {
+    if (levelFilter.value === level) {
+        levelFilter.value = null;
+        return;
+    }
+    levelFilter.value = level;
+};
+
+const groupedLogsByRelativeTime = computed(() => {
+    const groups: Record<string, Log[]> = {};
+    for (const log of logs.value) {
+        const timeKey = moment(log.created_at).fromNow();
+        if (!groups[timeKey]) {
+            groups[timeKey] = [];
+        }
+        groups[timeKey].push(log);
+    }
+    return groups;
+});
+
+const toggleLogGroup = (timeKey: string) => {
+    collapsedLogGroups.value[timeKey] = !collapsedLogGroups.value[timeKey];
+};
 
 const clear = () => {
     logStore.clear();
@@ -81,13 +126,14 @@ const openModal = (id: string) => {
         return;
     }
 
-    selectedLogDetail.value = {
+    selected.value = {
         id: findLog.log_id,
         code_snippet: findLog.code_snippet,
         message: findLog.message,
         context: findLog.context[0],
         level: findLog.level,
-        ide_handle: findLog.ide_handle
+        ide_handle: findLog.ide_handle,
+        created_at: findLog.created_at
     };
 
     const sfDumpId = findLog.context[1];
@@ -123,7 +169,7 @@ const handleEscape = (e: KeyboardEvent) => {
         const drawerToggle = document.getElementById("my-drawer") as HTMLInputElement;
         if (drawerToggle) {
             drawerToggle.checked = false;
-            selectedLogDetail.value = null;
+            selected.value = null;
         }
     }
 };
@@ -138,7 +184,7 @@ const handleEscape = (e: KeyboardEvent) => {
                 class="drawer-toggle hidden"
             />
 
-            <div class="drawer-side">
+            <div class="drawer-side z-[400]">
                 <label
                     for="my-drawer"
                     class="drawer-overlay"
@@ -146,50 +192,97 @@ const handleEscape = (e: KeyboardEvent) => {
                 <div class="bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-5">
                     <div
                         class="space-y-3"
-                        v-if="selectedLogDetail"
+                        v-if="selected"
                     >
-                        <div>
-                            <h4 class="nav-bar text-base font-semibold">Message</h4>
-                            <span class="text-sm">{{ selectedLogDetail.message }}</span>
+                        <div class="flex justify-between nav-bar mb-0">
+                            <h4 class="text-base font-semibold">Created At</h4>
+                            <span class="text-sm">{{ moment(selected.created_at).format("HH:mm:ss a") }}</span>
                         </div>
                         <Divider />
-                        <div class="h-auto overflow-auto">
-                            <h4 class="nav-bar text-base font-semibold">Code Snippet / Payload</h4>
+
+                        <div>
+                            <h4 class="nav-bar text-base font-semibold">Message</h4>
+                            <span class="text-sm">{{ selected.message }}</span>
+                        </div>
+                        <Divider />
+
+                        <div v-if="selected.code_snippet.length > 0">
+                            <h4 class="text-base font-semibold">Code Snippet</h4>
                             <CodeSnippet
-                                v-if="selectedLogDetail.code_snippet.length > 0"
-                                :code_snippet="selectedLogDetail.code_snippet"
-                                :ide_handle="selectedLogDetail.ide_handle"
+                                v-if="selected.code_snippet.length > 0"
+                                :code_snippet="selected.code_snippet"
+                                :ide_handle="selected.ide_handle"
                             />
-                            <div v-else>
-                                <div v-html="selectedLogDetail.context"></div>
-                            </div>
+                        </div>
+                        <div v-else>
+                            <h4 class="nav-bar text-base font-semibold">Payload</h4>
+                            <div v-html="selected.context"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div
-            class="space-y-3"
-            :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }"
-        >
-            <div class="flex items-center gap-1 justify-between mt-1">
-                <label class="input w-full input-sm">
-                    <MagnifyingGlassIcon class="size-4" />
-                    <input
-                        v-model="search"
-                        type="search"
-                        class="grow"
-                        :placeholder="$t('search')"
-                    />
-                </label>
-                <button
-                    @click="clear()"
-                    class="btn btn-sm p-[0.5rem]"
-                    data-tippy-content="Clear"
-                >
-                    <TrashIcon class="w-4" />
-                </button>
+        <div :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }">
+            <div class="flex items-center gap-1 justify-end">
+                <div class="flex w-full justify-center">
+                    <Teleport v-if="logs.length > 0" to="#actions">
+                        <div class="dropdown dropdown-bottom dropdown-end">
+                            <button
+                                tabindex="0"
+                                role="button"
+                                class="btn btn-sm p-[0.5rem] bg-transparent"
+                            >
+                                <FunnelIcon
+                                    v-if="!levelFilter"
+                                    class="w-4"
+                                />
+                                <FunnelIcon
+                                    v-else
+                                    class="w-4 text-primary"
+                                />
+                            </button>
+                            <ul
+                                tabindex="0"
+                                class="dropdown-content menu bg-base-300 rounded-box z-100 w-52 p-2 shadow-sm"
+                            >
+                                <li
+                                    v-for="level in ['debug','info','notice','warning','error','critical','alert','emergency']"
+                                    :key="level"
+                                    :class="{ 'text-primary': levelFilter === level }"
+                                    @click="selectedLevel(level)"
+                                >
+                                    <a class="!text-xs">
+                                        {{ level.charAt(0).toUpperCase() + level.slice(1) }}
+                                        ({{ levelCounts[level] || 0 }})
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <button
+                            @click="pauseLogsStore.toggle()"
+                            class="btn btn-sm p-[0.5rem]"
+                            :data-tippy-content="$t('pause')"
+                        >
+                            <PlayIcon
+                                v-if="pauseLogsStore.is_paused"
+                                class="w-4 text-warning"
+                            />
+                            <IconPause
+                                v-else
+                                class="w-4"
+                            />
+                        </button>
+                        <button
+                            @click="clear()"
+                            class="btn btn-sm p-[0.5rem]"
+                            data-tippy-content="Clear"
+                        >
+                            <TrashIcon class="w-4" />
+                        </button>
+                    </Teleport>
+                </div>
             </div>
 
             <div
@@ -197,98 +290,107 @@ const handleEscape = (e: KeyboardEvent) => {
                 class="overflow-auto"
                 style="height: -webkit-fill-available"
             >
-                <table class="table">
+                <table class="table table-pin-rows table-zebra">
                     <thead>
-                        <tr>
+                        <tr class="text-xs !bg-base-300 font-light text-base-content">
                             <th class="w-4">Level</th>
                             <th>Message</th>
-                            <th class="w-6">Time</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr
-                            v-for="(log, index) in logs"
-                            :key="`log-${index}`"
-                            class="hover:bg-base-100 cursor-pointer"
-                            @click="openModal(log.log_id)"
+                        <template
+                            v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
+                            :key="timeKey"
                         >
-                            <td>
-                                <span
-                                    class="badge text-xs !text-semibold badge-info p-1.5"
-                                    v-if="log.level === 'info'"
-                                    ><InformationCircleIcon class="w-5" /> Info</span
+                            <tr
+                                class="bg-base-200 text-xs font-semibold text-center cursor-pointer"
+                                @click="toggleLogGroup(timeKey)"
+                            >
+                                <td
+                                    colspan="3"
+                                    class="select-none hover:link"
                                 >
-                                <span
-                                    class="badge text-xs badge-success"
-                                    v-else-if="log.level === 'notice'"
-                                    ><InformationCircleIcon class="w-5" /> Notice</span
-                                >
-
-                                <span
-                                    class="badge text-xs !text-semibold badge-warning p-1.5"
-                                    v-else-if="log.level === 'warning'"
-                                >
-                                    <ExclamationTriangleIcon class="w-5" />
-                                    Warning
-                                </span>
-                                <span
-                                    class="badge text-xs !text-semibold badge-error p-1.5"
-                                    v-else-if="log.level === 'error'"
-                                >
-                                    <ExclamationCircleIcon class="w-5" />Error</span
-                                >
-                                <span
-                                    class="badge text-xs !text-semibold badge-error p-1.5"
-                                    v-else-if="log.level === 'alert'"
-                                >
-                                    <ExclamationCircleIcon class="w-5" />Alert</span
-                                >
-                                <span
-                                    class="badge text-xs !text-semibold badge-error p-1.5"
-                                    v-else-if="log.level === 'critical'"
-                                >
-                                    <ExclamationTriangleIcon class="w-5" />Critical</span
-                                >
-                                <span
-                                    class="badge text-xs !text-semibold badge-error p-1.5"
-                                    v-else-if="log.level === 'emergency'"
-                                    ><ExclamationCircleIcon class="w-5" />Emergency</span
-                                >
-                                <span
-                                    class="badge text-xs !text-semibold bg-gray-500 text-primary-content p-1.5"
-                                    v-else-if="log.level === 'debug'"
-                                    ><InformationCircleIcon class="w-5" />Debug</span
-                                >
-                            </td>
-                            <td class="break-words break-all">
-                                <div class="line-clamp-2">{{ log.message }}</div>
-                                <a
-                                    v-if="log.ide_handle.class_name !== 'empty'"
-                                    :href="generateLink(log.ide_handle)"
-                                    v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
-                                    class="link text-xs opacity-60"
-                                >
-                                </a>
-                            </td>
-                            <td class="whitespace-nowrap text-right">
-                                <div class="flex flex-col">
-                                    <span>{{ moment(log.created_at).fromNow() }}</span>
-                                    <span class="opacity-65 text-xs">{{ moment(log.created_at).format("HH:mm:ss") }}</span>
-                                </div>
-                            </td>
-                        </tr>
+                                    {{ timeKey }}
+                                    <span class="ml-1">{{ collapsedLogGroups[timeKey] ? "▼" : "▲" }}</span>
+                                </td>
+                            </tr>
+                            <tr
+                                v-for="(log, index) in logsOnTime"
+                                v-if="!collapsedLogGroups[timeKey]"
+                                :key="`log-${index}`"
+                                class="hover:bg-base-100 cursor-pointer"
+                                @click="openModal(log.log_id)"
+                            >
+                                <td>
+                                    <span
+                                        class="badge text-xs !text-semibold badge-info p-1.5"
+                                        v-if="log.level === 'info'"
+                                        ><InformationCircleIcon class="w-5" /> Info</span
+                                    >
+                                    <span
+                                        class="badge text-xs badge-success"
+                                        v-else-if="log.level === 'notice'"
+                                        ><InformationCircleIcon class="w-5" /> Notice</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold badge-warning p-1.5"
+                                        v-else-if="log.level === 'warning'"
+                                    >
+                                        <ExclamationTriangleIcon class="w-5" />
+                                        Warning
+                                    </span>
+                                    <span
+                                        class="badge text-xs !text-semibold badge-error p-1.5"
+                                        v-else-if="log.level === 'error'"
+                                    >
+                                        <ExclamationCircleIcon class="w-5" />Error</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold badge-error p-1.5"
+                                        v-else-if="log.level === 'alert'"
+                                    >
+                                        <ExclamationCircleIcon class="w-5" />Alert</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold badge-error p-1.5"
+                                        v-else-if="log.level === 'critical'"
+                                    >
+                                        <ExclamationTriangleIcon class="w-5" />Critical</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold badge-error p-1.5"
+                                        v-else-if="log.level === 'emergency'"
+                                        ><ExclamationCircleIcon class="w-5" />Emergency</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold bg-gray-500 text-primary-content p-1.5"
+                                        v-else-if="log.level === 'debug'"
+                                        ><InformationCircleIcon class="w-5" />Debug</span
+                                    >
+                                </td>
+                                <td class="break-words break-all">
+                                    <div class="line-clamp-2">{{ log.message }}</div>
+                                    <a
+                                        v-if="log.ide_handle.class_name !== 'empty'"
+                                        :href="generateLink(log.ide_handle)"
+                                        v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
+                                        class="link text-xs opacity-60"
+                                    />
+                                </td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
 
             <div
                 v-else
-                class="-ml-8 absolute flex items-center justify-center w-full"
+                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
                 style="height: -webkit-fill-available"
             >
                 <SvgEmpty class="w-30 opacity-25" />
                 <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">No Logs</h1>
+                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
                 </div>
             </div>
         </div>
@@ -297,9 +399,15 @@ const handleEscape = (e: KeyboardEvent) => {
 <style scoped>
 @reference "./../../styles.css";
 
-::v-deep(.table) {
+::v-deep(.table thead) {
     :where(th, td) {
-        @apply p-1.5;
+        @apply p-2;
+    }
+}
+
+::v-deep(.table tbody) {
+    :where(th, td) {
+        @apply p-1.5 px-2;
     }
 }
 </style>
