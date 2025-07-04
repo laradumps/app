@@ -622,7 +622,7 @@ const groupedDumps = computed(() => {
                 <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                     <main class="flex flex-col flex-1 min-h-full space-y-1">
                         <!-- screen buttons -->
-                        <div class="flex">
+                        <div class="flex z-[380]">
                             <div class="flex h-[48px] p-1.5 items-center justify-between w-full overflow-x-auto">
                                 <Screens @toggleScreen="toggleScreen" />
 
@@ -713,7 +713,7 @@ const groupedDumps = computed(() => {
 
                                 <div
                                     v-if="dumpsBagFiltered.length === 0 && !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)"
-                                    class="-ml-8 absolute flex items-center justify-center w-full"
+                                    class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
                                     style="height: -webkit-fill-available"
                                 >
                                     <SvgEmpty class="w-30 opacity-25" />

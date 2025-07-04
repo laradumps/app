@@ -226,7 +226,7 @@ const handleEscape = (e: KeyboardEvent) => {
         <div :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }">
             <div class="flex items-center gap-1 justify-end">
                 <div class="flex w-full justify-center">
-                    <Teleport to="#actions">
+                    <Teleport v-if="logs.length > 0" to="#actions">
                         <div class="dropdown dropdown-bottom dropdown-end">
                             <button
                                 tabindex="0"
@@ -385,7 +385,7 @@ const handleEscape = (e: KeyboardEvent) => {
 
             <div
                 v-else
-                class="-ml-8 absolute flex items-center justify-center w-full"
+                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
                 style="height: -webkit-fill-available"
             >
                 <SvgEmpty class="w-30 opacity-25" />

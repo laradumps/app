@@ -231,7 +231,7 @@ const setPreviewMode = (mode: string) => {
 
         <div class="space-y-3 h-[calc(100vh-140px)]">
             <div class="absolute right-3 z-100">
-                <Teleport to="#actions">
+                <Teleport to="#actions" v-if="mails.length > 0">
                     <button
                         @click="clear()"
                         class="btn btn-sm p-[0.5rem]"
@@ -415,7 +415,7 @@ const setPreviewMode = (mode: string) => {
 
             <div
                 v-else
-                class="-ml-8 absolute flex items-center justify-center w-full"
+                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
                 style="height: -webkit-fill-available"
             >
                 <SvgEmpty class="w-30 opacity-25" />

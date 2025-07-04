@@ -208,10 +208,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
     window.removeEventListener("keydown", handleEscape);
 });
-
-const actionsElementExists = computed(() => {
-    return !!document.getElementById("actions");
-});
 </script>
 
 <template>
@@ -313,7 +309,7 @@ const actionsElementExists = computed(() => {
             <div class="flex items-center gap-1 justify-center">
                 <Teleport
                     to="#actions"
-                    v-if="actionsElementExists"
+                    v-if="jobs.length > 0"
                 >
                     <div class="dropdown dropdown-bottom dropdown-end">
                         <button
@@ -490,7 +486,7 @@ const actionsElementExists = computed(() => {
 
             <div
                 v-else
-                class="-ml-8 absolute flex items-center justify-center w-full"
+                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
                 style="height: -webkit-fill-available"
             >
                 <SvgEmpty class="w-30 opacity-25" />
