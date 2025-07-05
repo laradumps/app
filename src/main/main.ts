@@ -421,3 +421,14 @@ nativeTheme.on("updated", () => {
 ipcMain.on("platform", (event, args) => {
     event.reply("platform.reply", process.platform);
 });
+
+ipcMain.on("choose-file", async (event) => {
+    const result = await dialog.showOpenDialog({
+        properties: ["openFile"],
+    });
+
+    if (!result.canceled && result.filePaths.length > 0) {
+        event.sender.send("choose-file-response", result.filePaths[0]);
+    }
+});
+

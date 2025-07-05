@@ -90,13 +90,9 @@ const getPayloadScreenCount = (screenName) => {
 
     return count > 0 ? `(${count})` : "";
 };
-
-const pinScreen = (screen) => {
-    screenStore.pin(screen);
-};
 </script>
 <template>
-    <div class="flex mb-1">
+    <div class="flex">
         <div
             role="tablist"
             class="tabs tabs-border"
@@ -116,7 +112,6 @@ const pinScreen = (screen) => {
                 <div
                     class="tab"
                     @click="$emit('toggleScreen', screen.screen_name, true)"
-                    @dblclick="pinScreen(screen.screen_name)"
                     :class="{
                         'ml-1': index > 0,
                         'tab-active font-semibold': screen.screen_name === screenStore.screen && screenStore.screens.length > 1
@@ -129,10 +124,6 @@ const pinScreen = (screen) => {
                             class="text-[0.7rem] text-base-content/70 badge !bg-transparent !border-0 p-0.5 h-[14px]"
                             >{{ getPayloadScreenCount(screen.screen_name) }}</span
                         >
-                        <IconPin
-                            v-if="screen.pinned"
-                            class="w-3 text-secondary"
-                        />
                     </span>
                 </div>
             </div>

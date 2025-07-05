@@ -13,7 +13,13 @@ import HeaderColorsFilter from "@/components/app/HeaderColorsFilter.vue";
 import { useSettingsStore } from "@/store/settings";
 import { useXDebug } from "@/store/xdebug.js";
 import { useLogStore } from "@/store/logs.js";
+import { useJobStore } from "@/store/jobs.js";
+import { useQueriesPayloadStore } from "@/store/queries.js";
+import { useMailStore } from "@/store/mail.js";
 
+const jobStore = useJobStore();
+const queryStore = useQueriesPayloadStore();
+const mailStore = useMailStore();
 const settingsStore = useSettingsStore();
 const xDebugStore = useXDebug();
 const logStore = useLogStore();
@@ -35,8 +41,14 @@ onMounted(() => {
 
 const payloadStore = usePayloadStore();
 
-const hasColor = computed(() => {
-    return Object.values(logStore.logs).length > 0 || payloadStore.payload.filter((payload) => payload.hasOwnProperty("color")).length > 0;
+const hasPayload = computed(() => {
+    return (
+        payloadStore.payload.length > 0 ||
+        Object.values(logStore.logs).length > 0 ||
+        Object.values(jobStore.jobs).length > 0 ||
+        Object.values(mailStore.mails).length > 0 ||
+        Object.values(queryStore.payload).length > 0
+    );
 });
 
 const xDebugMode = computed(() => {
@@ -53,11 +65,6 @@ const xDebugMode = computed(() => {
                     <ClearAll />
                     <!-- pause -->
                     <NavBarPause v-if="settingsStore.settings.show_pause_button" />
-                    <!-- color filter -->
-                    <HeaderColorsFilter
-                        class="border border-base-content/10 rounded-box py-1.5"
-                        v-bind:has-color="hasColor"
-                    />
                 </div>
             </div>
         </div>
@@ -66,7 +73,7 @@ const xDebugMode = computed(() => {
 
         <div class="flex gap-1 items-center m-0.5">
             <!-- global search -->
-            <NavBarGlobalSearch v-if="payloadStore.payload.length > 0" />
+            <NavBarGlobalSearch v-if="hasPayload" />
             <!-- collapse -->
             <NavBarCollapse v-if="settingsStore.settings.show_collapse_button" />
             <!-- always on top -->

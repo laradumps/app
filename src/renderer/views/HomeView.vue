@@ -36,6 +36,8 @@ import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { useLivewireStore } from "@/store/livewire";
 import { Environment } from "../../main/storage";
 import { usePauseJobsStore } from "@/store/pause-jobs";
+import { usePauseLogsStore } from "@/store/pause-logs";
+import moment from "moment/moment";
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -47,6 +49,7 @@ const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 const queriesStore = useQueriesPayloadStore();
 const pausePayloadStore = usePausePayloadStore();
+const pauseLogsStore = usePauseLogsStore();
 const livewireStore = useLivewireStore();
 
 const { locale } = useI18n({ useScope: "global" });
@@ -215,7 +218,7 @@ const dumpListeners = () => {
             applicationPath.value = content.application_path;
         }
 
-        jobStore.addOrUpdateJob(content.jobs, content.ide_handle);
+        jobStore.addOrUpdateJob(content);
 
         const serializableJobs = deepClone(jobStore.jobs);
 
@@ -280,7 +283,7 @@ const dumpListeners = () => {
     });
 
     window.ipcRenderer.on("log_application", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
+        if (pausePayloadStore.is_paused || pauseLogsStore.is_paused) {
             return;
         }
 
@@ -560,6 +563,20 @@ const openScreenWindow = () => {
         toggleScreen(screenName);
     }, 200);
 };
+
+const groupedDumps = computed(() => {
+    return dumpsBagFiltered.value.reduce(
+        (groups, payload) => {
+            const groupKey = moment(payload.date_time).format("YYYY-MM-DD HH:mm:ss");
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
+            }
+            groups[groupKey].push(payload);
+            return groups;
+        },
+        {} as Record<string, Payload[]>
+    );
+});
 </script>
 <template>
     <div
@@ -605,17 +622,19 @@ const openScreenWindow = () => {
                 <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                     <main class="flex flex-col flex-1 min-h-full space-y-1">
                         <!-- screen buttons -->
-                        <div class="flex">
-                            <div class="flex mt-1 px-1 items-center justify-between w-full overflow-x-auto">
+                        <div class="flex z-[380]">
+                            <div class="flex h-[48px] p-1.5 items-center justify-between w-full overflow-x-auto">
                                 <Screens @toggleScreen="toggleScreen" />
 
-                                <button
-                                    v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
-                                    @click="openScreenWindow"
-                                    class="btn btn-xs btn-ghost"
-                                >
-                                    <IconExternalLink class="w-4 opacity-90" />
-                                </button>
+                                <div class="p-0.5 px-1 right-2">
+                                    <button
+                                        v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
+                                        @click="openScreenWindow"
+                                        class="btn btn-sm p-[0.5rem] bg-transparent"
+                                    >
+                                        <IconExternalLink class="w-4 text-base-content" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -632,7 +651,7 @@ const openScreenWindow = () => {
                         </div>
 
                         <div v-if="screenStore.screen === 'queries'">
-                            <QueriesView class="w-[100vw] text-base" />
+                            <QueriesView class="h-[calc(100vh-85px)] text-base" />
                         </div>
 
                         <div
@@ -658,16 +677,32 @@ const openScreenWindow = () => {
                                     }"
                                 >
                                     <div
-                                        v-for="(payload, index) in dumpsBagFiltered"
-                                        :key="payload.sf_dump_id"
-                                        :id="payload.id"
-                                        class="w-full"
+                                        v-for="(group, groupKey) in groupedDumps"
+                                        :key="groupKey"
+                                        class="w-full px-3"
                                     >
-                                        <DumpItem
-                                            class="w-full px-2 group text-sm mb-2"
-                                            v-show="screenStore.screen !== 'livewire'"
-                                            :payload="payload"
-                                        />
+                                        <div class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0">
+                                            <span
+                                                class="opacity-70 px-1"
+                                                :title="groupKey"
+                                            >
+                                                {{ moment(groupKey).format("HH:mm:ss") }}
+                                            </span>
+                                        </div>
+
+                                        <div
+                                            v-for="payload in settingsStore.settings.dump_order === 'normal' ? group.slice().reverse() : group"
+                                            :key="payload.sf_dump_id"
+                                            :id="payload.id"
+                                            class="w-full"
+                                        >
+                                            <DumpItem
+                                                class="w-full group text-sm mb-3"
+                                                v-show="screenStore.screen !== 'livewire'"
+                                                :payload="payload"
+                                                :show-time="false"
+                                            />
+                                        </div>
                                     </div>
 
                                     <DumpLivewire
@@ -678,12 +713,12 @@ const openScreenWindow = () => {
 
                                 <div
                                     v-if="dumpsBagFiltered.length === 0 && !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)"
-                                    class="-ml-8 absolute flex items-center justify-center w-full"
+                                    class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
                                     style="height: -webkit-fill-available"
                                 >
                                     <SvgEmpty class="w-30 opacity-25" />
                                     <div class="text-base-content/70">
-                                        <h1 class="text-lg font-semibold mb-2">No {{ screenStore.screen }}</h1>
+                                        <h1 class="text-lg font-semibold mb-2">Empty</h1>
                                     </div>
                                 </div>
                             </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { SignalSlashIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import { SignalIcon } from "@heroicons/vue/24/solid";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import JSConfetti from "js-confetti";
 import { useCurrentProject } from "@/store/current-project";
 import { useXDebug } from "@/store/xdebug";
@@ -22,11 +22,21 @@ const selectedProject = ref<Project>({} as Project);
 const isNewProject = ref(false);
 const projects = ref<Project[]>([]);
 const environments = ref<Environment[]>([]);
+const windowHeight = ref(window.innerHeight);
 
 onMounted(() => {
     initializeProjectData();
     setupEventListeners();
+    window.addEventListener("resize", updateHeight);
 });
+
+onUnmounted(() => {
+    window.removeEventListener("resize", updateHeight);
+});
+
+const updateHeight = () => {
+    windowHeight.value = window.innerHeight;
+};
 
 const formattedName = (name: string): string => name?.replace(/[-_.]/g, " ") || "No project selected";
 
@@ -145,14 +155,14 @@ const sortedProjects = computed(() => {
     return [...projects.value].sort((a, b) => a.project.localeCompare(b.project, undefined, { sensitivity: "base" }));
 });
 
-const sortedEnvironments = computed(() => {
-    return [...environments.value].sort((a, b) => a.value.localeCompare(b.value, undefined, { sensitivity: "base" }));
+const environmentStyle = computed(() => {
+    return windowHeight.value > 690 ? "height: 530px" : `height: calc(100vh - 170px)`;
 });
 </script>
 
 <template>
     <div class="mr-0.5">
-        <div class="dropdown dropdown-end dropdown-hover">
+        <div class="dropdown dropdown-end">
             <button class="flex font-normal capitalize truncate text-xs btn btn-soft justify-between !px-2.5 !m-0 !h-6.5 gap-2">
                 <span
                     v-if="selectedProject.project"
@@ -197,7 +207,10 @@ const sortedEnvironments = computed(() => {
                     </li>
                 </div>
 
-                <div class="bg-base-200/70 text-xs mx-1 mt-1 rounded-lg h-[calc(100vh-250px)] overflow-auto">
+                <div
+                    :style="environmentStyle"
+                    class="text-sm rounded-lg overflow-auto"
+                >
                     <li
                         v-if="selectedProject.project"
                         class="mt-1"
@@ -214,7 +227,7 @@ const sortedEnvironments = computed(() => {
                         </label>
                     </li>
                     <li
-                        v-for="env in sortedEnvironments"
+                        v-for="env in environments"
                         :key="env.id"
                     >
                         <label

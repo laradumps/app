@@ -11,13 +11,14 @@ import { modifyHtml } from "./../utils";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { useCurrentProject } from "@/store/current-project";
 import VueJsonPretty from "vue-json-pretty";
+import { useGlobalSearchStore } from "@/store/global-search";
 
 const mailStore = useMailStore();
 const currentProjectStore = useCurrentProject();
+const globalSearchStore = useGlobalSearchStore();
 
 const visited = ref<Mail>();
 const previewUrl = ref<string>("");
-const search = ref<string>("");
 const previewMode = ref<string>("mobile");
 
 const props = defineProps<{
@@ -54,14 +55,9 @@ const clear = () => {
 const mails = computed(() => {
     const items = props.items ? props.items : mailStore.mails;
 
-    if (search.value) {
-        const searchString = search.value.toLowerCase();
-        return items.filter((mail) => {
-            return JSON.stringify(mail).toLowerCase().includes(searchString);
-        });
-    }
-
-    return items;
+    return items.filter((mail) => {
+        return JSON.stringify(mail).toLowerCase().includes(globalSearchStore.search.toLowerCase());
+    });
 });
 
 const openContext = () => {
@@ -234,23 +230,16 @@ const setPreviewMode = (mode: string) => {
         </dialog>
 
         <div class="space-y-3 h-[calc(100vh-140px)]">
-            <div class="mt-1 flex items-center gap-2 justify-between">
-                <label class="input w-full input-sm">
-                    <MagnifyingGlassIcon class="size-4" />
-                    <input
-                        v-model="search"
-                        type="search"
-                        class="grow"
-                        :placeholder="$t('search')"
-                    />
-                </label>
-                <button
-                    @click="clear()"
-                    class="btn btn-sm p-[0.5rem]"
-                    data-tippy-content="Clear"
-                >
-                    <TrashIcon class="w-4" />
-                </button>
+            <div class="absolute right-3 z-100">
+                <Teleport to="#actions" v-if="mails.length > 0">
+                    <button
+                        @click="clear()"
+                        class="btn btn-sm p-[0.5rem]"
+                        data-tippy-content="Clear All"
+                    >
+                        <TrashIcon class="w-4" />
+                    </button>
+                </Teleport>
             </div>
 
             <Splitpanes
@@ -298,10 +287,10 @@ const setPreviewMode = (mode: string) => {
                         class="flex flex-col w-full space-y-2 !h-[calc(100vh-150px)]"
                     >
                         <!-- header -->
-                        <div class="px-2 pl-4">
+                        <div class="px-2">
                             <DumpLink
                                 :ide-handler="visited.ide_handle"
-                                class="text-xs opacity-80 link"
+                                class="text-xs my-2 opacity-80 link"
                             />
 
                             <div class="mt-1 flex flex-col gap-2">
@@ -426,12 +415,12 @@ const setPreviewMode = (mode: string) => {
 
             <div
                 v-else
-                class="-ml-8 absolute flex items-center justify-center w-full"
+                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
                 style="height: -webkit-fill-available"
             >
                 <SvgEmpty class="w-30 opacity-25" />
                 <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">No Mails</h1>
+                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
                 </div>
             </div>
         </div>

@@ -39,6 +39,8 @@ const toggleAlwaysOnTop = () => {
     >
         <IconPin
             class="w-3.5"
+            :fill="isAlwaysOnTop ? 'currentColor' : 'none'"
+            :stroke-width="isAlwaysOnTop ? '0' : '8'"
             :class="{ 'text-primary': isAlwaysOnTop }"
         />
     </button>

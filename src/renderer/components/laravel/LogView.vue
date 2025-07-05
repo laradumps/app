@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import moment from "moment";
-import { EyeIcon, TrashIcon, FunnelIcon } from "@heroicons/vue/24/outline";
-import { ExclamationCircleIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
+import { FunnelIcon, PlayIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
 
 import { IdeHandle } from "@/types/IdeHandle";
 import { useCurrentProject } from "@/store/current-project";
@@ -10,47 +10,41 @@ import { Log, useLogStore } from "@/store/logs";
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import { useColorStore } from "@/store/colors";
 import { useSettingsStore } from "@/store/settings";
-import { useLogFilterStore } from "@/store/log-filter";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import Divider from "@/components/common/Divider.vue";
+import { useGlobalSearchStore } from "@/store/global-search";
+import IconPause from "@/components/Icons/IconPause.vue";
+import { usePauseLogsStore } from "@/store/pause-logs";
 
 const logStore = useLogStore();
 const currentProjectStore = useCurrentProject();
 const colorStore = useColorStore();
 const settingsStore = useSettingsStore();
-const logFilterStore = useLogFilterStore();
+const globalSearchStore = useGlobalSearchStore();
+const pauseLogsStore = usePauseLogsStore();
 
-const search = ref("");
 const forceUpdate = ref(0);
-const selectedLogDetail = ref();
-
-const logLevels = [
-    { level: "info", label: "Info" },
-    { level: "notice", label: "Notice" },
-    { level: "error", label: "Error"},
-    { level: "critical", label: "Critical"},
-    { level: "emergency", label: "Emergency"},
-];
-
-const hasActiveFilters = computed(() => logFilterStore.hasFilters);
-
-const toggleLevel = (level: string) => {
-    logFilterStore.toggleLevel(level);
-};
-
-const clearFilters = () => {
-    logFilterStore.clear();
-};
-
-const getLogCount = (level: string) => {
-    const items = props.items ? props.items : logStore.logs;
-    return Object.values(items).filter((log: Log) => log.level === level).length;
-};
+const selected = ref();
+const collapsedLogGroups = ref<Record<string, boolean>>({});
+const levelFilter = ref<string[]>([]);
 
 const props = defineProps<{
     items: Record<string, Log>;
     inScreenWindow: boolean;
 }>();
+
+const totalLogs = computed(() => {
+    const items = props.items ? props.items : logStore.logs;
+    return Object.values(items).length;
+});
+
+const levelCounts = computed(() => {
+    const items = props.items ? props.items : logStore.logs;
+    return Object.values(items).reduce((acc, log) => {
+        acc[log.level] = (acc[log.level] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+});
 
 const generateLink = (ideHandler: IdeHandle) => {
     const ide_handler = settingsStore.settings.ide_handler ? settingsStore.settings.ide_handler : "phpstorm://open?file={filepath}&line={line}";
@@ -80,19 +74,20 @@ const logs = computed(() => {
     return Object.values(items)
         .filter((log: Log) => {
             if (colorStore.colors.length > 0) {
-                return colorStore.colors.includes(log.color);
+                return colorStore.colors.includes(colorStore.match(log.color));
             }
             return true;
         })
         .filter((log: Log) => {
-            if (logFilterStore.hasFilters) {
-                return logFilterStore.isSelected(log.level);
-            }
-            return true;
+            const searchTerm = globalSearchStore.search.toLowerCase();
+            return (
+                log.message.toLowerCase().includes(searchTerm) ||
+                log.level.includes(searchTerm) ||
+                log.context[0].includes(searchTerm)
+            );
         })
         .filter((log: Log) => {
-            const searchTerm = search.value.toLowerCase();
-            return log.message.toLowerCase().includes(searchTerm) || log.level.includes(searchTerm) || log.context[0].includes(searchTerm);
+            return levelFilter.value.length === 0 || levelFilter.value.includes(log.level);
         })
         .sort((a, b) => {
             const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -101,9 +96,33 @@ const logs = computed(() => {
         });
 });
 
+const selectedLevel = (level: string) => {
+    const index = levelFilter.value.indexOf(level);
+    if (index > -1) {
+        levelFilter.value.splice(index, 1);
+    } else {
+        levelFilter.value.push(level);
+    }
+};
+
+const groupedLogsByRelativeTime = computed(() => {
+    const groups: Record<string, Log[]> = {};
+    for (const log of logs.value) {
+        const timeKey = moment(log.created_at).fromNow();
+        if (!groups[timeKey]) {
+            groups[timeKey] = [];
+        }
+        groups[timeKey].push(log);
+    }
+    return groups;
+});
+
+const toggleLogGroup = (timeKey: string) => {
+    collapsedLogGroups.value[timeKey] = !collapsedLogGroups.value[timeKey];
+};
+
 const clear = () => {
     logStore.clear();
-    logFilterStore.clear();
 };
 
 const openModal = (id: string) => {
@@ -113,13 +132,14 @@ const openModal = (id: string) => {
         return;
     }
 
-    selectedLogDetail.value = {
+    selected.value = {
         id: findLog.log_id,
         code_snippet: findLog.code_snippet,
         message: findLog.message,
         context: findLog.context[0],
         level: findLog.level,
-        ide_handle: findLog.ide_handle
+        ide_handle: findLog.ide_handle,
+        created_at: findLog.created_at
     };
 
     const sfDumpId = findLog.context[1];
@@ -155,7 +175,7 @@ const handleEscape = (e: KeyboardEvent) => {
         const drawerToggle = document.getElementById("my-drawer") as HTMLInputElement;
         if (drawerToggle) {
             drawerToggle.checked = false;
-            selectedLogDetail.value = null;
+            selected.value = null;
         }
     }
 };
@@ -164,176 +184,219 @@ const handleEscape = (e: KeyboardEvent) => {
 <template>
     <div class="px-3">
         <div class="drawer drawer-end">
-            <input id="my-drawer" type="checkbox" class="hidden drawer-toggle" />
+            <input
+                id="my-drawer"
+                type="checkbox"
+                class="hidden drawer-toggle"
+            />
 
-            <div class="drawer-side">
-                <label for="my-drawer" class="drawer-overlay"></label>
+            <div class="drawer-side z-[400]">
+                <label
+                    for="my-drawer"
+                    class="drawer-overlay"
+                ></label>
                 <div class="bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-5">
-                    <div class="space-y-3" v-if="selectedLogDetail">
-                        <div>
-                            <h4 class="text-base font-semibold nav-bar">Message</h4>
-                            <span class="text-sm">{{ selectedLogDetail.message }}</span>
+                    <div
+                        class="space-y-3"
+                        v-if="selected"
+                    >
+                        <div class="flex justify-between mb-0 nav-bar">
+                            <h4 class="text-base font-semibold">Created At</h4>
+                            <span class="text-sm">{{ moment(selected.created_at).format("HH:mm:ss a") }}</span>
                         </div>
                         <Divider />
-                        <div class="h-auto overflow-auto">
-                            <h4 class="text-base font-semibold nav-bar">Code Snippet / Payload</h4>
-                            <CodeSnippet v-if="selectedLogDetail.code_snippet.length > 0"
-                                :code_snippet="selectedLogDetail.code_snippet"
-                                :ide_handle="selectedLogDetail.ide_handle" />
-                            <div v-else>
-                                <div v-html="selectedLogDetail.context"></div>
-                            </div>
+
+                        <div>
+                            <h4 class="text-base font-semibold nav-bar">Message</h4>
+                            <span class="text-sm">{{ selected.message }}</span>
+                        </div>
+                        <Divider />
+
+                        <div v-if="selected.code_snippet.length > 0">
+                            <h4 class="text-base font-semibold">Code Snippet</h4>
+                            <CodeSnippet
+                                v-if="selected.code_snippet.length > 0"
+                                :code_snippet="selected.code_snippet"
+                                :ide_handle="selected.ide_handle"
+                            />
+                        </div>
+                        <div v-else>
+                            <h4 class="text-base font-semibold nav-bar">Payload</h4>
+                            <div v-html="selected.context"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="space-y-3"
-            :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }">
-            <div class="flex items-center justify-between gap-1 mt-1">
-                <label class="w-full input input-sm">
-                    <MagnifyingGlassIcon class="size-4" />
-                    <input v-model="search" type="search" class="grow" :placeholder="$t('search')" />
-                </label>
-
-                <div class="dropdown dropdown-end">
-                    <div tabindex="0" role="button" class="btn btn-sm gap-2 min-h-[2rem] h-8" :class="{
-                        'btn-primary': hasActiveFilters,
-                        'btn-ghost': !hasActiveFilters
-                    }" data-tippy-content="Filter by log level">
-                        <FunnelIcon class="w-4 h-4" :class="{ 'text-primary-content': hasActiveFilters }" />
-                        <span v-if="hasActiveFilters && logFilterStore.selectedCount" class="text-xs font-medium">
-                            {{ logFilterStore.selectedCount }}
-                        </span>
-                    </div>
-                    <div tabindex="0"
-                        class="z-50 w-64 mt-2 border rounded-lg shadow-lg dropdown-content bg-base-100 border-base-300">
-                        <div class="px-4 py-3 border-b border-base-300">
-                            <div class="flex items-center justify-between">
-                                <h3 class="text-sm font-semibold text-base-content">Filter by Level</h3>
-                                <button v-if="hasActiveFilters" @click="clearFilters"
-                                    class="text-xs font-medium text-primary hover:text-primary-focus">
-                                    Clear All
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="p-2 overflow-y-auto max-h-80">
-                            <div v-for="logLevel in logLevels" :key="logLevel.level" class="group">
-                                <label
-                                    class="relative flex items-center gap-3 p-3 transition-colors duration-150 rounded-lg cursor-pointer hover:bg-base-200">
-                                    <div class="absolute left-0 w-1 top-2 bottom-2 rounded-r-md" :class="{
-                                        'bg-info': logLevel.level === 'info',
-                                        'bg-success': logLevel.level === 'notice',
-                                        'bg-error': logLevel.level === 'error' || logLevel.level === 'critical' || logLevel.level === 'emergency',
-                                        'bg-warning': logLevel.level === 'warning',
-                                        'bg-gray-500': logLevel.level === 'debug'
-                                    }">
-                                    </div>
-
-                                    <input type="checkbox" :checked="logFilterStore.isSelected(logLevel.level)"
-                                        @change="toggleLevel(logLevel.level)" class="ml-2 checkbox checkbox-sm" :class="{
-                                            'checkbox-primary': logFilterStore.isSelected(logLevel.level),
-                                            'checkbox-ghost': !logFilterStore.isSelected(logLevel.level)
-                                        }" />
-                                    <div class="flex items-center flex-1 gap-2">
-                                        <span class="px-2 py-1 text-xs font-medium rounded-md min-w-[60px] text-center">
-                                            {{ logLevel.label }}
-                                        </span>
-                                        <span
-                                            class="text-xs transition-colors text-base-content/70 group-hover:text-base-content">
-                                            {{ getLogCount(logLevel.level) }} logs
-                                        </span>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="px-4 py-3 border-t border-base-300 bg-base-50">
-                            <button @click="clearFilters" class="w-full btn btn-xs btn-ghost"
-                                :disabled="!hasActiveFilters">
-                                Clear All Filters
+        <div :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }">
+            <div class="flex items-center justify-end gap-1">
+                <div class="flex justify-center w-full">
+                    <Teleport v-if="totalLogs > 0" to="#actions">
+                        <div class="dropdown dropdown-bottom dropdown-end">
+                            <button
+                                tabindex="0"
+                                role="button"
+                                class="btn btn-sm p-[0.5rem] bg-transparent"
+                            >
+                                <FunnelIcon
+                                    v-if="levelFilter.length === 0"
+                                    class="w-4"
+                                />
+                                <FunnelIcon
+                                    v-else
+                                    class="w-4 text-primary"
+                                />
                             </button>
+                            <ul
+                                tabindex="0"
+                                class="p-2 shadow-sm dropdown-content menu bg-base-300 rounded-box z-100 w-52"
+                            >
+                                <li
+                                    v-for="level in ['debug','info','notice','warning','error','critical','alert','emergency']"
+                                    :key="level"
+                                    :class="{ 'text-primary': levelFilter.includes(level) }"
+                                    @click="selectedLevel(level)"
+                                >
+                                    <a class="!text-xs">
+                                        {{ level.charAt(0).toUpperCase() + level.slice(1) }}
+                                        ({{ levelCounts[level] || 0 }})
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
-                    </div>
-                </div>
 
-                <button @click="clear()" class="btn btn-sm p-[0.5rem]" data-tippy-content="Clear">
-                    <TrashIcon class="w-4" />
-                </button>
+                        <button
+                            @click="pauseLogsStore.toggle()"
+                            class="btn btn-sm p-[0.5rem]"
+                            :data-tippy-content="$t('pause')"
+                        >
+                            <PlayIcon
+                                v-if="pauseLogsStore.is_paused"
+                                class="w-4 text-warning"
+                            />
+                            <IconPause
+                                v-else
+                                class="w-4"
+                            />
+                        </button>
+                        <button
+                            @click="clear()"
+                            class="btn btn-sm p-[0.5rem]"
+                            data-tippy-content="Clear"
+                        >
+                            <TrashIcon class="w-4" />
+                        </button>
+                    </Teleport>
+                </div>
             </div>
 
-            <div v-if="logs.length > 0" class="overflow-auto" style="height: -webkit-fill-available">
-                <table class="table">
+            <div
+                v-if="logs.length > 0"
+                class="overflow-auto"
+                style="height: -webkit-fill-available"
+            >
+                <table class="table table-pin-rows table-zebra">
                     <thead>
-                        <tr>
+                        <tr class="text-xs !bg-base-300 font-light text-base-content">
                             <th class="w-4">Level</th>
                             <th>Message</th>
-                            <th class="w-6">Time</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(log, index) in logs" :key="`log-${index}`" class="cursor-pointer hover:bg-base-100"
-                            @click="openModal(log.log_id)">
-                            <td>
-                                <span class="badge text-xs !text-semibold badge-info p-1.5" v-if="log.level === 'info'">
-                                    <InformationCircleIcon class="w-5" /> Info
-                                </span>
-                                <span class="text-xs badge badge-success" v-else-if="log.level === 'notice'">
-                                    <InformationCircleIcon class="w-5" /> Notice
-                                </span>
-
-                                <span class="badge text-xs !text-semibold badge-warning p-1.5"
-                                    v-else-if="log.level === 'warning'">
-                                    <ExclamationTriangleIcon class="w-5" />
-                                    Warning
-                                </span>
-                                <span class="badge text-xs !text-semibold badge-error p-1.5"
-                                    v-else-if="log.level === 'error'">
-                                    <ExclamationCircleIcon class="w-5" />Error
-                                </span>
-                                <span class="badge text-xs !text-semibold badge-error p-1.5"
-                                    v-else-if="log.level === 'alert'">
-                                    <ExclamationCircleIcon class="w-5" />Alert
-                                </span>
-                                <span class="badge text-xs !text-semibold badge-error p-1.5"
-                                    v-else-if="log.level === 'critical'">
-                                    <ExclamationTriangleIcon class="w-5" />Critical
-                                </span>
-                                <span class="badge text-xs !text-semibold badge-error p-1.5"
-                                    v-else-if="log.level === 'emergency'">
-                                    <ExclamationCircleIcon class="w-5" />Emergency
-                                </span>
-                                <span class="badge text-xs !text-semibold bg-gray-500 text-primary-content p-1.5"
-                                    v-else-if="log.level === 'debug'">
-                                    <InformationCircleIcon class="w-5" />Debug
-                                </span>
-                            </td>
-                            <td class="break-words break-all">
-                                <div class="line-clamp-2">{{ log.message }}</div>
-                                <a v-if="log.ide_handle.class_name !== 'empty'" :href="generateLink(log.ide_handle)"
-                                    v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
-                                    class="text-xs link opacity-60">
-                                </a>
-                            </td>
-                            <td class="text-right whitespace-nowrap">
-                                <div class="flex flex-col">
-                                    <span>{{ moment(log.created_at).fromNow() }}</span>
-                                    <span class="text-xs opacity-65">{{ moment(log.created_at).format("HH:mm:ss")
-                                        }}</span>
-                                </div>
-                            </td>
-                        </tr>
+                        <template
+                            v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
+                            :key="timeKey"
+                        >
+                            <tr
+                                class="text-xs font-semibold text-center cursor-pointer bg-base-200"
+                                @click="toggleLogGroup(timeKey)"
+                            >
+                                <td
+                                    colspan="3"
+                                    class="select-none hover:link"
+                                >
+                                    {{ timeKey }}
+                                    <span class="ml-1">{{ collapsedLogGroups[timeKey] ? "▼" : "▲" }}</span>
+                                </td>
+                            </tr>
+                            <tr
+                                v-for="(log, index) in logsOnTime"
+                                v-if="!collapsedLogGroups[timeKey]"
+                                :key="`log-${index}`"
+                                class="cursor-pointer hover:bg-base-100"
+                                @click="openModal(log.log_id)"
+                            >
+                                <td>
+                                    <span
+                                        class="badge text-xs !text-semibold badge-info p-1.5"
+                                        v-if="log.level === 'info'"
+                                        ><InformationCircleIcon class="w-5" /> Info</span
+                                    >
+                                    <span
+                                        class="text-xs badge badge-success"
+                                        v-else-if="log.level === 'notice'"
+                                        ><InformationCircleIcon class="w-5" /> Notice</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold badge-warning p-1.5"
+                                        v-else-if="log.level === 'warning'"
+                                    >
+                                        <ExclamationTriangleIcon class="w-5" />
+                                        Warning
+                                    </span>
+                                    <span
+                                        class="badge text-xs !text-semibold badge-error p-1.5"
+                                        v-else-if="log.level === 'error'"
+                                    >
+                                        <ExclamationCircleIcon class="w-5" />Error</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold badge-error p-1.5"
+                                        v-else-if="log.level === 'alert'"
+                                    >
+                                        <ExclamationCircleIcon class="w-5" />Alert</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold badge-error p-1.5"
+                                        v-else-if="log.level === 'critical'"
+                                    >
+                                        <ExclamationTriangleIcon class="w-5" />Critical</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold badge-error p-1.5"
+                                        v-else-if="log.level === 'emergency'"
+                                        ><ExclamationCircleIcon class="w-5" />Emergency</span
+                                    >
+                                    <span
+                                        class="badge text-xs !text-semibold bg-gray-500 text-primary-content p-1.5"
+                                        v-else-if="log.level === 'debug'"
+                                        ><InformationCircleIcon class="w-5" />Debug</span
+                                    >
+                                </td>
+                                <td class="break-words break-all">
+                                    <div class="line-clamp-2">{{ log.message }}</div>
+                                    <a
+                                        v-if="log.ide_handle.class_name !== 'empty'"
+                                        :href="generateLink(log.ide_handle)"
+                                        v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
+                                        class="text-xs link opacity-60"
+                                    />
+                                </td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
 
-            <div v-else class="absolute flex items-center justify-center w-full -ml-8"
-                style="height: -webkit-fill-available">
+            <div
+                v-else
+                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
+                style="height: -webkit-fill-available"
+            >
                 <SvgEmpty class="opacity-25 w-30" />
                 <div class="text-base-content/70">
-                    <h1 class="mb-2 text-lg font-semibold">No Logs</h1>
+                    <h1 class="mb-2 text-lg font-semibold">Empty</h1>
                 </div>
             </div>
         </div>
@@ -342,9 +405,15 @@ const handleEscape = (e: KeyboardEvent) => {
 <style scoped>
 @reference "./../../styles.css";
 
-::v-deep(.table) {
+::v-deep(.table thead) {
     :where(th, td) {
-        @apply p-1.5;
+        @apply p-2;
+    }
+}
+
+::v-deep(.table tbody) {
+    :where(th, td) {
+        @apply p-1.5 px-2;
     }
 }
 </style>
