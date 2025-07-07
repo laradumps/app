@@ -6,7 +6,7 @@ import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/dumps/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { TrashIcon, PlayIcon, FunnelIcon, ChartBarIcon, SparklesIcon } from "@heroicons/vue/24/outline";
+import { TrashIcon, PlayIcon, FunnelIcon, ChartBarIcon, SparklesIcon, EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { Pane, Splitpanes } from "splitpanes";
@@ -43,6 +43,11 @@ const props = defineProps<{
 const selectedChartPoint = ref<Payload | null>(null);
 const filteredClasses = ref<string[]>([]);
 const filteredOrigins = ref<string[]>([]);
+const collapsedGroups = ref<Record<string, boolean>>({});
+
+const toggleGroupCollapse = (key: string) => {
+    collapsedGroups.value[key] = !collapsedGroups.value[key];
+};
 
 const availableClasses = computed(() => {
     const items = props.items || queriesStore.payload;
@@ -470,26 +475,36 @@ const groupedQueries = computed(() => {
                                 :key="groupKey"
                                 class="w-full"
                             >
-                                <div class="bg-base-200 flex-1 text-left py-1.5 z-300 text-xs sticky top-0">
+                                <div
+                                    class="bg-base-200 flex items-center justify-between py-1.5 px-2 z-300 text-xs sticky top-0 cursor-pointer"
+                                    @click="toggleGroupCollapse(groupKey)"
+                                >
                                     <span
-                                        class="opacity-80 px-1"
                                         :title="groupKey"
+                                        class="opacity-80"
                                     >
                                         {{ moment(groupKey).fromNow() }}
                                     </span>
+                                    <span class="text-[10px] uppercase tracking-widest text-right">
+                                        <EyeSlashIcon class="w-4" v-if="collapsedGroups[groupKey]" />
+                                        <EyeIcon class="w-4" v-else />
+                                    </span>
                                 </div>
-                                <div
-                                    v-for="payload in group"
-                                    :key="payload.sf_dump_id"
-                                    :id="payload.id"
-                                    class="w-full"
-                                >
-                                    <DumpItem
-                                        class="w-full group text-sm mb-3"
-                                        v-show="payload.request_id === timeStore.selected"
-                                        :payload="payload"
-                                        :show-time="false"
-                                    />
+
+                                <div v-show="!collapsedGroups[groupKey]">
+                                    <div
+                                        v-for="payload in group"
+                                        :key="payload.sf_dump_id"
+                                        :id="payload.id"
+                                        class="w-full"
+                                    >
+                                        <DumpItem
+                                            class="w-full group text-sm mb-3"
+                                            v-show="payload.request_id === timeStore.selected"
+                                            :payload="payload"
+                                            :show-time="false"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
