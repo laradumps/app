@@ -14,7 +14,6 @@ import Divider from "@/components/common/Divider.vue";
 import { ArrowUpTrayIcon } from "@heroicons/vue/20/solid";
 
 const i18n = useI18n();
-const sshModal = ref();
 const connected = ref(false);
 const sshStore = useSSHStore();
 const form: Ref<ConnectionConfig> = ref({
@@ -60,13 +59,13 @@ const connectResponse = (event: any, response: any) => {
 
     if (response.data.state === "create" && response.connected) {
         sshStore.addConnection(response.config);
-        sshModal.value.closeModal();
+        ssh_modal.close();
         emit("connected");
     }
 
     if (response.data.state === "edit" && response.connected) {
         sshStore.updateConnection(response.config.id, response.config);
-        sshModal.value.closeModal();
+        ssh_modal.close();
         emit("connected");
     }
 };

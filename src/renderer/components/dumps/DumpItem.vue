@@ -187,7 +187,12 @@ const shouldDisplayContext = computed(() => {
                         {{ moment(payload.date_time).format("hh:mm:ss a") }}
                     </li>
                     <li class="select-none opacity-70">
-                        <DumpLink :ide-handler="payload.ide_handle || {}" />
+                        <DumpLink
+                            v-if="payload.ide_handle.real_path"
+                            :ide-handler="payload.ide_handle" />
+                        <span v-else>
+                            Unknown
+                        </span>
                     </li>
                 </ul>
 
