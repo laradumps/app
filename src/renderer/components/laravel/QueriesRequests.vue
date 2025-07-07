@@ -3,13 +3,11 @@ import { computed } from "vue";
 import { Payload } from "@/types/Payload";
 import { useTimeStore } from "@/store/time";
 import { useQueriesPayloadStore } from "@/store/queries";
-import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 
 const timeStore = useTimeStore();
 const queriesStore = useQueriesPayloadStore();
-const queriesOriginFilter = useQueriesOriginFilter();
 const duplicatesStore = useQueryDuplicated();
 
 const allRequests = computed(() => {
@@ -22,10 +20,6 @@ const allRequests = computed(() => {
         origin: timeStore.getOrigin(group),
         count: queriesStore.payload.filter((payload: Payload) => payload.request_id == group).length
     }));
-
-    if (queriesOriginFilter.origin.length > 0) {
-        requests = requests.filter((request) => queriesOriginFilter.origin.includes(timeStore.getOrigin(request.id)));
-    }
 
     requests.sort((a, b) => b.index - a.index);
 

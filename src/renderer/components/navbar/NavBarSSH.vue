@@ -213,7 +213,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                                 </button>
                             </template>
                             <template v-else>
-                                <button class="btn btn-sm p-[0.5rem] btn-ghost ">
+                                <button class="btn btn-sm p-[0.5rem] btn-ghost">
                                     <PencilIcon
                                         @click="editConnection(connection.id)"
                                         class="w-4"
@@ -222,7 +222,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                                 <button class="btn btn-sm p-[0.5rem] btn-ghost hover:btn-error">
                                     <TrashIcon
                                         @click="removeConnection(connection.id)"
-                                        class="w-4 "
+                                        class="w-4"
                                     />
                                 </button>
                             </template>
@@ -239,10 +239,13 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
             </div>
         </ul>
 
-        <dialog id="ssh_modal" class="modal">
+        <dialog
+            id="ssh_modal"
+            class="modal"
+        >
             <div class="modal-box">
                 <h3 class="text-lg font-bold">
-                    {{ editId ? $t('ssh.edit_connection') : $t('ssh.add_connection') }}
+                    {{ editId ? $t("ssh.edit_connection") : $t("ssh.add_connection") }}
                 </h3>
                 <div class="py-4">
                     <form
@@ -333,16 +336,16 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                                         />
                                     </label>
                                 </div>
-                                <button type="button"
-                                        @click="chooseFile"
-                                        class="btn btn-neutral join-item">
+                                <button
+                                    type="button"
+                                    @click="chooseFile"
+                                    class="btn btn-neutral join-item"
+                                >
                                     <span class="text-xs">
                                         <ArrowUpTrayIcon class="w-4" />
                                     </span>
                                 </button>
                             </div>
-
-
                         </div>
                         <Divider />
                         <div class="grid grid-cols-3 items-center">
@@ -357,7 +360,6 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                         <div class="flex items-center justify-end gap-3">
                             <div class="modal-action">
                                 <form method="dialog">
-
                                     <button class="btn">Close</button>
                                 </form>
                             </div>

@@ -40,10 +40,13 @@ const totalLogs = computed(() => {
 
 const levelCounts = computed(() => {
     const items = props.items ? props.items : logStore.logs;
-    return Object.values(items).reduce((acc, log) => {
-        acc[log.level] = (acc[log.level] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
+    return Object.values(items).reduce(
+        (acc, log) => {
+            acc[log.level] = (acc[log.level] || 0) + 1;
+            return acc;
+        },
+        {} as Record<string, number>
+    );
 });
 
 const generateLink = (ideHandler: IdeHandle) => {
@@ -80,11 +83,7 @@ const logs = computed(() => {
         })
         .filter((log: Log) => {
             const searchTerm = globalSearchStore.search.toLowerCase();
-            return (
-                log.message.toLowerCase().includes(searchTerm) ||
-                log.level.includes(searchTerm) ||
-                log.context[0].includes(searchTerm)
-            );
+            return log.message.toLowerCase().includes(searchTerm) || log.level.includes(searchTerm) || log.context[0].includes(searchTerm);
         })
         .filter((log: Log) => {
             return levelFilter.value.length === 0 || levelFilter.value.includes(log.level);
@@ -232,7 +231,10 @@ const handleEscape = (e: KeyboardEvent) => {
         <div :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }">
             <div class="flex items-center justify-end gap-1">
                 <div class="flex justify-center w-full">
-                    <Teleport v-if="totalLogs > 0" to="#actions">
+                    <Teleport
+                        v-if="totalLogs > 0"
+                        to="#actions"
+                    >
                         <div class="dropdown dropdown-bottom dropdown-end">
                             <button
                                 tabindex="0"
@@ -253,7 +255,7 @@ const handleEscape = (e: KeyboardEvent) => {
                                 class="p-2 shadow-sm dropdown-content menu bg-base-300 rounded-box z-100 w-52"
                             >
                                 <li
-                                    v-for="level in ['debug','info','notice','warning','error','critical','alert','emergency']"
+                                    v-for="level in ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency']"
                                     :key="level"
                                     :class="{ 'text-primary': levelFilter.includes(level) }"
                                     @click="selectedLevel(level)"

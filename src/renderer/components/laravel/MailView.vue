@@ -231,7 +231,10 @@ const setPreviewMode = (mode: string) => {
 
         <div class="space-y-3 h-[calc(100vh-140px)]">
             <div class="absolute right-3 z-100">
-                <Teleport to="#actions" v-if="mails.length > 0">
+                <Teleport
+                    to="#actions"
+                    v-if="mails.length > 0"
+                >
                     <button
                         @click="clear()"
                         class="btn btn-sm p-[0.5rem]"

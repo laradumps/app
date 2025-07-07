@@ -5,9 +5,8 @@ import { useQueriesPayloadStore } from "@/store/queries";
 import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/dumps/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
-import { useQueriesOriginFilter } from "@/store/queries-origin-filter";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { TrashIcon, PlayIcon, LockOpenIcon, FunnelIcon, ChartBarIcon, SparklesIcon } from "@heroicons/vue/24/outline";
+import { TrashIcon, PlayIcon, FunnelIcon, ChartBarIcon, SparklesIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import { Pane, Splitpanes } from "splitpanes";
@@ -27,7 +26,6 @@ import { useFormattedQueriesStore } from "@/store/formatted-queries";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
-const queriesOriginFilter = useQueriesOriginFilter();
 const blockedQueriesStore = useQueriesBlockedStore();
 const queryDuplicatedStore = useQueryDuplicated();
 const pendingRequestsStore = usePendingRequestsStore();
@@ -43,6 +41,34 @@ const props = defineProps<{
 }>();
 
 const selectedChartPoint = ref<Payload | null>(null);
+const filteredClasses = ref<string[]>([]);
+const filteredOrigins = ref<string[]>([]);
+
+const availableClasses = computed(() => {
+    const items = props.items || queriesStore.payload;
+
+    return [
+        ...new Set(
+            items
+                .filter((payload: Payload) => payload.request_id === timeStore.selected)
+                .map((payload: Payload) => payload.ide_handle?.class_name)
+                .filter((c): c is string => !!c)
+        )
+    ];
+});
+
+const availableOrigins = computed(() => {
+    const items = props.items || queriesStore.payload;
+
+    return [
+        ...new Set(
+            items
+                .filter((payload: Payload) => payload.request_id === timeStore.selected)
+                .map((payload: Payload) => payload.queries?.origin)
+                .filter((o): o is string => !!o)
+        )
+    ];
+});
 
 const queries = computed(() => {
     const items = props.items ? props.items : queriesStore.payload;
@@ -85,10 +111,20 @@ const queries = computed(() => {
                     .includes(globalSearchStore.search.toLowerCase()) || payload.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
         )
         .filter((dump: Payload) => {
-            if (dump.type === "queries" && dump.queries?.origin) {
-                return queriesOriginFilter.origin.includes(dump.queries?.origin);
-            }
-            return true;
+            const origin = dump.queries?.origin;
+            if (!origin) return true;
+
+            if (filteredOrigins.value.length === 0) return true;
+
+            return filteredOrigins.value.includes(origin);
+        })
+        .filter((dump: Payload) => {
+            const className = dump.ide_handle?.class_name;
+            if (!className) return true;
+
+            if (filteredClasses.value.length === 0) return true;
+
+            return filteredClasses.value.includes(className);
         })
         .sort(sort);
 });
@@ -100,7 +136,6 @@ const clear = () => {
 
     timeStore.clear();
     queriesStore.clear();
-    queriesOriginFilter.clear();
     blockedQueriesStore.clear();
     queryDuplicatedStore.clear();
 
@@ -186,64 +221,13 @@ const groupedQueries = computed(() => {
             </form>
         </dialog>
 
-        <!-- Blocked Queries Modal -->
-        <dialog
-            id="blocked_queries"
-            class="modal modal-middle"
-        >
-            <div class="modal-box w-11/12 max-w-5xl">
-                <h3 class="font-bold text-lg">Blocked</h3>
-                <div class="overflow-auto mt-3 h-[calc(100vh-240px)]">
-                    <table class="table table-zebra w-full">
-                        <thead>
-                            <tr>
-                                <th>sql</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                v-for="(sql, index) in blockedQueriesStore.blocked"
-                                :key="index"
-                            >
-                                <td>
-                                    <span
-                                        :title="sql"
-                                        class="line-clamp-4"
-                                        >{{ sql }}</span
-                                    >
-                                </td>
-                                <td>
-                                    <button
-                                        @click="blockedQueriesStore.unblock(sql)"
-                                        class="btn btn-primary btn-sm"
-                                    >
-                                        <LockOpenIcon class="w-4" />
-                                        {{ $t("unblock") }}
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
-
-        <Teleport
-            v-if="queries.length > 0"
-            to="#actions"
-        >
+        <Teleport to="#actions">
             <!-- Prettify -->
             <button
                 data-tippy-content="Prettify"
                 class="btn btn-sm p-[0.5rem]"
                 @click="formattedQueriesStore.toggle()"
+                v-if="queries.length > 0"
             >
                 <SparklesIcon
                     :class="{
@@ -253,7 +237,6 @@ const groupedQueries = computed(() => {
                 />
             </button>
 
-            <!-- Duplicated Dropdown -->
             <div class="dropdown dropdown-bottom dropdown-end">
                 <!-- Filter -->
                 <button
@@ -266,7 +249,7 @@ const groupedQueries = computed(() => {
 
                 <ul
                     tabindex="0"
-                    class="dropdown-content menu bg-base-300 rounded-box z-100 w-52 p-2 shadow-sm"
+                    class="dropdown-content menu bg-base-300 rounded-box z-100 w-60 p-2 shadow-sm"
                 >
                     <li
                         v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
@@ -286,18 +269,53 @@ const groupedQueries = computed(() => {
                         >
                         <ul tabindex="0">
                             <li
-                                v-for="option in queriesOriginFilter.origin"
+                                v-for="option in availableOrigins"
                                 :key="option"
                             >
                                 <label class="!text-xs">
                                     <input
                                         type="checkbox"
                                         :value="option"
-                                        :checked="queriesOriginFilter.origin.includes(option)"
-                                        @change="queriesOriginFilter.toggleFilter(option)"
+                                        :checked="filteredOrigins.includes(option)"
+                                        @change="
+                                            () => {
+                                                if (filteredOrigins.includes(option)) {
+                                                    filteredOrigins = filteredOrigins.filter((o) => o !== option);
+                                                } else {
+                                                    filteredOrigins.push(option);
+                                                }
+                                            }
+                                        "
                                         class="checkbox checkbox-sm"
                                     />
                                     {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+                                </label>
+                            </li>
+                        </ul>
+
+                        <a class="!text-xs">Class</a>
+                        <ul tabindex="0">
+                            <li
+                                v-for="className in availableClasses"
+                                :key="className"
+                            >
+                                <label class="!text-xs">
+                                    <input
+                                        type="checkbox"
+                                        :value="className"
+                                        :checked="filteredClasses.includes(className)"
+                                        @change="
+                                            () => {
+                                                if (filteredClasses.includes(className)) {
+                                                    filteredClasses = filteredClasses.filter((c) => c !== className);
+                                                } else {
+                                                    filteredClasses.push(className);
+                                                }
+                                            }
+                                        "
+                                        class="checkbox checkbox-sm"
+                                    />
+                                    <span class="break-all">{{ className.split("\\").pop() }}</span>
                                 </label>
                             </li>
                         </ul>
@@ -306,7 +324,10 @@ const groupedQueries = computed(() => {
             </div>
 
             <!-- Chart Dropdown-->
-            <div class="dropdown dropdown-end">
+            <div
+                v-if="queries.length > 0"
+                class="dropdown dropdown-end"
+            >
                 <div
                     tabindex="0"
                     role="button"
@@ -368,6 +389,7 @@ const groupedQueries = computed(() => {
 
             <!-- Sort Order -->
             <button
+                v-if="queries.length > 0"
                 :class="{
                     '!text-secondary': timeStore.order === 'desc',
                     'text-primary': timeStore.order === 'asc'
@@ -408,6 +430,7 @@ const groupedQueries = computed(() => {
 
             <!-- Clear -->
             <button
+                v-if="queries.length > 0"
                 @click="clear()"
                 class="btn btn-sm p-[0.5rem]"
                 data-tippy-content="Clear"
