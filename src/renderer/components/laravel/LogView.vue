@@ -26,12 +26,17 @@ const pauseLogsStore = usePauseLogsStore();
 const forceUpdate = ref(0);
 const selected = ref();
 const collapsedLogGroups = ref<Record<string, boolean>>({});
-const levelFilter = ref<string | null>(null);
+const levelFilter = ref<string[]>([]);
 
 const props = defineProps<{
     items: Record<string, Log>;
     inScreenWindow: boolean;
 }>();
+
+const totalLogs = computed(() => {
+    const items = props.items ? props.items : logStore.logs;
+    return Object.values(items).length;
+});
 
 const levelCounts = computed(() => {
     const items = props.items ? props.items : logStore.logs;
@@ -82,7 +87,7 @@ const logs = computed(() => {
             );
         })
         .filter((log: Log) => {
-            return !levelFilter.value || log.level === levelFilter.value;
+            return levelFilter.value.length === 0 || levelFilter.value.includes(log.level);
         })
         .sort((a, b) => {
             const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -92,11 +97,12 @@ const logs = computed(() => {
 });
 
 const selectedLevel = (level: string) => {
-    if (levelFilter.value === level) {
-        levelFilter.value = null;
-        return;
+    const index = levelFilter.value.indexOf(level);
+    if (index > -1) {
+        levelFilter.value.splice(index, 1);
+    } else {
+        levelFilter.value.push(level);
     }
-    levelFilter.value = level;
 };
 
 const groupedLogsByRelativeTime = computed(() => {
@@ -181,7 +187,7 @@ const handleEscape = (e: KeyboardEvent) => {
             <input
                 id="my-drawer"
                 type="checkbox"
-                class="drawer-toggle hidden"
+                class="hidden drawer-toggle"
             />
 
             <div class="drawer-side z-[400]">
@@ -194,14 +200,14 @@ const handleEscape = (e: KeyboardEvent) => {
                         class="space-y-3"
                         v-if="selected"
                     >
-                        <div class="flex justify-between nav-bar mb-0">
+                        <div class="flex justify-between mb-0 nav-bar">
                             <h4 class="text-base font-semibold">Created At</h4>
                             <span class="text-sm">{{ moment(selected.created_at).format("HH:mm:ss a") }}</span>
                         </div>
                         <Divider />
 
                         <div>
-                            <h4 class="nav-bar text-base font-semibold">Message</h4>
+                            <h4 class="text-base font-semibold nav-bar">Message</h4>
                             <span class="text-sm">{{ selected.message }}</span>
                         </div>
                         <Divider />
@@ -215,7 +221,7 @@ const handleEscape = (e: KeyboardEvent) => {
                             />
                         </div>
                         <div v-else>
-                            <h4 class="nav-bar text-base font-semibold">Payload</h4>
+                            <h4 class="text-base font-semibold nav-bar">Payload</h4>
                             <div v-html="selected.context"></div>
                         </div>
                     </div>
@@ -224,9 +230,9 @@ const handleEscape = (e: KeyboardEvent) => {
         </div>
 
         <div :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }">
-            <div class="flex items-center gap-1 justify-end">
-                <div class="flex w-full justify-center">
-                    <Teleport v-if="logs.length > 0" to="#actions">
+            <div class="flex items-center justify-end gap-1">
+                <div class="flex justify-center w-full">
+                    <Teleport v-if="totalLogs > 0" to="#actions">
                         <div class="dropdown dropdown-bottom dropdown-end">
                             <button
                                 tabindex="0"
@@ -234,7 +240,7 @@ const handleEscape = (e: KeyboardEvent) => {
                                 class="btn btn-sm p-[0.5rem] bg-transparent"
                             >
                                 <FunnelIcon
-                                    v-if="!levelFilter"
+                                    v-if="levelFilter.length === 0"
                                     class="w-4"
                                 />
                                 <FunnelIcon
@@ -244,12 +250,12 @@ const handleEscape = (e: KeyboardEvent) => {
                             </button>
                             <ul
                                 tabindex="0"
-                                class="dropdown-content menu bg-base-300 rounded-box z-100 w-52 p-2 shadow-sm"
+                                class="p-2 shadow-sm dropdown-content menu bg-base-300 rounded-box z-100 w-52"
                             >
                                 <li
                                     v-for="level in ['debug','info','notice','warning','error','critical','alert','emergency']"
                                     :key="level"
-                                    :class="{ 'text-primary': levelFilter === level }"
+                                    :class="{ 'text-primary': levelFilter.includes(level) }"
                                     @click="selectedLevel(level)"
                                 >
                                     <a class="!text-xs">
@@ -303,7 +309,7 @@ const handleEscape = (e: KeyboardEvent) => {
                             :key="timeKey"
                         >
                             <tr
-                                class="bg-base-200 text-xs font-semibold text-center cursor-pointer"
+                                class="text-xs font-semibold text-center cursor-pointer bg-base-200"
                                 @click="toggleLogGroup(timeKey)"
                             >
                                 <td
@@ -318,7 +324,7 @@ const handleEscape = (e: KeyboardEvent) => {
                                 v-for="(log, index) in logsOnTime"
                                 v-if="!collapsedLogGroups[timeKey]"
                                 :key="`log-${index}`"
-                                class="hover:bg-base-100 cursor-pointer"
+                                class="cursor-pointer hover:bg-base-100"
                                 @click="openModal(log.log_id)"
                             >
                                 <td>
@@ -328,7 +334,7 @@ const handleEscape = (e: KeyboardEvent) => {
                                         ><InformationCircleIcon class="w-5" /> Info</span
                                     >
                                     <span
-                                        class="badge text-xs badge-success"
+                                        class="text-xs badge badge-success"
                                         v-else-if="log.level === 'notice'"
                                         ><InformationCircleIcon class="w-5" /> Notice</span
                                     >
@@ -374,7 +380,7 @@ const handleEscape = (e: KeyboardEvent) => {
                                         v-if="log.ide_handle.class_name !== 'empty'"
                                         :href="generateLink(log.ide_handle)"
                                         v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
-                                        class="link text-xs opacity-60"
+                                        class="text-xs link opacity-60"
                                     />
                                 </td>
                             </tr>
@@ -388,9 +394,9 @@ const handleEscape = (e: KeyboardEvent) => {
                 class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
                 style="height: -webkit-fill-available"
             >
-                <SvgEmpty class="w-30 opacity-25" />
+                <SvgEmpty class="opacity-25 w-30" />
                 <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
+                    <h1 class="mb-2 text-lg font-semibold">Empty</h1>
                 </div>
             </div>
         </div>
