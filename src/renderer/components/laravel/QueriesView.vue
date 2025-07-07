@@ -94,6 +94,10 @@ const queries = computed(() => {
 });
 
 const clear = () => {
+    if (pauseQueries.is_paused) {
+        pauseQueries.toggle();
+    }
+
     timeStore.clear();
     queriesStore.clear();
     queriesOriginFilter.clear();
