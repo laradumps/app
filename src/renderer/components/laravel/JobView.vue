@@ -185,6 +185,10 @@ const openModal = (id: string) => {
 };
 
 const clear = () => {
+    if (pauseJobsStore.is_paused) {
+        pauseJobsStore.toggle();
+    }
+
     selected.value = "";
     jobStore.jobs = {};
 };
@@ -307,10 +311,7 @@ onBeforeUnmount(() => {
         <!-- Header -->
         <div class="h-[calc(100vh-100px)]">
             <div class="flex items-center gap-1 justify-center">
-                <Teleport
-                    to="#actions"
-                    v-if="jobs.length > 0"
-                >
+                <Teleport to="#actions">
                     <div class="dropdown dropdown-bottom dropdown-end">
                         <button
                             tabindex="0"
@@ -382,6 +383,7 @@ onBeforeUnmount(() => {
                         />
                     </button>
                     <button
+                        v-if="jobs.length > 0"
                         @click="clear"
                         class="btn btn-sm p-[0.5rem] bg-transparent"
                         data-tippy-content="Clear"

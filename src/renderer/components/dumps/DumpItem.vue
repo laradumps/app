@@ -189,10 +189,9 @@ const shouldDisplayContext = computed(() => {
                     <li class="select-none opacity-70">
                         <DumpLink
                             v-if="payload.ide_handle.real_path"
-                            :ide-handler="payload.ide_handle" />
-                        <span v-else>
-                            Unknown
-                        </span>
+                            :ide-handler="payload.ide_handle"
+                        />
+                        <span v-else> Unknown </span>
                     </li>
                 </ul>
 

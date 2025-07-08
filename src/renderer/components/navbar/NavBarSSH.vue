@@ -326,12 +326,13 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
 
                             <div class="join col-span-2">
                                 <div class="w-full">
-                                    <label class="join-item">
+                                    <label class="input join-item input-bordered input-base">
                                         <input
                                             type="text"
                                             id="key"
                                             v-model="form.private_key"
-                                            class="input input-bordered input-base w-full"
+                                            placeholder="/Users/username/.ssh/id_rsa"
+                                            class="w-full placeholder:opacity-70"
                                         />
                                     </label>
                                 </div>
