@@ -121,6 +121,10 @@ const toggleLogGroup = (timeKey: string) => {
 };
 
 const clear = () => {
+    if (pauseLogsStore.is_paused) {
+        pauseLogsStore.toggle();
+    }
+
     logStore.clear();
 };
 
@@ -231,10 +235,7 @@ const handleEscape = (e: KeyboardEvent) => {
         <div :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }">
             <div class="flex items-center justify-end gap-1">
                 <div class="flex justify-center w-full">
-                    <Teleport
-                        v-if="totalLogs > 0"
-                        to="#actions"
-                    >
+                    <Teleport to="#actions">
                         <div class="dropdown dropdown-bottom dropdown-end">
                             <button
                                 tabindex="0"
@@ -283,6 +284,7 @@ const handleEscape = (e: KeyboardEvent) => {
                             />
                         </button>
                         <button
+                            v-if="totalLogs > 0"
                             @click="clear()"
                             class="btn btn-sm p-[0.5rem]"
                             data-tippy-content="Clear"

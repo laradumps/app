@@ -486,8 +486,14 @@ const groupedQueries = computed(() => {
                                         {{ moment(groupKey).fromNow() }}
                                     </span>
                                     <span class="text-[10px] uppercase tracking-widest text-right">
-                                        <EyeSlashIcon class="w-4" v-if="collapsedGroups[groupKey]" />
-                                        <EyeIcon class="w-4" v-else />
+                                        <EyeSlashIcon
+                                            class="w-4"
+                                            v-if="collapsedGroups[groupKey]"
+                                        />
+                                        <EyeIcon
+                                            class="w-4"
+                                            v-else
+                                        />
                                     </span>
                                 </div>
 
