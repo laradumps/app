@@ -154,7 +154,7 @@ pre.sf-dump .sf-dump-num {
 }
 
 pre.sf-dump .sf-dump-const {
-    @apply font-semibold text-secondary;
+    @apply font-semibold text-neutral;
 }
 
 pre.sf-dump .sf-dump-note {

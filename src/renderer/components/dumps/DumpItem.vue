@@ -18,8 +18,6 @@ import DumpDump from "@/components/dumps/DumpDump.vue";
 import { useCollapse } from "@/store/collapse";
 import { useSettingsStore } from "@/store/settings";
 import moment from "moment";
-import { useScreenStore } from "@/store/screen";
-import { LockClosedIcon } from "@heroicons/vue/20/solid";
 import { useQueriesChart } from "@/store/queries-chart";
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import { useTimeStore } from "@/store/time";
@@ -30,7 +28,6 @@ import VueJsonPretty from "vue-json-pretty";
 const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
-const screenStore = useScreenStore();
 const queriesChart = useQueriesChart();
 const timeStore = useTimeStore();
 const duplicatesStore = useQueryDuplicated();
@@ -94,7 +91,7 @@ const badgeClasses = computed(() => {
         "!bg-warning !text-warning-content": label === "warning" || color === "orange",
         "!bg-gray-400! text-warning-content": label === "debug",
         "!bg-success !text-success-content": color === "green",
-        "!bg-black": color === "black"
+        "!bg-black !text-white": color === "black"
     };
 
     const additionalClasses = Object.entries(dynamicClass)
@@ -103,6 +100,22 @@ const badgeClasses = computed(() => {
         .join(" ");
 
     return `${baseClass} ${additionalClasses}`;
+});
+
+const containerClasses = computed(() => {
+    const color = props.payload.color ?? "default";
+
+    const colors = {
+        red: "bg-error/10",
+        blue: "bg-info/10",
+        orange: "bg-warning/10",
+        green: "bg-success/10",
+        black: "bg-black/10",
+        gray: "bg-gray-400/10",
+        default: "bg-base-100"
+    };
+
+    return colors[color];
 });
 
 watch(collapseStore, (value) => {
@@ -167,13 +180,13 @@ const shouldDisplayContext = computed(() => {
         <div
             @mouseenter="decrementBadgeCount"
             :class="{
-                'collapse-open': open
+                'collapse-open': open,
+                [containerClasses]: true
             }"
-            class="border-base-300 collapse rounded-none bg-base-100 bg-laravel"
+            class="border-base-300 collapse rounded-none bg-laravel"
         >
             <div
                 @click="open = !open"
-                :class="{}"
                 class="collapse-title items-center justify-between flex text-xs select-none"
             >
                 <ul

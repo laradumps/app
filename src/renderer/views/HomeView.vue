@@ -38,6 +38,7 @@ import { Environment } from "../../main/storage";
 import { usePauseJobsStore } from "@/store/pause-jobs";
 import { usePauseLogsStore } from "@/store/pause-logs";
 import moment from "moment/moment";
+import HeaderColorsFilter from "@/components/app/HeaderColorsFilter.vue";
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -509,6 +510,7 @@ const dispatch = (content: any): void => {
         content.show_badge_count = true;
     }
 
+    content.color = content.color || "gray";
     content.projectInfo = currentProjectStore.projectInfo;
 
     payloadStore.add(content);
@@ -576,6 +578,10 @@ const groupedDumps = computed(() => {
         },
         {} as Record<string, Payload[]>
     );
+});
+
+const hasColorsInPayload = computed((): boolean => {
+    return payloadStore.payload.some((payload: Payload) => payload.color && payload.color !== "gray");
 });
 </script>
 <template>
@@ -661,6 +667,8 @@ const groupedDumps = computed(() => {
                             }"
                             class="flex flex-col rounded-sm text-base h-[calc(100vh-85px)] w-[100vw] overflow-auto"
                         >
+                            <HeaderColorsFilter v-if="hasColorsInPayload" />
+
                             <div id="top"></div>
 
                             <div

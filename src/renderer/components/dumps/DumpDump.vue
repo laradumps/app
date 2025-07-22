@@ -51,14 +51,14 @@ const rawDumpContent = computed(() => {
             <template v-if="isExplainPlan">
                 <span
                     v-html="formattedDump"
-                    style="white-space: pre-wrap; font-family: monospace; line-height: 1.5"
+                    style="white-space: pre-line; font-family: monospace; line-height: 1.5"
                 ></span>
             </template>
 
             <template v-else>
                 <span
                     v-if="payload.dump?.variable_type === 'string'"
-                    style="white-space: pre"
+                    style="white-space: pre-line"
                     >{{ payload.dump?.dump }}</span
                 >
                 <span
