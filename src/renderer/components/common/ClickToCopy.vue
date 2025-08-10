@@ -25,7 +25,7 @@ const copyDump = () => {
         />
         <ClipboardIcon
             v-if="!showCheck"
-            class="w-4 h-4 hover:opacity-75"
+            class="w-4 h-4"
             id="saveIcon"
         />
     </div>

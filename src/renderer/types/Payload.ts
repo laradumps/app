@@ -15,6 +15,7 @@ export interface QueriesPayload {
     origin: string;
     uri: string;
     method: string;
+    explain_nodes?: undefined | string[];
 }
 
 export interface ModelPayload {

@@ -316,7 +316,7 @@ onBeforeUnmount(() => {
                         <button
                             tabindex="0"
                             role="button"
-                            class="btn btn-sm p-[0.5rem] bg-transparent"
+                            class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
                         >
                             <FunnelIcon
                                 v-if="!isFiltering"
@@ -370,7 +370,7 @@ onBeforeUnmount(() => {
 
                     <button
                         @click="pauseJobsStore.toggle()"
-                        class="btn btn-sm p-[0.5rem] bg-transparent"
+                        class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
                         :data-tippy-content="$t('pause')"
                     >
                         <PlayIcon
@@ -385,7 +385,7 @@ onBeforeUnmount(() => {
                     <button
                         v-if="jobs.length > 0"
                         @click="clear"
-                        class="btn btn-sm p-[0.5rem] bg-transparent"
+                        class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
                         data-tippy-content="Clear"
                     >
                         <TrashIcon class="w-4" />

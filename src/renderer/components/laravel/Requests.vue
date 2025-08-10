@@ -33,8 +33,8 @@ const display = (id: string) => {
             v-for="request in allRequests"
             :key="request.id"
             :class="{
-                'hover:bg-base-300 hover:rounded-md': request.id !== timeStore.selected,
-                'bg-neutral text-neutral-content rounded-md': request.id === timeStore.selected
+                'hover:bg-base-300': request.id !== timeStore.selected,
+                'border-primary text-primary rounded-xs': request.id === timeStore.selected
             }"
             class="p-2 space-y-2 cursor-pointer focus:bg-primary"
             @click="display(request.id)"

@@ -111,7 +111,7 @@ const containerClasses = computed(() => {
         orange: "bg-warning/10",
         green: "bg-success/10",
         black: "bg-black/10",
-        gray: "bg-gray-400/10",
+        gray: "bg-base-100",
         default: "bg-base-100"
     };
 
@@ -176,7 +176,7 @@ const shouldDisplayContext = computed(() => {
 });
 </script>
 <template>
-    <div v-if="(payload.queries && queriesChart.type === 'none') || payload.type !== 'queries'">
+    <div v-if="(payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'">
         <div
             @mouseenter="decrementBadgeCount"
             :class="{
@@ -211,15 +211,16 @@ const shouldDisplayContext = computed(() => {
                 <div class="group flex justify-center items-center gap-2">
                     <div
                         v-show="open"
-                        class="flex justify-center items-center gap-3 opacity-0 transition-all ease-in duration-300 group-hover:opacity-100"
+                        class="flex justify-center items-center gap-3"
                     >
-                        <div
+                        <button
                             v-if="!['table', 'table_v2'].includes(payload.type)"
                             @click.stop="copyDump"
                             :data-tippy-content="$t('click_to_copy')"
+                            class="btn btn-ghost btn-sm btn-circle"
                         >
                             <ClickToCopy />
-                        </div>
+                        </button>
                     </div>
 
                     <div v-show="!open && payload.queries">
@@ -265,7 +266,7 @@ const shouldDisplayContext = computed(() => {
             >
                 <div
                     class="relative"
-                    :class="{ 'overflow-auto w-full': ['queries', 'table', 'table_v2'].includes(payload.type) }"
+                    :class="{ 'w-full': ['queries', 'table', 'table_v2'].includes(payload.type) }"
                 >
                     <DumpDump
                         :id="`dump-content-${payload.sf_dump_id}`"
@@ -400,5 +401,9 @@ const shouldDisplayContext = computed(() => {
 
 .vjs-value-string {
     @apply !text-secondary !text-xs;
+}
+
+.vjs-comment {
+    @apply !text-xs;
 }
 </style>

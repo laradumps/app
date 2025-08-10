@@ -212,13 +212,13 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                                 </button>
                             </template>
                             <template v-else>
-                                <button class="btn btn-sm p-[0.5rem] btn-ghost">
+                                <button class="btn btn-sm p-[0.5rem] btn-circle btn-ghost">
                                     <PencilIcon
                                         @click="editConnection(connection.id)"
                                         class="w-4"
                                     />
                                 </button>
-                                <button class="btn btn-sm p-[0.5rem] btn-ghost hover:btn-error">
+                                <button class="btn btn-sm p-[0.5rem] btn-circle btn-ghost hover:btn-error">
                                     <TrashIcon
                                         @click="removeConnection(connection.id)"
                                         class="w-4"

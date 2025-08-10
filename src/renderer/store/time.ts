@@ -12,6 +12,7 @@ type Requests = {
 };
 
 type State = {
+    search: string;
     requests: Requests[];
     groups: string[];
     dumpIds: string[];
@@ -22,6 +23,7 @@ type State = {
 export const useTimeStore = defineStore("timeStore", {
     state: (): State => {
         return {
+            search: "",
             requests: [],
             groups: [],
             dumpIds: [],
