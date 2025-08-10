@@ -6,7 +6,7 @@ import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/dumps/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { TrashIcon, QueueListIcon, PlayIcon, FunnelIcon, ChartBarIcon, SparklesIcon, EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
+import { TrashIcon, ArrowsRightLeftIcon, PlayIcon, FunnelIcon, ChartBarIcon, SparklesIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import "splitpanes/dist/splitpanes.css";
@@ -43,10 +43,6 @@ const selectedChartPoint = ref<Payload | null>(null);
 const filteredClasses = ref<string[]>([]);
 const filteredOrigins = ref<string[]>([]);
 const collapsedGroups = ref<Record<string, boolean>>({});
-
-const toggleGroupCollapse = (key: string) => {
-    collapsedGroups.value[key] = !collapsedGroups.value[key];
-};
 
 const availableClasses = computed(() => {
     const items = props.items || queriesStore.payload;
@@ -191,6 +187,16 @@ function toggleChartType(type: string) {
 const openRequestsModal = () => {
     request_dialog.showModal();
 };
+
+const convertMsToHumanReadable = (): string => {
+    const ms = timeStore.getTotal(timeStore.selected);
+
+    if (ms < 1000) return `${ms.toFixed(2)} ms`;
+
+    const seconds = (ms / 1000).toFixed(2);
+
+    return `${seconds} s`;
+};
 </script>
 
 <template>
@@ -198,7 +204,7 @@ const openRequestsModal = () => {
         <dialog
             id="request_dialog"
             ref="modalRef"
-            class="modal modal-start rounded-none"
+            class="modal modal-end rounded-none"
         >
             <div class="modal-box min-w-80 max-w-2xl p-2 rounded-none">
                 <div class="py-4 space-y-4 text-sm">
@@ -257,16 +263,6 @@ const openRequestsModal = () => {
         </dialog>
 
         <Teleport to="#actions">
-            <!-- Request List -->
-            <button
-                v-if="queries.length > 0"
-                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
-                @click="openRequestsModal()"
-                data-tippy-content="Requests List"
-            >
-                <QueueListIcon class="w-4" />
-            </button>
-
             <!-- Prettify -->
             <button
                 data-tippy-content="Prettify"
@@ -495,6 +491,17 @@ const openRequestsModal = () => {
             class="space-y-2"
             v-if="queriesStore.payload.length > 0 && timeStore.selected"
         >
+            <div class="flex justify-between">
+                <button
+                    class="!pl-0 btn btn-sm hover:text-primary text-sm font-normal link"
+                    @click="openRequestsModal()"
+                >
+                    <ArrowsRightLeftIcon class="w-4 inline-block" />
+                    {{ timeStore.get(timeStore.selected).uri }}
+                </button>
+                <span class="text-base font-sans text-primary font-normal">{{ convertMsToHumanReadable() }}</span>
+            </div>
+
             <div class="space-y-1">
                 <div id="query-chart-result"></div>
 
@@ -518,19 +525,6 @@ const openRequestsModal = () => {
                                 class="opacity-80"
                             >
                                 {{ moment(groupKey).fromNow() }}
-                            </span>
-                            <span
-                                @click="toggleGroupCollapse(groupKey)"
-                                class="cursor-pointer text-[10px] uppercase tracking-widest text-right"
-                            >
-                                <EyeSlashIcon
-                                    class="w-4"
-                                    v-if="collapsedGroups[groupKey]"
-                                />
-                                <EyeIcon
-                                    class="w-4"
-                                    v-else
-                                />
                             </span>
                         </div>
 
