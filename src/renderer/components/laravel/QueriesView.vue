@@ -206,9 +206,9 @@ const convertMsToHumanReadable = (): string => {
             ref="modalRef"
             class="modal modal-end rounded-none"
         >
-            <div class="modal-box min-w-80 max-w-2xl p-2 rounded-none">
+            <div class="modal-box min-w-80 max-w-2xl p-3 py-0 rounded-none">
                 <div class="py-4 space-y-4 text-sm">
-                    <div class="font-semibold px-2 mt-4">
+                    <div class="font-semibold px-2">
                         <span class="text-lg">Requests</span>
                     </div>
 

@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { Payload } from "@/types/Payload";
 import { useTimeStore } from "@/store/time";
 import { useQueriesPayloadStore } from "@/store/queries";
-import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
+import { BoltIcon, ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 
 const timeStore = useTimeStore();
@@ -89,6 +89,7 @@ onBeforeUnmount(() => {
             </svg>
             <input
                 ref="searchInput"
+                v-model="timeStore.search"
                 type="search"
                 class="grow"
                 placeholder="Search"
@@ -104,7 +105,7 @@ onBeforeUnmount(() => {
                 'hover:bg-base-300': request.id !== timeStore.selected,
                 'bg-neutral text-neutral-content rounded-xs': request.id === timeStore.selected
             }"
-            class="p-2 cursor-pointer focus:bg-primary border-b border-base-content/10"
+            class="p-2 cursor-pointer focus:bg-primary border-b border-base-content/10 space-y-0.5"
             @click="display(request.id)"
         >
             <div class="flex justify-between gap-3 items-start">
@@ -112,10 +113,10 @@ onBeforeUnmount(() => {
                     class="line-clamp-2 break-words"
                     v-html="request.label ? request.label : 'Tinker'"
                 ></span>
-                <span class="text-xs font-normal">{{ request.time }}ms</span>
-            </div>
-            <div class="font-normal truncate flex justify-between">
-                <div class="flex gap-2">
+
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-sans">{{ request.time }}ms</span>
+
                     <span
                         :class="{
                             '!badge-ghost': request.id == timeStore.selected,
@@ -124,12 +125,30 @@ onBeforeUnmount(() => {
                         class="badge badge-xs"
                         >{{ request.method }}
                     </span>
-
-                    <div
-                        v-if="duplicatesStore.hasDuplicatedByRequest(request.id)"
-                        class="flex gap-2"
-                    >
-                        <ExclamationTriangleIcon class="text-warning w-4" />
+                </div>
+            </div>
+            <div class="font-normal truncate flex justify-between">
+                <div class="flex gap-2">
+                    <div class="flex gap-2">
+                        <div class="flex gap-2">
+                            <BoltIcon
+                                class="w-4"
+                                :class="{
+                                    'text-warning': queriesStore.hasExplainNodes(request.id),
+                                    'text-base-content/30': !queriesStore.hasExplainNodes(request.id)
+                                }"
+                                title="This query has problematic nodes in the EXPLAIN plan."
+                            />
+                        </div>
+                        <div class="flex gap-2">
+                            <ExclamationTriangleIcon
+                                class="w-4"
+                                :class="{
+                                    'text-warning': duplicatesStore.hasDuplicatedByRequest(request.id),
+                                    'text-base-content/30': !duplicatesStore.hasDuplicatedByRequest(request.id)
+                                }"
+                            />
+                        </div>
                     </div>
                 </div>
                 <span>

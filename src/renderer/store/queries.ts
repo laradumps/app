@@ -14,7 +14,7 @@ export const useQueriesPayloadStore = defineStore("queriesPayload", {
     actions: {
         add(payload: Payload) {
             const queriesBlockedStore = useQueriesBlockedStore();
-            if (queriesBlockedStore.blocked.includes(payload.queries.query?.sql)) {
+            if (payload.queries && queriesBlockedStore.blocked.includes(payload.queries.query.sql)) {
                 return;
             }
 
@@ -32,6 +32,9 @@ export const useQueriesPayloadStore = defineStore("queriesPayload", {
                 this.payload.sort((a, b) => a.date_time.getTime() - b.date_time.getTime());
                 this.payload.shift();
             }
+        },
+        hasExplainNodes(requestId: string): boolean {
+            return this.payload.some((payload) => payload.request_id === requestId && payload.queries?.explain_nodes && payload.queries.explain_nodes.length > 0);
         }
     }
 });
