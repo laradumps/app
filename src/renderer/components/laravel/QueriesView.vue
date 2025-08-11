@@ -493,7 +493,7 @@ const convertMsToHumanReadable = (): string => {
         >
             <div class="flex justify-between">
                 <button
-                    class="!pl-0 btn btn-sm hover:text-primary text-sm font-normal link"
+                    class="btn btn-sm hover:text-primary text-sm font-normal link"
                     @click="openRequestsModal()"
                 >
                     <ArrowsRightLeftIcon class="w-4 inline-block" />
