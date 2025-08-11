@@ -636,7 +636,7 @@ const hasColorsInPayload = computed((): boolean => {
                                     <button
                                         v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
                                         @click="openScreenWindow"
-                                        class="btn btn-sm p-[0.5rem] bg-transparent"
+                                        class="btn btn-sm p-[0.5rem] btn-circle border border-base-content/5"
                                     >
                                         <IconExternalLink class="w-4 text-base-content" />
                                     </button>

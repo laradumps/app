@@ -6,10 +6,9 @@ import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/dumps/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { TrashIcon, PlayIcon, FunnelIcon, ChartBarIcon, SparklesIcon, EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
+import { TrashIcon, ArrowsRightLeftIcon, PlayIcon, FunnelIcon, ChartBarIcon, SparklesIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
-import { Pane, Splitpanes } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import QueriesRequests from "@/components/laravel/QueriesRequests.vue";
 import IconPause from "@/components/Icons/IconPause.vue";
@@ -45,10 +44,6 @@ const filteredClasses = ref<string[]>([]);
 const filteredOrigins = ref<string[]>([]);
 const collapsedGroups = ref<Record<string, boolean>>({});
 
-const toggleGroupCollapse = (key: string) => {
-    collapsedGroups.value[key] = !collapsedGroups.value[key];
-};
-
 const availableClasses = computed(() => {
     const items = props.items || queriesStore.payload;
 
@@ -75,63 +70,58 @@ const availableOrigins = computed(() => {
     ];
 });
 
-const queries = computed(() => {
-    const items = props.items ? props.items : queriesStore.payload;
+const queries = computed<Payload[]>(() => {
+    const items: Payload[] = props.items ?? queriesStore.payload;
+    const search = globalSearchStore.search.toLowerCase();
+    const isSearchActive = search.length > 0;
 
-    const reverseTimeOrder = (order: string) => {
-        if (order === "default") {
-            return undefined;
+    const result: Payload[] = [];
+    const duplicatesMap = new Map<string, number>();
+
+    for (const d of items) {
+        const sql = d.queries?.query?.sql || "";
+        const key = `${d.request_id}:${sql}`;
+        duplicatesMap.set(key, (duplicatesMap.get(key) ?? 0) + 1);
+    }
+
+    for (const dump of items) {
+        const sql = dump.queries?.query?.sql || "";
+        const key = `${dump.request_id}:${sql}`;
+
+        if (queryDuplicatedStore.showOnlyDuplicated && (duplicatesMap.get(key) ?? 0) <= 1) {
+            continue;
         }
 
-        const isReversed = order !== "asc";
-        return (a: Payload, b: Payload) => {
-            const aTime = a?.queries?.query.time || 0;
-            const bTime = b?.queries?.query.time || 0;
-            return (aTime - bTime) * (isReversed ? -1 : 1);
-        };
-    };
-
-    const sort = reverseTimeOrder(timeStore.order);
-    const queryDuplicatedStore = useQueryDuplicated();
-
-    items.forEach((dump: Payload) => {
-        const sql = dump.queries?.query?.sql || "";
-
-        const isDuplicate = items.filter((d: Payload) => d.request_id === dump.request_id && d.queries?.query?.sql === sql);
-
-        queryDuplicatedStore.add(dump.request_id, sql, isDuplicate.length > 1, isDuplicate.length);
-    });
-
-    return items
-        .filter((dump: Payload) => {
-            if (queryDuplicatedStore.showOnlyDuplicated) {
-                return queryDuplicatedStore.isDuplicated(dump.request_id, dump.queries?.query?.sql || "");
+        if (isSearchActive) {
+            const labelMatch = dump.with_label.label?.toLowerCase().includes(search) ?? false;
+            const queryMatch = String(dump[dump.type] ?? "")
+                .toLowerCase()
+                .includes(search);
+            if (!labelMatch && !queryMatch) {
+                continue;
             }
-            return true;
-        })
-        .filter(
-            (payload: Payload) =>
-                JSON.stringify(payload[payload.type] ?? "")
-                    .toLowerCase()
-                    .includes(globalSearchStore.search.toLowerCase()) || payload.label?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
-        )
-        .filter((dump: Payload) => {
-            const origin = dump.queries?.origin;
-            if (!origin) return true;
+        }
 
-            if (filteredOrigins.value.length === 0) return true;
+        if (filteredOrigins.value.length && !filteredOrigins.value.includes(dump.queries?.origin || "")) {
+            continue;
+        }
 
-            return filteredOrigins.value.includes(origin);
-        })
-        .filter((dump: Payload) => {
-            const className = dump.ide_handle?.class_name;
-            if (!className) return true;
+        if (filteredClasses.value.length && !filteredClasses.value.includes(dump.ide_handle?.class_name || "")) {
+            continue;
+        }
 
-            if (filteredClasses.value.length === 0) return true;
+        result.push(dump);
+    }
 
-            return filteredClasses.value.includes(className);
-        })
-        .sort(sort);
+    const sortFn =
+        timeStore.order && timeStore.order !== "default"
+            ? (a: Payload, b: Payload) => {
+                  const diff = (a.queries?.query?.time || 0) - (b.queries?.query?.time || 0);
+                  return timeStore.order === "asc" ? diff : -diff;
+              }
+            : undefined;
+
+    return sortFn ? [...result].sort(sortFn) : result;
 });
 
 const clear = () => {
@@ -185,10 +175,56 @@ const groupedQueries = computed(() => {
         {} as Record<string, Payload[]>
     );
 });
+
+function toggleChartType(type: string) {
+    if (queriesChart.type === type) {
+        queriesChart.setType("none");
+    } else {
+        queriesChart.setType(type);
+    }
+}
+
+const openRequestsModal = () => {
+    request_dialog.showModal();
+};
+
+const convertMsToHumanReadable = (): string => {
+    const ms = timeStore.getTotal(timeStore.selected);
+
+    if (ms < 1000) return `${ms.toFixed(2)} ms`;
+
+    const seconds = (ms / 1000).toFixed(2);
+
+    return `${seconds} s`;
+};
 </script>
 
 <template>
     <div class="px-3">
+        <dialog
+            id="request_dialog"
+            ref="modalRef"
+            class="modal modal-end rounded-none"
+        >
+            <div class="modal-box min-w-80 max-w-2xl p-3 py-0 rounded-none">
+                <div class="py-4 space-y-4 text-sm">
+                    <div class="font-semibold px-2">
+                        <span class="text-lg">Requests</span>
+                    </div>
+
+                    <div>
+                        <QueriesRequests />
+                    </div>
+                </div>
+            </div>
+            <form
+                method="dialog"
+                class="modal-backdrop"
+            >
+                <button>close</button>
+            </form>
+        </dialog>
+
         <!-- Chart Modal -->
         <dialog
             id="chart_selected_query"
@@ -230,16 +266,15 @@ const groupedQueries = computed(() => {
             <!-- Prettify -->
             <button
                 data-tippy-content="Prettify"
-                class="btn btn-sm p-[0.5rem]"
+                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
                 @click="formattedQueriesStore.toggle()"
+                :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
                 v-if="queries.length > 0"
+                :class="{
+                    'border-primary text-primary': formattedQueriesStore.formatted
+                }"
             >
-                <SparklesIcon
-                    :class="{
-                        'w-4': true,
-                        'w-4 text-secondary': formattedQueriesStore.formatted
-                    }"
-                />
+                <SparklesIcon class="w-4" />
             </button>
 
             <div class="dropdown dropdown-bottom dropdown-end">
@@ -247,160 +282,102 @@ const groupedQueries = computed(() => {
                 <button
                     tabindex="0"
                     role="button"
-                    class="btn btn-sm p-[0.5rem]"
+                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                    :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
+                    :class="{
+                        'border-primary text-primary': filteredClasses.length > 0 || filteredOrigins.length > 0 || duplicatesStore.showOnlyDuplicated
+                    }"
                 >
                     <FunnelIcon class="w-4" />
                 </button>
 
-                <ul
-                    tabindex="0"
-                    class="dropdown-content menu bg-base-300 rounded-box z-100 w-60 p-2 shadow-sm"
-                >
-                    <li
-                        v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
-                        @click="duplicatesStore.toggleShowOnlyDuplicated"
-                        :class="{
-                            '!text-primary': duplicatesStore.showOnlyDuplicated
-                        }"
-                    >
-                        <a class="!text-xs">Duplicated</a>
-                    </li>
-
-                    <li>
-                        <a
-                            href="#"
-                            class="!text-xs"
-                            >Origin</a
-                        >
-                        <ul tabindex="0">
-                            <li
-                                v-for="option in availableOrigins"
-                                :key="option"
-                            >
-                                <label class="!text-xs">
-                                    <input
-                                        type="checkbox"
-                                        :value="option"
-                                        :checked="filteredOrigins.includes(option)"
-                                        @change="
-                                            () => {
-                                                if (filteredOrigins.includes(option)) {
-                                                    filteredOrigins = filteredOrigins.filter((o) => o !== option);
-                                                } else {
-                                                    filteredOrigins.push(option);
-                                                }
-                                            }
-                                        "
-                                        class="checkbox checkbox-sm"
-                                    />
-                                    {{ option.charAt(0).toUpperCase() + option.slice(1) }}
-                                </label>
-                            </li>
-                        </ul>
-
-                        <a class="!text-xs">Class</a>
-                        <ul tabindex="0">
-                            <li
-                                v-for="className in availableClasses"
-                                :key="className"
-                            >
-                                <label class="!text-xs">
-                                    <input
-                                        type="checkbox"
-                                        :value="className"
-                                        :checked="filteredClasses.includes(className)"
-                                        @change="
-                                            () => {
-                                                if (filteredClasses.includes(className)) {
-                                                    filteredClasses = filteredClasses.filter((c) => c !== className);
-                                                } else {
-                                                    filteredClasses.push(className);
-                                                }
-                                            }
-                                        "
-                                        class="checkbox checkbox-sm"
-                                    />
-                                    <span class="break-all">{{ className.split("\\").pop() }}</span>
-                                </label>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Chart Dropdown-->
-            <div
-                v-if="queries.length > 0"
-                class="dropdown dropdown-end"
-            >
                 <div
                     tabindex="0"
-                    role="button"
-                    class="btn btn-sm p-[0.5rem]"
-                    data-tippy-content="Chart Visibility"
+                    class="dropdown-content menu bg-base-300 rounded-box z-100 w-auto min-w-60 p-2 shadow-sm"
                 >
-                    <ChartBarIcon
-                        :class="{
-                            'w-4': true,
-                            'w-4 text-secondary': queriesChart.type !== 'none'
-                        }"
-                    />
+                    <ul>
+                        <li
+                            v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
+                            @click="duplicatesStore.toggleShowOnlyDuplicated"
+                            :class="{
+                                '!text-primary': duplicatesStore.showOnlyDuplicated
+                            }"
+                        >
+                            <a class="!text-xs">Duplicated</a>
+                        </li>
+
+                        <li>
+                            <a
+                                href="#"
+                                class="!text-xs"
+                                >Origin</a
+                            >
+                            <ul tabindex="0">
+                                <li
+                                    v-for="option in availableOrigins"
+                                    :key="option"
+                                >
+                                    <label class="!text-xs">
+                                        <input
+                                            type="checkbox"
+                                            :value="option"
+                                            :checked="filteredOrigins.includes(option)"
+                                            @change="
+                                                () => {
+                                                    if (filteredOrigins.includes(option)) {
+                                                        filteredOrigins = filteredOrigins.filter((o) => o !== option);
+                                                    } else {
+                                                        filteredOrigins.push(option);
+                                                    }
+                                                }
+                                            "
+                                            class="checkbox checkbox-sm"
+                                        />
+                                        {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+                                    </label>
+                                </li>
+                            </ul>
+
+                            <span class="!text-xs">Class</span>
+                            <ul tabindex="0">
+                                <li
+                                    v-for="className in availableClasses"
+                                    :key="className"
+                                >
+                                    <label class="!text-xs">
+                                        <input
+                                            type="checkbox"
+                                            :value="className"
+                                            :checked="filteredClasses.includes(className)"
+                                            @change="
+                                                () => {
+                                                    if (filteredClasses.includes(className)) {
+                                                        filteredClasses = filteredClasses.filter((c) => c !== className);
+                                                    } else {
+                                                        filteredClasses.push(className);
+                                                    }
+                                                }
+                                            "
+                                            class="checkbox checkbox-sm"
+                                        />
+                                        <span class="whitespace-nowrap">{{ className.split("\\").pop() }}</span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
                 </div>
-                <ul
-                    tabindex="0"
-                    class="dropdown-content gap-1 menu text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
-                >
-                    <li>
-                        <a
-                            href="#"
-                            class="!text-xs"
-                            @click.prevent="queriesChart.setType('all')"
-                            :class="{
-                                'font-bold text-primary': queriesChart.type === 'all',
-                                'text-base-content': queriesChart.type !== 'all'
-                            }"
-                        >
-                            All Requests
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            class="!text-xs"
-                            href="#"
-                            @click.prevent="queriesChart.setType('by-request')"
-                            :class="{
-                                'font-bold text-primary': queriesChart.type === 'by-request',
-                                'text-base-content': queriesChart.type !== 'by-request'
-                            }"
-                        >
-                            By Request
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            class="!text-xs"
-                            href="#"
-                            @click.prevent="queriesChart.setType('none')"
-                            :class="{
-                                'font-bold text-primary': queriesChart.type === 'none',
-                                'text-base-content': queriesChart.type !== 'none'
-                            }"
-                        >
-                            Hide Chart
-                        </a>
-                    </li>
-                </ul>
             </div>
 
             <!-- Sort Order -->
             <button
                 v-if="queries.length > 0"
                 :class="{
-                    '!text-secondary': timeStore.order === 'desc',
-                    'text-primary': timeStore.order === 'asc'
+                    'border-primary text-primary': ['asc', 'desc'].includes(timeStore.order)
                 }"
-                class="btn btn-sm p-[0.5rem]"
+                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
                 @click="timeStore.toggleOrder()"
+                :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
                 :aria-label="orderLabel"
                 :data-tippy-content="orderLabel"
             >
@@ -417,15 +394,81 @@ const groupedQueries = computed(() => {
                 />
             </button>
 
+            <!-- Chart Dropdown-->
+            <div
+                v-if="queries.length > 0"
+                class="dropdown dropdown-end"
+            >
+                <div
+                    tabindex="0"
+                    role="button"
+                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                    data-tippy-content="Chart Visibility"
+                    :class="{
+                        'border-primary text-primary': ['all', 'by-request', 'percentage-colors'].includes(queriesChart.type)
+                    }"
+                >
+                    <ChartBarIcon class="w-4" />
+                </div>
+
+                <ul
+                    tabindex="0"
+                    class="dropdown-content gap-1 menu text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
+                >
+                    <li>
+                        <a
+                            href="#"
+                            class="!text-xs"
+                            @click.prevent="toggleChartType('all')"
+                            :class="{
+                                'font-bold text-primary': queriesChart.type === 'all',
+                                'text-base-content': queriesChart.type !== 'all'
+                            }"
+                        >
+                            Chart - All Requests
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="#"
+                            class="!text-xs"
+                            @click.prevent="toggleChartType('by-request')"
+                            :class="{
+                                'font-bold text-primary': queriesChart.type === 'by-request',
+                                'text-base-content': queriesChart.type !== 'by-request'
+                            }"
+                        >
+                            Chart - By Request
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="#"
+                            class="!text-xs"
+                            @click.prevent="toggleChartType('percentage-colors')"
+                            :class="{
+                                'font-bold text-primary': queriesChart.type === 'percentage-colors',
+                                'text-base-content': queriesChart.type !== 'percentage-colors'
+                            }"
+                        >
+                            Percentage Colors
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
             <!-- Pause -->
             <button
                 @click="pauseQueries.toggle()"
-                class="btn btn-sm p-[0.5rem]"
+                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                :class="{
+                    'border-primary text-primary': pauseQueries.is_paused
+                }"
                 :data-tippy-content="$t('pause')"
             >
                 <PlayIcon
                     v-if="pauseQueries.is_paused"
-                    class="w-4 text-warning"
+                    class="w-4"
                 />
                 <IconPause
                     v-else
@@ -437,7 +480,7 @@ const groupedQueries = computed(() => {
             <button
                 v-if="queries.length > 0"
                 @click="clear()"
-                class="btn btn-sm p-[0.5rem]"
+                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
                 data-tippy-content="Clear"
             >
                 <TrashIcon class="w-4" />
@@ -446,77 +489,63 @@ const groupedQueries = computed(() => {
 
         <div
             class="space-y-2"
-            v-if="queriesStore.payload.length > 0"
+            v-if="queriesStore.payload.length > 0 && timeStore.selected"
         >
-            <Splitpanes vertical>
-                <pane
-                    size="20"
-                    class="text-sm mt-1"
+            <div class="flex justify-between">
+                <button
+                    class="btn btn-sm hover:text-primary text-sm font-normal link"
+                    @click="openRequestsModal()"
                 >
-                    <div class="overflow-auto h-[calc(100vh-100px)]">
-                        <QueriesRequests />
-                    </div>
-                </pane>
+                    <ArrowsRightLeftIcon class="w-4 inline-block" />
+                    {{ timeStore.get(timeStore.selected).uri }}
+                </button>
+                <span class="text-base font-sans text-primary font-normal">{{ convertMsToHumanReadable() }}</span>
+            </div>
 
-                <pane class="text-sm">
+            <div class="space-y-1">
+                <div id="query-chart-result"></div>
+
+                <QueriesChart
+                    v-if="!['none', 'percentage-colors'].includes(queriesChart.type)"
+                    @point-click="handlePointClick"
+                />
+
+                <div
+                    class="overflow-auto h-[calc(100vh-144px)]"
+                    v-else
+                >
                     <div
-                        v-if="timeStore.selected"
-                        class="pl-2 space-y-1"
+                        v-for="(group, groupKey) in groupedQueries"
+                        :key="groupKey"
+                        class="w-full"
                     >
-                        <div id="query-chart-result"></div>
-                        <QueriesChart
-                            v-if="queriesChart.type !== 'none'"
-                            @point-click="handlePointClick"
-                        />
+                        <div class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0">
+                            <span
+                                :title="groupKey"
+                                class="opacity-80"
+                            >
+                                {{ moment(groupKey).fromNow() }}
+                            </span>
+                        </div>
 
-                        <div class="overflow-auto h-[calc(100vh-144px)]">
+                        <div v-show="!collapsedGroups[groupKey]">
                             <div
-                                v-for="(group, groupKey) in groupedQueries"
-                                :key="groupKey"
+                                v-for="payload in group"
+                                :key="payload.sf_dump_id"
+                                :id="payload.id"
                                 class="w-full"
                             >
-                                <div
-                                    class="bg-base-200 flex items-center justify-between py-1.5 px-2 z-300 text-xs sticky top-0 cursor-pointer"
-                                    @click="toggleGroupCollapse(groupKey)"
-                                >
-                                    <span
-                                        :title="groupKey"
-                                        class="opacity-80"
-                                    >
-                                        {{ moment(groupKey).fromNow() }}
-                                    </span>
-                                    <span class="text-[10px] uppercase tracking-widest text-right">
-                                        <EyeSlashIcon
-                                            class="w-4"
-                                            v-if="collapsedGroups[groupKey]"
-                                        />
-                                        <EyeIcon
-                                            class="w-4"
-                                            v-else
-                                        />
-                                    </span>
-                                </div>
-
-                                <div v-show="!collapsedGroups[groupKey]">
-                                    <div
-                                        v-for="payload in group"
-                                        :key="payload.sf_dump_id"
-                                        :id="payload.id"
-                                        class="w-full"
-                                    >
-                                        <DumpItem
-                                            class="w-full group text-sm mb-3"
-                                            v-show="payload.request_id === timeStore.selected"
-                                            :payload="payload"
-                                            :show-time="false"
-                                        />
-                                    </div>
-                                </div>
+                                <DumpItem
+                                    class="w-full group text-sm mb-3"
+                                    v-show="payload.request_id === timeStore.selected"
+                                    :payload="payload"
+                                    :show-time="false"
+                                />
                             </div>
                         </div>
                     </div>
-                </pane>
-            </Splitpanes>
+                </div>
+            </div>
         </div>
 
         <div

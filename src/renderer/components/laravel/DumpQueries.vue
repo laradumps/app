@@ -7,9 +7,13 @@ import { useFormattedQueriesStore } from "@/store/formatted-queries";
 
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
+
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
+import { BoltIcon } from "@heroicons/vue/24/outline";
+import VueJsonPretty from "vue-json-pretty";
+import { useQueriesChart } from "@/store/queries-chart";
 
 hljs.registerLanguage("sql", sql);
 hljs.registerLanguage("postgresql", sql);
@@ -17,11 +21,13 @@ hljs.registerLanguage("postgresql", sql);
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
 const duplicatesStore = useQueryDuplicated();
+const queriesChart = useQueriesChart();
 
 const props = defineProps<{
     payload: Payload;
 }>();
-
+const modalRef = ref<HTMLDialogElement | null>(null);
+const selectedQuery = ref<any[]>([]);
 const codeContainer = ref<HTMLElement | null>(null);
 const isCollapsed = ref(false);
 const showToggleControls = ref(false);
@@ -48,6 +54,18 @@ const toggleCollapse = () => {
     }, 300);
 };
 
+const openModalForExplainQuery = async () => {
+    const data = props.payload.queries?.explain_nodes ?? [];
+
+    if (!data.length) return;
+
+    selectedQuery.value = data;
+
+    await nextTick();
+
+    modalRef.value?.showModal();
+};
+
 onMounted(() => {
     nextTick(() => {
         resizeObserver.value = new ResizeObserver(checkContainerHeight);
@@ -71,8 +89,22 @@ const percentage = computed(() => {
     if (!props.payload.queries) {
         return 0;
     }
-
     return Number(((100 * props.payload.queries?.query.time) / total.value).toFixed(2));
+});
+
+const startPercentage = computed(() => {
+    const queries = timeStore.requests[props.payload.request_id]?.queries ?? [];
+    const index = queries.findIndex((q) => q.query.sql === props.payload.queries.query.sql);
+
+    if (index === -1) return 0;
+
+    return queries.slice(0, index).reduce((sum, q) => {
+        return sum + (q.query.time / total.value) * 100;
+    }, 0);
+});
+
+const endPercentage = computed(() => {
+    return startPercentage.value + percentage.value;
 });
 
 const isDuplicated = (sql) => {
@@ -82,7 +114,7 @@ const isDuplicated = (sql) => {
 const formattedSql = computed(() => {
     if (!props.payload.queries) return;
 
-    const sql = props.payload.queries.query.sql;
+    let sql = props.payload.queries.query.sql;
 
     let language = "sql";
 
@@ -91,7 +123,6 @@ const formattedSql = computed(() => {
             pgsql: "postgresql",
             postgresql: "postgresql"
         };
-
         language = driverMap[props.payload.queries.driver] || "sql";
     }
 
@@ -106,31 +137,131 @@ const formattedSql = computed(() => {
         return hljs.highlight(formattedSql, { language }).value;
     }
 });
+
+const getPercentageColors = () => {
+    if (percentage.value > 50) {
+        return {
+            start: "rgba(239, 68, 68, 0.1)",
+            end: "rgba(239, 68, 68, 0.1)"
+        };
+    }
+    if (percentage.value > 20) {
+        return {
+            start: "rgba(245, 158, 11, 0.1)",
+            end: "rgba(245, 158, 11, 0.2)"
+        };
+    }
+    return {
+        start: "rgba(106, 157, 239, 0.1)",
+        end: "rgba(106, 157, 239, 0.2)"
+    };
+};
+
+const computedBackgroundStyle = computed(() => {
+    const colors = getPercentageColors();
+
+    const start = typeof startPercentage === "object" && "value" in startPercentage ? startPercentage.value : startPercentage;
+    const end = typeof endPercentage === "object" && "value" in endPercentage ? endPercentage.value : endPercentage;
+
+    return {
+        background: `linear-gradient(to right,
+      ${colors.start} ${start}%,
+      ${colors.end} ${end}%,
+      transparent ${end}%)`
+    };
+});
 </script>
 
 <template>
     <div
+        :style="!formattedQueriesStore.formatted && queriesChart.type === 'percentage-colors' ? computedBackgroundStyle : null"
         v-if="payload.queries"
-        class="rounded-sm space-y-3"
+        class="rounded-sm space-y-2"
     >
+        <dialog
+            ref="modalRef"
+            class="modal modal-start rounded-none"
+        >
+            <div class="modal-box max-w-2xl !pl-4 rounded-none">
+                <div class="space-y-2 mt-4">
+                    <div class="font-semibold">
+                        <span class="text-lg">Explain</span>
+                    </div>
+
+                    <div>
+                        <VueJsonPretty
+                            v-if="payload.queries.explain_nodes.length"
+                            :show-icon="true"
+                            :show-length="true"
+                            :show-line="false"
+                            :data="payload.queries.explain_nodes"
+                            :show-double-quotes="false"
+                            class="!text-sm"
+                            :deep="6"
+                        />
+                    </div>
+                </div>
+            </div>
+            <form
+                method="dialog"
+                class="modal-backdrop"
+            >
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <div class="flex justify-end items-center gap-2">
+            <div class="flex items-center justify-end gap-2">
+                <!-- Explain Query and Duplicated Query Icons -->
+                <button
+                    v-if="payload.queries.explain_nodes && payload.queries.explain_nodes.length > 0"
+                    @click="openModalForExplainQuery()"
+                    class="badge text-shadow-warning !px-2 badge-warning text-xs"
+                >
+                    <BoltIcon
+                        class="w-4"
+                        title="This query has problematic nodes in the EXPLAIN plan."
+                    />
+                    Explain
+                </button>
+
+                <!-- Duplicated Query Icon -->
+                <div
+                    v-if="isDuplicated(payload.queries?.query.sql)"
+                    class="p-[0.5rem]"
+                >
+                    <ExclamationTriangleIcon class="w-4 text-warning" />
+                </div>
+            </div>
+
+            <!-- Time Taken -->
+            <div
+                class="text-xs text-primary text-right font-light font-mono pl-[0.5rem]"
+                v-if="payload.queries && payload.queries.query.time"
+            >
+                {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span>
+            </div>
+        </div>
         <pre
             v-if="formattedQueriesStore.formatted"
             class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
         >
-            <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
-        </pre>
-
+    <code
+        class="language-sql !leading-[1.2rem] w-auto text-base-content !text-xs"
+        v-html="formattedSql"
+    ></code>
+</pre>
         <div class="relative break-all flex gap-2 flex-col">
             <code
                 ref="codeContainer"
                 v-if="!formattedQueriesStore.formatted"
                 :class="{ 'line-clamp-[14]': isCollapsed }"
-                class="text-base-content language-sql rounded !text-xs"
+                class="text-base-content language-sql rounded !text-xs leading-5"
                 v-html="formattedSql"
             ></code>
 
             <span
-                v-if="showToggleControls"
+                v-if="showToggleControls && isCollapsed"
                 class="blur-overlay w-full"
             ></span>
 
@@ -146,57 +277,6 @@ const formattedSql = computed(() => {
                 />
             </button>
         </div>
-
-        <div class="group items-center mt-2 z-100">
-            <div class="flex justify-between gap-3 items-center select-none w-full">
-                <div class="flex items-center z-100 justify-end gap-1.5 select-none">
-                    <ExclamationTriangleIcon
-                        v-if="isDuplicated(payload.queries?.query.sql)"
-                        class="text-warning w-4"
-                    />
-
-                    <span
-                        class="opacity-80 text-[0.70rem]"
-                        v-if="payload.queries && payload.queries.query.connectionName"
-                        v-text="payload.queries.query.connectionName"
-                    >
-                    </span>
-                    <span class="opacity-30">|</span>
-                    <span
-                        class="opacity-80 text-[0.70rem]"
-                        v-if="payload.queries && payload.queries.origin"
-                        v-text="payload.queries.origin"
-                    >
-                    </span>
-                </div>
-
-                <div class="flex items-center justify-between gap-3">
-                    <div
-                        class="w-30 h-2 rounded-box flex items-center !bg-base-200"
-                        v-if="payload.to_screen.screen_name != 'Slow Queries'"
-                    >
-                        <div
-                            v-show="percentage <= 100"
-                            :title="percentage + `%`"
-                            :style="{ width: percentage + '%' }"
-                            :class="{
-                                'bg-error': percentage > 50,
-                                'bg-warning': percentage > 20 && percentage < 50,
-                                'bg-info': percentage < 20
-                            }"
-                            class="h-[0.2rem] opacity-70"
-                        ></div>
-                    </div>
-
-                    <span
-                        class="w-14 text-right"
-                        v-if="payload.queries && payload.queries.query.time"
-                    >
-                        {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span>
-                    </span>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -209,5 +289,16 @@ code * {
 
 .blur-overlay {
     @apply absolute h-[40px] blur bg-base-100/90 -bottom-4 right-0 z-40;
+}
+
+code.line-clamp-[14] {
+    max-height: 224px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+code:not(.line-clamp-[14]) {
+    max-height: none;
+    transition: max-height 0.3s ease;
 }
 </style>

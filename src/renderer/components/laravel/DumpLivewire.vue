@@ -107,8 +107,8 @@ const requests = computed(() => {
                             :key="request.request"
                             :id="request.request"
                             :class="{
-                                'hover:bg-base-300 hover:rounded-md': request.request !== selected?.request,
-                                'bg-neutral text-neutral-content rounded-md': request.request == selected?.request
+                                'hover:bg-base-300': request.request !== selected?.request,
+                                'border-primary text-primary rounded-xs': request.request == selected?.request
                             }"
                             class="p-2 space-y-2 cursor-pointer focus:bg-primary"
                             @click="select(request.request)"
