@@ -493,11 +493,12 @@ const convertMsToHumanReadable = (): string => {
         >
             <div class="flex justify-between">
                 <button
-                    class="btn btn-sm hover:text-primary text-sm font-normal link"
+                    class="btn btn-sm hover:text-primary text-sm font-normal"
                     @click="openRequestsModal()"
                 >
                     <ArrowsRightLeftIcon class="w-4 inline-block" />
-                    {{ timeStore.get(timeStore.selected).uri }}
+
+                    {{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}
                 </button>
                 <span class="text-base font-sans text-primary font-normal">{{ convertMsToHumanReadable() }}</span>
             </div>

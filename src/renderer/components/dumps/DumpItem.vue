@@ -24,6 +24,7 @@ import { useTimeStore } from "@/store/time";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { usePayloadStore } from "@/store/payload";
 import VueJsonPretty from "vue-json-pretty";
+import { BoltIcon } from "@heroicons/vue/20/solid";
 
 const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
@@ -225,6 +226,12 @@ const shouldDisplayContext = computed(() => {
 
                     <div v-show="!open && payload.queries">
                         <div class="flex items-center opacity-80 justify-end gap-2">
+                            <BoltIcon
+                                v-if="payload.queries?.explain_nodes && payload.queries?.explain_nodes.length > 0"
+                                class="w-4 text-warning"
+                                title="This query has problematic nodes in the EXPLAIN plan."
+                            />
+
                             <ExclamationTriangleIcon
                                 v-if="isDuplicated(payload.queries?.query.sql)"
                                 class="text-warning w-4"
@@ -400,7 +407,7 @@ const shouldDisplayContext = computed(() => {
 }
 
 .vjs-value-string {
-    @apply !text-secondary !text-xs;
+    @apply !text-primary !text-xs;
 }
 
 .vjs-comment {

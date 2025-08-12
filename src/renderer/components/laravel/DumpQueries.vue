@@ -188,9 +188,9 @@ const computedBackgroundStyle = computed(() => {
                         <span class="text-lg">Explain</span>
                     </div>
 
-                    <div>
+                    <div class="bg-base-200 shadow rounded-lg p-3">
                         <VueJsonPretty
-                            v-if="payload.queries.explain_nodes.length"
+                            v-if="payload.queries.explain_nodes && payload.queries.explain_nodes.length > 0"
                             :show-icon="true"
                             :show-length="true"
                             :show-line="false"
@@ -216,7 +216,7 @@ const computedBackgroundStyle = computed(() => {
                 <button
                     v-if="payload.queries.explain_nodes && payload.queries.explain_nodes.length > 0"
                     @click="openModalForExplainQuery()"
-                    class="badge text-shadow-warning !px-2 badge-warning text-xs"
+                    class="badge text-shadow-warning !px-2 badge-warning uppercase text-[0.7rem] font-semibold"
                 >
                     <BoltIcon
                         class="w-4"
@@ -246,11 +246,11 @@ const computedBackgroundStyle = computed(() => {
             v-if="formattedQueriesStore.formatted"
             class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
         >
-    <code
-        class="language-sql !leading-[1.2rem] w-auto text-base-content !text-xs"
-        v-html="formattedSql"
-    ></code>
-</pre>
+            <code
+                class="language-sql !leading-[1.2rem] w-auto text-base-content !text-xs"
+                v-html="formattedSql"
+            ></code>
+        </pre>
         <div class="relative break-all flex gap-2 flex-col">
             <code
                 ref="codeContainer"
