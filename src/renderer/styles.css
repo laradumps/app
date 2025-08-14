@@ -109,14 +109,21 @@ code.hljs {
 .hljs-selector-class,
 .hljs-selector-id {
     /* prettylights-syntax-constant */
-    color: #79c0ff !important;
+    color: #79c0ff;
 }
-.hljs-regexp,
-.hljs-string,
-.hljs-meta .hljs-string {
-    /* prettylights-syntax-string */
+
+html[data-theme="light"] .hljs-regexp,
+html[data-theme="light"] .hljs-string,
+html[data-theme="light"] .hljs-meta .hljs-string {
+    @apply !text-primary;
+}
+
+html:not([data-theme="light"]) .hljs-regexp,
+html:not([data-theme="light"]) .hljs-string,
+html:not([data-theme="light"]) .hljs-meta .hljs-string {
     color: #a5d6ff !important;
 }
+
 .hljs-built_in,
 .hljs-symbol {
     /* prettylights-syntax-variable */

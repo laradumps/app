@@ -25,6 +25,7 @@ import { useQueryDuplicated } from "@/store/query-duplicated";
 import { usePayloadStore } from "@/store/payload";
 import VueJsonPretty from "vue-json-pretty";
 import { BoltIcon } from "@heroicons/vue/20/solid";
+import { useFormattedQueriesStore } from "@/store/formatted-queries";
 
 const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
@@ -32,6 +33,7 @@ const settingsStore = useSettingsStore();
 const queriesChart = useQueriesChart();
 const timeStore = useTimeStore();
 const duplicatesStore = useQueryDuplicated();
+const formattedQueriesStore = useFormattedQueriesStore();
 
 const open = ref(true);
 const openOptions = ref(false);
@@ -175,16 +177,79 @@ const getContextPayload = computed(() => {
 const shouldDisplayContext = computed(() => {
     return settingsStore.settings.show_context && hasContext.value;
 });
+
+const total = computed(() => timeStore.requests[props.payload.request_id]?.total ?? 0);
+
+const percentage = computed(() => {
+    if (!props.payload.queries) {
+        return 0;
+    }
+    return Number(((100 * props.payload.queries?.query.time) / total.value).toFixed(2));
+});
+
+const startPercentage = computed(() => {
+    const queries = timeStore.requests[props.payload.request_id]?.queries ?? [];
+    const index = queries.findIndex((q) => q.query.sql === props.payload.queries.query.sql);
+
+    if (index === -1) return 0;
+
+    return queries.slice(0, index).reduce((sum, q) => {
+        return sum + (q.query.time / total.value) * 100;
+    }, 0);
+});
+
+const endPercentage = computed(() => {
+    return startPercentage.value + percentage.value;
+});
+
+const getPercentageColors = () => {
+    if (percentage.value > 50) {
+        return {
+            start: "rgba(239, 68, 68, 0.1)",
+            end: "rgba(239, 68, 68, 0.1)"
+        };
+    }
+    if (percentage.value > 20) {
+        return {
+            start: "rgba(245, 158, 11, 0.1)",
+            end: "rgba(245, 158, 11, 0.2)"
+        };
+    }
+    return {
+        start: "rgba(106, 157, 239, 0.1)",
+        end: "rgba(106, 157, 239, 0.2)"
+    };
+};
+
+const computedBackgroundStyle = computed(() => {
+    const colors = getPercentageColors();
+
+    const start = typeof startPercentage === "object" && "value" in startPercentage ? startPercentage.value : startPercentage;
+    const end = typeof endPercentage === "object" && "value" in endPercentage ? endPercentage.value : endPercentage;
+
+    return {
+        background: `linear-gradient(to right,
+      ${colors.start} ${start}%,
+      ${colors.end} ${end}%,
+      transparent ${end}%)`
+    };
+});
+
+const isPercentageColors = computed(() => {
+    return props.payload.type == 'queries' && queriesChart.type === "percentage-colors";
+});
 </script>
 <template>
     <div v-if="(payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'">
         <div
             @mouseenter="decrementBadgeCount"
             :class="{
+                'border border-base-content/5': isPercentageColors,
                 'collapse-open': open,
                 [containerClasses]: true
             }"
             class="border-base-300 collapse rounded-none bg-laravel"
+            :style="isPercentageColors ? computedBackgroundStyle : null"
         >
             <div
                 @click="open = !open"
@@ -266,6 +331,7 @@ const shouldDisplayContext = computed(() => {
                     </div>
                 </div>
             </div>
+
             <div
                 class="collapse-content"
                 v-on:click.right="openOptions = true"

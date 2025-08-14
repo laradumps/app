@@ -13,7 +13,6 @@ import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
 import { BoltIcon } from "@heroicons/vue/24/outline";
 import VueJsonPretty from "vue-json-pretty";
-import { useQueriesChart } from "@/store/queries-chart";
 
 hljs.registerLanguage("sql", sql);
 hljs.registerLanguage("postgresql", sql);
@@ -21,7 +20,6 @@ hljs.registerLanguage("postgresql", sql);
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
 const duplicatesStore = useQueryDuplicated();
-const queriesChart = useQueriesChart();
 
 const props = defineProps<{
     payload: Payload;
@@ -83,30 +81,6 @@ onBeforeUnmount(() => {
     }
 });
 
-const total = computed(() => timeStore.requests[props.payload.request_id]?.total ?? 0);
-
-const percentage = computed(() => {
-    if (!props.payload.queries) {
-        return 0;
-    }
-    return Number(((100 * props.payload.queries?.query.time) / total.value).toFixed(2));
-});
-
-const startPercentage = computed(() => {
-    const queries = timeStore.requests[props.payload.request_id]?.queries ?? [];
-    const index = queries.findIndex((q) => q.query.sql === props.payload.queries.query.sql);
-
-    if (index === -1) return 0;
-
-    return queries.slice(0, index).reduce((sum, q) => {
-        return sum + (q.query.time / total.value) * 100;
-    }, 0);
-});
-
-const endPercentage = computed(() => {
-    return startPercentage.value + percentage.value;
-});
-
 const isDuplicated = (sql) => {
     return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
 };
@@ -137,44 +111,10 @@ const formattedSql = computed(() => {
         return hljs.highlight(formattedSql, { language }).value;
     }
 });
-
-const getPercentageColors = () => {
-    if (percentage.value > 50) {
-        return {
-            start: "rgba(239, 68, 68, 0.1)",
-            end: "rgba(239, 68, 68, 0.1)"
-        };
-    }
-    if (percentage.value > 20) {
-        return {
-            start: "rgba(245, 158, 11, 0.1)",
-            end: "rgba(245, 158, 11, 0.2)"
-        };
-    }
-    return {
-        start: "rgba(106, 157, 239, 0.1)",
-        end: "rgba(106, 157, 239, 0.2)"
-    };
-};
-
-const computedBackgroundStyle = computed(() => {
-    const colors = getPercentageColors();
-
-    const start = typeof startPercentage === "object" && "value" in startPercentage ? startPercentage.value : startPercentage;
-    const end = typeof endPercentage === "object" && "value" in endPercentage ? endPercentage.value : endPercentage;
-
-    return {
-        background: `linear-gradient(to right,
-      ${colors.start} ${start}%,
-      ${colors.end} ${end}%,
-      transparent ${end}%)`
-    };
-});
 </script>
 
 <template>
     <div
-        :style="!formattedQueriesStore.formatted && queriesChart.type === 'percentage-colors' ? computedBackgroundStyle : null"
         v-if="payload.queries"
         class="rounded-sm space-y-2"
     >
