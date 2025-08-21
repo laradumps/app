@@ -164,6 +164,8 @@ const openModal = (id: string) => {
         end_time: findJob.end_time,
         status: findJob.status,
         code_snippet: findJob.code_snippet ?? null,
+        message_limit: true,
+        exception_message: findJob.exception_message,
         ide_handle: findJob.ide_handle,
         created_at: findJob.pushed_time
     };
@@ -212,6 +214,12 @@ onMounted(() => {
 onBeforeUnmount(() => {
     window.removeEventListener("keydown", handleEscape);
 });
+
+const toggleMessageLimit = () => {
+    if (selected.value) {
+        selected.value.message_limit = !selected.value.message_limit;
+    }
+};
 </script>
 
 <template>
@@ -234,12 +242,6 @@ onBeforeUnmount(() => {
                         class="space-y-3"
                         v-if="selected"
                     >
-                        <div class="flex justify-between nav-bar p-0 mb-0">
-                            <h5 class="font-semibold">Pushed At</h5>
-                            <span>{{ moment(selected.created_at).format("HH:mm:ss a") }}</span>
-                        </div>
-                        <Divider />
-
                         <div class="flex justify-between nav-bar mb-0">
                             <h4 class="font-semibold">Job</h4>
                             <span>{{ selected.display_name }}</span>
@@ -257,12 +259,23 @@ onBeforeUnmount(() => {
                             />
                             <div
                                 v-if="selected.code_snippet && selected.code_snippet.length > 0"
-                                class="tab-content bg-base-100 border-base-300 p-6"
+                                class="relative tab-content bg-base-100 border-base-300 p-6"
                             >
-                                <CodeSnippet
-                                    :code_snippet="selected.code_snippet"
-                                    :ide_handle="selected.ide_handle"
-                                />
+                                <div class="w-[calc(100vw-200px)] space-y-2">
+                                    <span
+                                        v-if="selected.exception_message"
+                                        class="text-sm font-normal"
+                                        @click="toggleMessageLimit"
+                                        :class="{
+                                            'line-clamp-5': selected.message_limit
+                                        }"
+                                        >{{ selected.exception_message }}</span
+                                    >
+                                    <CodeSnippet
+                                        :code_snippet="selected.code_snippet"
+                                        :ide_handle="selected.ide_handle"
+                                    />
+                                </div>
                             </div>
 
                             <input
