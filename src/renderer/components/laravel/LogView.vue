@@ -182,6 +182,12 @@ const handleEscape = (e: KeyboardEvent) => {
         }
     }
 };
+
+const toggleMessageLimit = () => {
+    if (selected.value) {
+        selected.value.messageLimit = !selected.value.messageLimit;
+    }
+};
 </script>
 
 <template>
@@ -211,7 +217,14 @@ const handleEscape = (e: KeyboardEvent) => {
 
                         <div>
                             <h4 class="text-base font-semibold nav-bar">Message</h4>
-                            <span class="text-sm">{{ selected.message }}</span>
+                            <span
+                                class="text-sm font-normal"
+                                @click="toggleMessageLimit"
+                                :class="{
+                                    'line-clamp-5': !selected.messageLimit
+                                }"
+                                >{{ selected.message }}</span
+                            >
                         </div>
                         <Divider />
 

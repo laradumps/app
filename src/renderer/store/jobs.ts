@@ -14,6 +14,7 @@ export type Job = {
     display_name: string;
     ide_handle: IdeHandle;
     code_snippet?: CodeSnippet[];
+    exception_message: string | null;
 };
 
 type State = {
@@ -49,6 +50,7 @@ export const useJobStore = defineStore("jobStore", {
 
                 if (job.status === "Failed" && code_snippet) {
                     this.jobs[job.job_id].code_snippet = code_snippet;
+                    this.jobs[job.job_id].exception_message = job.exception_message ?? "";
                 }
             }
         },
@@ -62,6 +64,7 @@ export const useJobStore = defineStore("jobStore", {
                 pushed_time: new Date(),
                 start_time: null,
                 end_time: null,
+                exception_message: "",
                 ide_handle
             };
         },

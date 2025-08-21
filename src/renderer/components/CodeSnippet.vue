@@ -97,7 +97,7 @@ onMounted(() => {
     <div
         v-for="(codeSnippet, index) in props.code_snippet"
         :key="index"
-        class="text-xs opacity-80 p-1.5"
+        class="text-xs opacity-80 p-1"
         :class="{ 'hover:rounded hover:bg-base-300': activeFileIndex !== index }"
     >
         <div

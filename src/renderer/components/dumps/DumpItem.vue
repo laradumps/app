@@ -236,7 +236,7 @@ const computedBackgroundStyle = computed(() => {
 });
 
 const isPercentageColors = computed(() => {
-    return props.payload.type == 'queries' && queriesChart.type === "percentage-colors";
+    return props.payload.type == "queries" && queriesChart.type === "percentage-colors";
 });
 </script>
 <template>

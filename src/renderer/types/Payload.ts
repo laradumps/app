@@ -126,6 +126,7 @@ export interface JobPayload {
     job: any;
     display_name: string;
     exception: string[];
+    exception_message: string | null;
 }
 
 export interface ContextPayload {
