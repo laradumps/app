@@ -1,6 +1,7 @@
 import { app, nativeTheme, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell } from "electron";
 import { autoUpdater } from "electron-updater";
 import { download } from "electron-dl";
+import { chooseDirectory } from "./choose-directory";
 
 import path, { join, resolve } from "path";
 import fs from "fs";
@@ -430,4 +431,8 @@ ipcMain.on("choose-file", async (event) => {
     if (!result.canceled && result.filePaths.length > 0) {
         event.sender.send("choose-file-response", result.filePaths[0]);
     }
+});
+
+ipcMain.on("main:choose-directory", async (event, args) => {
+    await chooseDirectory(mainWindow, event, args);
 });

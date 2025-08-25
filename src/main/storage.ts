@@ -1,4 +1,4 @@
-import { app, ipcMain, IpcMainEvent, Notification } from "electron";
+import { ipcMain, IpcMainEvent, Notification } from "electron";
 import path from "path";
 import Store from "electron-store";
 import yaml from "js-yaml";
@@ -23,6 +23,7 @@ interface DataStructure {
     observers: {
         [key: string]: boolean;
     };
+    [key: string]: any;
 }
 
 export interface Environment {
@@ -39,6 +40,8 @@ export const init = async () => {
     ipcMain.on("storage.get-environments", getEnvironmentFileContents);
     ipcMain.on("storage.remove", removeEnvironment);
     ipcMain.on("storage.update", updateEnvironment);
+    ipcMain.on("storage.get-yaml", getFullYaml);
+    ipcMain.on("storage.update-section", updateYamlSection);
 };
 
 const getEnvironments = (event) => {
@@ -96,7 +99,7 @@ const getEnvironmentFileContents = (event: IpcMainEvent, value: string) => {
     const file = value + "/laradumps.yaml";
 
     try {
-        const readFile = yaml.load(fs.readFileSync(file, "utf8"));
+        const readFile: DataStructure = yaml.load(fs.readFileSync(file, "utf8")) as DataStructure;
 
         const parseYaml = Object.entries({ ...readFile.observers }).map(([key, val], index) => {
             return {
@@ -144,22 +147,23 @@ const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; path: 
     const { selected, path } = value;
     const filePath = `${path}/laradumps.yaml`;
 
-    const yaml = require("js-yaml");
-    const fs = require("fs");
+    const yamlLib = require("js-yaml");
+    const fsLib = require("fs");
 
     let data: DataStructure;
 
     try {
-        const fileContents = fs.readFileSync(filePath, "utf8");
-        data = yaml.load(fileContents);
+        const fileContents = fsLib.readFileSync(filePath, "utf8");
+        data = yamlLib.load(fileContents);
 
         selected.forEach((item: { value: string; selected: boolean }) => {
+            if (!data.observers) data.observers = {} as any;
             data.observers[item.value] = item.selected;
         });
 
-        const yamlData = yaml.dump(data);
+        const yamlData = yamlLib.dump(data);
 
-        fs.writeFile(filePath, yamlData, (err: NodeJS.ErrnoException | null): void => {
+        fsLib.writeFile(filePath, yamlData, (err: NodeJS.ErrnoException | null): void => {
             if (err) {
                 console.error("Error writing to file:", err);
                 return;
@@ -168,5 +172,40 @@ const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; path: 
         });
     } catch (err) {
         console.error(err);
+    }
+};
+
+const getFullYaml = (event: IpcMainEvent, projectPath: string) => {
+    const filePath = `${projectPath}/laradumps.yaml`;
+    try {
+        const fileContents = fs.readFileSync(filePath, "utf8");
+        const data = yaml.load(fileContents);
+        event.reply("storage.get-yaml.reply", data || {});
+    } catch (err) {
+        console.error(err);
+        event.reply("storage.get-yaml.reply", {});
+    }
+};
+
+const updateYamlSection = (event: IpcMainEvent, payload: { path: string; section: string; values: Record<string, any> }) => {
+    const { path: projectPath, section, values } = payload;
+    const filePath = `${projectPath}/laradumps.yaml`;
+
+    try {
+        const fileContents = fs.readFileSync(filePath, "utf8");
+        const data: any = yaml.load(fileContents) || {};
+
+        if (!data[section] || typeof data[section] !== "object") {
+            data[section] = {};
+        }
+
+        data[section] = { ...data[section], ...values };
+
+        const yamlData = yaml.dump(data);
+        fs.writeFileSync(filePath, yamlData);
+        event.reply("storage.update-section.reply", { section, values: data[section] });
+    } catch (err) {
+        console.error("Error updating section:", err);
+        event.reply("storage.update-section.reply", { section, values: null, error: String(err) });
     }
 };
