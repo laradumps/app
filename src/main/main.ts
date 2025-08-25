@@ -1,7 +1,7 @@
 import { app, nativeTheme, BrowserWindow, Menu, BrowserWindowConstructorOptions, dialog, ipcMain, shell } from "electron";
 import { autoUpdater } from "electron-updater";
 import { download } from "electron-dl";
-import { chooseDirectory } from "./choose-directory";
+import { selectProjectDirectory } from "./project-setup";
 
 import path, { join, resolve } from "path";
 import fs from "fs";
@@ -433,6 +433,6 @@ ipcMain.on("choose-file", async (event) => {
     }
 });
 
-ipcMain.on("main:choose-directory", async (event, args) => {
-    await chooseDirectory(mainWindow, event, args);
+ipcMain.on("main:project-setup", async (event, args) => {
+    await selectProjectDirectory(mainWindow, event, args);
 });

@@ -34,28 +34,46 @@ export interface Environment {
 
 const store = new Store();
 
+// Centralized IPC channels for consistency across main process
+const CHANNELS = {
+    STORAGE_GET: "storage.get",
+    STORAGE_GET_REPLY: "storage.get.reply",
+    STORAGE_CHECK: "storage.check",
+    STORAGE_GET_ENVIRONMENTS: "storage.get-environments",
+    STORAGE_GET_ENVIRONMENTS_REPLY: "storage.get-environments.reply",
+    STORAGE_REMOVE: "storage.remove",
+    STORAGE_UPDATE: "storage.update",
+    STORAGE_GET_YAML: "storage.get-yaml",
+    STORAGE_GET_YAML_REPLY: "storage.get-yaml.reply",
+    STORAGE_UPDATE_SECTION: "storage.update-section",
+    STORAGE_UPDATE_SECTION_REPLY: "storage.update-section.reply",
+
+    APP_SETTING_PROJECT_ADDED: "app-setting:project-added",
+    STORAGE_SET_ACTIVE_REPLY: "storage.set-active.reply"
+} as const;
+
 export const init = async () => {
-    ipcMain.on("storage.get", getEnvironments);
-    ipcMain.on("storage.check", checkEnvironment);
-    ipcMain.on("storage.get-environments", getEnvironmentFileContents);
-    ipcMain.on("storage.remove", removeEnvironment);
-    ipcMain.on("storage.update", updateEnvironment);
-    ipcMain.on("storage.get-yaml", getFullYaml);
-    ipcMain.on("storage.update-section", updateYamlSection);
+    ipcMain.on(CHANNELS.STORAGE_GET, getEnvironments);
+    ipcMain.on(CHANNELS.STORAGE_CHECK, checkEnvironment);
+    ipcMain.on(CHANNELS.STORAGE_GET_ENVIRONMENTS, getEnvironmentFileContents);
+    ipcMain.on(CHANNELS.STORAGE_REMOVE, removeEnvironment);
+    ipcMain.on(CHANNELS.STORAGE_UPDATE, updateEnvironment);
+    ipcMain.on(CHANNELS.STORAGE_GET_YAML, getFullYaml);
+    ipcMain.on(CHANNELS.STORAGE_UPDATE_SECTION, updateYamlSection);
 };
 
-const getEnvironments = (event) => {
+const getEnvironments = (event: IpcMainEvent) => {
     try {
         const environments = store.get("environments", {});
-        event.reply("storage.get.reply", environments);
+        event.reply(CHANNELS.STORAGE_GET_REPLY, environments);
     } catch (error) {
         console.error("Error getting storage:", error);
     }
 };
 
-const checkEnvironment = (event, value) => {
+const checkEnvironment = (event: IpcMainEvent, payload: { applicationPath: string }) => {
     const store = new Store();
-    let applicationPath = value.applicationPath;
+    let applicationPath = payload.applicationPath;
 
     if (!applicationPath) {
         new Notification({
@@ -76,7 +94,7 @@ const checkEnvironment = (event, value) => {
         if (!environments[project]) {
             environments[project] = applicationPath;
             store.set("environments", environments);
-            event.reply("app-setting:project-added", {
+            event.reply(CHANNELS.APP_SETTING_PROJECT_ADDED, {
                 project,
                 path: applicationPath
             });
@@ -84,7 +102,7 @@ const checkEnvironment = (event, value) => {
 
         setTimeout(
             () =>
-                event.reply("storage.set-active.reply", {
+                event.reply(CHANNELS.STORAGE_SET_ACTIVE_REPLY, {
                     project,
                     path: applicationPath
                 }),
@@ -95,32 +113,32 @@ const checkEnvironment = (event, value) => {
     }
 };
 
-const getEnvironmentFileContents = (event: IpcMainEvent, value: string) => {
-    const file = value + "/laradumps.yaml";
+const getEnvironmentFileContents = (event: IpcMainEvent, projectPath: string) => {
+    const file = projectPath + "/laradumps.yaml";
 
     try {
         const readFile: DataStructure = yaml.load(fs.readFileSync(file, "utf8")) as DataStructure;
 
-        const parseYaml = Object.entries({ ...readFile.observers }).map(([key, val], index) => {
+        const observers = Object.entries({ ...readFile.observers }).map(([key, val], index) => {
             return {
                 id: index,
                 value: key,
                 name: key.replace(/_/g, " "),
-                selected: val
+                selected: Boolean(val)
             };
         });
 
-        event.reply("storage.get-environments.reply", parseYaml);
+        event.reply(CHANNELS.STORAGE_GET_ENVIRONMENTS_REPLY, observers);
     } catch (e) {
         console.error(e);
-        event.reply("storage.get-environments.reply", []);
+        event.reply(CHANNELS.STORAGE_GET_ENVIRONMENTS_REPLY, []);
     }
 };
 
-const removeEnvironment = (event: IpcMainEvent, value: string) => {
+const removeEnvironment = (_event: IpcMainEvent, projectPath: string) => {
     const store = new Store();
 
-    let applicationPath = value;
+    let applicationPath = projectPath;
 
     if (applicationPath.endsWith("/")) {
         applicationPath = applicationPath.slice(0, -1);
@@ -137,14 +155,14 @@ const removeEnvironment = (event: IpcMainEvent, value: string) => {
 
         delete environments[project];
         store.set("environments", environments);
-        ipcMain.emit("storage.get");
+        ipcMain.emit(CHANNELS.STORAGE_GET);
     } catch (error) {
         console.error("Error updating storage:", error);
     }
 };
 
-const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; path: string }) => {
-    const { selected, path } = value;
+const updateEnvironment = (_event: IpcMainEvent, payload: { selected: Array<{ value: string; selected: boolean }>; path: string }) => {
+    const { selected: selectedEnvs, path } = payload;
     const filePath = `${path}/laradumps.yaml`;
 
     const yamlLib = require("js-yaml");
@@ -156,7 +174,7 @@ const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; path: 
         const fileContents = fsLib.readFileSync(filePath, "utf8");
         data = yamlLib.load(fileContents);
 
-        selected.forEach((item: { value: string; selected: boolean }) => {
+        selectedEnvs.forEach((item: { value: string; selected: boolean }) => {
             if (!data.observers) data.observers = {} as any;
             data.observers[item.value] = item.selected;
         });
@@ -180,10 +198,10 @@ const getFullYaml = (event: IpcMainEvent, projectPath: string) => {
     try {
         const fileContents = fs.readFileSync(filePath, "utf8");
         const data = yaml.load(fileContents);
-        event.reply("storage.get-yaml.reply", data || {});
+        event.reply(CHANNELS.STORAGE_GET_YAML_REPLY, data || {});
     } catch (err) {
         console.error(err);
-        event.reply("storage.get-yaml.reply", {});
+        event.reply(CHANNELS.STORAGE_GET_YAML_REPLY, {});
     }
 };
 
@@ -203,9 +221,9 @@ const updateYamlSection = (event: IpcMainEvent, payload: { path: string; section
 
         const yamlData = yaml.dump(data);
         fs.writeFileSync(filePath, yamlData);
-        event.reply("storage.update-section.reply", { section, values: data[section] });
+        event.reply(CHANNELS.STORAGE_UPDATE_SECTION_REPLY, { section, values: data[section] });
     } catch (err) {
         console.error("Error updating section:", err);
-        event.reply("storage.update-section.reply", { section, values: null, error: String(err) });
+        event.reply(CHANNELS.STORAGE_UPDATE_SECTION_REPLY, { section, values: null, error: String(err) });
     }
 };
