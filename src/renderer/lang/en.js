@@ -112,5 +112,7 @@ export default {
     search: "Search",
     composer_invalid_version: "App require laradumps/laradumps-core 3.0 or higher",
     click_to_block: "Click to block",
-    unblock: "Unblock"
+    unblock: "Unblock",
+    add_to_saved: "Add to Saved",
+    remove_from_saved: "Remove from Saved"
 };

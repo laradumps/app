@@ -46,9 +46,9 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
     );
 
     window.on("closed", () => {
-        mainEvent.webContents.send("screen-window:closed", { screen });
-
-        window.destroy();
+        if (!mainEvent.isDestroyed()) {
+            mainEvent.webContents.send("screen-window:closed", { screen });
+        }
     });
 
     ipcMain.on("screen-window:toggle-always-on-top", (event, arg) => {

@@ -27,6 +27,7 @@ import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import QueriesView from "@/components/laravel/QueriesView.vue";
 import { deepClone } from "@/lib/deep_clone";
+import { useSavedDumpsStore } from "@/store/saved-dumps";
 import { usePausePayloadStore } from "@/store/pause";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { usePendingRequestsStore } from "@/store/pending-requests";
@@ -187,6 +188,22 @@ onMounted(() => {
         } else {
             screenStore.remove(screenName);
         }
+    });
+
+    const savedStore = useSavedDumpsStore();
+
+    window.ipcRenderer.on("saved-dumps:remove", (_event, args) => {
+        const { id } = args || {};
+        if (!id) return;
+
+        savedStore.remove(id);
+
+        const updated = deepClone(savedStore.all);
+
+        window.ipcRenderer.send("send-screen-window-update", {
+            screen: "saved",
+            payload: updated
+        });
     });
 });
 

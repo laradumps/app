@@ -18,12 +18,13 @@ import { useCollapse } from "@/store/collapse";
 import { useSettingsStore } from "@/store/settings";
 import moment from "moment";
 import { useQueriesChart } from "@/store/queries-chart";
-import { ExclamationTriangleIcon, TrashIcon, ClipboardIcon } from "@heroicons/vue/24/outline";
+import { ExclamationTriangleIcon, TrashIcon, ClipboardIcon, BookmarkIcon } from "@heroicons/vue/24/outline";
 import { useTimeStore } from "@/store/time";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { usePayloadStore } from "@/store/payload";
 import VueJsonPretty from "vue-json-pretty";
 import { BoltIcon } from "@heroicons/vue/20/solid";
+import { useSavedDumpsStore } from "@/store/saved-dumps";
 
 const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
@@ -42,6 +43,23 @@ const menuX = ref(0);
 const menuY = ref(0);
 const selfId = Math.random().toString(36).slice(2);
 const showContext = ref(true);
+
+const savedStore = useSavedDumpsStore();
+const isSaved = computed(() => savedStore.exists(props.payload.id));
+const inSavedWindow = computed(() => new URLSearchParams(window.location.search).get("screen") === "saved");
+
+const onSaveDump = () => {
+    savedStore.add(props.payload);
+};
+
+const onRemoveFromSaved = () => {
+    if (inSavedWindow.value) {
+        window.ipcRenderer.send("saved-dumps:remove", { id: props.payload.id });
+        return;
+    }
+
+    savedStore.remove(props.payload.id);
+};
 
 const wrapperRef = ref<HTMLElement | null>(null);
 
@@ -334,7 +352,12 @@ onUnmounted(() => {
                         v-show="open"
                         class="flex justify-center items-center gap-3"
                     >
-                        <span class="text-sm" v-if="payload.queries && payload.queries.query.time"> {{ payload.queries.query.time }}<span class="font-semibold text-xs">ms</span></span>
+                        <span
+                            class="text-sm"
+                            v-if="payload.queries && payload.queries.query.time"
+                        >
+                            {{ payload.queries.query.time }}<span class="font-semibold text-xs">ms</span></span
+                        >
                     </div>
 
                     <div v-show="!open && payload.queries">
@@ -350,7 +373,12 @@ onUnmounted(() => {
                                 class="text-warning w-4"
                             />
 
-                            <span class="text-sm" v-if="payload.queries && payload.queries.query.time"> {{ payload.queries.query.time }}<span class="font-semibold text-xs">ms</span></span>
+                            <span
+                                class="text-sm"
+                                v-if="payload.queries && payload.queries.query.time"
+                            >
+                                {{ payload.queries.query.time }}<span class="font-semibold text-xs">ms</span></span
+                            >
                         </div>
                     </div>
 
@@ -380,9 +408,7 @@ onUnmounted(() => {
                 </div>
             </div>
 
-            <div
-                class="collapse-content"
-            >
+            <div class="collapse-content">
                 <div
                     class="relative"
                     :class="{ 'w-full': ['queries', 'table', 'table_v2'].includes(payload.type) }"
@@ -491,27 +517,54 @@ onUnmounted(() => {
                     <!-- Context menu -->
                     <teleport to="#context-menu-portal">
                         <div
-                            v-if="openOptions && !['table','table_v2'].includes(payload.type)"
+                            v-if="openOptions && !['table', 'table_v2'].includes(payload.type)"
                             class="fixed z-[99999] bg-base-200 text-base-content rounded-md shadow-lg border border-base-content/10"
                             :style="{ left: menuX + 'px', top: menuY + 'px' }"
                             @click.stop
                         >
-                            <ul class="menu menu-compact p-1 text-xs w-32">
+                            <ul class="menu menu-compact p-1 text-xs min-w-36">
                                 <li>
                                     <button
                                         class="hover:bg-base-300 rounded flex justify-between items-center"
-                                        @click.stop="copyDump(); openOptions = false"
+                                        @click.stop="
+                                            copyDump();
+                                            openOptions = false;
+                                        "
                                     >
-                                        {{ $t('copy')}}
+                                        {{ $t("copy") }}
                                         <ClipboardIcon class="w-4 inline-block" />
                                     </button>
                                 </li>
-                                <li>
+                                <li v-if="inSavedWindow">
                                     <button
                                         class="hover:bg-base-300 rounded flex justify-between items-center"
-                                        @click.stop="deleteDump(payload.id); openOptions = false"
+                                        @click.stop="
+                                            onRemoveFromSaved();
+                                            openOptions = false;
+                                        "
                                     >
-                                        {{ $t('delete')}}
+                                        {{ $t("remove_from_saved") }}
+                                        <BookmarkIcon class="w-4 inline-block" />
+                                    </button>
+                                </li>
+                                <li v-else>
+                                    <button
+                                        class="hover:bg-base-300 rounded flex justify-between items-center"
+                                        @click.stop="isSaved ? (onRemoveFromSaved(), (openOptions = false)) : (onSaveDump(), (openOptions = false))"
+                                    >
+                                        {{ isSaved ? $t("remove_from_saved") : $t("add_to_saved") }}
+                                        <BookmarkIcon class="w-4 inline-block" />
+                                    </button>
+                                </li>
+                                <li v-if="!inSavedWindow">
+                                    <button
+                                        class="hover:bg-base-300 rounded flex justify-between items-center"
+                                        @click.stop="
+                                            deleteDump(payload.id);
+                                            openOptions = false;
+                                        "
+                                    >
+                                        {{ $t("delete") }}
                                         <TrashIcon class="w-4 inline-block" />
                                     </button>
                                 </li>
