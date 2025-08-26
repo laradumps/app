@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { SignalSlashIcon, TrashIcon, PlusIcon } from "@heroicons/vue/24/outline";
-import { SignalIcon } from "@heroicons/vue/24/solid";
+import { SignalSlashIcon, TrashIcon, PlusIcon, StarIcon as StarOutline } from "@heroicons/vue/24/outline";
+import { SignalIcon, StarIcon as StarSolid } from "@heroicons/vue/24/solid";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import JSConfetti from "js-confetti";
 import { useCurrentProject } from "@/store/current-project";
@@ -24,6 +24,9 @@ const IPC_EVENTS = {
     STORAGE_UPDATE: "storage.update",
     STORAGE_REMOVE: "storage.remove",
     STORAGE_UPDATE_SECTION: "storage.update-section",
+    STORAGE_GET_STARRED: "storage.get-starred",
+    STORAGE_GET_STARRED_REPLY: "storage.get-starred.reply",
+    STORAGE_TOGGLE_STARRED: "storage.toggle-starred",
 
     APP_SETTING_PROJECT_ADDED: "app-setting:project-added",
 
@@ -63,6 +66,9 @@ const activeEnvKey = ref<string | null>(null);
 const installActive = ref(false);
 const installErrorMessage = ref("");
 
+const starredProjects = ref<string[]>([]);
+let handleStarredReplyRef: ((event: IpcRendererEvent, list: string[]) => void) | null = null;
+
 let handleYamlReplyRef: ((event: IpcRendererEvent, data: any) => void) | null = null;
 let handleComposerRef: ((event: IpcRendererEvent, payload: any) => void) | null = null;
 let handleXdebugClosedRef: (() => void) | null = null;
@@ -89,6 +95,7 @@ onUnmounted(() => {
     if (handleXdebugClosedRef) window.ipcRenderer.off(IPC_EVENTS.XDEBUG_CONNECT_CLOSED, handleXdebugClosedRef);
     if (handleXdebugFileContentsRef) window.ipcRenderer.off(IPC_EVENTS.SETTINGS_ENV_XDEBUG_FILE_CONTENTS, handleXdebugFileContentsRef);
     if (handleProjectDirSelectedRef) window.ipcRenderer.off(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
+    if (handleStarredReplyRef) window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_STARRED_REPLY, handleStarredReplyRef);
 });
 
 const updateHeight = () => {
@@ -151,6 +158,7 @@ const initializeProjectData = () => {
     }
 
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
+    window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_STARRED);
 };
 
 const onXdebugError = (_: IpcRendererEvent, error: Error) => console.error("Xdebug error:", error);
@@ -160,6 +168,11 @@ const setupEventListeners = () => {
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_SET_ACTIVE_REPLY, handleActiveProjectSet);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_REPLY, handleProjectsRetrieved);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_ENVIRONMENTS_REPLY, handleEnvironmentsRetrieved);
+
+    handleStarredReplyRef = (_: IpcRendererEvent, list: string[]) => {
+        if (Array.isArray(list)) starredProjects.value = list;
+    };
+    window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_STARRED_REPLY, handleStarredReplyRef);
 
     handleYamlReplyRef = (_: IpcRendererEvent, data: any) => {
         yamlConfig.value = data || {};
@@ -260,9 +273,20 @@ const sortedProjects = computed(() => {
     return [...projects.value].sort((a, b) => a.project.localeCompare(b.project, undefined, { sensitivity: "base" }));
 });
 
-const environmentStyle = computed(() => {
-    return windowHeight.value > 690 ? "height: 490px" : `height: calc(100vh - 170px)`;
-});
+const starredSet = computed(() => new Set(starredProjects.value));
+const starredSortedProjects = computed(() => sortedProjects.value.filter((p) => p.project && starredSet.value.has(p.project)));
+const regularSortedProjects = computed(() => sortedProjects.value.filter((p) => p.project && !starredSet.value.has(p.project)));
+
+const isStarred = (projectName: string): boolean => starredSet.value.has(projectName);
+const toggleStar = (projectName: string) => {
+    window.ipcRenderer.send(IPC_EVENTS.STORAGE_TOGGLE_STARRED, { project: projectName });
+    // Optimistic update; will be synced by reply
+    if (isStarred(projectName)) {
+        starredProjects.value = starredProjects.value.filter((n) => n !== projectName);
+    } else {
+        starredProjects.value = [...starredProjects.value, projectName];
+    }
+};
 
 const activeOptions = computed(() => {
     if (!activeEnvKey.value || !yamlConfig.value) return null;
@@ -323,7 +347,7 @@ const addProject = () => {
             id="modal_navbar_listening"
             class="modal"
         >
-            <div class="modal-box !p-2">
+            <div class="modal-box max-w-2xl !p-2">
                 <!-- Error banner -->
                 <div
                     v-if="installErrorMessage"
@@ -331,35 +355,52 @@ const addProject = () => {
                 >
                     <span>{{ installErrorMessage }}</span>
                 </div>
-                <ul class="menu px-0 min-h-full">
-                    <div
-                        class="grid grid-cols-3 gap-3"
-                        :style="environmentStyle"
-                    >
+                <ul class="menu px-0 min-h-full w-full">
+                    <div class="grid grid-cols-3 gap-2">
                         <!-- Col 1: Projects -->
                         <div class="overflow-hidden space-y-2">
-                            <div class="flex justify-between items-center">
-                                <h4 class="px-2 font-semibold text-left opacity-70">Projects</h4>
-
-                                <button
-                                    class="btn btn-primary btn-xs btn-outline btn-circle"
-                                    @click="addProject"
-                                >
-                                    <PlusIcon class="size-3" />
-                                </button>
-                            </div>
-
-                            <ul class="h-full overflow-x-hidden">
+                            <ul class="h-full overflow-x-hidden border-r border-base-200 pr-1.5">
                                 <li
-                                    v-for="project in sortedProjects.filter((p) => p.project)"
-                                    :key="project.path"
-                                    @click="setActiveProject(project)"
-                                    class="group"
-                                    :class="{ '!bg-neutral rounded-md': selectedProject.path === project.path }"
+                                    @click="addProject"
+                                    class="w-full flex !flex-nowrap flex-row text-left items-center justify-between"
                                 >
-                                    <div class="w-full items-center rounded-md">
+                                    <div class="w-full">
+                                        <PlusIcon class="size-4 text-primary" />
+                                        <span>New</span>
+                                    </div>
+                                </li>
+
+                                <template v-if="starredSortedProjects.length">
+                                    <li class="px-2 py-1 text-[0.65rem] uppercase tracking-wider text-base-content/50 text-left">Starred</li>
+                                    <li
+                                        v-for="project in starredSortedProjects"
+                                        :key="project.path + '-starred'"
+                                        @click="setActiveProject(project)"
+                                        class="w-full flex !flex-nowrap flex-row text-left items-center justify-between"
+                                        :class="{ 'rounded-sm !bg-neutral': selectedProject.path === project.path }"
+                                    >
+                                        <div class="w-full">
+                                            <span
+                                                class="font-normal capitalize text-sm truncate"
+                                                :class="{ 'text-neutral-content': selectedProject.path === project.path }"
+                                                v-text="formattedName(project.project)"
+                                            />
+                                        </div>
+                                    </li>
+                                    <li class="my-1"><div class="divider m-0"></div></li>
+                                </template>
+
+                                <li class="px-2 py-1 text-[0.65rem] uppercase tracking-wider text-base-content/50 text-left">All Projects</li>
+                                <li
+                                    v-for="project in regularSortedProjects"
+                                    :key="project.path + '-regular'"
+                                    @click="setActiveProject(project)"
+                                    class="w-full flex !flex-nowrap flex-row text-left items-center justify-between"
+                                    :class="{ 'rounded-sm !bg-neutral': selectedProject.path === project.path }"
+                                >
+                                    <div class="w-full">
                                         <span
-                                            class="font-normal capitalize text-xs truncate"
+                                            class="font-normal capitalize text-sm truncate"
                                             :class="{ 'text-neutral-content': selectedProject.path === project.path }"
                                             v-text="formattedName(project.project)"
                                         />
@@ -368,21 +409,35 @@ const addProject = () => {
                             </ul>
                         </div>
 
-                        <div class="col-span-2 space-y-2 border-l border-base-200">
+                        <div class="col-span-2 space-y-2">
                             <div class="text-left pl-3 w-full">
-                                <div class="flex group items-start justify-between gap-2 w-full">
-                                    <div class="w-full truncate">
-                                        <h4 class="font-semibold text-left opacity-70 capitalize">{{ formattedName(selectedProject.project) }}</h4>
-                                        <span class="text-[11px] text-base-content/60">{{ selectedProject.path }}</span>
+                                <div class="flex items-start justify-between gap-1 w-full">
+                                    <div class="w-full truncate text-base-content/60">
+                                        <span class="text-[10px] !text-base-content/60">{{ selectedProject.path }}</span>
                                     </div>
 
                                     <button
+                                        class="btn btn-ghost btn-xs btn-circle"
+                                        :title="isStarred(selectedProject.project) ? 'Unstar' : 'Star'"
+                                        @click.stop="toggleStar(selectedProject.project)"
+                                    >
+                                        <StarSolid
+                                            v-if="isStarred(selectedProject.project)"
+                                            class="size-4 text-warning"
+                                        />
+                                        <StarOutline
+                                            v-else
+                                            class="size-4"
+                                        />
+                                    </button>
+
+                                    <button
                                         v-if="selectedProject.path"
-                                        class="btn btn-error btn-xs btn-outline btn-circle opacity-0 group-hover:opacity-100"
+                                        class="btn btn-ghost btn-xs btn-circle text-error"
                                         :title="`Remove ${formattedName(selectedProject.project)}`"
                                         @click.stop="confirmProjectRemoval(selectedProject.path)"
                                     >
-                                        <TrashIcon class="size-3" />
+                                        <TrashIcon class="size-4" />
                                     </button>
                                 </div>
                             </div>
@@ -390,17 +445,18 @@ const addProject = () => {
                             <!-- Installing overlay/content -->
                             <div
                                 v-if="installActive"
-                                class="flex items-center justify-center w-full py-10"
+                                class="flex items-center justify-center w-full py-20"
                             >
-                                <h3 class="text-lg font-semibold mb-4">Installing ...</h3>
+                                <h3 class="text-lg font-semibold mb-4 animate-pulse text-base-content/70">Installing ...</h3>
                             </div>
 
                             <div
-                                class="flex gap-3 w-full"
+                                class="flex gap-2 w-full divide-x divide-base-200 h-full"
                                 v-else-if="selectedProject.project"
+                                style="height: calc(-200px + 100vh)"
                             >
                                 <!-- Col 2: Observers/Environments -->
-                                <div class="text-sm overflow-auto pr-2">
+                                <div class="text-sm overflow-auto pr-2 w-1/2">
                                     <ul>
                                         <li>
                                             <label class="space-x-1">
@@ -411,7 +467,7 @@ const addProject = () => {
                                                     :class="{ 'checkbox-primary': isXdebugActive }"
                                                     @change.stop="saveEnvironment(null)"
                                                 />
-                                                <span class="text-base-content text-xs">Xdebug</span>
+                                                <span class="text-base-content uppercase text-xs">Xdebug</span>
                                             </label>
                                         </li>
 
@@ -437,16 +493,14 @@ const addProject = () => {
                                                     :class="{
                                                         'text-neutral-content': activeEnvKey === env.value && env.selected
                                                     }"
-                                                    class="text-base-content truncate text-xs"
-                                                    >{{ formattedName(env.value) }}</span
-                                                >
+                                                    class="text-base-content truncate uppercase text-xs font-normal">{{ formattedName(env.value) }}</span>
                                             </label>
                                         </li>
                                     </ul>
                                 </div>
 
                                 <!-- Col 3: Options for selected item -->
-                                <div class="text-sm overflow-auto">
+                                <div class="text-sm overflow-auto w-auto">
                                     <ul v-if="activeEnvKey && activeOptions">
                                         <li
                                             v-for="(val, key) in activeOptions"
@@ -462,12 +516,12 @@ const addProject = () => {
                                                         :checked="val"
                                                         @change="updateSectionValue(key as string, !(val as boolean))"
                                                     />
-                                                    <span class="text-base-content truncate text-xs">{{ formattedName(String(key)) }}</span>
+                                                    <span class="text-base-content truncate uppercase text-xs">{{ formattedName(String(key)) }}</span>
                                                 </label>
                                             </template>
                                             <template v-else-if="typeof val === 'number'">
                                                 <div class="flex items-start gap-1 flex-col w-full">
-                                                    <span class="capitalize text-base-content text-xs">{{ formattedName(String(key)) }}</span>
+                                                    <span class="capitalize text-base-content text-sm">{{ formattedName(String(key)) }}</span>
                                                     <input
                                                         type="number"
                                                         class="input input-bordered input-xs w-24"
@@ -478,7 +532,7 @@ const addProject = () => {
                                             </template>
                                             <template v-else>
                                                 <div class="flex items-start gap-1 flex-col w-full">
-                                                    <span class="capitalize text-base-content text-xs">{{ formattedName(String(key)) }}</span>
+                                                    <span class="capitalize text-base-content text-sm">{{ formattedName(String(key)) }}</span>
                                                     <input
                                                         type="text"
                                                         class="input input-bordered input-xs w-full"

@@ -1,4 +1,4 @@
-import { ipcMain, IpcMainEvent, Notification } from "electron";
+import { ipcMain, IpcMainEvent, Notification, BrowserWindow } from "electron";
 import path from "path";
 import Store from "electron-store";
 import yaml from "js-yaml";
@@ -47,6 +47,9 @@ const CHANNELS = {
     STORAGE_GET_YAML_REPLY: "storage.get-yaml.reply",
     STORAGE_UPDATE_SECTION: "storage.update-section",
     STORAGE_UPDATE_SECTION_REPLY: "storage.update-section.reply",
+    STORAGE_GET_STARRED: "storage.get-starred",
+    STORAGE_GET_STARRED_REPLY: "storage.get-starred.reply",
+    STORAGE_TOGGLE_STARRED: "storage.toggle-starred",
 
     APP_SETTING_PROJECT_ADDED: "app-setting:project-added",
     STORAGE_SET_ACTIVE_REPLY: "storage.set-active.reply"
@@ -60,6 +63,8 @@ export const init = async () => {
     ipcMain.on(CHANNELS.STORAGE_UPDATE, updateEnvironment);
     ipcMain.on(CHANNELS.STORAGE_GET_YAML, getFullYaml);
     ipcMain.on(CHANNELS.STORAGE_UPDATE_SECTION, updateYamlSection);
+    ipcMain.on(CHANNELS.STORAGE_GET_STARRED, getStarred);
+    ipcMain.on(CHANNELS.STORAGE_TOGGLE_STARRED, toggleStarred);
 };
 
 const getEnvironments = (event: IpcMainEvent) => {
@@ -154,8 +159,21 @@ const removeEnvironment = (_event: IpcMainEvent, projectPath: string) => {
         }
 
         delete environments[project];
+
         store.set("environments", environments);
+        // Also remove from starred list if present
+        const starredCurrent = store.get("starred_projects", [] as any) as any;
+        const starredList: string[] = Array.isArray(starredCurrent) ? starredCurrent : [];
+        const filtered = starredList.filter((name) => name !== project);
+
+        store.set("starred_projects", filtered);
+
         ipcMain.emit(CHANNELS.STORAGE_GET);
+
+        const win = BrowserWindow.getAllWindows()[0];
+        if (win) {
+            win.webContents.send(CHANNELS.STORAGE_GET_STARRED_REPLY, filtered);
+        }
     } catch (error) {
         console.error("Error updating storage:", error);
     }
@@ -225,5 +243,44 @@ const updateYamlSection = (event: IpcMainEvent, payload: { path: string; section
     } catch (err) {
         console.error("Error updating section:", err);
         event.reply(CHANNELS.STORAGE_UPDATE_SECTION_REPLY, { section, values: null, error: String(err) });
+    }
+};
+
+const getStarred = (event: IpcMainEvent) => {
+    try {
+        const starred: string[] = store.get("starred_projects", [] as any) as any;
+        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, Array.isArray(starred) ? starred : []);
+    } catch (err) {
+        console.error("Error getting starred projects:", err);
+        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, []);
+    }
+};
+
+const toggleStarredArray = (arr: string[], name: string): string[] => {
+    const set = new Set(arr);
+    if (set.has(name)) {
+        set.delete(name);
+    } else {
+        set.add(name);
+    }
+    return Array.from(set);
+};
+
+const toggleStarredPersist = (projectName: string): string[] => {
+    const current = store.get("starred_projects", [] as any) as any;
+    const list: string[] = Array.isArray(current) ? current : [];
+    const updated = toggleStarredArray(list, projectName);
+    store.set("starred_projects", updated);
+    return updated;
+};
+
+const toggleStarred = (event: IpcMainEvent, payload: { project: string }) => {
+    try {
+        const updated = toggleStarredPersist(payload.project);
+        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, updated);
+    } catch (err) {
+        console.error("Error toggling starred project:", err);
+        const starred: string[] = store.get("starred_projects", [] as any) as any;
+        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, Array.isArray(starred) ? starred : []);
     }
 };

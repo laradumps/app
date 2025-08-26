@@ -20,7 +20,16 @@ const notifyOnce = (title: string, body: string) => {
 
 const runCommand = (command: string, cwd: string): Promise<void> => {
     return new Promise((resolve, reject) => {
-        exec(command, { cwd }, (error, stdout, stderr) => {
+        const isDarwin = process.platform === "darwin";
+        const isLinux = process.platform === "linux";
+        const extraPaths = isDarwin
+            ? "/opt/homebrew/bin:/usr/local/bin:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+            : isLinux
+            ? "/usr/local/bin:/usr/bin:/bin"
+            : "";
+        const PATH = extraPaths ? `${extraPaths}:${process.env.PATH ?? ""}` : process.env.PATH;
+
+        exec(command, { cwd, env: { ...process.env, PATH } }, (error, stdout, stderr) => {
             if (error) {
                 console.error(stderr || error.message);
                 reject(new Error(stderr || error.message));
@@ -32,14 +41,18 @@ const runCommand = (command: string, cwd: string): Promise<void> => {
     });
 };
 
-const getComposerCommand = (): string => {
-    const sailPath = path.join(process.cwd(), "vendor", "bin", isWindows ? "sail.bat" : "sail");
+const getComposerCandidates = (projectPath: string): string[] => {
+    const candidates: string[] = [];
 
-    if (fs.existsSync(sailPath)) {
-        return isWindows ? `${sailPath} composer` : `${sailPath} composer`;
+    // 1) Prefer local composer.phar executed via PHP
+    const composerPhar = path.join(projectPath, "composer.phar");
+    if (fs.existsSync(composerPhar)) {
+        candidates.push(`php "${composerPhar}"`);
     }
 
-    return isWindows ? "composer.bat" : "composer";
+    // 2) Fallback to system composer
+    candidates.push(isWindows ? "composer.bat" : "composer");
+    return candidates;
 };
 
 const installLaraDumps = async (projectPath: string) => {
@@ -48,7 +61,7 @@ const installLaraDumps = async (projectPath: string) => {
 
     // 1) Try with Sail (if artisan and sail are present)
     if (fs.existsSync(artisanPath)) {
-        const sailPath = path.join(projectPath, "vendor", "bin", "sail");
+        const sailPath = path.join(projectPath, "vendor", "bin", isWindows ? "sail.bat" : "sail");
         if (fs.existsSync(sailPath)) {
             try {
                 console.log(`Using Sail to run artisan commands.`, sailPath);
@@ -74,9 +87,7 @@ const installLaraDumps = async (projectPath: string) => {
     }
 
     // 3) Try with LaraDumps binary
-    const bin = isWindows
-        ? path.join(projectPath, "vendor", "bin", "laradumps.bat")
-        : path.join(projectPath, "vendor", "bin", "laradumps");
+    const bin = isWindows ? path.join(projectPath, "vendor", "bin", "laradumps.bat") : path.join(projectPath, "vendor", "bin", "laradumps");
 
     console.log(`Using binary commands.`, bin);
 
@@ -96,8 +107,6 @@ const installLaraDumps = async (projectPath: string) => {
 
 const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: string): Promise<void> => {
     try {
-        const composer = getComposerCommand();
-
         const composerJsonPath = path.join(selectedDir, "composer.json");
 
         // Start signal
@@ -113,7 +122,28 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
 
         // Step: composer require start
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "composer-require", running: true });
-        await runCommand(`${composer} require laradumps/laradumps laradumps/laradumps-core --dev`, selectedDir);
+        {
+            const errors: string[] = [];
+            const candidates = getComposerCandidates(selectedDir);
+            let success = false;
+            for (const cmd of candidates) {
+                try {
+                    await runCommand(`${cmd} require laradumps/laradumps laradumps/laradumps-core --dev`, selectedDir);
+                    success = true;
+                    break;
+                } catch (e) {
+                    const msg = (e as Error)?.message || String(e);
+                    console.warn(`composer require failed with: ${cmd}`, msg);
+                    errors.push(`${cmd}: ${msg}`);
+                }
+            }
+            if (!success) {
+                throw new Error(
+                    `composer require failed via all strategies. Details: ${errors.join(" | ")}. ` +
+                        `Tip: Install Composer (https://getcomposer.org/) or ensure PHP can run a local composer.phar.`
+                );
+            }
+        }
 
         // Step: composer require done
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "composer-require", done: true });
@@ -139,7 +169,7 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
         mainWindow.webContents.send(CHANNELS.PROJECT_DIRECTORY_SELECTED, selectedDir);
     } catch (error) {
         console.log(error);
-        const message = "Failed to install/initialize LaraDumps. " + (error as Error).message;
+        const message = "Failed to install LaraDumps. " + (error as Error).message;
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, {
             error: message
         });
