@@ -115,6 +115,9 @@ export default {
     composer_invalid_version: "App requer laradumps/laradumps-core 3.0 ou superior",
     click_to_block: "Clique para bloquear",
     unblock: "Desbloquear",
-    add_to_saved: "Adicionar aos favoritos",
-    remove_from_saved: "Remover dos favoritos"
+    save_dump: "Salvar dump",
+    remove_from_saved: "Remover dump",
+    toast_copied_to_clipboard: "Copiado para a área de transferência.",
+    toast_added_to_saved: "Adicionado aos dumps salvos.",
+    toast_removed_successfully: "Removido com sucesso."
 };

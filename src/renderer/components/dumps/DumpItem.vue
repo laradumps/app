@@ -25,6 +25,8 @@ import { usePayloadStore } from "@/store/payload";
 import VueJsonPretty from "vue-json-pretty";
 import { BoltIcon } from "@heroicons/vue/20/solid";
 import { useSavedDumpsStore } from "@/store/saved-dumps";
+import { useToastStore } from "@/store/toast";
+import { useI18n } from "vue-i18n";
 
 const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
@@ -32,6 +34,8 @@ const settingsStore = useSettingsStore();
 const queriesChart = useQueriesChart();
 const timeStore = useTimeStore();
 const duplicatesStore = useQueryDuplicated();
+const toast = useToastStore();
+const { t } = useI18n({ useScope: "global" });
 
 const emit = defineEmits<{
     (e: "deleteDump", id: string): void;
@@ -50,15 +54,17 @@ const inSavedWindow = computed(() => new URLSearchParams(window.location.search)
 
 const onSaveDump = () => {
     savedStore.add(props.payload);
+    toast.show(t("toast_added_to_saved"), "success");
 };
-
 const onRemoveFromSaved = () => {
     if (inSavedWindow.value) {
         window.ipcRenderer.send("saved-dumps:remove", { id: props.payload.id });
+        toast.show(t("toast_removed_successfully"), "success");
         return;
     }
 
     savedStore.remove(props.payload.id);
+    toast.show(t("toast_removed_successfully"), "success");
 };
 
 const wrapperRef = ref<HTMLElement | null>(null);
@@ -105,19 +111,25 @@ const deleteDump = (id: string | null) => {
 const copyDump = () => {
     nextTick(() => {
         if (props.payload.type === "queries" && props.payload.queries?.query.sql) {
-            navigator.clipboard.writeText(props.payload.queries?.query.sql).then(() => {});
+            navigator.clipboard.writeText(props.payload.queries?.query.sql).then(() => {
+                toast.show(t("toast_copied_to_clipboard"), "success");
+            });
 
             return;
         }
 
         if (props.payload.dump?.original_content) {
-            navigator.clipboard.writeText(props.payload.dump?.original_content).then(() => {});
+            navigator.clipboard.writeText(props.payload.dump?.original_content).then(() => {
+                toast.show(t("toast_copied_to_clipboard"), "success");
+            });
             return;
         }
 
         const value = document.getElementById(`dump-content-${props.payload.sf_dump_id}`)?.innerText;
 
-        navigator.clipboard.writeText(value).then(() => {});
+        navigator.clipboard.writeText(value).then(() => {
+            toast.show(t("toast_copied_to_clipboard"), "success");
+        });
     });
 };
 
@@ -522,7 +534,7 @@ onUnmounted(() => {
                             :style="{ left: menuX + 'px', top: menuY + 'px' }"
                             @click.stop
                         >
-                            <ul class="menu menu-compact p-1 text-xs min-w-36">
+                            <ul class="menu menu-compact p-1 text-xs min-w-38">
                                 <li>
                                     <button
                                         class="hover:bg-base-300 rounded flex justify-between items-center"
@@ -552,7 +564,7 @@ onUnmounted(() => {
                                         class="hover:bg-base-300 rounded flex justify-between items-center"
                                         @click.stop="isSaved ? (onRemoveFromSaved(), (openOptions = false)) : (onSaveDump(), (openOptions = false))"
                                     >
-                                        {{ isSaved ? $t("remove_from_saved") : $t("add_to_saved") }}
+                                        {{ isSaved ? $t("remove_from_saved") : $t("save_dump") }}
                                         <BookmarkIcon class="w-4 inline-block" />
                                     </button>
                                 </li>
