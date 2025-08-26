@@ -173,14 +173,6 @@ const formattedSql = computed(() => {
                     <ExclamationTriangleIcon class="w-4 text-warning" />
                 </div>
             </div>
-
-            <!-- Time Taken -->
-            <div
-                class="text-xs text-primary text-right font-light font-mono pl-[0.5rem]"
-                v-if="payload.queries && payload.queries.query.time"
-            >
-                {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span>
-            </div>
         </div>
         <pre
             v-if="formattedQueriesStore.formatted"

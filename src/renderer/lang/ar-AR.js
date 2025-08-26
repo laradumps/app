@@ -56,7 +56,8 @@ export default {
         enable: "تفعيل",
         changes_saved: "Changes Saved"
     },
-    click_to_copy: "اضغط للنسخ",
+    copy: "Copy",
+    delete: "Delete",
     please_select_a_component: "يرجى إختيار مكون",
     total: "الإجمالي",
     elapsed_time: "الوقت المنقضي",

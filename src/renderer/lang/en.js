@@ -57,7 +57,8 @@ export default {
         enable: "Enable",
         changes_saved: "Changes Saved"
     },
-    click_to_copy: "Click to copy",
+    copy: "Copy",
+    delete: "Delete",
     please_select_a_component: "Please select a component",
     total: "Total",
     elapsed_time: "Elapsed time",
@@ -111,5 +112,10 @@ export default {
     search: "Search",
     composer_invalid_version: "App require laradumps/laradumps-core 3.0 or higher",
     click_to_block: "Click to block",
-    unblock: "Unblock"
+    unblock: "Unblock",
+    save_dump: "Save this dump",
+    remove_from_saved: "Remove from saved dumps",
+    toast_copied_to_clipboard: "Copied to clipboard.",
+    toast_added_to_saved: "Added to Saved dumps.",
+    toast_removed_successfully: "Removed successfully."
 };

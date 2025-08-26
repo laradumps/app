@@ -56,7 +56,8 @@ export default {
         enable: "Enable",
         changes_saved: "Changes Saved"
     },
-    click_to_copy: "点击复制",
+    copy: "Copy",
+    delete: "Delete",
     please_select_a_component: "请选择一个组件",
     total: "总计",
     elapsed_time: "已过时间",

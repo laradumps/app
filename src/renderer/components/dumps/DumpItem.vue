@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onMounted, ref, watch } from "vue";
+import { computed, defineProps, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import DumpLink from "@/components/dumps/DumpLink.vue";
 import DumpQueries from "@/components/laravel/DumpQueries.vue";
 import DumpJson from "@/components/dumps/DumpJson.vue";
@@ -13,19 +13,20 @@ import DumpIsJson from "@/components/dumps/DumpIsJson.vue";
 import DumpTableV2 from "@/components/dumps/DumpTableV2.vue";
 import DumpQuery from "@/components/laravel/DumpQuery.vue";
 import { Payload } from "@/types/Payload";
-import ClickToCopy from "@/components/common/ClickToCopy.vue";
 import DumpDump from "@/components/dumps/DumpDump.vue";
 import { useCollapse } from "@/store/collapse";
 import { useSettingsStore } from "@/store/settings";
 import moment from "moment";
 import { useQueriesChart } from "@/store/queries-chart";
-import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
+import { ExclamationTriangleIcon, TrashIcon, ClipboardIcon, BookmarkIcon } from "@heroicons/vue/24/outline";
 import { useTimeStore } from "@/store/time";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { usePayloadStore } from "@/store/payload";
 import VueJsonPretty from "vue-json-pretty";
 import { BoltIcon } from "@heroicons/vue/20/solid";
-import { useFormattedQueriesStore } from "@/store/formatted-queries";
+import { useSavedDumpsStore } from "@/store/saved-dumps";
+import { useToastStore } from "@/store/toast";
+import { useI18n } from "vue-i18n";
 
 const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
@@ -33,37 +34,113 @@ const settingsStore = useSettingsStore();
 const queriesChart = useQueriesChart();
 const timeStore = useTimeStore();
 const duplicatesStore = useQueryDuplicated();
-const formattedQueriesStore = useFormattedQueriesStore();
+const toast = useToastStore();
+const { t } = useI18n({ useScope: "global" });
+
+const emit = defineEmits<{
+    (e: "deleteDump", id: string): void;
+}>();
 
 const open = ref(true);
 const openOptions = ref(false);
+const menuX = ref(0);
+const menuY = ref(0);
+const selfId = Math.random().toString(36).slice(2);
 const showContext = ref(true);
+
+const savedStore = useSavedDumpsStore();
+const isSaved = computed(() => savedStore.exists(props.payload.id));
+const inSavedWindow = computed(() => new URLSearchParams(window.location.search).get("screen") === "saved");
+
+const onSaveDump = () => {
+    savedStore.add(props.payload);
+    toast.show(t("toast_added_to_saved"), "success");
+};
+const onRemoveFromSaved = () => {
+    if (inSavedWindow.value) {
+        window.ipcRenderer.send("saved-dumps:remove", { id: props.payload.id });
+        toast.show(t("toast_removed_successfully"), "success");
+        return;
+    }
+
+    savedStore.remove(props.payload.id);
+    toast.show(t("toast_removed_successfully"), "success");
+};
+
+const wrapperRef = ref<HTMLElement | null>(null);
+
+const onContextMenu = (e: MouseEvent) => {
+    if (["table", "table_v2"].includes(props.payload.type)) {
+        return;
+    }
+
+    e.preventDefault();
+
+    window.dispatchEvent(new CustomEvent("ld-context-open", { detail: selfId }));
+
+    menuX.value = e.clientX;
+    menuY.value = e.clientY;
+
+    openOptions.value = true;
+};
+
+const onKeydown = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+        openOptions.value = false;
+    }
+};
+
+const onOtherContextOpen = (e: Event) => {
+    const ce = e as CustomEvent<string>;
+    if (ce.detail !== selfId) {
+        openOptions.value = false;
+    }
+};
 
 const props = defineProps<{
     payload: Payload;
     showTime: boolean;
 }>();
 
+const deleteDump = (id: string | null) => {
+    if (!id) return;
+
+    emit("deleteDump", id);
+};
+
 const copyDump = () => {
     nextTick(() => {
         if (props.payload.type === "queries" && props.payload.queries?.query.sql) {
-            navigator.clipboard.writeText(props.payload.queries?.query.sql).then(() => {});
+            navigator.clipboard.writeText(props.payload.queries?.query.sql).then(() => {
+                toast.show(t("toast_copied_to_clipboard"), "success");
+            });
 
             return;
         }
 
         if (props.payload.dump?.original_content) {
-            navigator.clipboard.writeText(props.payload.dump?.original_content).then(() => {});
+            navigator.clipboard.writeText(props.payload.dump?.original_content).then(() => {
+                toast.show(t("toast_copied_to_clipboard"), "success");
+            });
             return;
         }
 
         const value = document.getElementById(`dump-content-${props.payload.sf_dump_id}`)?.innerText;
 
-        navigator.clipboard.writeText(value).then(() => {});
+        navigator.clipboard.writeText(value).then(() => {
+            toast.show(t("toast_copied_to_clipboard"), "success");
+        });
     });
 };
 
+const onGlobalClick = () => {
+    openOptions.value = false;
+};
+
 onMounted(() => {
+    window.addEventListener("keydown", onKeydown);
+    window.addEventListener("ld-context-open", onOtherContextOpen as EventListener);
+    window.addEventListener("click", onGlobalClick, { capture: true });
     if (props.payload.dump?.dump) {
         const { dump } = props.payload.dump;
 
@@ -238,6 +315,12 @@ const computedBackgroundStyle = computed(() => {
 const isPercentageColors = computed(() => {
     return props.payload.type == "queries" && queriesChart.type === "percentage-colors";
 });
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", onKeydown);
+    window.removeEventListener("ld-context-open", onOtherContextOpen as EventListener);
+    window.removeEventListener("click", onGlobalClick, { capture: true } as any);
+});
 </script>
 <template>
     <div v-if="(payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'">
@@ -250,6 +333,8 @@ const isPercentageColors = computed(() => {
             }"
             class="border-base-300 collapse rounded-none bg-laravel"
             :style="isPercentageColors ? computedBackgroundStyle : null"
+            @contextmenu.prevent="onContextMenu($event)"
+            @click="openOptions = false"
         >
             <div
                 @click="open = !open"
@@ -279,14 +364,12 @@ const isPercentageColors = computed(() => {
                         v-show="open"
                         class="flex justify-center items-center gap-3"
                     >
-                        <button
-                            v-if="!['table', 'table_v2'].includes(payload.type)"
-                            @click.stop="copyDump"
-                            :data-tippy-content="$t('click_to_copy')"
-                            class="btn btn-ghost btn-sm btn-circle"
+                        <span
+                            class="text-sm"
+                            v-if="payload.queries && payload.queries.query.time"
                         >
-                            <ClickToCopy />
-                        </button>
+                            {{ payload.queries.query.time }}<span class="font-semibold text-xs">ms</span></span
+                        >
                     </div>
 
                     <div v-show="!open && payload.queries">
@@ -302,7 +385,12 @@ const isPercentageColors = computed(() => {
                                 class="text-warning w-4"
                             />
 
-                            <span v-if="payload.queries && payload.queries.query.time"> {{ payload.queries.query.time }}<span class="font-semibold text-[10px]">ms</span> </span>
+                            <span
+                                class="text-sm"
+                                v-if="payload.queries && payload.queries.query.time"
+                            >
+                                {{ payload.queries.query.time }}<span class="font-semibold text-xs">ms</span></span
+                            >
                         </div>
                     </div>
 
@@ -332,14 +420,11 @@ const isPercentageColors = computed(() => {
                 </div>
             </div>
 
-            <div
-                class="collapse-content"
-                v-on:click.right="openOptions = true"
-                v-on:click="openOptions = false"
-            >
+            <div class="collapse-content">
                 <div
                     class="relative"
                     :class="{ 'w-full': ['queries', 'table', 'table_v2'].includes(payload.type) }"
+                    ref="wrapperRef"
                 >
                     <DumpDump
                         :id="`dump-content-${payload.sf_dump_id}`"
@@ -440,6 +525,64 @@ const isPercentageColors = computed(() => {
                             :deep="4"
                         />
                     </div>
+
+                    <!-- Context menu -->
+                    <teleport to="#context-menu-portal">
+                        <div
+                            v-if="openOptions && !['table', 'table_v2'].includes(payload.type)"
+                            class="fixed z-[99999] bg-base-200 text-base-content rounded-md shadow-lg border border-base-content/10"
+                            :style="{ left: menuX + 'px', top: menuY + 'px' }"
+                            @click.stop
+                        >
+                            <ul class="menu menu-compact p-1 text-xs min-w-38">
+                                <li>
+                                    <button
+                                        class="hover:bg-base-300 rounded flex justify-between items-center"
+                                        @click.stop="
+                                            copyDump();
+                                            openOptions = false;
+                                        "
+                                    >
+                                        {{ $t("copy") }}
+                                        <ClipboardIcon class="w-4 inline-block" />
+                                    </button>
+                                </li>
+                                <li v-if="inSavedWindow">
+                                    <button
+                                        class="hover:bg-base-300 rounded flex justify-between items-center"
+                                        @click.stop="
+                                            onRemoveFromSaved();
+                                            openOptions = false;
+                                        "
+                                    >
+                                        {{ $t("remove_from_saved") }}
+                                        <BookmarkIcon class="w-4 inline-block" />
+                                    </button>
+                                </li>
+                                <li v-else>
+                                    <button
+                                        class="hover:bg-base-300 rounded flex justify-between items-center"
+                                        @click.stop="isSaved ? (onRemoveFromSaved(), (openOptions = false)) : (onSaveDump(), (openOptions = false))"
+                                    >
+                                        {{ isSaved ? $t("remove_from_saved") : $t("save_dump") }}
+                                        <BookmarkIcon class="w-4 inline-block" />
+                                    </button>
+                                </li>
+                                <li v-if="!inSavedWindow">
+                                    <button
+                                        class="hover:bg-base-300 rounded flex justify-between items-center"
+                                        @click.stop="
+                                            deleteDump(payload.id);
+                                            openOptions = false;
+                                        "
+                                    >
+                                        {{ $t("delete") }}
+                                        <TrashIcon class="w-4 inline-block" />
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </teleport>
                 </div>
             </div>
         </div>

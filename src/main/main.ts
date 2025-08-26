@@ -150,15 +150,17 @@ function setBadgeCount(count: number): void {
 }
 function sendScreenWindowUpdate(screen, payload, jobs, mails, logs, queries) {
     const screenWindow = windowsMap.get(screen);
-    if (screenWindow && screenWindow.webContents) {
-        screenWindow.webContents.send("app:screen-window-update", {
-            payload,
-            jobs,
-            mails,
-            logs,
-            queries
-        });
-    }
+    try {
+        if (screenWindow && !screenWindow.isDestroyed() && screenWindow.webContents) {
+            screenWindow.webContents.send("app:screen-window-update", {
+                payload,
+                jobs,
+                mails,
+                logs,
+                queries
+            });
+        }
+    } catch (e) {}
 }
 
 ipcMain.on("send-screen-window-update", (event, args) => {
@@ -169,6 +171,17 @@ ipcMain.on("send-screen-window-update", (event, args) => {
     const queries = args.queries;
 
     sendScreenWindowUpdate(args.screen, payload, jobs, mails, logs, queries);
+});
+
+// Relay saved-dumps removal requests from any renderer to the main window (HomeView listener)
+ipcMain.on("saved-dumps:remove", (event, args) => {
+    try {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send("saved-dumps:remove", args);
+        }
+    } catch (e) {
+        console.warn("Failed to relay saved-dumps:remove", String(e));
+    }
 });
 
 ipcMain.on("reload", () => {
@@ -184,7 +197,7 @@ ipcMain.on("screen-window:show", (event, arg) => {
     if (!screenExist) {
         screenWindow = createScreenWindow(mainWindow, arg.screen);
         if (arg.position.length > 0) {
-            screenWindow.setPosition(arg.position.x, arg.position.y);
+            !screenWindow.isDestroyed() && screenWindow.setPosition(arg.position.x, arg.position.y);
         } else {
             const { screen } = require("electron");
             const displays = screen.getAllDisplays();
@@ -196,37 +209,44 @@ ipcMain.on("screen-window:show", (event, arg) => {
                 const windowHeight = 660;
                 const newX = x + (width - windowWidth) / 2;
                 const newY = y + (height - windowHeight) / 2;
-                screenWindow.setBounds({ x: newX, y: newY, width: windowWidth, height: windowHeight });
+                !screenWindow.isDestroyed() && screenWindow.setBounds({ x: newX, y: newY, width: windowWidth, height: windowHeight });
             } else {
-                screenWindow.center();
+                !screenWindow.isDestroyed() && screenWindow.center();
             }
         }
     } else {
         screenWindow = windowsMap.get(arg.screen);
+        if (!screenWindow || screenWindow.isDestroyed()) {
+            screenWindow = createScreenWindow(mainWindow, arg.screen);
+        }
     }
 
-    if (!screenWindow.isVisible()) {
+    if (!screenWindow.isDestroyed() && !screenWindow.isVisible()) {
         screenWindow.show();
     }
 
-    if (isDev) {
+    if (!screenWindow.isDestroyed() && isDev) {
         screenWindow.webContents.openDevTools();
     }
 
     windowsMap.set(arg.screen, screenWindow);
 
     const sendEnableMessage = () => {
-        screenWindow.webContents.send("app:screen-window-enable", {
-            screen: arg.screen,
-            payload: arg.payload,
-            jobs: arg.jobs || {},
-            mails: arg.mails || {},
-            logs: arg.logs || {},
-            queries: arg.queries || {}
-        });
+        if (!screenWindow.isDestroyed()) {
+            screenWindow.webContents.send("app:screen-window-enable", {
+                screen: arg.screen,
+                payload: arg.payload,
+                jobs: arg.jobs || {},
+                mails: arg.mails || {},
+                logs: arg.logs || {},
+                queries: arg.queries || {}
+            });
+        }
     };
 
-    screenExist ? sendEnableMessage() : screenWindow.webContents.once("did-finish-load", () => sendEnableMessage());
+    if (!screenWindow.isDestroyed()) {
+        screenExist ? sendEnableMessage() : screenWindow.webContents.once("did-finish-load", () => sendEnableMessage());
+    }
 
     screenWindow.on("closed", () => {
         windowsMap.delete(arg.screen);
