@@ -56,7 +56,8 @@ export default {
         enable: "Etkinleştir",
         changes_saved: "Changes Saved"
     },
-    click_to_copy: "Kopyalamak için tıklayın",
+    copy: "Copy",
+    delete: "Delete",
     please_select_a_component: "Lütfen bir bileşen seçin",
     total: "Toplam",
     elapsed_time: "Geçen süre",

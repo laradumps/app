@@ -125,6 +125,18 @@ export const usePayloadStore = defineStore("payload", {
         clearCache() {
             this.payload = this.payload.filter((payload) => payload.to_screen.screen_name !== "cache");
             this.filteredPayload = this.filteredPayload.filter((payload) => payload.to_screen.screen_name !== "cache");
+        },
+        removePayload(id: string) {
+            const indexPayload = this.findById(id);
+            const indexFiltered = this.findPayloadIndex(id);
+
+            if (indexPayload !== -1) {
+                this.payload.splice(indexPayload, 1);
+            }
+
+            if (indexFiltered !== -1) {
+                this.filteredPayload.splice(indexFiltered, 1);
+            }
         }
     }
 });

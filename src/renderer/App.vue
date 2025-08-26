@@ -4,6 +4,7 @@ import { usePayloadStore } from "@/store/payload";
 import { onMounted, ref } from "vue";
 import { useSettingsStore } from "@/store/settings";
 import { useScreenStore } from "@/store/screen";
+import Toasters from "@/components/common/Toasters.vue";
 
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
@@ -93,6 +94,8 @@ onMounted(() => {
             }"
             class="bg-base-200 absolute w-full h-full min-h-full"
         >
+            <div id="context-menu-portal"></div>
+
             <TheNavBar
                 v-if="screen === 'default'"
                 has-color
@@ -115,6 +118,7 @@ onMounted(() => {
                 ></div>
 
                 <RouterView :key="$route.fullPath" />
+                <Toasters />
             </main>
         </div>
     </div>

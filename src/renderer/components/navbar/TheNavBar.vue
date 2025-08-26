@@ -9,13 +9,13 @@ import NavBarSSH from "@/components/navbar/NavBarSSH.vue";
 import NavBarSettings from "@/components/navbar/NavBarSettings.vue";
 import { usePayloadStore } from "@/store/payload";
 import ClearAll from "@/components/common/ClearAll.vue";
-import HeaderColorsFilter from "@/components/app/HeaderColorsFilter.vue";
 import { useSettingsStore } from "@/store/settings";
 import { useXDebug } from "@/store/xdebug.js";
 import { useLogStore } from "@/store/logs.js";
 import { useJobStore } from "@/store/jobs.js";
 import { useQueriesPayloadStore } from "@/store/queries.js";
 import { useMailStore } from "@/store/mail.js";
+import NavBarSavedDumps from "@/components/navbar/NavBarSavedDumps.vue";
 
 const jobStore = useJobStore();
 const queryStore = useQueriesPayloadStore();
@@ -50,10 +50,6 @@ const hasPayload = computed(() => {
         Object.values(queryStore.payload).length > 0
     );
 });
-
-const xDebugMode = computed(() => {
-    return xDebugStore.current && xDebugStore.current.project_path !== "";
-});
 </script>
 
 <template>
@@ -80,6 +76,8 @@ const xDebugMode = computed(() => {
             <NavBarAlwaysOnTop />
             <!-- ssh -->
             <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
+            <!-- saved dumps -->
+            <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
             <!-- listening -->
             <NavBarListening v-if="!inSavedDumpsWindow" />
             <!-- settings -->
