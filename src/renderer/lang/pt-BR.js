@@ -58,7 +58,8 @@ export default {
         enable: "Habilitar",
         changes_saved: "Alterações Salvas"
     },
-    click_to_copy: "Clique para copiar",
+    copy: "Copy",
+    delete: "Excluir",
     elapsed_time: "Tempo decorrido",
     processing: "Processando",
     show_details: "Alternar detalhes",

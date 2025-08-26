@@ -583,6 +583,10 @@ const groupedDumps = computed(() => {
 const hasColorsInPayload = computed((): boolean => {
     return payloadStore.payload.some((payload: Payload) => payload.color && payload.color !== "gray");
 });
+
+const deleteDump = (id: string): void => {
+    payloadStore.removePayload(id);
+};
 </script>
 <template>
     <div
@@ -709,6 +713,7 @@ const hasColorsInPayload = computed((): boolean => {
                                                 v-show="screenStore.screen !== 'livewire'"
                                                 :payload="payload"
                                                 :show-time="false"
+                                                @delete-dump="deleteDump"
                                             />
                                         </div>
                                     </div>

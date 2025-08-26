@@ -56,7 +56,8 @@ export default {
         enable: "Enable",
         changes_saved: "Changes Saved"
     },
-    click_to_copy: "برای کپی کردن کلیک کنید",
+    copy: "Copy",
+    delete: "Delete",
     please_select_a_component: "لطفاً یک مولفه را انتخاب کنید",
     total: "مجموع",
     elapsed_time: "زمان گذشته",

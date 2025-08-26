@@ -93,6 +93,8 @@ onMounted(() => {
             }"
             class="bg-base-200 absolute w-full h-full min-h-full"
         >
+            <div id="context-menu-portal"></div>
+
             <TheNavBar
                 v-if="screen === 'default'"
                 has-color
