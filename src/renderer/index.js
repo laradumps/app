@@ -19,6 +19,7 @@ import zhCN from "@/lang/zh-CN";
 import idID from "@/lang/id-ID";
 import alAL from "@/lang/al-AL";
 import trTR from "@/lang/tr-TR";
+import koKR from "@/lang/ko-KR";
 
 import clipboard from "@/plugins/clipboard";
 
@@ -46,7 +47,8 @@ const i18n = createI18n({
         zh_CN: zhCN,
         id_ID: idID,
         al_AL: alAL,
-        tr_TR: trTR
+        tr_TR: trTR,
+        ko_KR: koKR
     }
 });
 
