@@ -111,5 +111,10 @@ export default {
     search: "검색",
     composer_invalid_version: "앱에는 laradumps/laradumps-core 3.0 이상이 필요합니다",
     click_to_block: "클릭하여 차단",
-    unblock: "차단 해제"
+    unblock: "차단 해제",
+    save_dump: "덤프 저장",
+    remove_from_saved: "저장된 덤프에서 제거",
+    toast_copied_to_clipboard: "클립보드에 복사되었습니다.",
+    toast_added_to_saved: "저장된 덤프에 추가되었습니다.",
+    toast_removed_successfully: "성공적으로 제거되었습니다."
 };
