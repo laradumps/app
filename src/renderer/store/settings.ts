@@ -81,35 +81,17 @@ export const useSettingsStore = defineStore("settings", () => {
     const settings = ref<Settings>(savedSettings ? JSON.parse(savedSettings) : DEFAULT_SETTINGS);
 
     const updateAvailable = ref<boolean>(false);
-
-    const defaultUpdateState = { updated: true, latestVersion: "" };
-    const loadUpdateState = () => {
-        try {
-            const raw = localStorage.getItem("update-state");
-            if (!raw) return defaultUpdateState;
-            const parsed = JSON.parse(raw);
-            return {
-                updated: typeof parsed.updated === "boolean" ? parsed.updated : true,
-                latestVersion: typeof parsed.latestVersion === "string" ? parsed.latestVersion : ""
-            };
-        } catch (_) {
-            return defaultUpdateState;
-        }
-    };
-
-    const updateState = ref(loadUpdateState());
-    const persistUpdateState = () => localStorage.setItem("update-state", JSON.stringify(updateState.value));
+    const latestVersion = ref<string>("");
 
     const setUpdateAvailable = (version) => {
-        updateAvailable.value = true;
-        updateState.value = { updated: false, latestVersion: String(version || "") };
-        persistUpdateState();
+        latestVersion.value = String(version || "");
+        setTimeout(() => {
+            updateAvailable.value = true;
+        }, 3000);
     };
 
     const markUpdated = () => {
         updateAvailable.value = false;
-        updateState.value = { ...updateState.value, updated: true };
-        persistUpdateState();
     };
 
     const update = () => {
@@ -145,8 +127,7 @@ export const useSettingsStore = defineStore("settings", () => {
         checkForUpdateOptions,
         setSettings,
         updateAvailable,
-        updateState,
-        loadUpdateState,
+        latestVersion,
         setUpdateAvailable,
         markUpdated
     };

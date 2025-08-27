@@ -24,6 +24,8 @@ const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 
 const platform = ref("");
+const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV === true;
+
 defineProps({
     inSavedDumpsWindow: {
         type: Boolean,
@@ -57,7 +59,7 @@ const hasPayload = computed(() => {
             <div class="w-auto h-full">
                 <div class="flex items-center gap-2">
                     <!-- update available -->
-                    <NavBarUpdateAvailable />
+                    <NavBarUpdateAvailable v-if="!isDev && settingsStore.updateAvailable" />
                     <!-- clear -->
                     <ClearAll />
                     <!-- pause -->
