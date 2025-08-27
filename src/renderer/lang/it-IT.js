@@ -56,7 +56,8 @@ export default {
         enable: "Abilita",
         changes_saved: "Changes Saved"
     },
-    click_to_copy: "Clicca per copiare",
+    copy: "Copy",
+    delete: "Delete",
     please_select_a_component: "Per favore, seleziona un componente",
     total: "Totale",
     elapsed_time: "Tempo trascorso",

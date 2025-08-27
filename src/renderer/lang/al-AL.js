@@ -56,7 +56,8 @@ export default {
         enable: "Enable",
         changes_saved: "Changes Saved"
     },
-    click_to_copy: "Kliko për kopjim",
+    copy: "Copy",
+    delete: "Delete",
     please_select_a_component: "Ju lutemi zgjidhni një komponent",
     total: "Totali",
     elapsed_time: "Koha e kaluar",
