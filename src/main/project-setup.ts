@@ -148,6 +148,21 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
         // Step: composer require done
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "composer-require", done: true });
 
+        // Step: remove laradumps.yaml
+        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "remove-config", running: true });
+        {
+            const configPath = path.join(selectedDir, "laradumps.yaml");
+            if (fs.existsSync(configPath)) {
+                fs.unlinkSync(configPath);
+                console.log("Removed existing laradumps.yaml");
+            } else {
+                console.log("No existing laradumps.yaml to remove");
+            }
+        }
+
+        // Step: remove laradumps.yaml done
+        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "remove-config", done: true });
+
         // Step: ds:init start
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "ds-init", running: true });
         await installLaraDumps(selectedDir);
@@ -161,9 +176,9 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
             done: true,
             success: true,
             path: selectedDir,
-            message: "LaraDumps installed and initialized."
+            message: "LaraDumps installed successfully."
         });
-        notifyOnce("LaraDumps", "LaraDumps installed and initialized.");
+        notifyOnce("LaraDumps", "LaraDumps installed successfully.");
 
         // Notify that project directory is ready/selected post install
         mainWindow.webContents.send(CHANNELS.PROJECT_DIRECTORY_SELECTED, selectedDir);

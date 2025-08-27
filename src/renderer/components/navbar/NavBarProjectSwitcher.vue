@@ -9,9 +9,11 @@ import { XDebugYml } from "@/types/XDebug";
 import { IpcRendererEvent } from "electron";
 import { Environment } from "../../main/storage";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
+import { useToastStore } from "@/store/toast";
 
 const xDebugStore = useXDebug();
 const currentProjectStore = useCurrentProject();
+const toast = useToastStore();
 
 const IPC_EVENTS = {
     STORAGE_GET: "storage.get",
@@ -197,11 +199,17 @@ const setupEventListeners = () => {
         if (payload.step === "finish" && payload.done) {
             setTimeout(() => {
                 installActive.value = false;
+
+                setTimeout(() => {
+                    modal_navbar_listening.close()
+                    toast.show('LaraDumps installed successfully.', { type: 'success' });
+                    isNewProject.value = true;
+                }, 300);
             }, 500);
         }
     };
-    window.ipcRenderer.on(IPC_EVENTS.COMPOSER_AUTO_INSTALL, handleComposerRef);
 
+    window.ipcRenderer.on(IPC_EVENTS.COMPOSER_AUTO_INSTALL, handleComposerRef);
     window.ipcRenderer.on(IPC_EVENTS.XDEBUG_ERROR, onXdebugError);
     window.ipcRenderer.on(IPC_EVENTS.XDEBUG_CONNECTOR_DISCONNECT, disconnectFromXdebug);
 
@@ -445,9 +453,13 @@ const addProject = () => {
                             <!-- Installing overlay/content -->
                             <div
                                 v-if="installActive"
-                                class="flex items-center justify-center w-full py-20"
+                                class="absolute top-0 left-0 w-full h-full bg-base-200/90 z-10 flex flex-col items-center justify-center"
                             >
-                                <h3 class="text-lg font-semibold mb-4 animate-pulse text-base-content/70">Installing ...</h3>
+                                <div class="text-center space-y-2">
+                                    <h2 class="text-lg font-semibold text-base-content/70">{{ $t('installing') }}</h2>
+                                    <p class="text-base-content/70 mt-6">{{ $t('installing_wait_message') }}</p>
+                                    <progress class="progress w-56 progress-info"></progress>
+                                </div>
                             </div>
 
                             <div
