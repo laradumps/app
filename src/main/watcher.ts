@@ -32,7 +32,8 @@ function readPhpStormBreakpoints(projectPath: string, workspacePath: string): Pr
                             url: bp.url[0].replace("$PROJECT_DIR$/", projectPath),
                             line: bp.line ? parseInt(bp.line[0]) + 1 : null,
                             enabled: bp.$.enabled === "true"
-                        }));
+                        }))
+                        .filter((bp: any) => bp.enabled && bp.line !== null);
 
                     console.log(parsedBreakpoints);
                     resolve(parsedBreakpoints);

@@ -118,11 +118,6 @@ const evaluateExpression = () => {
     }, 300);
 };
 
-const source = (filePath) => {
-    const id = getNextTransactionId();
-    sendCommand(`source -i ${id} -f ${filePath}`);
-};
-
 const handleResponse = (event, response) => {
     loading.value = true;
     setTimeout(() => parseResponse(response), 100);
@@ -342,17 +337,11 @@ const convertHTMLTextToArray = (data) => {
     return result;
 };
 
-const setBreakpoints = (fileuri) => {
-    const id = getNextTransactionId();
-    const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${fileuri} -n 5`;
-
-    sendCommand(cmd);
-
-    // try to continue debugging after setting breakpoints
-    continueDebug();
-
+const setBreakpoints = () => {
     console.log(breakpoints.value);
-    breakpoints.value.forEach((breakpoint) => {
+    breakpoints.value
+        .filter((breakpoint) => breakpoint.enabled && breakpoint.line !== null)
+        .forEach((breakpoint) => {
         const id = getNextTransactionId();
         const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
         const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
@@ -360,8 +349,6 @@ const setBreakpoints = (fileuri) => {
         console.log(cmd);
         sendCommand(cmd);
     });
-
-    setTimeout(() => continueDebug(), 100);
 };
 
 const parseResponse = async (xml) => {
@@ -399,7 +386,7 @@ const parseResponse = async (xml) => {
 
             setTimeout(async () => {
                 setBreakpoints(fileuri);
-                // continueDebug();
+                continueDebug();
             }, 100);
         }
 
@@ -562,7 +549,7 @@ const disconnect = () => {
 };
 
 const shouldShowBreakpoint = (lineNumber) => {
-    return breakpoints.value.some((breakpoint) => breakpoint.line == lineNumber);
+    return breakpoints.value.some((breakpoint) => breakpoint.enabled && breakpoint.line == lineNumber);
 };
 
 watch(fileContent, () => {
@@ -579,18 +566,17 @@ onMounted(() => {
     window.addEventListener("keydown", handleKeyboardEvent);
 
     window.ipcRenderer.on("xdebug-breakpoints", (_, args) => {
-        breakpoints.value = args;
+        const validBreakpoints = (args || []).filter((breakpoint) => breakpoint.enabled && breakpoint.line !== null);
+        breakpoints.value = validBreakpoints;
 
-        if (transactionId.value > 1) {
-            args.forEach((breakpoint) => {
-                const id = getNextTransactionId();
-                const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
-                const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
+        validBreakpoints.forEach((breakpoint) => {
+            const id = getNextTransactionId();
+            const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
+            const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
 
-                console.log(cmd);
-                sendCommand(cmd);
-            });
-        }
+            console.log(cmd);
+            sendCommand(cmd);
+        });
     });
 });
 
