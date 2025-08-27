@@ -5,6 +5,7 @@ import { onMounted, ref } from "vue";
 import { useSettingsStore } from "@/store/settings";
 import { useScreenStore } from "@/store/screen";
 import Toasters from "@/components/common/Toasters.vue";
+import TheAppUpdateInfo from "@/components/app/TheAppUpdateInfo.vue";
 
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
@@ -57,6 +58,12 @@ const getZoomLevel = (value: number): void => {
 onMounted(() => {
     window.ipcRenderer.on("init.reply", async (e: any, args) => {
         settingsStore.settings = args.settings;
+        const cached = settingsStore.loadUpdateState();
+        if (cached.latestVersion && args.settings?.version === cached.latestVersion) {
+            settingsStore.markUpdated();
+        } else if (cached && cached.updated === false) {
+            settingsStore.updateAvailable = true as any;
+        }
         readyToLoad.value = true;
         window.ipcRenderer.send("settings.init-shortcuts");
     });
@@ -119,6 +126,7 @@ onMounted(() => {
 
                 <RouterView :key="$route.fullPath" />
                 <Toasters />
+                <TheAppUpdateInfo />
             </main>
         </div>
     </div>

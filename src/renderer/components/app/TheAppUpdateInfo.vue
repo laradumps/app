@@ -37,8 +37,7 @@ const sanitizeReleaseNotes = async (): Promise<void> => {
 
 const onUpdateAvailable = (_: any, arg: UpdateInfo) => {
     updateInfo.value = arg;
-    const modal = document.getElementById("update_modal") as HTMLDialogElement;
-    modal?.showModal();
+    settingsStore.setUpdateAvailable(arg?.version);
     sanitizeReleaseNotes();
 };
 

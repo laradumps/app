@@ -201,8 +201,8 @@ const setupEventListeners = () => {
                 installActive.value = false;
 
                 setTimeout(() => {
-                    modal_navbar_listening.close()
-                    toast.show('LaraDumps installed successfully.', { type: 'success' });
+                    modal_navbar_listening.close();
+                    toast.show("LaraDumps installed successfully.", { type: "success" });
                     isNewProject.value = true;
                 }, 300);
             }, 500);
@@ -456,8 +456,8 @@ const addProject = () => {
                                 class="absolute top-0 left-0 w-full h-full bg-base-200/90 z-10 flex flex-col items-center justify-center"
                             >
                                 <div class="text-center space-y-2">
-                                    <h2 class="text-lg font-semibold text-base-content/70">{{ $t('installing') }}</h2>
-                                    <p class="text-base-content/70 mt-6">{{ $t('installing_wait_message') }}</p>
+                                    <h2 class="text-lg font-semibold text-base-content/70">{{ $t("installing") }}</h2>
+                                    <p class="text-base-content/70 mt-6">{{ $t("installing_wait_message") }}</p>
                                     <progress class="progress w-56 progress-info"></progress>
                                 </div>
                             </div>
@@ -505,7 +505,9 @@ const addProject = () => {
                                                     :class="{
                                                         'text-neutral-content': activeEnvKey === env.value && env.selected
                                                     }"
-                                                    class="text-base-content truncate uppercase text-xs font-normal">{{ formattedName(env.value) }}</span>
+                                                    class="text-base-content truncate uppercase text-xs font-normal"
+                                                    >{{ formattedName(env.value) }}</span
+                                                >
                                             </label>
                                         </li>
                                     </ul>
