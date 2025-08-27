@@ -3,12 +3,12 @@ import path from "path";
 import fs from "fs";
 import { exec } from "child_process";
 
-const isWindows: boolean = process.platform === "win32";
+const isWindows = process.platform === "win32";
 
 const CHANNELS = {
     COMPOSER_AUTO_INSTALL: "composer-auto-install",
     PROJECT_DIRECTORY_SELECTED: "project-directory-selected"
-} as const;
+};
 
 let notifyLock = false;
 const notifyOnce = (title: string, body: string) => {
@@ -116,15 +116,18 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
             return;
         }
 
+        const artisanPath = path.join(selectedDir, "artisan");
+
         // Step: composer require start
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "composer-require", running: true });
         {
             const errors: string[] = [];
             const candidates = getComposerCandidates(selectedDir);
+            const requireCmd = fs.existsSync(artisanPath) ? "require laradumps/laradumps laradumps/laradumps-core --dev" : "require laradumps/laradumps-core --dev";
             let success = false;
             for (const cmd of candidates) {
                 try {
-                    await runCommand(`${cmd} require laradumps/laradumps laradumps/laradumps-core --dev`, selectedDir);
+                    await runCommand(`${cmd} ${requireCmd}`, selectedDir);
                     success = true;
                     break;
                 } catch (e) {
@@ -160,7 +163,12 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
 
         // Step: ds:init start
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "ds-init", running: true });
-        await installLaraDumps(selectedDir);
+        if (fs.existsSync(artisanPath)) {
+            await installLaraDumps(selectedDir);
+        } else {
+            console.log("artisan not found. Running LaraDumps binary init.");
+            await installLaraDumps(selectedDir);
+        }
 
         // Step: ds:init done
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "ds-init", done: true });

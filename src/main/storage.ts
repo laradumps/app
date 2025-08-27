@@ -50,6 +50,9 @@ const CHANNELS = {
     STORAGE_GET_STARRED: "storage.get-starred",
     STORAGE_GET_STARRED_REPLY: "storage.get-starred.reply",
     STORAGE_TOGGLE_STARRED: "storage.toggle-starred",
+    STORAGE_SET_ENVIRONMENTS_ORDER: "storage.set-environments-order",
+    STORAGE_SET_PROJECTS_ORDER: "storage.set-projects-order",
+    STORAGE_GET_PROJECTS_ORDER: "storage.get-projects-order",
 
     APP_SETTING_PROJECT_ADDED: "app-setting:project-added",
     STORAGE_SET_ACTIVE_REPLY: "storage.set-active.reply"
@@ -65,6 +68,9 @@ export const init = async () => {
     ipcMain.on(CHANNELS.STORAGE_UPDATE_SECTION, updateYamlSection);
     ipcMain.on(CHANNELS.STORAGE_GET_STARRED, getStarred);
     ipcMain.on(CHANNELS.STORAGE_TOGGLE_STARRED, toggleStarred);
+    ipcMain.on(CHANNELS.STORAGE_SET_ENVIRONMENTS_ORDER, setEnvironmentsOrder);
+    ipcMain.on(CHANNELS.STORAGE_SET_PROJECTS_ORDER, setProjectsOrder);
+    ipcMain.on(CHANNELS.STORAGE_GET_PROJECTS_ORDER, getProjectsOrder);
 };
 
 const getEnvironments = (event: IpcMainEvent) => {
@@ -124,14 +130,37 @@ const getEnvironmentFileContents = (event: IpcMainEvent, projectPath: string) =>
     try {
         const readFile: DataStructure = yaml.load(fs.readFileSync(file, "utf8")) as DataStructure;
 
-        const observers = Object.entries({ ...readFile.observers }).map(([key, val], index) => {
+        let observers = Object.entries({ ...readFile.observers }).map(([key, val]) => {
             return {
-                id: index,
+                id: 0,
                 value: key,
                 name: key.replace(/_/g, " "),
                 selected: Boolean(val)
-            };
+            } as Environment;
         });
+
+        // Apply persisted order
+        try {
+            let normalizedPath = projectPath;
+            if (normalizedPath.endsWith("/")) normalizedPath = normalizedPath.slice(0, -1);
+            const project = path.basename(normalizedPath);
+            const orderKey = `env_order.${project}`;
+            const savedOrder = store.get(orderKey, [] as any) as string[];
+            if (Array.isArray(savedOrder) && savedOrder.length) {
+                const indexMap = new Map<string, number>();
+                savedOrder.forEach((val, idx) => indexMap.set(val, idx));
+                observers.sort((a, b) => {
+                    const ai = indexMap.has(a.value) ? (indexMap.get(a.value) as number) : Number.MAX_SAFE_INTEGER;
+                    const bi = indexMap.has(b.value) ? (indexMap.get(b.value) as number) : Number.MAX_SAFE_INTEGER;
+                    return ai - bi;
+                });
+            }
+        } catch (e) {
+            console.error("Error applying saved env order:", e);
+        }
+
+        // Reassign incremental ids after ordering
+        observers = observers.map((obs, idx) => ({ ...obs, id: idx }));
 
         event.reply(CHANNELS.STORAGE_GET_ENVIRONMENTS_REPLY, observers);
     } catch (e) {
@@ -168,11 +197,27 @@ const removeEnvironment = (_event: IpcMainEvent, projectPath: string) => {
 
         store.set("starred_projects", filtered);
 
+        // Also remove from projects order arrays
+        try {
+            const starredOrder = store.get("proj_order.starred", [] as any) as any[];
+            const allOrder = store.get("proj_order.all", [] as any) as any[];
+            const newStarredOrder = Array.isArray(starredOrder) ? starredOrder.filter((n) => n !== project) : [];
+            const newAllOrder = Array.isArray(allOrder) ? allOrder.filter((n) => n !== project) : [];
+            store.set("proj_order.starred", newStarredOrder);
+            store.set("proj_order.all", newAllOrder);
+        } catch (e) {
+            console.error("Error cleaning project from order arrays", e);
+        }
+
         ipcMain.emit(CHANNELS.STORAGE_GET);
 
         const win = BrowserWindow.getAllWindows()[0];
         if (win) {
             win.webContents.send(CHANNELS.STORAGE_GET_STARRED_REPLY, filtered);
+            win.webContents.send(CHANNELS.STORAGE_GET_PROJECTS_ORDER, {
+                starred: (store.get("proj_order.starred", [] as any) as any[]) || [],
+                all: (store.get("proj_order.all", [] as any) as any[]) || []
+            });
         }
     } catch (error) {
         console.error("Error updating storage:", error);
@@ -243,6 +288,43 @@ const updateYamlSection = (event: IpcMainEvent, payload: { path: string; section
     } catch (err) {
         console.error("Error updating section:", err);
         event.reply(CHANNELS.STORAGE_UPDATE_SECTION_REPLY, { section, values: null, error: String(err) });
+    }
+};
+
+const setEnvironmentsOrder = (_event: IpcMainEvent, payload: { path: string; order: string[] }) => {
+    try {
+        let normalizedPath = payload.path || "";
+        if (normalizedPath.endsWith("/")) normalizedPath = normalizedPath.slice(0, -1);
+        const project = path.basename(normalizedPath);
+        const orderKey = `env_order.${project}`;
+        const arr = Array.isArray(payload.order) ? payload.order : [];
+        store.set(orderKey, arr);
+    } catch (err) {
+        console.error("Error setting environments order:", err);
+    }
+};
+
+const setProjectsOrder = (_event: IpcMainEvent, payload: { list: "starred" | "all"; order: string[] }) => {
+    try {
+        const key = payload.list === "starred" ? "proj_order.starred" : "proj_order.all";
+        const arr = Array.isArray(payload.order) ? payload.order : [];
+        store.set(key, arr);
+    } catch (err) {
+        console.error("Error setting projects order:", err);
+    }
+};
+
+const getProjectsOrder = (event: IpcMainEvent) => {
+    try {
+        const starred = store.get("proj_order.starred", [] as any) as any;
+        const all = store.get("proj_order.all", [] as any) as any;
+        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, {
+            starred: Array.isArray(starred) ? starred : [],
+            all: Array.isArray(all) ? all : []
+        });
+    } catch (err) {
+        console.error("Error getting projects order:", err);
+        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, { starred: [], all: [] });
     }
 };
 

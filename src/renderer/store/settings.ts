@@ -102,7 +102,7 @@ export const useSettingsStore = defineStore("settings", () => {
         window.ipcRenderer.send("settings.store", serializablePayload);
     };
 
-    const setSettings = (newSettings) => {
+    const setSettings = (newSettings: any) => {
         settings.value = newSettings;
         localStorage.setItem("user-settings", JSON.stringify(newSettings));
     };

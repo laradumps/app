@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from "vue";
 import { UpdateInfo } from "electron-updater";
 import { CompletedInfo, DownloadInfo } from "@/types/Updater";
 import moment from "moment";
@@ -15,6 +15,26 @@ const downloading = ref(false);
 const releaseNotes = ref<HTMLElement | null>(null);
 
 const progressPercentage = computed(() => Math.round(progress.value * 100));
+
+const releaseNotesHtml = computed<string>(() => {
+    const rn: any = (updateInfo.value as any)?.releaseNotes;
+    if (!rn) return "";
+    if (typeof rn === "string") return rn;
+    if (Array.isArray(rn)) {
+        return rn
+            .map((item) => {
+                const title = item?.version ? `<h2>${String(item.version)}</h2>` : "";
+                const body = item?.note || item?.notes || "";
+                return `${title}\n<div>${String(body)}</div>`;
+            })
+            .join("\n<hr/>\n");
+    }
+    try {
+        return String(rn);
+    } catch {
+        return "";
+    }
+});
 
 const install = (): void => {
     downloading.value = true;
@@ -38,15 +58,14 @@ const sanitizeReleaseNotes = async (): Promise<void> => {
 const onUpdateAvailable = (_: any, arg: UpdateInfo) => {
     updateInfo.value = arg;
     settingsStore.setUpdateAvailable(arg?.version);
-    sanitizeReleaseNotes();
 };
 
 const onUpdateInfo = (_: any, args: UpdateInfo): void => {
     if (settingsStore.settings.check_for_updates === "manual_download") return;
 
     const baseURL = "https://github.com/laradumps/app/releases/download/";
-    const tag = args.tag;
-    const files = args.files;
+    const tag = (args as any).tag;
+    const files = args.files || [];
 
     const dmgFile = files.find((file) => file.url.includes("dmg"));
     if (!dmgFile) return;
@@ -65,6 +84,8 @@ const onDownloadComplete = (_: any, args: CompletedInfo): void => {
     window.ipcRenderer.send("main:download-complete", args.path);
     loading.value = false;
 };
+
+watch(releaseNotesHtml, () => sanitizeReleaseNotes());
 
 onMounted(() => {
     window.ipcRenderer.on("update-available", onUpdateAvailable);
@@ -100,14 +121,14 @@ onUnmounted(() => {
                                 </div>
                                 <div>
                                     <h2 class="card-title">{{ $t("app_update_info.release_date") }}</h2>
-                                    <p>{{ moment(updateInfo.releaseDate).format("MMM Do YY") }}</p>
+                                    <p>{{ updateInfo.releaseDate ? moment(updateInfo.releaseDate as any).format("MMM Do YY") : "" }}</p>
                                 </div>
                             </div>
 
                             <div
                                 ref="releaseNotes"
                                 id="release-notes"
-                                v-html="updateInfo.releaseNotes"
+                                v-html="releaseNotesHtml"
                             />
                         </div>
                     </div>

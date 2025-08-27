@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { SignalSlashIcon, TrashIcon, PlusIcon, StarIcon as StarOutline } from "@heroicons/vue/24/outline";
-import { SignalIcon, StarIcon as StarSolid } from "@heroicons/vue/24/solid";
+import { SignalSlashIcon } from "@heroicons/vue/24/outline";
+import { SignalIcon } from "@heroicons/vue/24/solid";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import JSConfetti from "js-confetti";
 import { useCurrentProject } from "@/store/current-project";
@@ -9,11 +9,12 @@ import { XDebugYml } from "@/types/XDebug";
 import { IpcRendererEvent } from "electron";
 import { Environment } from "../../main/storage";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
-import { useToastStore } from "@/store/toast";
+import ProjectsList from "@/components/navbar/ProjectsList.vue";
+import ProjectHeader from "@/components/navbar/ProjectHeader.vue";
+import EnvironmentsList from "@/components/navbar/EnvironmentsList.vue";
 
 const xDebugStore = useXDebug();
 const currentProjectStore = useCurrentProject();
-const toast = useToastStore();
 
 const IPC_EVENTS = {
     STORAGE_GET: "storage.get",
@@ -21,6 +22,7 @@ const IPC_EVENTS = {
     STORAGE_SET_ACTIVE_REPLY: "storage.set-active.reply",
     STORAGE_GET_ENVIRONMENTS: "storage.get-environments",
     STORAGE_GET_ENVIRONMENTS_REPLY: "storage.get-environments.reply",
+    STORAGE_SET_ENVIRONMENTS_ORDER: "storage.set-environments-order",
     STORAGE_GET_YAML: "storage.get-yaml",
     STORAGE_GET_YAML_REPLY: "storage.get-yaml.reply",
     STORAGE_UPDATE: "storage.update",
@@ -29,6 +31,8 @@ const IPC_EVENTS = {
     STORAGE_GET_STARRED: "storage.get-starred",
     STORAGE_GET_STARRED_REPLY: "storage.get-starred.reply",
     STORAGE_TOGGLE_STARRED: "storage.toggle-starred",
+    STORAGE_SET_PROJECTS_ORDER: "storage.set-projects-order",
+    STORAGE_GET_PROJECTS_ORDER: "storage.get-projects-order",
 
     APP_SETTING_PROJECT_ADDED: "app-setting:project-added",
 
@@ -68,8 +72,24 @@ const activeEnvKey = ref<string | null>(null);
 const installActive = ref(false);
 const installErrorMessage = ref("");
 
+let errorDismissTimer: number | null = null;
+
+watch(installErrorMessage, (msg) => {
+    if (errorDismissTimer) {
+        clearTimeout(errorDismissTimer);
+        errorDismissTimer = null;
+    }
+    if (msg) {
+        errorDismissTimer = window.setTimeout(() => {
+            installErrorMessage.value = "";
+        }, 3000);
+    }
+});
+
 const starredProjects = ref<string[]>([]);
+const projectsOrder = ref<{ starred: string[]; all: string[] }>({ starred: [], all: [] });
 let handleStarredReplyRef: ((event: IpcRendererEvent, list: string[]) => void) | null = null;
+let handleProjectsOrderReply: ((event: IpcRendererEvent, payload: { starred: string[]; all: string[] }) => void) | null = null;
 
 let handleYamlReplyRef: ((event: IpcRendererEvent, data: any) => void) | null = null;
 let handleComposerRef: ((event: IpcRendererEvent, payload: any) => void) | null = null;
@@ -81,10 +101,16 @@ onMounted(() => {
     initializeProjectData();
     setupEventListeners();
     window.addEventListener("resize", updateHeight);
+    window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER);
 });
 
 onUnmounted(() => {
     window.removeEventListener("resize", updateHeight);
+
+    if (errorDismissTimer) {
+        clearTimeout(errorDismissTimer);
+        errorDismissTimer = null;
+    }
 
     window.ipcRenderer.off(IPC_EVENTS.APP_SETTING_PROJECT_ADDED, handleProjectAdded);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_SET_ACTIVE_REPLY, handleActiveProjectSet);
@@ -98,6 +124,7 @@ onUnmounted(() => {
     if (handleXdebugFileContentsRef) window.ipcRenderer.off(IPC_EVENTS.SETTINGS_ENV_XDEBUG_FILE_CONTENTS, handleXdebugFileContentsRef);
     if (handleProjectDirSelectedRef) window.ipcRenderer.off(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
     if (handleStarredReplyRef) window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_STARRED_REPLY, handleStarredReplyRef);
+    window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
 });
 
 const updateHeight = () => {
@@ -165,11 +192,23 @@ const initializeProjectData = () => {
 
 const onXdebugError = (_: IpcRendererEvent, error: Error) => console.error("Xdebug error:", error);
 
-const setupEventListeners = () => {
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const setupEventListeners = async () => {
     window.ipcRenderer.on(IPC_EVENTS.APP_SETTING_PROJECT_ADDED, handleProjectAdded);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_SET_ACTIVE_REPLY, handleActiveProjectSet);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_REPLY, handleProjectsRetrieved);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_ENVIRONMENTS_REPLY, handleEnvironmentsRetrieved);
+
+    handleProjectsOrderReply = (_: IpcRendererEvent, payload: { starred: string[]; all: string[] }) => {
+        if (payload && payload.starred && payload.all) {
+            projectsOrder.value = {
+                starred: Array.isArray(payload.starred) ? payload.starred : [],
+                all: Array.isArray(payload.all) ? payload.all : []
+            };
+        }
+    };
+    window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
 
     handleStarredReplyRef = (_: IpcRendererEvent, list: string[]) => {
         if (Array.isArray(list)) starredProjects.value = list;
@@ -181,8 +220,8 @@ const setupEventListeners = () => {
     };
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_YAML_REPLY, handleYamlReplyRef);
 
-    // Composer auto-install progress
-    handleComposerRef = (_: IpcRendererEvent, payload: any) => {
+    // --- Composer auto-install progress
+    handleComposerRef = async (_: IpcRendererEvent, payload: any) => {
         if (!payload) return;
 
         if (payload.status === "start") {
@@ -197,15 +236,13 @@ const setupEventListeners = () => {
         }
 
         if (payload.step === "finish" && payload.done) {
-            setTimeout(() => {
-                installActive.value = false;
+            await sleep(500);
+            installActive.value = false;
 
-                setTimeout(() => {
-                    modal_navbar_listening.close();
-                    toast.show("LaraDumps installed successfully.", { type: "success" });
-                    isNewProject.value = true;
-                }, 300);
-            }, 500);
+            await sleep(300);
+            modal_navbar_listening.close();
+            await new JSConfetti().addConfetti();
+            isNewProject.value = true;
         }
     };
 
@@ -271,30 +308,69 @@ const confirmProjectRemoval = (projectPath: string) => {
     window.ipcRenderer.on(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
 };
 
+// --- Xdebug connection management
+
 const connectToXdebug = () => window.ipcRenderer.send(IPC_EVENTS.MAIN_SETTING_GET_XDEBUG_ENVS, selectedProject.value.path);
 const disconnectFromXdebug = () => window.ipcRenderer.send(IPC_EVENTS.DISCONNECT_XDEBUG);
 
 watch(isXdebugActive, (active) => (active ? connectToXdebug() : disconnectFromXdebug()));
 watch(xDebugStore, (store) => (isXdebugActive.value = Boolean(store.current.project_path)));
 
-const sortedProjects = computed(() => {
+const baseSortedProjects = computed(() => {
     return [...projects.value].sort((a, b) => a.project.localeCompare(b.project, undefined, { sensitivity: "base" }));
 });
+// --- End Xdebug connection management
 
+// --- Starred projects logic
 const starredSet = computed(() => new Set(starredProjects.value));
-const starredSortedProjects = computed(() => sortedProjects.value.filter((p) => p.project && starredSet.value.has(p.project)));
-const regularSortedProjects = computed(() => sortedProjects.value.filter((p) => p.project && !starredSet.value.has(p.project)));
 
+const applyOrder = (list: Project[], order: string[]): Project[] => {
+    if (!order || order.length === 0) return list;
+    const idx = new Map<string, number>();
+    order.forEach((name, i) => idx.set(name, i));
+    return [...list].sort((a, b) => {
+        const ai = idx.has(a.project) ? (idx.get(a.project) as number) : Number.MAX_SAFE_INTEGER;
+        const bi = idx.has(b.project) ? (idx.get(b.project) as number) : Number.MAX_SAFE_INTEGER;
+        if (ai === bi) return a.project.localeCompare(b.project, undefined, { sensitivity: "base" });
+        return ai - bi;
+    });
+};
+
+const starredSortedProjects = computed(() => {
+    const list = baseSortedProjects.value.filter((p) => p.project && starredSet.value.has(p.project));
+    return applyOrder(list, projectsOrder.value.starred);
+});
+
+const regularSortedProjects = computed(() => {
+    const list = baseSortedProjects.value.filter((p) => p.project && !starredSet.value.has(p.project));
+    return applyOrder(list, projectsOrder.value.all);
+});
+
+// --- Starred projects actions
 const isStarred = (projectName: string): boolean => starredSet.value.has(projectName);
 const toggleStar = (projectName: string) => {
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_TOGGLE_STARRED, { project: projectName });
-    // Optimistic update; will be synced by reply
-    if (isStarred(projectName)) {
-        starredProjects.value = starredProjects.value.filter((n) => n !== projectName);
+
+    const wasStarred = isStarred(projectName);
+    starredProjects.value = wasStarred ? starredProjects.value.filter((n) => n !== projectName) : [...starredProjects.value, projectName];
+
+    if (wasStarred) {
+        projectsOrder.value.starred = projectsOrder.value.starred.filter((n) => n !== projectName);
+        if (!projectsOrder.value.all.includes(projectName)) {
+            projectsOrder.value.all = [...projectsOrder.value.all, projectName];
+        }
+        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: "starred", order: projectsOrder.value.starred });
+        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: "all", order: projectsOrder.value.all });
     } else {
-        starredProjects.value = [...starredProjects.value, projectName];
+        projectsOrder.value.all = projectsOrder.value.all.filter((n) => n !== projectName);
+        if (!projectsOrder.value.starred.includes(projectName)) {
+            projectsOrder.value.starred = [...projectsOrder.value.starred, projectName];
+        }
+        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: "all", order: projectsOrder.value.all });
+        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: "starred", order: projectsOrder.value.starred });
     }
 };
+// --- End starred projects logic
 
 const activeOptions = computed(() => {
     if (!activeEnvKey.value || !yamlConfig.value) return null;
@@ -312,6 +388,75 @@ const onEnvChange = (env: Environment) => {
     }
 };
 
+// --- Drag & Drop to reorder environments
+const dragIndex = ref<number | null>(null);
+
+const onEnvDragStart = (index: number) => {
+    dragIndex.value = index;
+};
+
+const onEnvDrop = (dropIndex: number) => {
+    if (dragIndex.value === null || dragIndex.value === dropIndex) return;
+    const from = dragIndex.value;
+    const to = dropIndex;
+    const arr = [...environments.value];
+    const [moved] = arr.splice(from, 1);
+    arr.splice(to, 0, moved);
+    environments.value = arr;
+    dragIndex.value = null;
+
+    // Persist order per project
+    try {
+        const order = environments.value.map((e) => e.value);
+        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_ENVIRONMENTS_ORDER, {
+            path: currentProjectStore.projectInfo.path,
+            order
+        });
+    } catch (e) {
+        console.error("Failed to persist environments order", e);
+    }
+};
+
+const onEnvDragOver = (e: DragEvent) => {
+    e.preventDefault();
+};
+
+// --- Drag & Drop to reorder projects (starred and all)
+const projDrag = ref<{ list: "starred" | "all" | null; index: number | null }>({ list: null, index: null });
+
+const onProjectDragStart = (list: "starred" | "all", index: number) => {
+    projDrag.value = { list, index };
+};
+
+const onProjectDrop = (list: "starred" | "all", dropIndex: number) => {
+    const { list: fromList, index } = projDrag.value;
+    if (!fromList || index === null || fromList !== list) return; // only allow reorder within same list
+
+    const working = list === "starred" ? [...projectsOrder.value.starred] : [...projectsOrder.value.all];
+
+    // Build current names list from visible computed lists to ensure we reorder by names
+    const visible = (list === "starred" ? starredSortedProjects.value : regularSortedProjects.value).map((p) => p.project);
+
+    // Ensure working contains all visible in order; if not, initialize with visible
+    const currentOrder = working.length ? working.filter((n) => visible.includes(n)) : visible.slice();
+
+    const [moved] = currentOrder.splice(index, 1);
+    currentOrder.splice(dropIndex, 0, moved);
+
+    if (list === "starred") {
+        projectsOrder.value.starred = currentOrder;
+    } else {
+        projectsOrder.value.all = currentOrder;
+    }
+
+    window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, {
+        list,
+        order: currentOrder
+    });
+
+    projDrag.value = { list: null, index: null };
+};
+
 const updateSectionValue = (key: string, value: any) => {
     if (!activeEnvKey.value) return;
 
@@ -327,6 +472,11 @@ const updateSectionValue = (key: string, value: any) => {
 
 const addProject = () => {
     window.ipcRenderer.send(IPC_EVENTS.MAIN_PROJECT_SETUP);
+};
+
+const toggleXdebug = () => {
+    isXdebugActive.value = !isXdebugActive.value;
+    saveEnvironment(null);
 };
 </script>
 
@@ -359,96 +509,45 @@ const addProject = () => {
                 <!-- Error banner -->
                 <div
                     v-if="installErrorMessage"
-                    class="alert alert-error mb-2"
+                    role="alert"
+                    class="alert alert-error"
                 >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6 shrink-0 stroke-current"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
+                    </svg>
                     <span>{{ installErrorMessage }}</span>
                 </div>
+
                 <ul class="menu px-0 min-h-full w-full">
                     <div class="grid grid-cols-3 gap-2">
                         <!-- Col 1: Projects -->
-                        <div class="overflow-hidden space-y-2">
-                            <ul class="h-full overflow-x-hidden border-r border-base-200 pr-1.5">
-                                <li
-                                    @click="addProject"
-                                    class="w-full flex !flex-nowrap flex-row text-left items-center justify-between"
-                                >
-                                    <div class="w-full">
-                                        <PlusIcon class="size-4 text-primary" />
-                                        <span>New</span>
-                                    </div>
-                                </li>
-
-                                <template v-if="starredSortedProjects.length">
-                                    <li class="px-2 py-1 text-[0.65rem] uppercase tracking-wider text-base-content/50 text-left">Starred</li>
-                                    <li
-                                        v-for="project in starredSortedProjects"
-                                        :key="project.path + '-starred'"
-                                        @click="setActiveProject(project)"
-                                        class="w-full flex !flex-nowrap flex-row text-left items-center justify-between"
-                                        :class="{ 'rounded-sm !bg-neutral': selectedProject.path === project.path }"
-                                    >
-                                        <div class="w-full">
-                                            <span
-                                                class="font-normal capitalize text-sm truncate"
-                                                :class="{ 'text-neutral-content': selectedProject.path === project.path }"
-                                                v-text="formattedName(project.project)"
-                                            />
-                                        </div>
-                                    </li>
-                                    <li class="my-1"><div class="divider m-0"></div></li>
-                                </template>
-
-                                <li class="px-2 py-1 text-[0.65rem] uppercase tracking-wider text-base-content/50 text-left">All Projects</li>
-                                <li
-                                    v-for="project in regularSortedProjects"
-                                    :key="project.path + '-regular'"
-                                    @click="setActiveProject(project)"
-                                    class="w-full flex !flex-nowrap flex-row text-left items-center justify-between"
-                                    :class="{ 'rounded-sm !bg-neutral': selectedProject.path === project.path }"
-                                >
-                                    <div class="w-full">
-                                        <span
-                                            class="font-normal capitalize text-sm truncate"
-                                            :class="{ 'text-neutral-content': selectedProject.path === project.path }"
-                                            v-text="formattedName(project.project)"
-                                        />
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
+                        <ProjectsList
+                            :starred-sorted-projects="starredSortedProjects"
+                            :regular-sorted-projects="regularSortedProjects"
+                            :selected-project="selectedProject"
+                            @add-project="addProject"
+                            @set-active-project="setActiveProject"
+                            @on-project-drag-start="onProjectDragStart"
+                            @on-project-drop="onProjectDrop"
+                        />
 
                         <div class="col-span-2 space-y-2">
-                            <div class="text-left pl-3 w-full">
-                                <div class="flex items-start justify-between gap-1 w-full">
-                                    <div class="w-full truncate text-base-content/60">
-                                        <span class="text-[10px] !text-base-content/60">{{ selectedProject.path }}</span>
-                                    </div>
-
-                                    <button
-                                        class="btn btn-ghost btn-xs btn-circle"
-                                        :title="isStarred(selectedProject.project) ? 'Unstar' : 'Star'"
-                                        @click.stop="toggleStar(selectedProject.project)"
-                                    >
-                                        <StarSolid
-                                            v-if="isStarred(selectedProject.project)"
-                                            class="size-4 text-warning"
-                                        />
-                                        <StarOutline
-                                            v-else
-                                            class="size-4"
-                                        />
-                                    </button>
-
-                                    <button
-                                        v-if="selectedProject.path"
-                                        class="btn btn-ghost btn-xs btn-circle text-error"
-                                        :title="`Remove ${formattedName(selectedProject.project)}`"
-                                        @click.stop="confirmProjectRemoval(selectedProject.path)"
-                                    >
-                                        <TrashIcon class="size-4" />
-                                    </button>
-                                </div>
-                            </div>
+                            <ProjectHeader
+                                :project="selectedProject"
+                                :is-starred="isStarred"
+                                @toggle-star="toggleStar"
+                                @confirm-project-removal="confirmProjectRemoval"
+                            />
 
                             <!-- Installing overlay/content -->
                             <div
@@ -468,50 +567,16 @@ const addProject = () => {
                                 style="height: calc(-200px + 100vh)"
                             >
                                 <!-- Col 2: Observers/Environments -->
-                                <div class="text-sm overflow-auto pr-2 w-1/2">
-                                    <ul>
-                                        <li>
-                                            <label class="space-x-1">
-                                                <input
-                                                    v-model="isXdebugActive"
-                                                    type="checkbox"
-                                                    class="checkbox checkbox-xs"
-                                                    :class="{ 'checkbox-primary': isXdebugActive }"
-                                                    @change.stop="saveEnvironment(null)"
-                                                />
-                                                <span class="text-base-content uppercase text-xs">Xdebug</span>
-                                            </label>
-                                        </li>
-
-                                        <li
-                                            v-for="env in environments"
-                                            :key="env.id"
-                                        >
-                                            <label
-                                                :title="formattedName(env.value)"
-                                                :class="{
-                                                    '!bg-neutral text-neutral-content rounded-md': activeEnvKey === env.value && env.selected
-                                                }"
-                                                class="capitalize space-x-1 cursor-pointer"
-                                            >
-                                                <input
-                                                    v-model="env.selected"
-                                                    type="checkbox"
-                                                    class="checkbox checkbox-xs"
-                                                    :class="{ 'checkbox-accent': env.selected }"
-                                                    @change.stop="onEnvChange(env)"
-                                                />
-                                                <span
-                                                    :class="{
-                                                        'text-neutral-content': activeEnvKey === env.value && env.selected
-                                                    }"
-                                                    class="text-base-content truncate uppercase text-xs font-normal"
-                                                    >{{ formattedName(env.value) }}</span
-                                                >
-                                            </label>
-                                        </li>
-                                    </ul>
-                                </div>
+                                <EnvironmentsList
+                                    :environments="environments"
+                                    :active-env-key="activeEnvKey"
+                                    :is-xdebug-active="isXdebugActive"
+                                    @on-env-change="onEnvChange"
+                                    @on-env-drag-start="onEnvDragStart"
+                                    @on-env-drop="onEnvDrop"
+                                    @save-environment="saveEnvironment"
+                                    @toggle-xdebug="toggleXdebug"
+                                />
 
                                 <!-- Col 3: Options for selected item -->
                                 <div class="text-sm overflow-auto w-auto">
@@ -530,7 +595,7 @@ const addProject = () => {
                                                         :checked="val"
                                                         @change="updateSectionValue(key as string, !(val as boolean))"
                                                     />
-                                                    <span class="text-base-content truncate uppercase text-xs">{{ formattedName(String(key)) }}</span>
+                                                    <span class="text-base-content truncate">{{ formattedName(String(key)) }}</span>
                                                 </label>
                                             </template>
                                             <template v-else-if="typeof val === 'number'">
