@@ -119,5 +119,7 @@ export default {
     remove_from_saved: "Remover dump",
     toast_copied_to_clipboard: "Copiado para a área de transferência.",
     toast_added_to_saved: "Adicionado aos dumps salvos.",
-    toast_removed_successfully: "Removido com sucesso."
+    toast_removed_successfully: "Removido com sucesso.",
+    installing: "Instalando",
+    installing_wait_message: "Isso pode levar alguns instantes..."
 };

@@ -2,7 +2,7 @@
 import { defineProps, computed, onMounted, ref } from "vue";
 import NavBarAlwaysOnTop from "@/components/navbar/NavBarAlwaysOnTop.vue";
 import NavBarGlobalSearch from "@/components/navbar/NavBarGlobalSearch.vue";
-import NavBarListening from "@/components/navbar/NavBarListening.vue";
+import NavBarProjectSwitcher from "@/components/navbar/NavBarProjectSwitcher.vue";
 import NavBarPause from "@/components/navbar/NavBarPause.vue";
 import NavBarCollapse from "@/components/navbar/NavBarCollapse.vue";
 import NavBarSSH from "@/components/navbar/NavBarSSH.vue";
@@ -79,7 +79,7 @@ const hasPayload = computed(() => {
             <!-- saved dumps -->
             <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
             <!-- listening -->
-            <NavBarListening v-if="!inSavedDumpsWindow" />
+            <NavBarProjectSwitcher v-if="!inSavedDumpsWindow" />
             <!-- settings -->
             <NavBarSettings />
         </div>

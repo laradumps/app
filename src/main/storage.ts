@@ -1,4 +1,4 @@
-import { app, ipcMain, IpcMainEvent, Notification } from "electron";
+import { ipcMain, IpcMainEvent, Notification, BrowserWindow } from "electron";
 import path from "path";
 import Store from "electron-store";
 import yaml from "js-yaml";
@@ -23,6 +23,7 @@ interface DataStructure {
     observers: {
         [key: string]: boolean;
     };
+    [key: string]: any;
 }
 
 export interface Environment {
@@ -33,26 +34,51 @@ export interface Environment {
 
 const store = new Store();
 
+// Centralized IPC channels for consistency across main process
+const CHANNELS = {
+    STORAGE_GET: "storage.get",
+    STORAGE_GET_REPLY: "storage.get.reply",
+    STORAGE_CHECK: "storage.check",
+    STORAGE_GET_ENVIRONMENTS: "storage.get-environments",
+    STORAGE_GET_ENVIRONMENTS_REPLY: "storage.get-environments.reply",
+    STORAGE_REMOVE: "storage.remove",
+    STORAGE_UPDATE: "storage.update",
+    STORAGE_GET_YAML: "storage.get-yaml",
+    STORAGE_GET_YAML_REPLY: "storage.get-yaml.reply",
+    STORAGE_UPDATE_SECTION: "storage.update-section",
+    STORAGE_UPDATE_SECTION_REPLY: "storage.update-section.reply",
+    STORAGE_GET_STARRED: "storage.get-starred",
+    STORAGE_GET_STARRED_REPLY: "storage.get-starred.reply",
+    STORAGE_TOGGLE_STARRED: "storage.toggle-starred",
+
+    APP_SETTING_PROJECT_ADDED: "app-setting:project-added",
+    STORAGE_SET_ACTIVE_REPLY: "storage.set-active.reply"
+} as const;
+
 export const init = async () => {
-    ipcMain.on("storage.get", getEnvironments);
-    ipcMain.on("storage.check", checkEnvironment);
-    ipcMain.on("storage.get-environments", getEnvironmentFileContents);
-    ipcMain.on("storage.remove", removeEnvironment);
-    ipcMain.on("storage.update", updateEnvironment);
+    ipcMain.on(CHANNELS.STORAGE_GET, getEnvironments);
+    ipcMain.on(CHANNELS.STORAGE_CHECK, checkEnvironment);
+    ipcMain.on(CHANNELS.STORAGE_GET_ENVIRONMENTS, getEnvironmentFileContents);
+    ipcMain.on(CHANNELS.STORAGE_REMOVE, removeEnvironment);
+    ipcMain.on(CHANNELS.STORAGE_UPDATE, updateEnvironment);
+    ipcMain.on(CHANNELS.STORAGE_GET_YAML, getFullYaml);
+    ipcMain.on(CHANNELS.STORAGE_UPDATE_SECTION, updateYamlSection);
+    ipcMain.on(CHANNELS.STORAGE_GET_STARRED, getStarred);
+    ipcMain.on(CHANNELS.STORAGE_TOGGLE_STARRED, toggleStarred);
 };
 
-const getEnvironments = (event) => {
+const getEnvironments = (event: IpcMainEvent) => {
     try {
         const environments = store.get("environments", {});
-        event.reply("storage.get.reply", environments);
+        event.reply(CHANNELS.STORAGE_GET_REPLY, environments);
     } catch (error) {
         console.error("Error getting storage:", error);
     }
 };
 
-const checkEnvironment = (event, value) => {
+const checkEnvironment = (event: IpcMainEvent, payload: { applicationPath: string }) => {
     const store = new Store();
-    let applicationPath = value.applicationPath;
+    let applicationPath = payload.applicationPath;
 
     if (!applicationPath) {
         new Notification({
@@ -73,7 +99,7 @@ const checkEnvironment = (event, value) => {
         if (!environments[project]) {
             environments[project] = applicationPath;
             store.set("environments", environments);
-            event.reply("app-setting:project-added", {
+            event.reply(CHANNELS.APP_SETTING_PROJECT_ADDED, {
                 project,
                 path: applicationPath
             });
@@ -81,7 +107,7 @@ const checkEnvironment = (event, value) => {
 
         setTimeout(
             () =>
-                event.reply("storage.set-active.reply", {
+                event.reply(CHANNELS.STORAGE_SET_ACTIVE_REPLY, {
                     project,
                     path: applicationPath
                 }),
@@ -92,32 +118,32 @@ const checkEnvironment = (event, value) => {
     }
 };
 
-const getEnvironmentFileContents = (event: IpcMainEvent, value: string) => {
-    const file = value + "/laradumps.yaml";
+const getEnvironmentFileContents = (event: IpcMainEvent, projectPath: string) => {
+    const file = projectPath + "/laradumps.yaml";
 
     try {
-        const readFile = yaml.load(fs.readFileSync(file, "utf8"));
+        const readFile: DataStructure = yaml.load(fs.readFileSync(file, "utf8")) as DataStructure;
 
-        const parseYaml = Object.entries({ ...readFile.observers }).map(([key, val], index) => {
+        const observers = Object.entries({ ...readFile.observers }).map(([key, val], index) => {
             return {
                 id: index,
                 value: key,
                 name: key.replace(/_/g, " "),
-                selected: val
+                selected: Boolean(val)
             };
         });
 
-        event.reply("storage.get-environments.reply", parseYaml);
+        event.reply(CHANNELS.STORAGE_GET_ENVIRONMENTS_REPLY, observers);
     } catch (e) {
         console.error(e);
-        event.reply("storage.get-environments.reply", []);
+        event.reply(CHANNELS.STORAGE_GET_ENVIRONMENTS_REPLY, []);
     }
 };
 
-const removeEnvironment = (event: IpcMainEvent, value: string) => {
+const removeEnvironment = (_event: IpcMainEvent, projectPath: string) => {
     const store = new Store();
 
-    let applicationPath = value;
+    let applicationPath = projectPath;
 
     if (applicationPath.endsWith("/")) {
         applicationPath = applicationPath.slice(0, -1);
@@ -133,33 +159,47 @@ const removeEnvironment = (event: IpcMainEvent, value: string) => {
         }
 
         delete environments[project];
+
         store.set("environments", environments);
-        ipcMain.emit("storage.get");
+        // Also remove from starred list if present
+        const starredCurrent = store.get("starred_projects", [] as any) as any;
+        const starredList: string[] = Array.isArray(starredCurrent) ? starredCurrent : [];
+        const filtered = starredList.filter((name) => name !== project);
+
+        store.set("starred_projects", filtered);
+
+        ipcMain.emit(CHANNELS.STORAGE_GET);
+
+        const win = BrowserWindow.getAllWindows()[0];
+        if (win) {
+            win.webContents.send(CHANNELS.STORAGE_GET_STARRED_REPLY, filtered);
+        }
     } catch (error) {
         console.error("Error updating storage:", error);
     }
 };
 
-const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; path: string }) => {
-    const { selected, path } = value;
+const updateEnvironment = (_event: IpcMainEvent, payload: { selected: Array<{ value: string; selected: boolean }>; path: string }) => {
+    const { selected: selectedEnvs, path } = payload;
     const filePath = `${path}/laradumps.yaml`;
 
-    const yaml = require("js-yaml");
-    const fs = require("fs");
+    const yamlLib = require("js-yaml");
+    const fsLib = require("fs");
 
     let data: DataStructure;
 
     try {
-        const fileContents = fs.readFileSync(filePath, "utf8");
-        data = yaml.load(fileContents);
+        const fileContents = fsLib.readFileSync(filePath, "utf8");
+        data = yamlLib.load(fileContents);
 
-        selected.forEach((item: { value: string; selected: boolean }) => {
+        selectedEnvs.forEach((item: { value: string; selected: boolean }) => {
+            if (!data.observers) data.observers = {} as any;
             data.observers[item.value] = item.selected;
         });
 
-        const yamlData = yaml.dump(data);
+        const yamlData = yamlLib.dump(data);
 
-        fs.writeFile(filePath, yamlData, (err: NodeJS.ErrnoException | null): void => {
+        fsLib.writeFile(filePath, yamlData, (err: NodeJS.ErrnoException | null): void => {
             if (err) {
                 console.error("Error writing to file:", err);
                 return;
@@ -168,5 +208,79 @@ const updateEnvironment = (event: IpcMainEvent, value: { selected: any[]; path: 
         });
     } catch (err) {
         console.error(err);
+    }
+};
+
+const getFullYaml = (event: IpcMainEvent, projectPath: string) => {
+    const filePath = `${projectPath}/laradumps.yaml`;
+    try {
+        const fileContents = fs.readFileSync(filePath, "utf8");
+        const data = yaml.load(fileContents);
+        event.reply(CHANNELS.STORAGE_GET_YAML_REPLY, data || {});
+    } catch (err) {
+        console.error(err);
+        event.reply(CHANNELS.STORAGE_GET_YAML_REPLY, {});
+    }
+};
+
+const updateYamlSection = (event: IpcMainEvent, payload: { path: string; section: string; values: Record<string, any> }) => {
+    const { path: projectPath, section, values } = payload;
+    const filePath = `${projectPath}/laradumps.yaml`;
+
+    try {
+        const fileContents = fs.readFileSync(filePath, "utf8");
+        const data: any = yaml.load(fileContents) || {};
+
+        if (!data[section] || typeof data[section] !== "object") {
+            data[section] = {};
+        }
+
+        data[section] = { ...data[section], ...values };
+
+        const yamlData = yaml.dump(data);
+        fs.writeFileSync(filePath, yamlData);
+        event.reply(CHANNELS.STORAGE_UPDATE_SECTION_REPLY, { section, values: data[section] });
+    } catch (err) {
+        console.error("Error updating section:", err);
+        event.reply(CHANNELS.STORAGE_UPDATE_SECTION_REPLY, { section, values: null, error: String(err) });
+    }
+};
+
+const getStarred = (event: IpcMainEvent) => {
+    try {
+        const starred: string[] = store.get("starred_projects", [] as any) as any;
+        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, Array.isArray(starred) ? starred : []);
+    } catch (err) {
+        console.error("Error getting starred projects:", err);
+        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, []);
+    }
+};
+
+const toggleStarredArray = (arr: string[], name: string): string[] => {
+    const set = new Set(arr);
+    if (set.has(name)) {
+        set.delete(name);
+    } else {
+        set.add(name);
+    }
+    return Array.from(set);
+};
+
+const toggleStarredPersist = (projectName: string): string[] => {
+    const current = store.get("starred_projects", [] as any) as any;
+    const list: string[] = Array.isArray(current) ? current : [];
+    const updated = toggleStarredArray(list, projectName);
+    store.set("starred_projects", updated);
+    return updated;
+};
+
+const toggleStarred = (event: IpcMainEvent, payload: { project: string }) => {
+    try {
+        const updated = toggleStarredPersist(payload.project);
+        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, updated);
+    } catch (err) {
+        console.error("Error toggling starred project:", err);
+        const starred: string[] = store.get("starred_projects", [] as any) as any;
+        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, Array.isArray(starred) ? starred : []);
     }
 };
