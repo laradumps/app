@@ -22,11 +22,7 @@ const runCommand = (command: string, cwd: string): Promise<void> => {
     return new Promise((resolve, reject) => {
         const isDarwin = process.platform === "darwin";
         const isLinux = process.platform === "linux";
-        const extraPaths = isDarwin
-            ? "/opt/homebrew/bin:/usr/local/bin:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-            : isLinux
-            ? "/usr/local/bin:/usr/bin:/bin"
-            : "";
+        const extraPaths = isDarwin ? "/opt/homebrew/bin:/usr/local/bin:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" : isLinux ? "/usr/local/bin:/usr/bin:/bin" : "";
         const PATH = extraPaths ? `${extraPaths}:${process.env.PATH ?? ""}` : process.env.PATH;
 
         exec(command, { cwd, env: { ...process.env, PATH } }, (error, stdout, stderr) => {
@@ -139,8 +135,7 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
             }
             if (!success) {
                 throw new Error(
-                    `composer require failed via all strategies. Details: ${errors.join(" | ")}. ` +
-                        `Tip: Install Composer (https://getcomposer.org/) or ensure PHP can run a local composer.phar.`
+                    `composer require failed via all strategies. Details: ${errors.join(" | ")}. ` + `Tip: Install Composer (https://getcomposer.org/) or ensure PHP can run a local composer.phar.`
                 );
             }
         }

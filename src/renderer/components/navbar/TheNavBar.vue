@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { defineProps, computed, onMounted, ref } from "vue";
 import NavBarAlwaysOnTop from "@/components/navbar/NavBarAlwaysOnTop.vue";
 import NavBarGlobalSearch from "@/components/navbar/NavBarGlobalSearch.vue";
@@ -7,21 +7,20 @@ import NavBarPause from "@/components/navbar/NavBarPause.vue";
 import NavBarCollapse from "@/components/navbar/NavBarCollapse.vue";
 import NavBarSSH from "@/components/navbar/NavBarSSH.vue";
 import NavBarSettings from "@/components/navbar/NavBarSettings.vue";
+import NavBarSavedDumps from "@/components/navbar/NavBarSavedDumps.vue";
+import NavBarUpdateAvailable from "@/components/navbar/NavBarUpdateAvailable.vue";
 import { usePayloadStore } from "@/store/payload";
 import ClearAll from "@/components/common/ClearAll.vue";
 import { useSettingsStore } from "@/store/settings";
-import { useXDebug } from "@/store/xdebug.js";
 import { useLogStore } from "@/store/logs.js";
 import { useJobStore } from "@/store/jobs.js";
 import { useQueriesPayloadStore } from "@/store/queries.js";
 import { useMailStore } from "@/store/mail.js";
-import NavBarSavedDumps from "@/components/navbar/NavBarSavedDumps.vue";
 
 const jobStore = useJobStore();
 const queryStore = useQueriesPayloadStore();
 const mailStore = useMailStore();
 const settingsStore = useSettingsStore();
-const xDebugStore = useXDebug();
 const logStore = useLogStore();
 
 const platform = ref("");
@@ -57,6 +56,8 @@ const hasPayload = computed(() => {
         <div :class="{ 'ml-[4.6rem]': platform === 'darwin' }">
             <div class="w-auto h-full">
                 <div class="flex items-center gap-2">
+                    <!-- update available -->
+                    <NavBarUpdateAvailable />
                     <!-- clear -->
                     <ClearAll />
                     <!-- pause -->

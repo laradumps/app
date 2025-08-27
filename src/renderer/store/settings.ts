@@ -80,6 +80,38 @@ export const useSettingsStore = defineStore("settings", () => {
     const savedSettings = localStorage.getItem("user-settings");
     const settings = ref<Settings>(savedSettings ? JSON.parse(savedSettings) : DEFAULT_SETTINGS);
 
+    const updateAvailable = ref<boolean>(false);
+
+    const defaultUpdateState = { updated: true, latestVersion: "" };
+    const loadUpdateState = () => {
+        try {
+            const raw = localStorage.getItem("update-state");
+            if (!raw) return defaultUpdateState;
+            const parsed = JSON.parse(raw);
+            return {
+                updated: typeof parsed.updated === "boolean" ? parsed.updated : true,
+                latestVersion: typeof parsed.latestVersion === "string" ? parsed.latestVersion : ""
+            };
+        } catch (_) {
+            return defaultUpdateState;
+        }
+    };
+
+    const updateState = ref(loadUpdateState());
+    const persistUpdateState = () => localStorage.setItem("update-state", JSON.stringify(updateState.value));
+
+    const setUpdateAvailable = (version) => {
+        updateAvailable.value = true;
+        updateState.value = { updated: false, latestVersion: String(version || "") };
+        persistUpdateState();
+    };
+
+    const markUpdated = () => {
+        updateAvailable.value = false;
+        updateState.value = { ...updateState.value, updated: true };
+        persistUpdateState();
+    };
+
     const update = () => {
         const serializablePayload = deepClone(settings.value);
 
@@ -88,7 +120,7 @@ export const useSettingsStore = defineStore("settings", () => {
         window.ipcRenderer.send("settings.store", serializablePayload);
     };
 
-    const setSettings = (newSettings: any) => {
+    const setSettings = (newSettings) => {
         settings.value = newSettings;
         localStorage.setItem("user-settings", JSON.stringify(newSettings));
     };
@@ -111,6 +143,11 @@ export const useSettingsStore = defineStore("settings", () => {
         dumpOrder,
         scrollDirection,
         checkForUpdateOptions,
-        setSettings
+        setSettings,
+        updateAvailable,
+        updateState,
+        loadUpdateState,
+        setUpdateAvailable,
+        markUpdated
     };
 });
