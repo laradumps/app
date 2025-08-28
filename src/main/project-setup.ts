@@ -37,6 +37,16 @@ const runCommand = (command: string, cwd: string): Promise<void> => {
     });
 };
 
+const isWSL = (): boolean => {
+    try {
+        if (process.platform !== "linux") return false;
+        const version = fs.readFileSync("/proc/version", "utf8");
+        return version.toLowerCase().includes("microsoft");
+    } catch {
+        return false;
+    }
+};
+
 const getComposerCandidates = (projectPath: string): string[] => {
     const candidates: string[] = [];
 
@@ -46,8 +56,12 @@ const getComposerCandidates = (projectPath: string): string[] => {
         candidates.push(`php "${composerPhar}"`);
     }
 
-    // 2) Fallback to system composer
-    candidates.push(isWindows ? "composer.bat" : "composer");
+    if (process.platform === "win32" && !isWSL()) {
+        candidates.push("composer.bat"); // Windows
+    } else {
+        candidates.push("composer"); // Linux/macOS/WSL
+    }
+
     return candidates;
 };
 
