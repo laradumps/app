@@ -56,7 +56,7 @@ const getComposerCandidates = (projectPath: string): string[] => {
         candidates.push(`php "${composerPhar}"`);
     }
 
-    if (process.platform === "win32" && !isWSL()) {
+    if (isWindows && !isWSL()) {
         candidates.push("composer.bat"); // Windows
     } else {
         candidates.push("composer"); // Linux/macOS/WSL
