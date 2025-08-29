@@ -213,9 +213,9 @@ const openLaravelDocs = () => {
             class="modal modal-middle"
         >
             <div class="modal-box">
-                <h3 class="text-lg font-bold">Custom Theme</h3>
+                <h3 class="text-lg font-bold">{{ $t("settings.custom_theme") }}</h3>
                 <fieldset class="fieldset w-full">
-                    <legend class="fieldset-legend">Add your custom theme here:</legend>
+                    <legend class="fieldset-legend">{{ $t("settings.custom_theme_message") }}</legend>
 
                     <span
                         @click="openThemeGenerator"
@@ -234,7 +234,7 @@ const openLaravelDocs = () => {
                         method="dialog"
                         class="flex gap-3"
                     >
-                        <button class="btn btn-sm">Close</button>
+                        <button class="btn btn-sm">{{ $t("settings.close") }}</button>
 
                         <button
                             @click="saveCustomTheme"
@@ -256,7 +256,7 @@ const openLaravelDocs = () => {
                     type="radio"
                     name="settings"
                     class="tab"
-                    aria-label="Settings"
+                    :aria-label="$t('settings.settings')"
                 />
                 <input
                     v-model="selected"
@@ -264,7 +264,7 @@ const openLaravelDocs = () => {
                     type="radio"
                     name="layout"
                     class="tab"
-                    aria-label="Layout"
+                    :aria-label="$t('settings.layout')"
                 />
                 <input
                     v-model="selected"
@@ -272,7 +272,7 @@ const openLaravelDocs = () => {
                     type="radio"
                     name="settings"
                     class="tab"
-                    aria-label="Limited Dumps"
+                    :aria-label="$t('settings.limited_dumps')"
                 />
                 <input
                     v-model="selected"
@@ -280,7 +280,7 @@ const openLaravelDocs = () => {
                     type="radio"
                     name="settings"
                     class="tab"
-                    aria-label="Shortcuts"
+                    :aria-label="$t('settings.shortcuts')"
                 />
             </div>
 
@@ -295,7 +295,7 @@ const openLaravelDocs = () => {
                 class="p-4"
             >
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>App version</div>
+                    <div>{{ $t("settings.app_version") }}</div>
                     <div class="text-right">
                         {{ settingsStore.settings.version ?? "-" }}
                     </div>
@@ -309,7 +309,7 @@ const openLaravelDocs = () => {
                             id="theme"
                             v-model="settingsStore.settings.language"
                             @change="saveLanguage()"
-                            placeholder="Select a language"
+                            :placeholder="$t('settings.select_language')"
                             class="w-full"
                         >
                             <option
@@ -324,13 +324,13 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>IDE Handler</div>
+                    <div>{{ $t("settings.ide_handler") }}</div>
                     <div class="flex items-center justify-between">
                         <SelectInput
                             id="theme"
                             v-model="settingsStore.settings.ide_handler"
                             @change="saveIDEHandler()"
-                            placeholder="Select a IDE handler"
+                            :placeholder="$t('settings.select_ide_handler')"
                             class="w-full"
                         >
                             <option
@@ -351,7 +351,7 @@ const openLaravelDocs = () => {
                             id="theme"
                             v-model="settingsStore.settings.check_for_updates"
                             @change="saveCheckForUpdates()"
-                            placeholder="Check for Updates"
+                            :placeholder="$t('settings.check_for_updates')"
                             class="w-full"
                         >
                             <option
@@ -366,13 +366,13 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Auto-Launch</div>
+                    <div>{{ $t("settings.auto_launch") }}</div>
                     <div class="flex items-center justify-between">
                         <SelectInput
                             id="theme"
                             v-model="settingsStore.settings.auto_launch"
                             @change="saveAutoLaunch()"
-                            placeholder="Auto-Launch"
+                            :placeholder="$t('settings.auto_launch')"
                             class="w-full"
                         >
                             <option
@@ -391,13 +391,13 @@ const openLaravelDocs = () => {
                 class="p-4"
             >
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Theme</div>
+                    <div>{{ $t("settings.theme") }}</div>
                     <div class="flex items-center justify-between">
                         <SelectInput
                             id="theme"
                             v-model="settingsStore.settings.theme"
                             @change="saveTheme()"
-                            placeholder="Select a theme"
+                            :placeholder="$t('settings.select_theme')"
                             class="w-full"
                         >
                             <option
@@ -412,13 +412,13 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Scroll Direction</div>
+                    <div>{{ $t("settings.scroll_direction") }}</div>
                     <div class="flex items-center justify-between">
                         <SelectInput
                             id="scroll"
                             v-model="settingsStore.settings.scroll_direction"
                             @change="saveScrollDirection()"
-                            placeholder="Scroll Direction"
+                            :placeholder="$t('settings.scroll_direction')"
                             class="w-full"
                         >
                             <option
@@ -433,13 +433,13 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Dump Order</div>
+                    <div>{{ $t("settings.dump_order") }}</div>
                     <div class="flex items-center justify-between">
                         <SelectInput
                             id="scroll"
                             v-model="settingsStore.settings.dump_order"
                             @change="saveReverse()"
-                            placeholder="Dump Order"
+                            :placeholder="$t('settings.dump_order')"
                             class="w-full"
                         >
                             <option
@@ -455,12 +455,12 @@ const openLaravelDocs = () => {
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
                     <div>
-                        Show context (Laravel)
+                        {{ $t("settings.show_context") }}
                         <span class="ml-1"
                             ><a
                                 class="text-xs opacity-70 link link-info"
                                 @click="openLaravelDocs"
-                                >Laravel Docs</a
+                                >{{ $t("settings.laravel_docs") }}</a
                             ></span
                         >
                     </div>
@@ -477,7 +477,7 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Show badge count <span class="text-xs opacity-70">(macOS, linux)</span></div>
+                    <div>{{ $t("settings.show_badge_count") }}</div>
                     <div class="flex items-center justify-end">
                         <div class="p-1.5">
                             <input
@@ -491,7 +491,7 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Show Collapse Button</div>
+                    <div>{{ $t("settings.show_collapse_button") }}</div>
                     <div class="flex items-center justify-end">
                         <div class="p-1.5">
                             <input
@@ -505,7 +505,7 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Show Pause Button</div>
+                    <div>{{ $t("settings.show_pause_button") }}</div>
                     <div class="flex items-center justify-end">
                         <div class="p-1.5">
                             <input
@@ -519,7 +519,7 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Show SSH Button</div>
+                    <div>{{ $t("settings.show_ssh_button") }}</div>
                     <div class="flex items-center justify-end">
                         <div class="p-1.5">
                             <input
@@ -533,7 +533,7 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Show variable type</div>
+                    <div>{{ $t("settings.show_variable_type") }}</div>
                     <div class="flex items-center justify-end">
                         <div class="p-1.5">
                             <input
@@ -547,7 +547,7 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Show Tips</div>
+                    <div>{{ $t("settings.show_tips") }}</div>
                     <div class="flex items-center justify-end">
                         <div class="p-1.5">
                             <input
@@ -565,7 +565,7 @@ const openLaravelDocs = () => {
                 class="p-4"
             >
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Dumps</div>
+                    <div>{{ $t("settings.dumps") }}</div>
                     <div class="flex items-center justify-between">
                         <input
                             type="number"
@@ -578,7 +578,7 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Laravel Queries</div>
+                    <div>{{ $t("settings.laravel_queries") }}</div>
                     <div class="flex items-center justify-between">
                         <input
                             type="number"
@@ -591,7 +591,7 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Laravel Logs</div>
+                    <div>{{ $t("settings.laravel_logs") }}</div>
                     <div class="flex items-center justify-between">
                         <input
                             type="number"
@@ -604,7 +604,7 @@ const openLaravelDocs = () => {
 
                 <Divider class="mt-3" />
                 <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>Laravel Jobs</div>
+                    <div>{{ $t("settings.laravel_jobs") }}</div>
                     <div class="flex items-center justify-between">
                         <input
                             type="number"
@@ -631,7 +631,7 @@ const openLaravelDocs = () => {
                             type="text"
                             :disabled="!editMode"
                             readonly
-                            :placeholder="editMode ? 'type here ...' : ''"
+                            :placeholder="editMode ? $t('settings.shortcut_placeholder') : ''"
                             :name="key"
                             :data-label="shortcut.label"
                             :id="key"

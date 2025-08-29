@@ -24,7 +24,7 @@ const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 
 const platform = ref("");
-const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV === true;
+const isDev = import.meta.env.MODE === "development" || import.meta.env.DEV === true;
 
 defineProps({
     inSavedDumpsWindow: {

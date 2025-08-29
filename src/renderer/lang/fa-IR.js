@@ -22,16 +22,19 @@ export default {
         contribute_code: "Contribute code and help us grow",
         install_php_extension: "Install PHP extension",
         in_any_line_of_code: "in any line of code",
-        in_any_project_toggle: "in any project, toggle xdebug"
+        in_any_project_toggle: "in any project, toggle xdebug",
+        install_laradumps_js: "Install laradumps-js",
+        use_ds_in_browser: "Use `ds(...)` in the browser console"
     },
     clear: "پاک کردن",
     menu: {
-        settings: "تنظیمات",
         saved_dumps: "دامپ‌های ذخیره شده",
-        toggle_menu: "نمایش منو"
+        ssh: "SSH"
     },
     settings: {
         settings: "تنظیمات",
+        layout: "Layout",
+        limited_dumps: "Limited dumps",
         language: "زبان",
         environment: "محیط",
         shortcuts: "میانبرها",
@@ -40,7 +43,7 @@ export default {
             clear: "پاک کردن",
             alwaysOnTop: "همیشه در بالا",
             globalSearch: "جستجوی سراسری",
-            save_message: "میانبر با موفقیت به‌روزرسانی شد"
+            save_message: "میانبرها با موفقیت ذخیره شدند"
         },
         choose_a_project: "یک پروژه را انتخاب کنید",
         save: "ذخیره",
@@ -54,7 +57,32 @@ export default {
         check_for_updates: "بررسی برای به‌روزرسانی‌ها",
         update_available: "به‌روزرسانی در دسترس است",
         enable: "Enable",
-        changes_saved: "Changes Saved"
+        changes_saved: "Changes saved",
+        custom_theme: "Custom Theme",
+        custom_theme_message: "Add your custom theme here:",
+        close: "Close",
+        app_version: "App version",
+        select_language: "Select a language",
+        ide_handler: "IDE Handler",
+        select_ide_handler: "Select an IDE handler",
+        auto_launch: "Auto-Launch",
+        theme: "Theme",
+        select_theme: "Select a theme",
+        scroll_direction: "Scroll Direction",
+        dump_order: "Dump Order",
+        show_context: "Show context (Laravel)",
+        laravel_docs: "Laravel Docs",
+        show_badge_count: "Show badge count (macOS, linux)",
+        show_collapse_button: "Show Collapse Button",
+        show_pause_button: "Show Pause Button",
+        show_ssh_button: "Show SSH Button",
+        show_variable_type: "Show variable type",
+        show_tips: "Show Tips",
+        dumps: "Dumps",
+        laravel_queries: "Laravel Queries",
+        laravel_logs: "Laravel Logs",
+        laravel_jobs: "Laravel Jobs",
+        shortcut_placeholder: "type here ..."
     },
     copy: "Copy",
     delete: "Delete",
@@ -110,6 +138,12 @@ export default {
     },
     search: "Search",
     composer_invalid_version: "App require laradumps/laradumps-core 3.0 or higher",
-    click_to_block: "Click to block",
-    unblock: "Unblock"
+    save_dump: "Save this dump",
+    remove_from_saved: "Remove from saved dumps",
+    toast_copied_to_clipboard: "Copied to clipboard.",
+    toast_added_to_saved: "Added to Saved dumps.",
+    toast_removed_successfully: "Removed successfully.",
+    installing: "Installing",
+    installing_wait_message: "This may take a few moments...",
+    no_project_selected: "No Project selected"
 };
