@@ -90,7 +90,7 @@ export default {
     total: "Totali",
     elapsed_time: "Koha e kaluar",
     processing: "Procesimi",
-    show_details: "Toggle Details",
+    show_details: "Shfaq detajet",
     toggle_format: "Ndërro formatin",
     copied: "U kopjua",
     always_on_top: "Lart në çdo kohë",
