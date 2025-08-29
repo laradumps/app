@@ -342,13 +342,13 @@ const setBreakpoints = () => {
     breakpoints.value
         .filter((breakpoint) => breakpoint.enabled && breakpoint.line !== null)
         .forEach((breakpoint) => {
-        const id = getNextTransactionId();
-        const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
-        const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
+            const id = getNextTransactionId();
+            const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
+            const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
 
-        console.log(cmd);
-        sendCommand(cmd);
-    });
+            console.log(cmd);
+            sendCommand(cmd);
+        });
 };
 
 const parseResponse = async (xml) => {
