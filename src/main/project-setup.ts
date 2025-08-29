@@ -59,7 +59,7 @@ const getComposerCandidates = (projectPath: string): string[] => {
     if (isWindows && !isWSL()) {
         candidates.push("composer.bat"); // Windows
     } else {
-        candidates.push("composder"); // Linux/macOS/WSL
+        candidates.push("composer"); // Linux/macOS/WSL
     }
 
     return candidates;
