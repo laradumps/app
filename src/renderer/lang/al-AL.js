@@ -8,7 +8,7 @@ export default {
         global_shortcuts: "Shkurtesat globale",
         customize_shortcuts: "Përshtat shkurtesat tuaja në Cilësimet > Shkurtesat",
         available: "E disponueshme",
-        shortcuts_list: "Pastro të gjitha, lart në çdo kohë",
+        shortcuts_list: "Pastro të gjitha, modalitet i errët, lart në çdo kohë",
         install_laradumps_globally: "Instalo LaraDumps globalisht",
         run: "Ekzekuto",
         run_global_laradumps_install: "Ekzekuto instalimin global të LaraDumps",
@@ -43,7 +43,7 @@ export default {
             clear: "Pastro",
             alwaysOnTop: "Lart në çdo kohë",
             globalSearch: "Kërkim global",
-            save_message: "Shkurtesat u ruajtën me sukses"
+            save_message: "Shkurtesat u përditësuan me sukses"
         },
         choose_a_project: "Zgjidh një projekt",
         save: "Ruaj",
@@ -54,8 +54,8 @@ export default {
         run_to_add_your_project_here: "Ekzekuto vendor/bin/laradumps configure për të shtuar projektin tënd këtu",
         projects: "Projektet",
         no_project_here: "Nuk ka projekt këtu",
-        check_for_updates: "Check for Updates",
-        update_available: "Update Available",
+        check_for_updates: "Kontrollo për përditësime",
+        update_available: "Ka përditësim të disponueshëm",
         enable: "Enable",
         changes_saved: "Changes saved",
         custom_theme: "Custom Theme",
