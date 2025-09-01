@@ -15,6 +15,7 @@ import Divider from "@/components/common/Divider.vue";
 import { useGlobalSearchStore } from "@/store/global-search";
 import IconPause from "@/components/Icons/IconPause.vue";
 import { usePauseLogsStore } from "@/store/pause-logs";
+import DumpQuery from "@/components/laravel/DumpQuery.vue";
 
 const logStore = useLogStore();
 const currentProjectStore = useCurrentProject();
@@ -142,7 +143,9 @@ const openModal = (id: string) => {
         context: findLog.context[0],
         level: findLog.level,
         ide_handle: findLog.ide_handle,
-        created_at: findLog.created_at
+        created_at: findLog.created_at,
+        requests: findLog.requests,
+        queries: findLog.queries
     };
 
     const sfDumpId = findLog.context[1];
@@ -205,40 +208,151 @@ const toggleMessageLimit = () => {
                     class="drawer-overlay"
                 ></label>
                 <div class="bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-5">
-                    <div
-                        class="space-y-3"
-                        v-if="selected"
-                    >
-                        <div class="flex justify-between mb-0 nav-bar">
-                            <h4 class="text-base font-semibold">Created At</h4>
-                            <span class="text-sm">{{ moment(selected.created_at).format("HH:mm:ss a") }}</span>
-                        </div>
-                        <Divider />
-
-                        <div>
-                            <h4 class="text-base font-semibold nav-bar">Message</h4>
+                    <div v-if="selected">
+                        <div class="space-y-3">
                             <span
-                                class="text-sm font-normal"
+                                class="text-base font-semibold px-2 leading-6"
+                                style="display: -webkit-box"
                                 @click="toggleMessageLimit"
                                 :class="{
-                                    'line-clamp-5': !selected.messageLimit
+                                    'line-clamp-5 leading-6': !selected.messageLimit
                                 }"
                                 >{{ selected.message }}</span
                             >
-                        </div>
-                        <Divider />
 
-                        <div v-if="selected.code_snippet.length > 0">
-                            <h4 class="text-base font-semibold">Code Snippet</h4>
-                            <CodeSnippet
-                                v-if="selected.code_snippet.length > 0"
-                                :code_snippet="selected.code_snippet"
-                                :ide_handle="selected.ide_handle"
-                            />
+                            <Divider />
                         </div>
-                        <div v-else>
-                            <h4 class="text-base font-semibold nav-bar">Payload</h4>
-                            <div v-html="selected.context"></div>
+
+                        <div class="tabs flex mt-3 tabs-border tabs-xs">
+                            <!-- Code Snippet Tab -->
+                            <input
+                                v-if="selected.code_snippet.length > 0"
+                                type="radio"
+                                name="log_viewer_tabs"
+                                class="tab"
+                                aria-label="Frames"
+                                checked="checked"
+                            />
+                            <div
+                                v-if="selected.code_snippet.length > 0"
+                                class="tab-content py-3 overflow-auto"
+                            >
+                                <CodeSnippet
+                                    :code_snippet="selected.code_snippet"
+                                    :ide_handle="selected.ide_handle"
+                                />
+                            </div>
+
+                            <!-- Payload Tab -->
+                            <input
+                                v-if="selected.code_snippet.length === 0"
+                                type="radio"
+                                name="log_viewer_tabs"
+                                class="tab"
+                                aria-label="Payload"
+                                checked="checked"
+                            />
+                            <div
+                                v-if="selected.code_snippet.length === 0"
+                                class="tab-content p-1.5 py-3"
+                            >
+                                <div v-html="selected.context"></div>
+                            </div>
+
+                            <input
+                                v-if="selected.code_snippet.length > 0"
+                                type="radio"
+                                name="log_viewer_tabs"
+                                class="tab"
+                                aria-label="Application"
+                            />
+
+                            <!-- Application Tab -->
+                            <div
+                                v-if="selected.requests.length > 0"
+                                class="tab-content py-3 overflow-auto space-y-3"
+                            >
+                                <div class="space-y-2">
+                                    <div>
+                                        <span class="font-semibold ml-1"> Routing </span>
+                                    </div>
+
+                                    <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-100">
+                                        <table class="table table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Controller</th>
+                                                    <td>{{ selected.requests.routeContext.controller }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Middleware</th>
+                                                    <td>{{ selected.requests.routeContext.middleware }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Route name</th>
+                                                    <td>{{ selected.requests.routeContext.routeName }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <div>
+                                        <span class="font-semibold ml-1"> Queries </span>
+                                    </div>
+
+                                    <div
+                                        v-for="(query, index) in selected.queries"
+                                        :key="index"
+                                        class="border border-base-content/5 rounded p-2"
+                                    >
+                                        <DumpQuery :query="query" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Request Tab -->
+                            <input
+                                type="radio"
+                                name="log_viewer_tabs"
+                                class="tab"
+                                aria-label="Request"
+                            />
+                            <div class="tab-content py-3 space-y-2">
+                                <div>
+                                    <span class="font-semibold ml-1"> Headers </span>
+                                </div>
+
+                                <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-100">
+                                    <table class="table table-sm">
+                                        <tbody>
+                                            <tr v-for="(value, key) in selected.requests.headers">
+                                                <th class="whitespace-nowrap">{{ key }}</th>
+                                                <td class="break-all">
+                                                    <code class="overflow-y-hidden scrollbar-hidden max-h-32 overflow-x-scroll scrollbar-hidden-x">{{ value }}</code>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div>
+                                    <span class="font-semibold ml-1"> Body </span>
+                                </div>
+
+                                <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-100">
+                                    <div class="flex items-center">
+                                        <span class="min-w-0 flex-grow">
+                                            <pre class="scrollbar-hidden mx-5 my-3 overflow-y-hidden text-xs lg:text-sm">
+                                                <code class="overflow-y-hidden scrollbar-hidden overflow-x-scroll scrollbar-hidden-x">
+                                                    {{ selected.requests.body }}
+                                                </code>
+                                            </pre>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
