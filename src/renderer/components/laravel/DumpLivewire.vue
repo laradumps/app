@@ -159,17 +159,16 @@ const requests = computed(() => {
                                         ></div>
                                     </div>
 
-                                    <div
-                                        v-for="profile in selected.profile"
-                                        @mouseover="focusItem(profile)"
-                                        @mouseleave="focus = ''"
-                                        :class="[profile?.classes || {}, { 'bg-base-300 shadow-lg': focus === profile.method }, { hidden: !profile.hasOwnProperty('method') }]"
-                                        class="border-l-4 cursor-pointer border items-center border-y-primary/10 hover:bg-base-200 hover:text-base-content flex justify-between rounded p-2 px-3"
-                                    >
-                                        <div class="font-semibold text-xs">{{ profile.method }}</div>
-                                        <div>
-                                            <span class="text-2xl">{{ profile.duration }}</span
-                                            >ms
+                                    <div class="overflow-auto space-y-1.5 h-[calc(100vh-15rem)]">
+                                        <div
+                                            v-for="profile in selected.profile"
+                                            @mouseover="focusItem(profile)"
+                                            @mouseleave="focus = ''"
+                                            :class="[profile?.classes || {}, { 'bg-neutral text-neutral-content shadow-lg': focus === profile.method }, { hidden: !profile.hasOwnProperty('method') }]"
+                                            class="border-l-4 !border-r-0 !border-y-base-200 cursor-pointer border items-center hover:bg-neutral hover:text-neutral-content flex justify-between rounded p-2 py-1"
+                                        >
+                                            <div class="font-semibold text-xs">{{ profile.method }}</div>
+                                            <span class="text-lg">{{ profile.duration }}</span>ms
                                         </div>
                                     </div>
                                 </div>
@@ -277,5 +276,29 @@ const requests = computed(() => {
 
 ::v-deep(.splitpanes__splitter) {
     @apply opacity-0 hover:opacity-100 min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
+}
+
+.border-blue-600 {
+    border-color: #2563eb;
+}
+
+.bg-blue-600 {
+    background-color: #2563eb;
+}
+
+.border-purple-400 {
+    border-color: #a78bfa;
+}
+
+.bg-purple-400 {
+    background-color: #a78bfa;
+}
+
+.border-green-600 {
+    border-color: #16a34a;
+}
+
+.bg-green-600 {
+    background-color: #16a34a;
 }
 </style>
