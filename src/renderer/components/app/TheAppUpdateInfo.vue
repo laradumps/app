@@ -13,6 +13,8 @@ const progress = ref<number>(0);
 const loading = ref(false);
 const downloading = ref(false);
 const releaseNotes = ref<HTMLElement | null>(null);
+const downloadCompleted = ref(false);
+
 
 const progressPercentage = computed(() => Math.round(progress.value * 100));
 
@@ -81,7 +83,11 @@ const onDownloadProgress = (_: any, args: DownloadInfo): void => {
 };
 
 const onDownloadComplete = (_: any, args: CompletedInfo): void => {
-    window.ipcRenderer.send("main:download-complete", args.path);
+    if (!downloadCompleted.value) {
+        window.ipcRenderer.send("main:download-complete", args.path);
+    }
+
+    downloadCompleted.value = true;
     loading.value = false;
 };
 

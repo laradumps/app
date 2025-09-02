@@ -29,6 +29,7 @@ const isMac: boolean = process.platform === "darwin";
 let mainWindow: BrowserWindow;
 let badgeCount = 0;
 const windowsMap = new Map();
+let downloadCompleted = false;
 
 const electronLocalShortcut = require("electron-localshortcut");
 
@@ -106,7 +107,7 @@ function createWindow(): BrowserWindow {
         if (isDev) {
             setTimeout(() => {
                 window.webContents.openDevTools();
-            }, 800);
+            }, 400);
         }
     });
 
@@ -401,6 +402,11 @@ ipcMain.on("main:download-progress-info", async (event, args) => {
             mainWindow.webContents.send("autoUpdater:download-progress", progress);
         },
         onCompleted: (item: CompletedInfo) => {
+            if (downloadCompleted) {
+                console.log('Download already completed, skipping duplicate event.');
+                return;
+            }
+            downloadCompleted = true;
             mainWindow.webContents.send("autoUpdater:download-complete", item);
         }
     };
