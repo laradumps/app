@@ -85,6 +85,8 @@ const requests = computed(() => {
 
     return requests;
 });
+
+const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) => acc + (q.time ?? 0), 0));
 </script>
 
 <template>
@@ -130,7 +132,7 @@ const requests = computed(() => {
                     >
                         <div
                             role="tablist"
-                            class="tabs tabs-lift w-full"
+                            class="tabs tabs-sm tabs-border w-full"
                         >
                             <input
                                 type="radio"
@@ -141,9 +143,10 @@ const requests = computed(() => {
                                 checked
                             />
 
+                            <!-- Profile Tab -->
                             <div
                                 role="tabpanel"
-                                class="tab-content bg-base-100 border-base-300 p-4"
+                                class="tab-content p-3"
                             >
                                 <div class="overflow-x-auto flex flex-col gap-3 w-full">
                                     <div class="progress-container">
@@ -177,6 +180,7 @@ const requests = computed(() => {
                                 </div>
                             </div>
 
+                            <!-- Properties Tab -->
                             <input
                                 type="radio"
                                 name="livewire_tab"
@@ -186,7 +190,7 @@ const requests = computed(() => {
                             />
                             <div
                                 role="tabpanel"
-                                class="tab-content bg-base-100 border-base-300 p-3 overflow-auto"
+                                class="tab-content p-3 overflow-auto"
                             >
                                 <div v-html="selected.properties[0]"></div>
                             </div>
@@ -206,6 +210,7 @@ const requests = computed(() => {
                                 <div v-html="selected.errors[0]"></div>
                             </div>
 
+                            <!-- Queries Tab -->
                             <input
                                 v-if="selected.queries.length > 0"
                                 type="radio"
@@ -216,10 +221,13 @@ const requests = computed(() => {
                             />
                             <div
                                 role="tabpanel"
-                                class="tab-content bg-base-100 border-base-300 p-4 overflow-auto max-h-[calc(100vh-184px)]"
+                                class="tab-content p-3 overflow-auto max-h-[calc(100vh-184px)]"
                             >
                                 <div>
-                                    <div class="text-sm font-semibold text-base-content mb-2">{{ selected.queries.length }} Queries</div>
+                                    <div class="text-sm font-semibold text-base-content mb-2">
+                                        {{ selected.queries.length }} Queries
+                                        <span class="ml-2 text-xs text-gray-500"> ({{ totalQueriesTime.toFixed(2) }} ms) </span>
+                                    </div>
 
                                     <DumpQuery
                                         v-for="query in selected.queries"
@@ -303,5 +311,13 @@ const requests = computed(() => {
 
 .bg-green-600 {
     background-color: #16a34a;
+}
+
+.border-red-600 {
+    border-color: #dc2626;
+}
+
+.bg-red-600 {
+    background-color: #dc2626;
 }
 </style>

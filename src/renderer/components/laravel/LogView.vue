@@ -207,7 +207,7 @@ const toggleMessageLimit = () => {
                     for="my-drawer"
                     class="drawer-overlay"
                 ></label>
-                <div class="bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-5">
+                <div class="bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] px-3 py-5">
                     <div v-if="selected">
                         <div class="space-y-3">
                             <span
@@ -223,7 +223,7 @@ const toggleMessageLimit = () => {
                             <Divider />
                         </div>
 
-                        <div class="tabs flex mt-3 tabs-border tabs-xs">
+                        <div class="tabs flex mt-3 tabs-border tabs-sm">
                             <!-- Code Snippet Tab -->
                             <input
                                 v-if="selected.code_snippet.length > 0"
@@ -269,7 +269,7 @@ const toggleMessageLimit = () => {
 
                             <!-- Application Tab -->
                             <div
-                                v-if="selected.requests.length > 0"
+                                v-if="selected.requests"
                                 class="tab-content py-3 overflow-auto space-y-3"
                             >
                                 <div class="space-y-2">
@@ -439,16 +439,18 @@ const toggleMessageLimit = () => {
                             v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
                             :key="timeKey"
                         >
-                            <tr
-                                class="text-xs font-semibold text-center cursor-pointer bg-base-200"
-                                @click="toggleLogGroup(timeKey)"
-                            >
+                            <tr class="text-xs font-semibold text-center bg-base-200">
                                 <td
                                     colspan="3"
-                                    class="select-none hover:link"
+                                    class="select-none"
                                 >
-                                    {{ timeKey }}
-                                    <span class="ml-1">{{ collapsedLogGroups[timeKey] ? "▼" : "▲" }}</span>
+                                    <span
+                                        class="cursor-pointer link"
+                                        @click="toggleLogGroup(timeKey)"
+                                    >
+                                        {{ timeKey }}
+                                        <span class="ml-1">{{ collapsedLogGroups[timeKey] ? "▼" : "▲" }}</span>
+                                    </span>
                                 </td>
                             </tr>
                             <tr
@@ -505,14 +507,17 @@ const toggleMessageLimit = () => {
                                         ><InformationCircleIcon class="w-5" />Debug</span
                                     >
                                 </td>
-                                <td class="break-words break-all">
+                                <td class="break-words break-all space-y-1">
                                     <div class="line-clamp-2">{{ log.message }}</div>
-                                    <a
-                                        v-if="log.ide_handle.class_name !== 'empty'"
-                                        :href="generateLink(log.ide_handle)"
-                                        v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
-                                        class="text-xs link opacity-60"
-                                    />
+                                    <div>
+                                        <a
+                                            v-if="log.ide_handle.class_name !== 'empty'"
+                                            :href="generateLink(log.ide_handle)"
+                                            v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
+                                            class="text-xs link opacity-60"
+                                            @click.stop
+                                        />
+                                    </div>
                                 </td>
                             </tr>
                         </template>

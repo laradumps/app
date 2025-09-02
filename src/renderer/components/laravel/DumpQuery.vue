@@ -45,7 +45,12 @@ const formattedSql = computed(() => {
 
 <template>
     <div class="space-y-2 w-full">
-        <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+        <div
+            :class="{
+                'justify-end': !props.query.connectionName
+            }"
+            class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400"
+        >
             <span v-if="props.query.connectionName">
                 {{ props.query.connectionName }}
             </span>

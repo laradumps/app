@@ -436,16 +436,18 @@ const toggleMessageLimit = () => {
                             v-for="(jobsOnRelativeTime, timeKey) in groupedJobsByRelativeTime"
                             :key="timeKey"
                         >
-                            <tr
-                                class="bg-base-200 text-xs font-semibold text-center cursor-pointer"
-                                @click="toggleGroup(timeKey)"
-                            >
+                            <tr class="bg-base-200 text-xs font-semibold text-center">
                                 <td
                                     colspan="3"
-                                    class="select-none hover:link"
+                                    class="select-none"
                                 >
-                                    <span>{{ timeKey }}</span>
-                                    <span class="ml-1.5">{{ collapsedGroups[timeKey] ? "▼" : "▲" }}</span>
+                                    <span
+                                        class="cursor-pointer link"
+                                        @click="toggleGroup(timeKey)"
+                                    >
+                                        {{ timeKey }}
+                                        <span class="ml-1">{{ collapsedGroups[timeKey] ? "▼" : "▲" }}</span>
+                                    </span>
                                 </td>
                             </tr>
                             <tr
