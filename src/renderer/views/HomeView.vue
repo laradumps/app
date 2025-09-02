@@ -710,7 +710,10 @@ const deleteDump = (id: string): void => {
                                         :key="groupKey"
                                         class="w-full px-3"
                                     >
-                                        <div class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0">
+                                        <div
+                                            v-if="!['livewire'].includes(screenStore.screen)"
+                                            class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
+                                        >
                                             <span
                                                 class="opacity-70 px-1"
                                                 :title="groupKey"
@@ -735,10 +738,7 @@ const deleteDump = (id: string): void => {
                                         </div>
                                     </div>
 
-                                    <DumpLivewire
-                                        v-if="screenStore.screen === 'livewire'"
-                                        class="pt-2"
-                                    />
+                                    <DumpLivewire v-if="screenStore.screen === 'livewire'" />
                                 </div>
 
                                 <div
