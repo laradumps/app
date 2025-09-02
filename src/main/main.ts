@@ -403,7 +403,7 @@ ipcMain.on("main:download-progress-info", async (event, args) => {
         },
         onCompleted: (item: CompletedInfo) => {
             if (downloadCompleted) {
-                console.log('Download already completed, skipping duplicate event.');
+                console.log("Download already completed, skipping duplicate event.");
                 return;
             }
             downloadCompleted = true;

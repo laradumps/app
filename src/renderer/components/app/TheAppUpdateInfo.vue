@@ -15,7 +15,6 @@ const downloading = ref(false);
 const releaseNotes = ref<HTMLElement | null>(null);
 const downloadCompleted = ref(false);
 
-
 const progressPercentage = computed(() => Math.round(progress.value * 100));
 
 const releaseNotesHtml = computed<string>(() => {

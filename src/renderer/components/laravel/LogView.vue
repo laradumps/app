@@ -260,7 +260,7 @@ const toggleMessageLimit = () => {
                             </div>
 
                             <input
-                                v-if="selected.code_snippet.length > 0"
+                                v-if="selected.code_snippet.length > 0 && selected.requests.lenght > 0"
                                 type="radio"
                                 name="log_viewer_tabs"
                                 class="tab"
@@ -269,7 +269,7 @@ const toggleMessageLimit = () => {
 
                             <!-- Application Tab -->
                             <div
-                                v-if="selected.requests"
+                                v-if="selected.requests.lenght > 0"
                                 class="tab-content py-3 overflow-auto space-y-3"
                             >
                                 <div class="space-y-2">
@@ -297,7 +297,10 @@ const toggleMessageLimit = () => {
                                     </div>
                                 </div>
 
-                                <div class="space-y-2">
+                                <div
+                                    v-if="selected.queries"
+                                    class="space-y-2"
+                                >
                                     <div>
                                         <span class="font-semibold ml-1"> Queries </span>
                                     </div>
@@ -318,6 +321,7 @@ const toggleMessageLimit = () => {
                                 name="log_viewer_tabs"
                                 class="tab"
                                 aria-label="Request"
+                                v-if="selected.requests.lenght > 0"
                             />
                             <div class="tab-content py-3 space-y-2">
                                 <div>
