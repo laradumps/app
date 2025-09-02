@@ -11,6 +11,7 @@ interface Query {
     query: string;
     time: number;
     driver: string;
+    connectionName?: string;
 }
 
 const props = defineProps<{
@@ -44,9 +45,22 @@ const formattedSql = computed(() => {
 
 <template>
     <div class="space-y-2 w-full">
-        <pre class="flex relative group select-none w-auto overflow-hidden whitespace-pre-wrap break-words">
-            <code class='language-sql !leading-[1.2rem] w-auto text-base-content !text-xs' v-html="formattedSql"></code>
-        </pre>
+        <div
+            :class="{
+                'justify-end': !props.query.connectionName
+            }"
+            class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400"
+        >
+            <span v-if="props.query.connectionName">
+                {{ props.query.connectionName }}
+            </span>
+            <span v-if="props.query.time != null"> {{ props.query.time.toFixed(2) }} ms </span>
+        </div>
+        <code
+            ref="codeContainer"
+            class="text-base-content language-sql rounded !text-xs leading-5"
+            v-html="formattedSql"
+        ></code>
     </div>
 </template>
 

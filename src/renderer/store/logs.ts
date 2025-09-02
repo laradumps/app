@@ -12,6 +12,8 @@ export type Log = {
     ide_handle: IdeHandle;
     code_snippet: CodeSnippet[];
     color: string;
+    queries: string[];
+    requests: any[];
 };
 
 type State = {
@@ -63,7 +65,9 @@ export const useLogStore = defineStore("logStore", {
                 created_at: date,
                 code_snippet,
                 ide_handle,
-                color: this._parseColor(log_application.level)
+                color: this._parseColor(log_application.level),
+                queries: log_application.queries || [],
+                requests: log_application.request || []
             };
         },
         _parseColor(level: string) {

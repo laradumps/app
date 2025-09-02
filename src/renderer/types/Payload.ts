@@ -81,6 +81,8 @@ export interface LogApplicationPayload {
     context: string | string[];
     exception: any;
     value: string;
+    queries: string[];
+    request: any;
 }
 
 export interface ScreenPayload {
