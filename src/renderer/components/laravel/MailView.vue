@@ -263,7 +263,7 @@ const setPreviewMode = (mode: string) => {
                             :class="{
                                 'hover:bg-base-300 hover:rounded-md': visited?.message_id !== mail.message_id,
                                 'opacity-40 !font-normal': mail.is_read && visited?.message_id !== mail.message_id,
-                                'border-primary text-primary rounded-xs': visited?.message_id === mail.message_id
+                                'border-primary text-primary rounded-xs bg-base-300': visited?.message_id === mail.message_id
                             }"
                             class="p-2 space-y-2 cursor-pointer focus:bg-primary"
                             @click="display(mail)"
@@ -527,7 +527,7 @@ iframe {
     margin: -1px;
 }
 
-::v-deep(.splitpanes__splitter) {
-    @apply opacity-0 hover:opacity-100 min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
+.splitpanes__splitter {
+    @apply opacity-100 min-w-[0.2rem] rounded-box bg-base-300 hover:bg-base-100;
 }
 </style>

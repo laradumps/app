@@ -738,10 +738,7 @@ const deleteDump = (id: string): void => {
                                         </div>
                                     </div>
 
-                                    <DumpLivewire
-                                        v-if="screenStore.screen === 'livewire'"
-                                        class="pt-2"
-                                    />
+                                    <DumpLivewire v-if="screenStore.screen === 'livewire'" />
                                 </div>
 
                                 <div

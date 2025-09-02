@@ -107,8 +107,8 @@ const requests = computed(() => {
                             :key="request.request"
                             :id="request.request"
                             :class="{
-                                'hover:bg-base-300': request.request !== selected?.request,
-                                'border-primary text-primary rounded-xs': request.request == selected?.request
+                                'hover:bg-base-300 hover:rounded-md': request.request !== selected?.request,
+                                'border-primary text-primary rounded-xs bg-base-300': request.request == selected?.request
                             }"
                             class="p-2 space-y-2 cursor-pointer focus:bg-primary"
                             @click="select(request.request)"
@@ -168,7 +168,10 @@ const requests = computed(() => {
                                             class="border-l-4 !border-r-0 !border-y-base-200 cursor-pointer border items-center hover:bg-neutral hover:text-neutral-content flex justify-between rounded p-2 py-1"
                                         >
                                             <div class="font-semibold text-xs">{{ profile.method }}</div>
-                                            <span class="text-lg">{{ profile.duration }}</span>ms
+                                            <div>
+                                                <span class="text-lg">{{ profile.duration }}</span
+                                                >ms
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -274,8 +277,8 @@ const requests = computed(() => {
     border-radius: 2px;
 }
 
-::v-deep(.splitpanes__splitter) {
-    @apply opacity-0 hover:opacity-100 min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
+.splitpanes__splitter {
+    @apply opacity-100 min-w-[0.2rem] rounded-box bg-base-300 hover:bg-base-100;
 }
 
 .border-blue-600 {
