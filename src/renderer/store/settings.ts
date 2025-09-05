@@ -39,7 +39,8 @@ const languageOptions = {
     zh_CN: "Chinese (CN)",
     id_ID: "Indonesian (ID)",
     al_AL: "Shqip (AL)",
-    tr_TR: "Türkçe (TR)"
+    tr_TR: "Türkçe (TR)",
+    ko_KR: "한국어 (KR)"
 };
 
 const ideHandlerOptions = {
