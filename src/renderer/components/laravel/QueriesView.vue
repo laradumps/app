@@ -94,9 +94,7 @@ const queries = computed<Payload[]>(() => {
 
         if (isSearchActive) {
             const labelMatch = dump.with_label.label?.toLowerCase().includes(search) ?? false;
-            const queryMatch = String(dump[dump.type] ?? "")
-                .toLowerCase()
-                .includes(search);
+            const queryMatch = (dump.queries?.query?.sql || '').toLowerCase().includes(search);
             if (!labelMatch && !queryMatch) {
                 continue;
             }
@@ -160,9 +158,10 @@ const orderLabel = computed(() => {
 });
 
 const groupedQueries = computed(() => {
+    const isSearchActive = globalSearchStore.search.length > 0;
     return queries.value.reduce(
         (groups, payload) => {
-            if (payload.request_id !== timeStore.selected) {
+            if (!isSearchActive && payload.request_id !== timeStore.selected) {
                 return groups;
             }
             const groupKey = moment(payload.date_time).format("YYYY-MM-DD HH:mm:ss");
@@ -360,7 +359,7 @@ const convertMsToHumanReadable = (): string => {
                                             "
                                             class="checkbox checkbox-sm"
                                         />
-                                        <span class="whitespace-nowrap">{{ className.split("\\").pop() }}</span>
+                                        <span class="whitespace-nowrap">{{ className.split('\\').pop() }}</span>
                                     </label>
                                 </li>
                             </ul>
@@ -497,7 +496,7 @@ const convertMsToHumanReadable = (): string => {
                     @click="openRequestsModal()"
                 >
                     <ArrowsRightLeftIcon class="w-4 inline-block" />
-
+                    <span class="text-xs opacity-75">({{ timeStore.getRequestCount() }})</span>
                     {{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}
                 </button>
                 <span class="text-base font-sans text-primary font-normal">{{ convertMsToHumanReadable() }}</span>
@@ -538,7 +537,6 @@ const convertMsToHumanReadable = (): string => {
                             >
                                 <DumpItem
                                     class="w-full group text-sm mb-3"
-                                    v-show="payload.request_id === timeStore.selected"
                                     :payload="payload"
                                     :show-time="false"
                                 />

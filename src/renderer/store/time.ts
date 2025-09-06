@@ -143,6 +143,10 @@ export const useTimeStore = defineStore("timeStore", {
             this.requests = [];
             this.dumpIds = [];
             this.groups = [];
+        },
+
+        getRequestCount() {
+            return Object.keys(this.requests).length;
         }
     }
 });
