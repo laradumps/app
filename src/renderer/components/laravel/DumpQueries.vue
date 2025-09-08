@@ -23,6 +23,7 @@ const duplicatesStore = useQueryDuplicated();
 
 const props = defineProps<{
     payload: Payload;
+    isPrettified: boolean;
 }>();
 const modalRef = ref<HTMLDialogElement | null>(null);
 const selectedQuery = ref<any[]>([]);
@@ -104,7 +105,7 @@ const formattedSql = computed(() => {
     }
 
     if (sql != null) {
-        let formattedSql = formattedQueriesStore.formatted
+        let formattedSql = formattedQueriesStore.formatted || props.isPrettified
             ? format(sql, {
                   indent: "    ",
                   language
@@ -177,7 +178,7 @@ const formattedSql = computed(() => {
             </div>
         </div>
         <pre
-            v-if="formattedQueriesStore.formatted"
+            v-if="formattedQueriesStore.formatted || isPrettified"
             class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
         >
             <code
@@ -188,7 +189,7 @@ const formattedSql = computed(() => {
         <div class="relative break-all flex gap-2 flex-col">
             <code
                 ref="codeContainer"
-                v-if="!formattedQueriesStore.formatted"
+                v-if="!formattedQueriesStore.formatted && !isPrettified"
                 :class="{ 'line-clamp-[14]': isCollapsed }"
                 class="text-base-content language-sql rounded !text-xs leading-5"
                 v-html="formattedSql"
