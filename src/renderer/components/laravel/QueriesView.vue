@@ -212,15 +212,15 @@ const convertMsToHumanReadable = (): string => {
         <dialog
             id="request_dialog"
             ref="modalRef"
-            class="modal modal-end rounded-none"
+            class="modal"
         >
-            <div class="modal-box min-w-80 max-w-2xl p-3 py-0 rounded-none">
-                <div class="py-4 space-y-4 text-sm">
+            <div class="modal-box min-w-80 max-w-2xl p-4 py-0">
+                <div class="py-4 space-y-4 text-sm overflow-auto">
                     <div class="font-semibold px-2">
                         <span class="text-lg">Requests</span>
                     </div>
 
-                    <div>
+                    <div class="max-h-[calc(100vh-22rem)] overflow-auto">
                         <QueriesRequests />
                     </div>
                 </div>
@@ -504,8 +504,11 @@ const convertMsToHumanReadable = (): string => {
                     class="btn btn-soft btn-sm hover:text-primary text-sm font-normal"
                     @click="openRequestsModal()"
                 >
-                    <ArrowsRightLeftIcon class="w-4 inline-block" />
-                    <span class="text-xs opacity-75">({{ timeStore.getRequestCount() }})</span>
+
+                    <span class="badge rounded-full bg-primary text-primary-content text-xs font-normal p-1 px-2">
+                        {{ timeStore.getRequestCount() }}
+                    </span>
+                    <ArrowsRightLeftIcon class="w-3.5 inline-block" />
                     {{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}
                 </button>
                 <span class="text-base font-sans text-primary font-normal">{{ convertMsToHumanReadable() }}</span>

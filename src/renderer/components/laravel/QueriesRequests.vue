@@ -20,7 +20,7 @@ const allRequests = computed(() => {
         time: timeStore.getTotal(group).toFixed(2),
         method: timeStore.getMethod(group),
         origin: timeStore.getOrigin(group),
-        count: queriesStore.payload.filter((payload: Payload) => payload.request_id == group).length
+        count: queriesStore.payload.filter((payload: Payload) => payload.request_id == group).length,
     }));
 
     if (timeStore.search?.trim()) {
@@ -34,10 +34,9 @@ const allRequests = computed(() => {
         );
     }
 
-    requests.sort((a, b) => b.index - a.index);
-
     return requests;
 });
+
 
 const display = (id: string) => {
     duplicatesStore.showOnlyDuplicated = false;
@@ -79,11 +78,7 @@ onBeforeUnmount(() => {
                     fill="none"
                     stroke="currentColor"
                 >
-                    <circle
-                        cx="11"
-                        cy="11"
-                        r="8"
-                    ></circle>
+                    <circle cx="11" cy="11" r="8"></circle>
                     <path d="m21 21-4.3-4.3"></path>
                 </g>
             </svg>
@@ -98,64 +93,73 @@ onBeforeUnmount(() => {
             <kbd class="kbd kbd-sm">K</kbd>
         </label>
 
-        <div
-            v-for="request in allRequests"
-            :key="request.id"
-            :class="{
-                'hover:bg-base-300': request.id !== timeStore.selected,
-                'bg-neutral text-neutral-content rounded-xs': request.id === timeStore.selected
-            }"
-            class="p-2 cursor-pointer focus:bg-primary border-b border-base-content/10 space-y-0.5"
-            @click="display(request.id)"
-        >
-            <div class="flex justify-between gap-3 items-start">
-                <span
-                    class="line-clamp-2 break-words"
-                    v-html="request.label ? request.label : 'Tinker'"
-                ></span>
+        <table class="table table-sm w-full">
+            <thead>
+            <tr>
+                <th class="w-12">#</th>
+                <th>Request</th>
+                <th class="text-right">Time</th>
+                <th class="text-right">Total Queries</th>
+                <th class="text-right">Icons</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="request in allRequests"
+                :key="request.id"
+                :class="{
+                        'hover:bg-base-300': request.id !== timeStore.selected,
+                        'bg-neutral text-neutral-content': request.id === timeStore.selected
+                    }"
+                class="cursor-pointer"
+                @click="display(request.id)"
+            >
+                <td class="font-mono text-left">{{ request.index }}</td>
 
-                <div class="flex items-center gap-2">
-                    <span class="text-sm font-sans">{{ request.time }}ms</span>
-
+                <td class="max-w-[250px] truncate">
+                    <span v-html="request.label ? request.label : 'Tinker'"></span>
                     <span
                         :class="{
-                            '!badge-ghost': request.id == timeStore.selected,
-                            'badge-soft': request.id !== timeStore.selected
-                        }"
-                        class="badge badge-xs"
-                        >{{ request.method }}
-                    </span>
-                </div>
-            </div>
-            <div class="font-normal truncate flex justify-between">
-                <div class="flex gap-2">
-                    <div class="flex gap-2">
-                        <div class="flex gap-2">
-                            <BoltIcon
-                                class="w-4"
-                                :class="{
+                                '!badge-ghost': request.id == timeStore.selected,
+                                'badge-soft': request.id !== timeStore.selected
+                            }"
+                        class="badge badge-xs ml-2"
+                    >
+                            {{ request.method }}
+                        </span>
+                </td>
+
+                <td class="text-right">
+                    {{ request.time }}ms
+                </td>
+
+                <td class="text-right">
+                    {{ request.count }}
+                </td>
+
+                <td class="text-right">
+                    <div class="flex justify-end gap-2">
+                        <BoltIcon
+                            class="w-4"
+                            :class="{
                                     'text-warning': queriesStore.hasExplainNodes(request.id),
                                     'text-base-content/30': !queriesStore.hasExplainNodes(request.id)
                                 }"
-                                title="This query has problematic nodes in the EXPLAIN plan."
-                            />
-                        </div>
-                        <div class="flex gap-2">
-                            <ExclamationTriangleIcon
-                                class="w-4"
-                                :class="{
+                            title="This query has problematic nodes in the EXPLAIN plan."
+                        />
+                        <ExclamationTriangleIcon
+                            class="w-4"
+                            :class="{
                                     'text-error': duplicatesStore.requestsWithDuplicates.has(request.id),
                                     'text-base-content/30': !duplicatesStore.requestsWithDuplicates.has(request.id)
                                 }"
-                            />
-                        </div>
+                            title="This request has duplicates"
+                        />
                     </div>
-                </div>
-                <span>
-                    {{ request.count }}
-                </span>
-            </div>
-        </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </template>
 
