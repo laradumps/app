@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Payload } from "@/types/Payload";
-import { computed, defineProps, nextTick, onMounted, ref } from "vue";
+import { computed, defineProps, nextTick, onMounted, ref, watch } from "vue";
 import { useQueriesPayloadStore } from "@/store/queries";
 import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/dumps/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { TrashIcon, ArrowsRightLeftIcon, PlayIcon, FunnelIcon, ChartBarIcon, SparklesIcon } from "@heroicons/vue/24/outline";
+import { ArrowsRightLeftIcon, ChartBarIcon, FunnelIcon, PlayIcon, SparklesIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import "splitpanes/dist/splitpanes.css";
@@ -70,46 +70,54 @@ const availableOrigins = computed(() => {
     ];
 });
 
+const sourceItems = computed<Payload[]>(() => props.items ?? queriesStore.payload);
+
+watch(
+    sourceItems,
+    (items) => {
+        duplicatesStore.rebuild(items);
+    },
+    { immediate: true, deep: true }
+);
+
+watch(
+    () => timeStore.selected,
+    (requestId) => {
+        duplicatesStore.setCurrentRequestId(requestId);
+    },
+    { immediate: true }
+);
+
 const queries = computed<Payload[]>(() => {
-    const items: Payload[] = props.items ?? queriesStore.payload;
+    const items: Payload[] = sourceItems.value;
     const search = globalSearchStore.search.toLowerCase();
     const isSearchActive = search.length > 0;
 
-    const result: Payload[] = [];
-    const duplicatesMap = new Map<string, number>();
-
-    for (const d of items) {
-        const sql = d.queries?.query?.sql || "";
-        const key = `${d.request_id}:${sql}`;
-        duplicatesMap.set(key, (duplicatesMap.get(key) ?? 0) + 1);
-    }
-
-    for (const dump of items) {
+    const result = items.filter((dump) => {
         const sql = dump.queries?.query?.sql || "";
-        const key = `${dump.request_id}:${sql}`;
 
-        if (queryDuplicatedStore.showOnlyDuplicated && (duplicatesMap.get(key) ?? 0) <= 1) {
-            continue;
+        if (duplicatesStore.showOnlyDuplicated && !duplicatesStore.isDuplicated(dump.request_id, sql)) {
+            return false;
         }
 
         if (isSearchActive) {
             const labelMatch = dump.with_label.label?.toLowerCase().includes(search) ?? false;
-            const queryMatch = (dump.queries?.query?.sql || '').toLowerCase().includes(search);
+            const queryMatch = (dump.queries?.query?.sql || "").toLowerCase().includes(search);
             if (!labelMatch && !queryMatch) {
-                continue;
+                return false;
             }
         }
 
         if (filteredOrigins.value.length && !filteredOrigins.value.includes(dump.queries?.origin || "")) {
-            continue;
+            return false;
         }
 
         if (filteredClasses.value.length && !filteredClasses.value.includes(dump.ide_handle?.class_name || "")) {
-            continue;
+            return false;
         }
 
-        result.push(dump);
-    }
+        return true;
+    });
 
     const sortFn =
         timeStore.order && timeStore.order !== "default"
@@ -131,6 +139,7 @@ const clear = () => {
     queriesStore.clear();
     blockedQueriesStore.clear();
     queryDuplicatedStore.clear();
+    duplicatesStore.setCurrentRequestId(null);
 
     pendingRequestsStore.clear("queries");
 };
@@ -296,7 +305,7 @@ const convertMsToHumanReadable = (): string => {
                 >
                     <ul>
                         <li
-                            v-show="duplicatesStore.totalByRequestId(timeStore.selected) > 0"
+                            v-show="duplicatesStore.hasDuplicatesInCurrentRequest"
                             @click="duplicatesStore.toggleShowOnlyDuplicated"
                             :class="{
                                 '!text-primary': duplicatesStore.showOnlyDuplicated

@@ -144,8 +144,8 @@ onBeforeUnmount(() => {
                             <ExclamationTriangleIcon
                                 class="w-4"
                                 :class="{
-                                    'text-warning': duplicatesStore.hasDuplicatedByRequest(request.id),
-                                    'text-base-content/30': !duplicatesStore.hasDuplicatedByRequest(request.id)
+                                    'text-error': duplicatesStore.requestsWithDuplicates.has(request.id),
+                                    'text-base-content/30': !duplicatesStore.requestsWithDuplicates.has(request.id)
                                 }"
                             />
                         </div>
