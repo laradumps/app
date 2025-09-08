@@ -3,65 +3,99 @@ import { defineStore } from "pinia";
 interface DuplicateInfo {
     request_id: string;
     sql: string;
-    has_duplicated: boolean;
     occurrences: number;
 }
 
 interface QueryDuplicatedState {
     showOnlyDuplicated: boolean;
     duplicatesInfo: DuplicateInfo[];
-    cache: Record<string, number>;
+    currentRequestId: string | null;
+    selectedSql: string | null;
 }
 
 export const useQueryDuplicated = defineStore("queryDuplicated", {
     state: (): QueryDuplicatedState => ({
         showOnlyDuplicated: false,
         duplicatesInfo: [],
-        cache: {}
+        currentRequestId: null,
+        selectedSql: null
     }),
+    getters: {
+        requestsWithDuplicates(state): Set<string> {
+            const requestIds = new Set<string>();
+            for (const info of state.duplicatesInfo) {
+                if (info.occurrences > 1) {
+                    requestIds.add(info.request_id);
+                }
+            }
+            return requestIds;
+        },
+        totalForCurrentRequest(state): number {
+            if (!state.currentRequestId) {
+                return 0;
+            }
+            return state.duplicatesInfo
+                .filter((info) => info.request_id === state.currentRequestId && info.occurrences > 1)
+                .reduce((acc, info) => acc + info.occurrences, 0);
+        },
+        isDuplicated(state) {
+            return (request_id: string, sql: string): boolean => {
+                const info = state.duplicatesInfo.find((info) => info.request_id === request_id && info.sql === sql);
+                return (info?.occurrences ?? 0) > 1;
+            };
+        },
+        hasDuplicatesInCurrentRequest(state): boolean {
+            if (!state.currentRequestId) {
+                return false;
+            }
+            return state.duplicatesInfo.some((info) => info.request_id === state.currentRequestId && info.occurrences > 1);
+        }
+    },
     actions: {
-        add(request_id: string, sql: string, has_duplicated: boolean, occurrences: number): void {
-            const existingInfo = this.duplicatesInfo.find((info) => info.request_id === request_id && info.sql === sql);
+        rebuild(items: any[]): void {
+            const requestSqlCounts = new Map<string, Map<string, number>>();
 
-            if (!existingInfo) {
-                this.duplicatesInfo.push({
-                    request_id,
-                    has_duplicated,
-                    sql,
-                    occurrences
-                });
-            }
-        },
-        totalByRequestId(request_id: string): number | undefined {
-            if (request_id === "") {
-                return undefined;
-            }
+            for (const item of items) {
+                if (item.queries?.query?.sql) {
+                    const requestId = item.request_id;
+                    const sql = item.queries.query.sql;
 
-            if (this.cache[request_id] !== undefined && this.cache[request_id] > 0) {
-                return this.cache[request_id];
+                    if (!requestSqlCounts.has(requestId)) {
+                        requestSqlCounts.set(requestId, new Map());
+                    }
+                    const sqlMap = requestSqlCounts.get(requestId)!;
+                    sqlMap.set(sql, (sqlMap.get(sql) || 0) + 1);
+                }
             }
 
-            const total = this.duplicatesInfo
-                .filter((info) => info.request_id === request_id && info.has_duplicated)
-                .map((info) => info.occurrences)
-                .reduce((acc, occurrences) => acc + occurrences, 0);
-
-            this.cache[request_id] = total;
-
-            return total;
+            const newDuplicatesInfo: DuplicateInfo[] = [];
+            for (const [requestId, sqlMap] of requestSqlCounts.entries()) {
+                for (const [sql, count] of sqlMap.entries()) {
+                    newDuplicatesInfo.push({
+                        request_id: requestId,
+                        sql: sql,
+                        occurrences: count
+                    });
+                }
+            }
+            this.duplicatesInfo = newDuplicatesInfo;
         },
-        isDuplicated(request_id: string, sql: string): boolean {
-            return this.duplicatesInfo.some((info) => info.request_id === request_id && info.sql === sql && info.has_duplicated);
-        },
-        hasDuplicatedByRequest(request_id: string): boolean {
-            return this.duplicatesInfo.some((info) => info.request_id === request_id && info.has_duplicated);
+        setCurrentRequestId(id: string | null) {
+            this.currentRequestId = id;
         },
         toggleShowOnlyDuplicated(): void {
             this.showOnlyDuplicated = !this.showOnlyDuplicated;
         },
+        toggleSelectedSql(sql: string): void {
+            if (this.selectedSql === sql) {
+                this.selectedSql = null;
+                return;
+            }
+            this.selectedSql = sql;
+        },
         clear(): void {
             this.duplicatesInfo = [];
-            this.cache = {};
+            this.selectedSql = null;
         }
     }
 });

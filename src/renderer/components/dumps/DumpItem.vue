@@ -18,7 +18,7 @@ import { useCollapse } from "@/store/collapse";
 import { useSettingsStore } from "@/store/settings";
 import moment from "moment";
 import { useQueriesChart } from "@/store/queries-chart";
-import { ExclamationTriangleIcon, TrashIcon, ClipboardIcon, BookmarkIcon } from "@heroicons/vue/24/outline";
+import { ExclamationTriangleIcon, TrashIcon, ClipboardIcon, BookmarkIcon, SparklesIcon } from "@heroicons/vue/24/outline";
 import { useTimeStore } from "@/store/time";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { usePayloadStore } from "@/store/payload";
@@ -47,6 +47,7 @@ const menuX = ref(0);
 const menuY = ref(0);
 const selfId = Math.random().toString(36).slice(2);
 const showContext = ref(true);
+const isPrettified = ref(false);
 
 const savedStore = useSavedDumpsStore();
 const isSaved = computed(() => savedStore.exists(props.payload.id));
@@ -131,6 +132,10 @@ const copyDump = () => {
             toast.show(t("toast_copied_to_clipboard"), "success");
         });
     });
+};
+
+const prettifyQuery = () => {
+    isPrettified.value = !isPrettified.value;
 };
 
 const onGlobalClick = () => {
@@ -490,6 +495,7 @@ onUnmounted(() => {
                         class="w-full"
                         v-if="payload.type === `queries`"
                         :payload="payload"
+                        :is-prettified="isPrettified"
                     />
 
                     <!-- dump query -->
@@ -545,6 +551,18 @@ onUnmounted(() => {
                                     >
                                         {{ $t("copy") }}
                                         <ClipboardIcon class="w-4 inline-block" />
+                                    </button>
+                                </li>
+                                <li v-if="payload.type === 'queries'">
+                                    <button
+                                        class="hover:bg-base-300 rounded flex justify-between items-center"
+                                        @click.stop="
+                                            prettifyQuery();
+                                            openOptions = false;
+                                        "
+                                    >
+                                        Prettify
+                                        <SparklesIcon class="w-4 inline-block" />
                                     </button>
                                 </li>
                                 <li v-if="inSavedWindow">

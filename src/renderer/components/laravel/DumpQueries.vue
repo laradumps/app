@@ -23,6 +23,7 @@ const duplicatesStore = useQueryDuplicated();
 
 const props = defineProps<{
     payload: Payload;
+    isPrettified: boolean;
 }>();
 const modalRef = ref<HTMLDialogElement | null>(null);
 const selectedQuery = ref<any[]>([]);
@@ -31,6 +32,13 @@ const isCollapsed = ref(false);
 const showToggleControls = ref(false);
 const resizeObserver = ref<ResizeObserver | null>(null);
 const isManualToggle = ref(false);
+
+const isHighlighted = computed(() => {
+    if (!props.payload.queries?.query.sql || !duplicatesStore.selectedSql) {
+        return false;
+    }
+    return duplicatesStore.selectedSql === props.payload.queries.query.sql;
+});
 
 const checkContainerHeight = () => {
     if (!codeContainer.value || isManualToggle.value) return;
@@ -81,10 +89,6 @@ onBeforeUnmount(() => {
     }
 });
 
-const isDuplicated = (sql) => {
-    return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
-};
-
 const formattedSql = computed(() => {
     if (!props.payload.queries) return;
 
@@ -101,7 +105,7 @@ const formattedSql = computed(() => {
     }
 
     if (sql != null) {
-        let formattedSql = formattedQueriesStore.formatted
+        let formattedSql = formattedQueriesStore.formatted || props.isPrettified
             ? format(sql, {
                   indent: "    ",
                   language
@@ -116,7 +120,8 @@ const formattedSql = computed(() => {
 <template>
     <div
         v-if="payload.queries"
-        class="rounded-sm space-y-2"
+        class="rounded-sm space-y-2 p-2"
+        :class="{ 'highlight-duplicated': isHighlighted }"
     >
         <dialog
             ref="modalRef"
@@ -156,26 +161,24 @@ const formattedSql = computed(() => {
                 <button
                     v-if="payload.queries.explain_nodes && payload.queries.explain_nodes.length > 0"
                     @click="openModalForExplainQuery()"
-                    class="badge text-shadow-warning !px-2 badge-warning uppercase text-[0.7rem] font-semibold"
+                    class="btn btn-soft btn-warning btn-xs"
+                    title="This query has problematic nodes in the EXPLAIN plan."
                 >
-                    <BoltIcon
-                        class="w-4"
-                        title="This query has problematic nodes in the EXPLAIN plan."
-                    />
-                    Explain
+                    <BoltIcon class="w-4" />
                 </button>
 
                 <!-- Duplicated Query Icon -->
-                <div
-                    v-if="isDuplicated(payload.queries?.query.sql)"
-                    class="p-[0.5rem]"
+                <button
+                    v-if="duplicatesStore.isDuplicated(payload.request_id, payload.queries?.query.sql)"
+                    @click="duplicatesStore.toggleSelectedSql(payload.queries.query.sql)"
+                    class="btn btn-soft btn-xs btn-error"
                 >
-                    <ExclamationTriangleIcon class="w-4 text-warning" />
-                </div>
+                    <ExclamationTriangleIcon class="w-4" />
+                </button>
             </div>
         </div>
         <pre
-            v-if="formattedQueriesStore.formatted"
+            v-if="formattedQueriesStore.formatted || isPrettified"
             class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
         >
             <code
@@ -186,7 +189,7 @@ const formattedSql = computed(() => {
         <div class="relative break-all flex gap-2 flex-col">
             <code
                 ref="codeContainer"
-                v-if="!formattedQueriesStore.formatted"
+                v-if="!formattedQueriesStore.formatted && !isPrettified"
                 :class="{ 'line-clamp-[14]': isCollapsed }"
                 class="text-base-content language-sql rounded !text-xs leading-5"
                 v-html="formattedSql"
@@ -232,5 +235,20 @@ code.line-clamp-[14] {
 code:not(.line-clamp-[14]) {
     max-height: none;
     transition: max-height 0.3s ease;
+}
+
+@keyframes blink-red-border {
+    0%,
+    100% {
+        border-color: #ef4444; /* red-500 */
+    }
+    50% {
+        border-color: transparent;
+    }
+}
+
+.highlight-duplicated {
+    @apply border border-solid border-error rounded-md shadow-md;
+    animation: blink-red-border 1s 3;
 }
 </style>
