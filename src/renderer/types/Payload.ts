@@ -16,6 +16,7 @@ export interface QueriesPayload {
     uri: string;
     method: string;
     explain_nodes?: undefined | string[];
+    time: number
 }
 
 export interface ModelPayload {

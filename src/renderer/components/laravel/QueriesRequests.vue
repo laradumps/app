@@ -13,14 +13,15 @@ const duplicatesStore = useQueryDuplicated();
 const searchInput = ref<HTMLInputElement | null>(null);
 
 const allRequests = computed(() => {
-    let requests = timeStore.groups.map((group, index) => ({
+    let requests = timeStore.groups.map((requestId: string, index: number) => ({
         index: index + 1,
-        id: group,
-        label: timeStore.getUri(group),
-        time: timeStore.getTotal(group).toFixed(2),
-        method: timeStore.getMethod(group),
-        origin: timeStore.getOrigin(group),
-        count: queriesStore.payload.filter((payload: Payload) => payload.request_id == group).length,
+        id: requestId,
+        label: timeStore.getUri(requestId),
+        time: timeStore.getTotal(requestId).toFixed(2),
+        method: timeStore.getMethod(requestId),
+        origin: timeStore.getOrigin(requestId),
+        count: queriesStore.payload.filter((payload: Payload) => payload.request_id == requestId).length,
+        date: timeStore.getDate(requestId).format('HH:mm:ss')
     }));
 
     if (timeStore.search?.trim()) {
@@ -33,6 +34,8 @@ const allRequests = computed(() => {
                 req.time.toString().includes(searchLower)
         );
     }
+
+    requests.sort((a: any, b: any) => b.index - a.index);
 
     return requests;
 });
@@ -97,6 +100,7 @@ onBeforeUnmount(() => {
             <thead>
             <tr>
                 <th class="w-12">#</th>
+                <th>Date</th>
                 <th>Request</th>
                 <th class="text-right">Time</th>
                 <th class="text-right">Total Queries</th>
@@ -115,6 +119,8 @@ onBeforeUnmount(() => {
                 @click="display(request.id)"
             >
                 <td class="font-mono text-left">{{ request.index }}</td>
+
+                <td class="font-mono text-left">{{ request.date }}</td>
 
                 <td class="max-w-[250px] truncate">
                     <span v-html="request.label ? request.label : 'Tinker'"></span>

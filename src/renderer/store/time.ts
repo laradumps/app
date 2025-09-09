@@ -1,151 +1,142 @@
 import { defineStore } from "pinia";
-import moment from "moment";
+import moment, { Moment } from "moment";
 import { QueriesPayload } from "@/types/Payload";
 
-type Requests = {
-    time: number | string;
-    requestId: number | string;
+export type Request = {
+    time: string;
+    request_id: string;
     total: number;
     uri: string;
     method: string;
     origin: string;
+    date: Moment;
 };
+
+type RequestsMap = Record<string, Request>;
 
 type State = {
     search: string;
-    requests: Requests[];
+    requests: RequestsMap;
     groups: string[];
-    dumpIds: string[];
-    selected: string;
-    order: string;
+    dump_ids: string[];
+    selected: string | null;
+    order: "default" | "asc" | "desc";
 };
 
 export const useTimeStore = defineStore("timeStore", {
-    state: (): State => {
-        return {
-            search: "",
-            requests: [],
-            groups: [],
-            dumpIds: [],
-            selected: "",
-            order: "default"
-        };
-    },
+    state: (): State => ({
+        search: "",
+        requests: {},
+        groups: [],
+        dump_ids: [],
+        selected: null,
+        order: "default"
+    }),
+
     actions: {
-        getTime(requestId: never) {
-            if (typeof this.requests[requestId] === "undefined") {
-                return 0;
-            }
-
-            return this.requests[requestId].time;
+        hasRequest(requestId: string): boolean {
+            return requestId in this.requests;
         },
 
-        get(requestId: never) {
-            return this.requests[requestId];
+        getTime(requestId: string): string | null {
+            return this.hasRequest(requestId)
+                ? this.requests[requestId].time
+                : null;
         },
 
-        toggleOrder() {
-            const currentOrder = this.order;
+        getDate(requestId: string): Moment | null {
+            return this.hasRequest(requestId)
+                ? this.requests[requestId].date
+                : null;
+        },
 
-            if (!currentOrder || currentOrder === "default") {
+        get(requestId: string): Request | null {
+            return this.requests[requestId] ?? null;
+        },
+
+        toggleOrder(): void {
+            if (this.order === "default") {
                 this.order = "desc";
-            } else if (currentOrder === "desc") {
-                this.order = "asc";
-            } else {
-                this.order = "default";
-            }
-        },
-
-        getSelectedRequest() {
-            if (typeof this.requests[this.selected] === "undefined") {
-                return 0;
-            }
-
-            return this.requests[this.selected];
-        },
-
-        getTotal(requestId: never) {
-            if (typeof this.requests[requestId] === "undefined") {
-                return 0;
-            }
-
-            return this.requests[requestId].total;
-        },
-
-        getUri(requestId: never) {
-            if (typeof this.requests[requestId] === "undefined") {
-                return 0;
-            }
-
-            return this.requests[requestId].uri;
-        },
-
-        getOrigin(requestId: never) {
-            if (typeof this.requests[requestId] === "undefined") {
-                return 0;
-            }
-
-            return this.requests[requestId].origin;
-        },
-
-        getMethod(requestId: never) {
-            if (typeof this.requests[requestId] === "undefined") {
-                return 0;
-            }
-
-            return this.requests[requestId].method;
-        },
-
-        setOrder(value: never) {
-            if (this.order === value) {
-                this.order = "default";
                 return;
             }
-            this.order = value;
+
+            if (this.order === "desc") {
+                this.order = "asc";
+                return;
+            }
+
+            this.order = "default";
         },
 
-        setSelectedRequest(value: string) {
+        getSelectedRequest(): Request | null {
+            if (!this.selected) {
+                return null;
+            }
+            return this.get(this.selected);
+        },
+
+        getTotal(requestId: string): number {
+            return this.hasRequest(requestId)
+                ? this.requests[requestId].total
+                : 0;
+        },
+
+        getUri(requestId: string): string | null {
+            return this.hasRequest(requestId)
+                ? this.requests[requestId].uri
+                : null;
+        },
+
+        getOrigin(requestId: string): string | null {
+            return this.hasRequest(requestId)
+                ? this.requests[requestId].origin
+                : null;
+        },
+
+        getMethod(requestId: string): string | null {
+            return this.hasRequest(requestId)
+                ? this.requests[requestId].method
+                : null;
+        },
+
+        setSelectedRequest(value: string | null): void {
             this.selected = value;
         },
 
-        increment(requestId: string, dumpId: string, queriesPayload: QueriesPayload) {
-            if (this.dumpIds.includes(dumpId)) {
+        increment(requestId: string, dumpId: string, queriesPayload: QueriesPayload): void {
+            if (this.dump_ids.includes(dumpId)) {
                 return;
             }
 
-            if (typeof this.requests[requestId] === "undefined") {
-                this.requests[requestId] = {
-                    requestId: 0,
-                    total: 0,
-                    time: moment().format("HH:mm:ss")
-                };
-            }
-
-            const total = (this.requests[requestId].total += queriesPayload.time);
+            const existing = this.requests[requestId];
+            const total = (existing?.total ?? 0) + queriesPayload.time;
 
             this.requests[requestId] = {
-                requestId,
+                request_id: requestId,
                 total,
                 time: moment().format("HH:mm:ss a"),
                 uri: queriesPayload.uri,
                 method: queriesPayload.method,
-                origin: queriesPayload.origin
+                origin: queriesPayload.origin,
+                date: moment()
             };
 
             if (!this.groups.includes(requestId)) {
                 this.groups.push(requestId);
             }
 
-            this.dumpIds.push(dumpId);
+            this.dump_ids.push(dumpId);
         },
 
-        clear() {
-            this.requests = [];
-            this.dumpIds = [];
+        clear(): void {
+            this.requests = {};
+            this.dump_ids = [];
             this.groups = [];
+            this.selected = null;
+            this.order = "default";
         },
 
-        getRequestCount() {
+        getRequestCount(): number {
             return Object.keys(this.requests).length;
         }
     }
