@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=LaraDumps
+Icon=./build/icon.icns
+Comment=LaraDumps a friendly app designed to boost your Laravel PHP coding and debugging experience. https://www.laradumps.dev
+Exec=LaraDumps %U
+Terminal=false
+Type=Application
+Icon=LaraDumps
+Categories=Development;
