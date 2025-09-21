@@ -126,6 +126,13 @@ const copyDump = () => {
             return;
         }
 
+        if (props.payload.json?.original_content) {
+            navigator.clipboard.writeText(props.payload.json?.original_content).then(() => {
+                toast.show(t("toast_copied_to_clipboard"), "success");
+            });
+            return;
+        }
+
         const value = document.getElementById(`dump-content-${props.payload.sf_dump_id}`)?.innerText;
 
         navigator.clipboard.writeText(value).then(() => {
