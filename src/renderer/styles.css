@@ -10,6 +10,54 @@
     themes: all;
 }
 
+/* Laravel 12 Dark DaisyUI Theme */
+@plugin "daisyui/theme" {
+  name: laravel12;
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+  /* Base surfaces derived from Zinc dark scale */
+  --color-base-100: #262626; /* neutral-900 */
+  --color-base-200: #171717; /* neutral-800 */
+  --color-base-300: #404040; /* neutral-700 */
+  --color-base-content: #eeeeec; /* sand-dark-12, high-contrast text */
+
+  /* Brand and semantic colors based on Laravel dark palette */
+  --color-primary: oklch(58.6% 0.253 17.585); /* primary per request */
+  --color-primary-content: #fff; /* white text on primary */
+
+  --color-secondary: oklch(54.6% 0.245 262.881); /* blue-600 */
+  --color-secondary-content: #fff;
+
+  --color-accent: #18b69b; /* Forge */
+  --color-accent-content: #0b1a16; /* dark teal-ish for contrast */
+
+  --color-neutral: oklch(44.6% 0.03 256.802); /* gray-600 */
+  --color-neutral-content: #eeeeec;
+
+  --color-info: oklch(74.6% 0.16 232.661); /* sky-400 */
+  --color-info-content: oklch(29% 0.066 243.157); /* darker info content */
+
+  --color-success: oklch(62.7% 0.194 149.214); /* green-600 */
+  --color-success-content: oklch(26% 0.051 172.552);
+
+  --color-warning: oklch(55.3% 0.195 38.402); /* orange-700 */
+  --color-warning-content: oklch(26% 0.079 36.259);
+
+  --color-error: oklch(57.7% 0.245 27.325); /* red-600 */
+  --color-error-content: oklch(28% 0.109 3.907);
+
+  /* Shape and control sizes inspired by provided example */
+  --radius-selector: 2rem;
+  --radius-field: 0rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 1;
+}
+
 @layer base {
     button:not(:disabled),
     [role="button"]:not(:disabled) {
@@ -50,10 +98,6 @@ body {
 
 .menu li a {
     @apply px-1.5 text-[0.65rem];
-}
-
-[data-theme="laravel"] .bg-laravel {
-    @apply bg-neutral;
 }
 
 .traceable {

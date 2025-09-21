@@ -336,7 +336,7 @@ onUnmounted(() => {
                 'collapse-open': open,
                 [containerClasses]: true
             }"
-            class="border-base-300 collapse rounded-none bg-laravel"
+            class="border-base-300 collapse rounded-none"
             :style="isPercentageColors ? computedBackgroundStyle : null"
             @contextmenu.prevent="onContextMenu($event)"
             @click="openOptions = false"
