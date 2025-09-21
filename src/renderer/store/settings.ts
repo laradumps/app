@@ -26,7 +26,8 @@ const themeColors = {
     luxury: "Luxury",
     cupcake: "Cupcake",
     caramellatte: "Caramel Latte",
-    custom: "Custom"
+    custom: "Custom",
+    laravel12: "Laravel 12 Dark",
 };
 
 const languageOptions = {
