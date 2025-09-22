@@ -39,15 +39,11 @@ export const useTimeStore = defineStore("timeStore", {
         },
 
         getTime(requestId: string): string | null {
-            return this.hasRequest(requestId)
-                ? this.requests[requestId].time
-                : null;
+            return this.hasRequest(requestId) ? this.requests[requestId].time : null;
         },
 
         getDate(requestId: string): Moment | null {
-            return this.hasRequest(requestId)
-                ? this.requests[requestId].date
-                : null;
+            return this.hasRequest(requestId) ? this.requests[requestId].date : null;
         },
 
         get(requestId: string): Request | null {
@@ -76,27 +72,19 @@ export const useTimeStore = defineStore("timeStore", {
         },
 
         getTotal(requestId: string): number {
-            return this.hasRequest(requestId)
-                ? this.requests[requestId].total
-                : 0;
+            return this.hasRequest(requestId) ? this.requests[requestId].total : 0;
         },
 
         getUri(requestId: string): string | null {
-            return this.hasRequest(requestId)
-                ? this.requests[requestId].uri
-                : null;
+            return this.hasRequest(requestId) ? this.requests[requestId].uri : null;
         },
 
         getOrigin(requestId: string): string | null {
-            return this.hasRequest(requestId)
-                ? this.requests[requestId].origin
-                : null;
+            return this.hasRequest(requestId) ? this.requests[requestId].origin : null;
         },
 
         getMethod(requestId: string): string | null {
-            return this.hasRequest(requestId)
-                ? this.requests[requestId].method
-                : null;
+            return this.hasRequest(requestId) ? this.requests[requestId].method : null;
         },
 
         setSelectedRequest(value: string | null): void {

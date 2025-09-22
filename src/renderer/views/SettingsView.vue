@@ -6,13 +6,15 @@ import SelectInput from "@/components/common/SelectInput.vue";
 import { useI18n } from "vue-i18n";
 import { useI18nStore } from "@/store/i18n";
 import hotkeys from "hotkeys-js";
+import { useToastStore } from "@/store/toast";
+import { Cog6ToothIcon, RectangleGroupIcon, Bars3Icon, KeyIcon } from "@heroicons/vue/24/outline";
 
 const editMode = ref(false);
-const saved = ref(false);
 const selected = ref<string | null>("settings");
 const customTheme = ref("");
 
 const settingsStore = useSettingsStore();
+const toast = useToastStore();
 
 const i18n = useI18n();
 const { locale } = useI18n({ useScope: "global" });
@@ -33,11 +35,9 @@ onUpdated(() => {
 });
 
 const saveSettings = async () => {
-    saved.value = true;
     await settingsStore.update();
-    setTimeout(() => {
-        saved.value = false;
-    }, 2000);
+
+    toast.show(i18n.t("settings.changes_saved"), "success");
 };
 
 const saveTheme = async () => {
@@ -248,415 +248,421 @@ const openLaravelDocs = () => {
             </div>
         </dialog>
 
-        <div class="max-w-2xl mx-auto p-10">
-            <div class="tabs tabs-box">
-                <input
-                    v-model="selected"
-                    value="settings"
-                    type="radio"
-                    name="settings"
-                    class="tab"
-                    :aria-label="$t('settings.settings')"
-                />
-                <input
-                    v-model="selected"
-                    value="layout"
-                    type="radio"
-                    name="layout"
-                    class="tab"
-                    :aria-label="$t('settings.layout')"
-                />
-                <input
-                    v-model="selected"
-                    value="limited_dumps"
-                    type="radio"
-                    name="settings"
-                    class="tab"
-                    :aria-label="$t('settings.limited_dumps')"
-                />
-                <input
-                    v-model="selected"
-                    value="shortcuts"
-                    type="radio"
-                    name="settings"
-                    class="tab"
-                    :aria-label="$t('settings.shortcuts')"
-                />
-            </div>
-
-            <span
-                :class="{ 'opacity-0': !saved, 'opacity-65': saved }"
-                class="px-3 text-sm flex justify-end transition-all duration-300"
-                >{{ $t("settings.changes_saved") }}</span
-            >
-
-            <div
-                v-if="selected === 'settings'"
-                class="p-4"
-            >
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.app_version") }}</div>
-                    <div class="text-right">
-                        {{ settingsStore.settings.version ?? "-" }}
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.language") }}</div>
-                    <div class="flex items-center justify-between">
-                        <SelectInput
-                            id="theme"
-                            v-model="settingsStore.settings.language"
-                            @change="saveLanguage()"
-                            :placeholder="$t('settings.select_language')"
-                            class="w-full"
+        <div class="mx-auto p-3 pr-5 text-sm">
+            <div class="flex gap-3">
+                <ul class="menu menu-md bg-base-200 w-40 rounded-box">
+                    <li>
+                        <span
+                            @click="selected = 'settings'"
+                            :class="{ 'menu-active': selected === 'settings' }"
+                            class="whitespace-nowrap flex items-center gap-2"
                         >
-                            <option
-                                v-for="(value, key) in settingsStore.languageOptions"
-                                :value="key"
-                            >
-                                {{ value }}
-                            </option>
-                        </SelectInput>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.ide_handler") }}</div>
-                    <div class="flex items-center justify-between">
-                        <SelectInput
-                            id="theme"
-                            v-model="settingsStore.settings.ide_handler"
-                            @change="saveIDEHandler()"
-                            :placeholder="$t('settings.select_ide_handler')"
-                            class="w-full"
+                            <Cog6ToothIcon class="w-4 h-4" />
+                            <span>{{ $t("settings.settings") }}</span>
+                        </span>
+                    </li>
+                    <li>
+                        <span
+                            @click="selected = 'appearance'"
+                            :class="{ 'menu-active': selected === 'appearance' }"
+                            class="whitespace-nowrap flex items-center gap-2"
                         >
-                            <option
-                                v-for="(value, key) in settingsStore.ideHandlerOptions"
-                                :value="key"
-                            >
-                                {{ value }}
-                            </option>
-                        </SelectInput>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.check_for_updates") }}</div>
-                    <div class="flex items-center justify-between">
-                        <SelectInput
-                            id="theme"
-                            v-model="settingsStore.settings.check_for_updates"
-                            @change="saveCheckForUpdates()"
-                            :placeholder="$t('settings.check_for_updates')"
-                            class="w-full"
+                            <RectangleGroupIcon class="w-4 h-4" />
+                            <span>{{ $t("settings.appearance") }}</span>
+                        </span>
+                    </li>
+                    <li>
+                        <span
+                            @click="selected = 'limited_dumps'"
+                            :class="{ 'menu-active': selected === 'limited_dumps' }"
+                            class="whitespace-nowrap flex items-center gap-2"
                         >
-                            <option
-                                v-for="(value, key) in settingsStore.checkForUpdateOptions"
-                                :value="key"
-                            >
-                                {{ value }}
-                            </option>
-                        </SelectInput>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.auto_launch") }}</div>
-                    <div class="flex items-center justify-between">
-                        <SelectInput
-                            id="theme"
-                            v-model="settingsStore.settings.auto_launch"
-                            @change="saveAutoLaunch()"
-                            :placeholder="$t('settings.auto_launch')"
-                            class="w-full"
+                            <Bars3Icon class="w-4 h-4" />
+                            <span>{{ $t("settings.limited_dumps") }}</span>
+                        </span>
+                    </li>
+                    <li>
+                        <span
+                            @click="selected = 'shortcuts'"
+                            :class="{ 'menu-active': selected === 'shortcuts' }"
+                            class="whitespace-nowrap flex items-center gap-2"
                         >
-                            <option
-                                v-for="(value, key) in settingsStore.autoLaunchOptions"
-                                :value="key"
-                            >
-                                {{ value }}
-                            </option>
-                        </SelectInput>
-                    </div>
-                </div>
-            </div>
+                            <KeyIcon class="w-4 h-4" />
+                            <span>{{ $t("settings.shortcuts") }}</span>
+                        </span>
+                    </li>
+                </ul>
 
-            <div
-                v-if="selected === 'layout'"
-                class="p-4"
-            >
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.theme") }}</div>
-                    <div class="flex items-center justify-between">
-                        <SelectInput
-                            id="theme"
-                            v-model="settingsStore.settings.theme"
-                            @change="saveTheme()"
-                            :placeholder="$t('settings.select_theme')"
-                            class="w-full"
-                        >
-                            <option
-                                v-for="(value, key) in settingsStore.themes"
-                                :value="key"
-                            >
-                                {{ value }}
-                            </option>
-                        </SelectInput>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.scroll_direction") }}</div>
-                    <div class="flex items-center justify-between">
-                        <SelectInput
-                            id="scroll"
-                            v-model="settingsStore.settings.scroll_direction"
-                            @change="saveScrollDirection()"
-                            :placeholder="$t('settings.scroll_direction')"
-                            class="w-full"
-                        >
-                            <option
-                                v-for="(value, key) in settingsStore.scrollDirection"
-                                :value="key"
-                            >
-                                {{ value }}
-                            </option>
-                        </SelectInput>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.dump_order") }}</div>
-                    <div class="flex items-center justify-between">
-                        <SelectInput
-                            id="scroll"
-                            v-model="settingsStore.settings.dump_order"
-                            @change="saveReverse()"
-                            :placeholder="$t('settings.dump_order')"
-                            class="w-full"
-                        >
-                            <option
-                                v-for="(value, key) in settingsStore.dumpOrder"
-                                :value="key"
-                            >
-                                {{ value }}
-                            </option>
-                        </SelectInput>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>
-                        {{ $t("settings.show_context") }}
-                        <span class="ml-1"
-                            ><a
-                                class="text-xs opacity-70 link link-info"
-                                @click="openLaravelDocs"
-                                >{{ $t("settings.laravel_docs") }}</a
-                            ></span
-                        >
-                    </div>
-                    <div class="flex items-center justify-end">
-                        <div class="p-1.5">
-                            <input
-                                type="checkbox"
-                                class="toggle toggle-sm toggle-accent"
-                                v-model="settingsStore.settings.show_context"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.show_badge_count") }}</div>
-                    <div class="flex items-center justify-end">
-                        <div class="p-1.5">
-                            <input
-                                type="checkbox"
-                                class="toggle toggle-sm toggle-accent"
-                                v-model="settingsStore.settings.show_badge_count"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.show_collapse_button") }}</div>
-                    <div class="flex items-center justify-end">
-                        <div class="p-1.5">
-                            <input
-                                type="checkbox"
-                                class="toggle toggle-sm toggle-accent"
-                                v-model="settingsStore.settings.show_collapse_button"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.show_pause_button") }}</div>
-                    <div class="flex items-center justify-end">
-                        <div class="p-1.5">
-                            <input
-                                type="checkbox"
-                                class="toggle toggle-sm toggle-accent"
-                                v-model="settingsStore.settings.show_pause_button"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.show_ssh_button") }}</div>
-                    <div class="flex items-center justify-end">
-                        <div class="p-1.5">
-                            <input
-                                type="checkbox"
-                                class="toggle toggle-sm toggle-accent"
-                                v-model="settingsStore.settings.show_ssh_button"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.show_variable_type") }}</div>
-                    <div class="flex items-center justify-end">
-                        <div class="p-1.5">
-                            <input
-                                type="checkbox"
-                                class="toggle toggle-sm toggle-accent"
-                                v-model="settingsStore.settings.show_variable_type"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.show_tips") }}</div>
-                    <div class="flex items-center justify-end">
-                        <div class="p-1.5">
-                            <input
-                                type="checkbox"
-                                class="toggle toggle-sm toggle-accent"
-                                v-model="settingsStore.settings.show_tips"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div
-                v-if="selected === 'limited_dumps'"
-                class="p-4"
-            >
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.dumps") }}</div>
-                    <div class="flex items-center justify-between">
-                        <input
-                            type="number"
-                            class="grow input input-bordered input-md w-full"
-                            v-model="settingsStore.settings.limit_dumps"
-                            @change="saveLimitDumps()"
-                        />
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.laravel_queries") }}</div>
-                    <div class="flex items-center justify-between">
-                        <input
-                            type="number"
-                            class="grow input input-bordered input-md w-full"
-                            v-model="settingsStore.settings.limit_laravel_queries"
-                            @change="saveLimitDumps()"
-                        />
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.laravel_logs") }}</div>
-                    <div class="flex items-center justify-between">
-                        <input
-                            type="number"
-                            class="grow input input-bordered input-md w-full"
-                            v-model="settingsStore.settings.limit_laravel_logs"
-                            @change="saveLimitDumps()"
-                        />
-                    </div>
-                </div>
-
-                <Divider class="mt-3" />
-                <div class="mt-3 grid grid-cols-2 items-center">
-                    <div>{{ $t("settings.laravel_jobs") }}</div>
-                    <div class="flex items-center justify-between">
-                        <input
-                            type="number"
-                            class="grow input input-bordered input-md w-full"
-                            v-model="settingsStore.settings.limit_laravel_jobs"
-                            @change="saveLimitDumps()"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div
-                v-if="selected === 'shortcuts'"
-                class="p-4"
-            >
-                <div
-                    v-for="(shortcut, key) in settingsStore.settings.shortcuts"
-                    :key="key"
-                    class="mt-3 grid grid-cols-2 items-center"
-                >
-                    <div>{{ $t(shortcut.label) }}</div>
-                    <div class="flex items-center justify-between">
-                        <input
-                            type="text"
-                            :disabled="!editMode"
-                            readonly
-                            :placeholder="editMode ? $t('settings.shortcut_placeholder') : ''"
-                            :name="key"
-                            :data-label="shortcut.label"
-                            :id="key"
-                            class="js-shortcut disabled:text-base-content/80 grow input input-bordered input-md w-full"
-                            :value="shortcut.originalValue"
-                        />
-                    </div>
-                </div>
-
-                <div class="mt-4 flex gap-2 justify-end">
-                    <button
-                        @click="editShortcut"
-                        type="button"
-                        class="btn btn-sm btn-ghost"
+                <div class="flex-1 min-h-0">
+                    <div
+                        v-if="selected === 'settings'"
+                        class="overflow-auto"
                     >
-                        {{ $t("settings.edit") }}
-                    </button>
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.app_version") }}</div>
+                            <div class="text-right">
+                                {{ settingsStore.settings.version ?? "-" }}
+                            </div>
+                        </div>
 
-                    <button
-                        @click="saveShortcuts"
-                        type="button"
-                        class="btn btn-sm btn-primary"
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.language") }}</div>
+                            <div class="flex items-center justify-between">
+                                <SelectInput
+                                    id="theme"
+                                    v-model="settingsStore.settings.language"
+                                    @change="saveLanguage()"
+                                    :placeholder="$t('settings.select_language')"
+                                    class="w-full select-sm"
+                                >
+                                    <option
+                                        v-for="(value, key) in settingsStore.languageOptions"
+                                        :value="key"
+                                    >
+                                        {{ value }}
+                                    </option>
+                                </SelectInput>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.ide_handler") }}</div>
+                            <div class="flex items-center justify-between">
+                                <SelectInput
+                                    id="theme"
+                                    v-model="settingsStore.settings.ide_handler"
+                                    @change="saveIDEHandler()"
+                                    :placeholder="$t('settings.select_ide_handler')"
+                                    class="w-full select-sm"
+                                >
+                                    <option
+                                        v-for="(value, key) in settingsStore.ideHandlerOptions"
+                                        :value="key"
+                                    >
+                                        {{ value }}
+                                    </option>
+                                </SelectInput>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.check_for_updates") }}</div>
+                            <div class="flex items-center justify-between">
+                                <SelectInput
+                                    id="theme"
+                                    v-model="settingsStore.settings.check_for_updates"
+                                    @change="saveCheckForUpdates()"
+                                    :placeholder="$t('settings.check_for_updates')"
+                                    class="w-full select-sm"
+                                >
+                                    <option
+                                        v-for="(value, key) in settingsStore.checkForUpdateOptions"
+                                        :value="key"
+                                    >
+                                        {{ value }}
+                                    </option>
+                                </SelectInput>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.auto_launch") }}</div>
+                            <div class="flex items-center justify-between">
+                                <SelectInput
+                                    id="theme"
+                                    v-model="settingsStore.settings.auto_launch"
+                                    @change="saveAutoLaunch()"
+                                    :placeholder="$t('settings.auto_launch')"
+                                    class="w-full select-sm"
+                                >
+                                    <option
+                                        v-for="(value, key) in settingsStore.autoLaunchOptions"
+                                        :value="key"
+                                    >
+                                        {{ value }}
+                                    </option>
+                                </SelectInput>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if="selected === 'appearance'"
+                        class="overflow-auto"
                     >
-                        {{ $t("settings.save") }}
-                    </button>
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.theme") }}</div>
+                            <div class="flex items-center justify-between">
+                                <SelectInput
+                                    id="theme"
+                                    v-model="settingsStore.settings.theme"
+                                    @change="saveTheme()"
+                                    :placeholder="$t('settings.select_theme')"
+                                    class="w-full select-sm"
+                                >
+                                    <option
+                                        v-for="(value, key) in settingsStore.themes"
+                                        :value="key"
+                                    >
+                                        {{ value }}
+                                    </option>
+                                </SelectInput>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.scroll_direction") }}</div>
+                            <div class="flex items-center justify-between">
+                                <SelectInput
+                                    id="scroll"
+                                    v-model="settingsStore.settings.scroll_direction"
+                                    @change="saveScrollDirection()"
+                                    :placeholder="$t('settings.scroll_direction')"
+                                    class="w-full select-sm"
+                                >
+                                    <option
+                                        v-for="(value, key) in settingsStore.scrollDirection"
+                                        :value="key"
+                                    >
+                                        {{ value }}
+                                    </option>
+                                </SelectInput>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.dump_order") }}</div>
+                            <div class="flex items-center justify-between">
+                                <SelectInput
+                                    id="scroll"
+                                    v-model="settingsStore.settings.dump_order"
+                                    @change="saveReverse()"
+                                    :placeholder="$t('settings.dump_order')"
+                                    class="w-full select-sm"
+                                >
+                                    <option
+                                        v-for="(value, key) in settingsStore.dumpOrder"
+                                        :value="key"
+                                    >
+                                        {{ value }}
+                                    </option>
+                                </SelectInput>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>
+                                {{ $t("settings.show_context") }}
+                                <span class="ml-1"
+                                    ><a
+                                        class="text-xs opacity-70 link link-info"
+                                        @click="openLaravelDocs"
+                                        >{{ $t("settings.laravel_docs") }}</a
+                                    ></span
+                                >
+                            </div>
+                            <div class="flex items-center justify-end">
+                                <div class="p-1.5">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle toggle-sm toggle-accent"
+                                        v-model="settingsStore.settings.show_context"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.show_badge_count") }}</div>
+                            <div class="flex items-center justify-end">
+                                <div class="p-1.5">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle toggle-sm toggle-accent"
+                                        v-model="settingsStore.settings.show_badge_count"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.show_collapse_button") }}</div>
+                            <div class="flex items-center justify-end">
+                                <div class="p-1.5">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle toggle-sm toggle-accent"
+                                        v-model="settingsStore.settings.show_collapse_button"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.show_pause_button") }}</div>
+                            <div class="flex items-center justify-end">
+                                <div class="p-1.5">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle toggle-sm toggle-accent"
+                                        v-model="settingsStore.settings.show_pause_button"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.show_ssh_button") }}</div>
+                            <div class="flex items-center justify-end">
+                                <div class="p-1.5">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle toggle-sm toggle-accent"
+                                        v-model="settingsStore.settings.show_ssh_button"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.show_variable_type") }}</div>
+                            <div class="flex items-center justify-end">
+                                <div class="p-1.5">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle toggle-sm toggle-accent"
+                                        v-model="settingsStore.settings.show_variable_type"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.show_tips") }}</div>
+                            <div class="flex items-center justify-end">
+                                <div class="p-1.5">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle toggle-sm toggle-accent"
+                                        v-model="settingsStore.settings.show_tips"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if="selected === 'limited_dumps'"
+                        class="overflow-auto"
+                    >
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.dumps") }}</div>
+                            <div class="flex items-center justify-between">
+                                <input
+                                    type="number"
+                                    class="input input-bordered input-sm w-full"
+                                    v-model="settingsStore.settings.limit_dumps"
+                                    @change="saveLimitDumps()"
+                                />
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.laravel_queries") }}</div>
+                            <div class="flex items-center justify-between">
+                                <input
+                                    type="number"
+                                    class="input input-bordered input-sm w-full"
+                                    v-model="settingsStore.settings.limit_laravel_queries"
+                                    @change="saveLimitDumps()"
+                                />
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.laravel_logs") }}</div>
+                            <div class="flex items-center justify-between">
+                                <input
+                                    type="number"
+                                    class="input input-bordered input-sm w-full"
+                                    v-model="settingsStore.settings.limit_laravel_logs"
+                                    @change="saveLimitDumps()"
+                                />
+                            </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.laravel_jobs") }}</div>
+                            <div class="flex items-center justify-between">
+                                <input
+                                    type="number"
+                                    class="input input-bordered input-sm w-full"
+                                    v-model="settingsStore.settings.limit_laravel_jobs"
+                                    @change="saveLimitDumps()"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if="selected === 'shortcuts'"
+                        class="overflow-auto"
+                    >
+                        <div
+                            v-for="(shortcut, key) in settingsStore.settings.shortcuts"
+                            :key="key"
+                            class="mt-2 grid grid-cols-2 items-center"
+                        >
+                            <div>{{ $t(shortcut.label) }}</div>
+                            <div class="flex items-center justify-between">
+                                <input
+                                    type="text"
+                                    :disabled="!editMode"
+                                    readonly
+                                    :placeholder="editMode ? $t('settings.shortcut_placeholder') : ''"
+                                    :name="key"
+                                    :data-label="shortcut.label"
+                                    :id="key"
+                                    class="js-shortcut disabled:text-base-content/80 input input-bordered input-sm w-full"
+                                    :value="shortcut.originalValue"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex gap-2 justify-end">
+                            <button
+                                @click="editShortcut"
+                                type="button"
+                                class="btn btn-sm btn-ghost"
+                            >
+                                {{ $t("settings.edit") }}
+                            </button>
+
+                            <button
+                                @click="saveShortcuts"
+                                type="button"
+                                class="btn btn-sm btn-primary"
+                            >
+                                {{ $t("settings.save") }}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

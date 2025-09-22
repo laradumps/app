@@ -21,7 +21,7 @@ const allRequests = computed(() => {
         method: timeStore.getMethod(requestId),
         origin: timeStore.getOrigin(requestId),
         count: queriesStore.payload.filter((payload: Payload) => payload.request_id == requestId).length,
-        date: timeStore.getDate(requestId).format('HH:mm:ss')
+        date: timeStore.getDate(requestId).format("HH:mm:ss")
     }));
 
     if (timeStore.search?.trim()) {
@@ -39,7 +39,6 @@ const allRequests = computed(() => {
 
     return requests;
 });
-
 
 const display = (id: string) => {
     duplicatesStore.showOnlyDuplicated = false;
@@ -81,7 +80,11 @@ onBeforeUnmount(() => {
                     fill="none"
                     stroke="currentColor"
                 >
-                    <circle cx="11" cy="11" r="8"></circle>
+                    <circle
+                        cx="11"
+                        cy="11"
+                        r="8"
+                    ></circle>
                     <path d="m21 21-4.3-4.3"></path>
                 </g>
             </svg>
@@ -98,72 +101,70 @@ onBeforeUnmount(() => {
 
         <table class="table table-sm w-full">
             <thead>
-            <tr>
-                <th class="w-12">#</th>
-                <th>Date</th>
-                <th>Request</th>
-                <th class="text-right">Time</th>
-                <th class="text-right">Total Queries</th>
-                <th class="text-right">Icons</th>
-            </tr>
+                <tr>
+                    <th class="w-12">#</th>
+                    <th>Date</th>
+                    <th>Request</th>
+                    <th class="text-right">Time</th>
+                    <th class="text-right">Total Queries</th>
+                    <th class="text-right">Icons</th>
+                </tr>
             </thead>
             <tbody>
-            <tr
-                v-for="request in allRequests"
-                :key="request.id"
-                :class="{
+                <tr
+                    v-for="request in allRequests"
+                    :key="request.id"
+                    :class="{
                         'hover:bg-base-300': request.id !== timeStore.selected,
                         'bg-neutral text-neutral-content': request.id === timeStore.selected
                     }"
-                class="cursor-pointer"
-                @click="display(request.id)"
-            >
-                <td class="font-mono text-left">{{ request.index }}</td>
+                    class="cursor-pointer"
+                    @click="display(request.id)"
+                >
+                    <td class="font-mono text-left">{{ request.index }}</td>
 
-                <td class="font-mono text-left">{{ request.date }}</td>
+                    <td class="font-mono text-left">{{ request.date }}</td>
 
-                <td class="max-w-[250px] truncate">
-                    <span v-html="request.label ? request.label : 'Tinker'"></span>
-                    <span
-                        :class="{
+                    <td class="max-w-[250px] truncate">
+                        <span v-html="request.label ? request.label : 'Tinker'"></span>
+                        <span
+                            :class="{
                                 '!badge-ghost': request.id == timeStore.selected,
                                 'badge-soft': request.id !== timeStore.selected
                             }"
-                        class="badge badge-xs ml-2"
-                    >
+                            class="badge badge-xs ml-2"
+                        >
                             {{ request.method }}
                         </span>
-                </td>
+                    </td>
 
-                <td class="text-right">
-                    {{ request.time }}ms
-                </td>
+                    <td class="text-right">{{ request.time }}ms</td>
 
-                <td class="text-right">
-                    {{ request.count }}
-                </td>
+                    <td class="text-right">
+                        {{ request.count }}
+                    </td>
 
-                <td class="text-right">
-                    <div class="flex justify-end gap-2">
-                        <BoltIcon
-                            class="w-4"
-                            :class="{
+                    <td class="text-right">
+                        <div class="flex justify-end gap-2">
+                            <BoltIcon
+                                class="w-4"
+                                :class="{
                                     'text-warning': queriesStore.hasExplainNodes(request.id),
                                     'text-base-content/30': !queriesStore.hasExplainNodes(request.id)
                                 }"
-                            title="This query has problematic nodes in the EXPLAIN plan."
-                        />
-                        <ExclamationTriangleIcon
-                            class="w-4"
-                            :class="{
+                                title="This query has problematic nodes in the EXPLAIN plan."
+                            />
+                            <ExclamationTriangleIcon
+                                class="w-4"
+                                :class="{
                                     'text-error': duplicatesStore.requestsWithDuplicates.has(request.id),
                                     'text-base-content/30': !duplicatesStore.requestsWithDuplicates.has(request.id)
                                 }"
-                            title="This request has duplicates"
-                        />
-                    </div>
-                </td>
-            </tr>
+                                title="This request has duplicates"
+                            />
+                        </div>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
