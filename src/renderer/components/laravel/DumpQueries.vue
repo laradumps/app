@@ -105,12 +105,13 @@ const formattedSql = computed(() => {
     }
 
     if (sql != null) {
-        let formattedSql = formattedQueriesStore.formatted || props.isPrettified
-            ? format(sql, {
-                  indent: "    ",
-                  language
-              })
-            : sql;
+        let formattedSql =
+            formattedQueriesStore.formatted || props.isPrettified
+                ? format(sql, {
+                      indent: "    ",
+                      language
+                  })
+                : sql;
 
         return hljs.highlight(formattedSql, { language }).value;
     }

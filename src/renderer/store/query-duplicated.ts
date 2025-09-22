@@ -34,9 +34,7 @@ export const useQueryDuplicated = defineStore("queryDuplicated", {
             if (!state.currentRequestId) {
                 return 0;
             }
-            return state.duplicatesInfo
-                .filter((info) => info.request_id === state.currentRequestId && info.occurrences > 1)
-                .reduce((acc, info) => acc + info.occurrences, 0);
+            return state.duplicatesInfo.filter((info) => info.request_id === state.currentRequestId && info.occurrences > 1).reduce((acc, info) => acc + info.occurrences, 0);
         },
         isDuplicated(state) {
             return (request_id: string, sql: string): boolean => {

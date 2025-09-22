@@ -82,7 +82,8 @@ export default {
         laravel_queries: "Laravel Queries",
         laravel_logs: "Laravel Logs",
         laravel_jobs: "Laravel Jobs",
-        shortcut_placeholder: "digite aqui ..."
+        shortcut_placeholder: "digite aqui ...",
+        appearance: "Aparência"
     },
     copy: "Copiar",
     delete: "Excluir",

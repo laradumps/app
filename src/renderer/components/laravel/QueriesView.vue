@@ -368,7 +368,7 @@ const convertMsToHumanReadable = (): string => {
                                             "
                                             class="checkbox checkbox-sm"
                                         />
-                                        <span class="whitespace-nowrap">{{ className.split('\\').pop() }}</span>
+                                        <span class="whitespace-nowrap">{{ className.split("\\").pop() }}</span>
                                     </label>
                                 </li>
                             </ul>
@@ -504,7 +504,6 @@ const convertMsToHumanReadable = (): string => {
                     class="btn btn-soft btn-sm hover:text-primary text-sm font-normal"
                     @click="openRequestsModal()"
                 >
-
                     <span class="badge rounded-full bg-primary text-primary-content text-xs font-normal p-1 px-2">
                         {{ timeStore.getRequestCount() }}
                     </span>

@@ -25,7 +25,10 @@ const display = (id: string) => {
 </script>
 
 <template>
-    <div class="flex flex-col gap-1" style="height: -webkit-fill-available">
+    <div
+        class="flex flex-col gap-1"
+        style="height: -webkit-fill-available"
+    >
         <div
             v-for="request in allRequests"
             :key="request.id"
@@ -37,7 +40,10 @@ const display = (id: string) => {
             @click="display(request.id)"
         >
             <div class="flex justify-between gap-3 items-start">
-                <span class="line-clamp-2 break-words" v-html="request.label ? request.label : 'Tinker'"></span>
+                <span
+                    class="line-clamp-2 break-words"
+                    v-html="request.label ? request.label : 'Tinker'"
+                ></span>
                 <span class="text-sm font-semibold">{{ request.time }}ms</span>
             </div>
             <div class="font-normal truncate flex justify-between">
