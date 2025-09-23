@@ -213,15 +213,18 @@ onUnmounted(() => {
                 class="global-search-content w-full max-w-2xl bg-base-300 rounded-xl shadow-xl p-4 mt-24 space-y-4 overflow-y-auto"
                 @click.stop
             >
-                <input
-                    ref="inputRef"
-                    v-model="globalSearch.search"
-                    type="text"
-                    class="input input-md w-full rounded-md font-normal font-sans p-3"
-                    placeholder="Search"
-                    @keydown.enter.prevent="showInput = false"
-                    @keydown.down.prevent="focusBadge(0)"
-                />
+                <label class="input w-full">
+                    <MagnifyingGlassIcon class="size-4" />
+                    <input
+                        ref="inputRef"
+                        v-model="globalSearch.search"
+                        type="text"
+                        class="w-full font-normal font-sans p-3"
+                        placeholder="Search"
+                        @keydown.enter.prevent="showInput = false"
+                        @keydown.down.prevent="focusBadge(0)"
+                    />
+                </label>
 
                 <div
                     v-if="badges.length && searchTerm"
