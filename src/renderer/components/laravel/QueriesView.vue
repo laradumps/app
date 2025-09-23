@@ -505,9 +505,7 @@ const convertMsToHumanReadable = (): string => {
                     @click="openRequestsModal()"
                 >
                     <ArrowsRightLeftIcon class="w-4 inline-block" />
-                    <span class="opacity-80">
-                        ({{ timeStore.getRequestCount() }})
-                    </span>
+                    <span class="opacity-80"> ({{ timeStore.getRequestCount() }}) </span>
                     {{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}
                 </button>
                 <span class="text-base font-sans text-primary font-normal">{{ convertMsToHumanReadable() }}</span>

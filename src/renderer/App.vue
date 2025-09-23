@@ -18,15 +18,21 @@ const screen = ref<string | null>("");
 Object.defineProperty(String.prototype, "beautifyShortcut", {
     value() {
         if (process.platform === "darwin") {
-            return this.replace("CommandOrControl", "⌘").replace("Shift", "⇧").replace("Option", "⌥");
+            return this.replace(/CommandOrControl/g, "⌘")
+                .replace(/Shift/g, "⇧")
+                .replace(/Option|Alt/g, "⌥");
         }
-        return this.replace("CommandOrControl", "⊞").replace("Shift", "⇧").replace("Option", "⌥");
+        return this.replace(/CommandOrControl/g, "Ctrl")
+            .replace(/Shift/g, "⇧")
+            .replace(/Option|Alt/g, "Alt");
     }
 });
 
 Object.defineProperty(String.prototype, "toElectronFormat", {
     value() {
-        return this.replace("", "CommandOrControl").replace("⌃", "CommandOrControl").replace("⌘", "CommandOrControl").replace("⇧", "Shift").replace("⌥", "Option");
+        return this.replace(/|⌃|⌘|Ctrl/g, "CommandOrControl")
+            .replace(/⇧|Shift/g, "Shift")
+            .replace(/⌥|Alt/g, "Option");
     }
 });
 

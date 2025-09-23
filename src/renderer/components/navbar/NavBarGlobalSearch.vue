@@ -1,11 +1,70 @@
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted } from "vue";
-import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
+import { ref, nextTick, onMounted, onUnmounted, computed } from "vue";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { useGlobalSearchStore } from "@/store/global-search";
+import { usePayloadStore } from "@/store/payload";
+import { useLogStore } from "@/store/logs";
+import { useJobStore } from "@/store/jobs";
+import { useMailStore } from "@/store/mail";
+import { useQueriesPayloadStore } from "@/store/queries";
+import { useScreenStore } from "@/store/screen";
 
-const showInput = ref(false);
 const globalSearch = useGlobalSearchStore();
+
+// stores for counting per-screen results
+const payloadStore = usePayloadStore();
+const logStore = useLogStore();
+const jobStore = useJobStore();
+const mailStore = useMailStore();
+const queriesStore = useQueriesPayloadStore();
+const screenStore = useScreenStore();
+
+const usingKeyboard = ref(false);
+const showInput = ref(false);
 const inputRef = ref(null);
+const badgeRefs = ref([]);
+
+let onGlobalKeydown;
+let onGlobalMousedown;
+
+const setBadgeRef = (el, i) => {
+    if (el) badgeRefs.value[i] = el;
+};
+
+const focusBadge = (i) => {
+    const size = badges.value.length;
+    if (size === 0) return;
+    const idx = (i + size) % size;
+    nextTick(() => badgeRefs.value[idx]?.focus());
+};
+
+const activateBadge = (badge) => {
+    const map = { dumps: "home", logs: "logs", jobs: "jobs", mail: "mail", queries: "queries" };
+    const target = map[badge.key] || badge.key;
+    screenStore.activeScreen?.(target);
+    showInput.value = false;
+};
+
+const onBadgeKeydown = (e, badge, index) => {
+    if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        activateBadge(badge);
+    } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        focusBadge(index + 1);
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        focusBadge(index - 1);
+    } else if (e.key === "Home") {
+        e.preventDefault();
+        focusBadge(0);
+    } else if (e.key === "End") {
+        e.preventDefault();
+        focusBadge(badges.value.length - 1);
+    }
+};
+
+const keyboardFocusClasses = computed(() => (usingKeyboard.value ? "focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/50 focus-visible:outline-offset-2" : ""));
 
 const toggleInputVisibility = async () => {
     showInput.value = !showInput.value;
@@ -21,20 +80,103 @@ const handleKeydown = (event) => {
     }
 };
 
+// Close when clicking outside the modal content
 const handleClickOutside = (event) => {
-    if (showInput.value && !event.target.closest(".dropdown-content")) {
+    if (showInput.value && !event.target.closest(".global-search-content")) {
         showInput.value = false;
     }
 };
 
+const searchTerm = computed(() => globalSearch.search.toLowerCase());
+
+const counts = computed(() => {
+    const term = searchTerm.value;
+
+    // Dumps (generic payload screens)
+    const dumps = payloadStore.payload.filter((dump) => {
+        const content = (dump && dump[dump.type]) || "";
+        const contentStr = JSON.stringify(content).toLowerCase();
+        const labelStr = JSON.stringify(dump?.with_label || "").toLowerCase();
+        return contentStr.includes(term) || labelStr.includes(term);
+    }).length;
+
+    // Logs
+    const logs = Object.values(logStore.logs).filter((log) => {
+        const msg = String(log.message ?? "").toLowerCase();
+        const level = String(log.level ?? "").toLowerCase();
+        const ctxFirst = Array.isArray(log.context) ? String(log.context[0] ?? "").toLowerCase() : String(log.context ?? "").toLowerCase();
+        return msg.includes(term) || level.includes(term) || ctxFirst.includes(term);
+    }).length;
+
+    // Jobs
+    const jobs = Object.values(jobStore.jobs).filter((job) => {
+        const display = String(job.display_name ?? "").toLowerCase();
+        const jobId = String(job.job_id ?? "").toLowerCase();
+        const job0 = Array.isArray(job.job) ? String(job.job[0] ?? "").toLowerCase() : String(job.job ?? "").toLowerCase();
+        return display.includes(term) || jobId.includes(term) || job0.includes(term);
+    }).length;
+
+    // Mail
+    const mail = mailStore.mails.filter((m) => JSON.stringify(m).toLowerCase().includes(term)).length;
+
+    // Queries
+    const queries = queriesStore.payload.filter((q) => {
+        const labelMatch = String(q?.with_label?.label ?? "")
+            .toLowerCase()
+            .includes(term);
+        const sqlMatch = String(q?.queries?.query?.sql ?? "")
+            .toLowerCase()
+            .includes(term);
+        return labelMatch || sqlMatch;
+    }).length;
+
+    return { dumps, logs, jobs, mail, queries };
+});
+
+const badges = computed(() => {
+    return [
+        { key: "dumps", label: "dumps", count: counts.value.dumps },
+        { key: "logs", label: "logs", count: counts.value.logs },
+        { key: "jobs", label: "jobs", count: counts.value.jobs },
+        { key: "mail", label: "mail", count: counts.value.mail },
+        { key: "queries", label: "queries", count: counts.value.queries }
+    ].filter((b) => b.count > 0);
+});
+
 onMounted(() => {
     window.addEventListener("keydown", handleKeydown);
     document.addEventListener("click", handleClickOutside);
+
+    // track keyboard vs mouse to style focus ring only for keyboard users
+    onGlobalKeydown = (e) => {
+        if (["Tab", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
+            usingKeyboard.value = true;
+        }
+    };
+    onGlobalMousedown = () => {
+        usingKeyboard.value = false;
+    };
+    window.addEventListener("keydown", onGlobalKeydown, true);
+    window.addEventListener("mousedown", onGlobalMousedown, true);
+
+    window.ipcRenderer?.on("app:local-shortcut-execute::global_search", async () => {
+        if (!showInput.value) {
+            showInput.value = true;
+            await nextTick();
+            inputRef.value?.focus();
+        } else {
+            await nextTick();
+            inputRef.value?.focus();
+        }
+    });
 });
 
 onUnmounted(() => {
     window.removeEventListener("keydown", handleKeydown);
     document.removeEventListener("click", handleClickOutside);
+    if (onGlobalKeydown) window.removeEventListener("keydown", onGlobalKeydown, true);
+    if (onGlobalMousedown) window.removeEventListener("mousedown", onGlobalMousedown, true);
+    window.ipcRenderer?.removeAllListeners?.("app:local-shortcut-execute::global_search");
 });
 </script>
 
@@ -44,6 +186,7 @@ onUnmounted(() => {
             tabindex="0"
             class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
             @click.stop="toggleInputVisibility"
+            aria-label="Open global search"
         >
             <MagnifyingGlassIcon
                 class="size-4"
@@ -51,22 +194,61 @@ onUnmounted(() => {
             />
         </button>
 
+        <!-- Spotlight-like full-screen overlay -->
         <div
-            :class="{ 'dropdown-open': showInput || globalSearch.search.length > 0 }"
-            class="dropdown dropdown-left"
+            v-show="showInput"
+            class="fixed inset-0 !z-[440] bg-base-300/30 backdrop-blur-md flex items-start justify-center p-6"
+            @click.self="showInput = false"
+            role="dialog"
+            aria-modal="true"
         >
+            <button
+                class="absolute top-0 right-0 mr-8 mt-8 btn btn-sm btn-circle"
+                @click.stop="showInput = false"
+                aria-label="Close search"
+            >
+                <XMarkIcon class="w-5 h-5" />
+            </button>
             <div
-                v-show="showInput"
-                tabindex="0"
-                class="dropdown-content z-300 menu p-2 bg-base-300 shadow-lg rounded-box w-60 mt-[8px] !right-0"
+                class="global-search-content w-full max-w-2xl bg-base-300 rounded-xl shadow-xl p-4 mt-24 space-y-4 overflow-y-auto"
+                @click.stop
             >
                 <input
                     ref="inputRef"
                     v-model="globalSearch.search"
                     type="text"
-                    class="input input-sm rounded-md font-normal font-sans p-2"
+                    class="input input-md w-full rounded-md font-normal font-sans p-3"
                     placeholder="Search"
+                    @keydown.enter.prevent="showInput = false"
+                    @keydown.down.prevent="focusBadge(0)"
                 />
+
+                <div
+                    v-if="badges.length && searchTerm"
+                    class="flex flex-wrap gap-2"
+                >
+                    <button
+                        v-for="(badge, index) in badges"
+                        :key="badge.key"
+                        type="button"
+                        :ref="(el) => setBadgeRef(el, index)"
+                        class="badge badge-soft capitalize cursor-pointer select-none border border-base-content/20 hover:border-base-content/40 transition-colors"
+                        :class="keyboardFocusClasses"
+                        @click="activateBadge(badge)"
+                        @keydown="onBadgeKeydown($event, badge, index)"
+                        :aria-label="`Open ${badge.label} screen`"
+                    >
+                        {{ badge.label }}
+                        <span class="font-semibold">{{ badge.count }}</span>
+                    </button>
+                </div>
+
+                <div
+                    v-if="searchTerm && !badges.length"
+                    class="text-base font-sans"
+                >
+                    {{ $t("no_records_found") }}
+                </div>
             </div>
         </div>
     </div>
