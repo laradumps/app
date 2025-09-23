@@ -25,6 +25,7 @@ const form: Ref<ConnectionConfig> = ref({
     auth_type: "key",
     password: "",
     private_key: "",
+    passphrase: "",
     new_window: false,
     connected: false
 });
@@ -152,6 +153,7 @@ const chooseFile = () => {
 };
 
 window.ipcRenderer.on("choose-file-response", (_, filePath) => {
+    form.value.passphrase = "";
     form.value.private_key = filePath;
 });
 </script>
@@ -323,7 +325,6 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                             class="grid grid-cols-3 items-center"
                         >
                             <div>{{ $t("ssh.private_key") }}</div>
-
                             <div class="join col-span-2">
                                 <div class="w-full">
                                     <label class="input join-item input-bordered input-base">
@@ -346,6 +347,20 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                                     </span>
                                 </button>
                             </div>
+                        </div>
+                        <Divider v-if="form.auth_type === 'key'" />
+                        <div
+                            v-if="form.auth_type === 'key'"
+                            class="grid grid-cols-3 items-center"
+                        >
+                            <div>Passphrase</div>
+                            <input
+                                type="password"
+                                id="passphrase"
+                                v-model="form.passphrase"
+                                :disabled="form.private_key === ''"
+                                class="input input-bordered input-base w-full col-span-2"
+                            />
                         </div>
                         <Divider />
                         <div class="grid grid-cols-3 items-center">
