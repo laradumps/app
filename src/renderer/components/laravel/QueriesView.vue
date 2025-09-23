@@ -499,15 +499,15 @@ const convertMsToHumanReadable = (): string => {
             class="space-y-2"
             v-if="queriesStore.payload.length > 0 && timeStore.selected"
         >
-            <div class="flex justify-between">
+            <div class="flex justify-between items-center">
                 <button
-                    class="btn btn-soft btn-sm hover:text-primary text-sm font-normal"
+                    class="btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
                     @click="openRequestsModal()"
                 >
-                    <span class="badge rounded-full bg-primary text-primary-content text-xs font-normal p-1 px-2">
-                        {{ timeStore.getRequestCount() }}
+                    <ArrowsRightLeftIcon class="w-4 inline-block" />
+                    <span class="opacity-80">
+                        ({{ timeStore.getRequestCount() }})
                     </span>
-                    <ArrowsRightLeftIcon class="w-3.5 inline-block" />
                     {{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}
                 </button>
                 <span class="text-base font-sans text-primary font-normal">{{ convertMsToHumanReadable() }}</span>

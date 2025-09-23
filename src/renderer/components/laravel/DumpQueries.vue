@@ -33,13 +33,6 @@ const showToggleControls = ref(false);
 const resizeObserver = ref<ResizeObserver | null>(null);
 const isManualToggle = ref(false);
 
-const isHighlighted = computed(() => {
-    if (!props.payload.queries?.query.sql || !duplicatesStore.selectedSql) {
-        return false;
-    }
-    return duplicatesStore.selectedSql === props.payload.queries.query.sql;
-});
-
 const checkContainerHeight = () => {
     if (!codeContainer.value || isManualToggle.value) return;
 
@@ -121,8 +114,7 @@ const formattedSql = computed(() => {
 <template>
     <div
         v-if="payload.queries"
-        class="rounded-sm space-y-2 p-2"
-        :class="{ 'highlight-duplicated': isHighlighted }"
+        class="rounded-sm space-y-3 p-2 pt-0"
     >
         <dialog
             ref="modalRef"
@@ -166,6 +158,7 @@ const formattedSql = computed(() => {
                     title="This query has problematic nodes in the EXPLAIN plan."
                 >
                     <BoltIcon class="w-4" />
+                    <span>Explain</span>
                 </button>
 
                 <!-- Duplicated Query Icon -->
@@ -175,6 +168,7 @@ const formattedSql = computed(() => {
                     class="btn btn-soft btn-xs btn-error"
                 >
                     <ExclamationTriangleIcon class="w-4" />
+                    <span>Duplicated</span>
                 </button>
             </div>
         </div>
@@ -236,20 +230,5 @@ code.line-clamp-[14] {
 code:not(.line-clamp-[14]) {
     max-height: none;
     transition: max-height 0.3s ease;
-}
-
-@keyframes blink-red-border {
-    0%,
-    100% {
-        border-color: #ef4444; /* red-500 */
-    }
-    50% {
-        border-color: transparent;
-    }
-}
-
-.highlight-duplicated {
-    @apply border border-solid border-error rounded-md shadow-md;
-    animation: blink-red-border 1s 3;
 }
 </style>
