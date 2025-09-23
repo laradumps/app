@@ -656,7 +656,6 @@ onUnmounted(() => {
     @apply !text-xs;
 }
 
-
 @keyframes blink-red-border {
     0%,
     100% {

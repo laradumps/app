@@ -146,5 +146,6 @@ export default {
     toast_removed_successfully: "성공적으로 제거되었습니다.",
     installing: "Installing",
     installing_wait_message: "This may take a few moments...",
-    no_project_selected: "No Project selected"
+    no_project_selected: "No Project selected",
+    no_records_found: "No records found."
 };

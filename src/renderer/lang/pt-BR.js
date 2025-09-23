@@ -146,5 +146,6 @@ export default {
     toast_removed_successfully: "Removido com sucesso.",
     installing: "Instalando",
     installing_wait_message: "Isso pode levar alguns instantes...",
-    no_project_selected: "Nenhum projeto selecionado"
+    no_project_selected: "Nenhum projeto selecionado",
+    no_records_found: "Nenhum registro encontrado."
 };
