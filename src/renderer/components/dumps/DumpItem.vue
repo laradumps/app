@@ -328,6 +328,13 @@ const isPercentageColors = computed(() => {
     return props.payload.type == "queries" && queriesChart.type === "percentage-colors";
 });
 
+const isHighlighted = computed(() => {
+    if (!props.payload.queries?.query.sql || !duplicatesStore.selectedSql) {
+        return false;
+    }
+    return duplicatesStore.selectedSql === props.payload.queries.query.sql;
+});
+
 onUnmounted(() => {
     window.removeEventListener("keydown", onKeydown);
     window.removeEventListener("ld-context-open", onOtherContextOpen as EventListener);
@@ -341,6 +348,7 @@ onUnmounted(() => {
             :class="{
                 'border border-base-content/5': isPercentageColors,
                 'collapse-open': open,
+                'highlight-duplicated': isHighlighted,
                 [containerClasses]: true
             }"
             class="border-base-300 collapse rounded-none"
@@ -646,5 +654,21 @@ onUnmounted(() => {
 
 .vjs-comment {
     @apply !text-xs;
+}
+
+
+@keyframes blink-red-border {
+    0%,
+    100% {
+        border-color: var(--color-error);
+    }
+    50% {
+        border-color: transparent;
+    }
+}
+
+.highlight-duplicated {
+    @apply border border-solid border-error/40 bg-error/5 rounded-md shadow-lg;
+    animation: blink-red-border 1s 3;
 }
 </style>

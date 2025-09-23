@@ -115,7 +115,7 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
-    mainWindow.webContents.send("new.dumps");
+    mainWindow.webContents.send("dumps");
     event.sender.send(arg.type, arg);
 });
 
