@@ -135,7 +135,7 @@ const counts = computed(() => {
 
 const badges = computed(() => {
     return [
-        { key: "dumps", label: "dumps", count: counts.value.dumps },
+        { key: "dumps", label: "home", count: counts.value.dumps },
         { key: "logs", label: "logs", count: counts.value.logs },
         { key: "jobs", label: "jobs", count: counts.value.jobs },
         { key: "mail", label: "mail", count: counts.value.mail },
