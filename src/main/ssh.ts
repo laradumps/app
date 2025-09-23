@@ -19,7 +19,9 @@ class SSHClient {
             port: connectionConfig.port,
             username: connectionConfig.username,
             password: "",
-            privateKey: ""
+            privateKey: "",
+            passphrase: "",
+            authHandler: undefined
         };
 
         this.name = connectionConfig.name;
@@ -31,9 +33,11 @@ class SSHClient {
         if (connectionConfig.auth_type === "key" && connectionConfig.private_key) {
             try {
                 this.config.privateKey = readFileSync(connectionConfig.private_key, "utf8");
+                this.config.passphrase = connectionConfig.passphrase;
             } catch (error: any) {
                 //
             }
+            this.config.authHandler = ["publickey"];
         }
         this.conn = new Client();
         this.isConnected = false;
