@@ -22,7 +22,7 @@ type State = {
 
 export const useLogStore = defineStore("logStore", {
     state: (): State => ({
-        logs: JSON.parse(localStorage.getItem("logs") || "[]")
+        logs: JSON.parse(localStorage.getItem("logs") || "{}")
     }),
     actions: {
         add(content: Payload) {
@@ -30,7 +30,8 @@ export const useLogStore = defineStore("logStore", {
                 return;
             }
 
-            const log_id = content.log_application.context[1];
+            const rawId = content.log_application.context[1];
+            const log_id = `log_${rawId}`;
 
             this._removeOldestIfExceedsLimit();
 
@@ -55,10 +56,10 @@ export const useLogStore = defineStore("logStore", {
 
             const date = new Date();
 
-            const log_id = log_application.context[1];
+            const log_id = `log_${log_application.context[1]}`;
 
             this.logs[log_id] = {
-                log_id: log_application.context[1],
+                log_id,
                 level: log_application.level,
                 context: log_application.context,
                 message: log_application.message,
