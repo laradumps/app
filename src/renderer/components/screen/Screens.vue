@@ -86,7 +86,14 @@ const getPayloadScreenCount = (screenName) => {
     };
 
     const items = stores[screenName] || payloadStore.get(screenName);
-    const count = Array.isArray(items) ? items.length : Object.entries(items).length;
+
+    let count = 0;
+
+    if (Array.isArray(items)) {
+        count = items.length;
+    } else if (items && typeof items === "object") {
+        count = Object.keys(items).length;
+    }
 
     return count > 0 ? `(${count})` : "";
 };
