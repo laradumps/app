@@ -7,6 +7,7 @@ export interface Shortcut {
 export interface Shortcuts {
     clear_all: Shortcut;
     always_on_top: Shortcut;
+    global_search: Shortcut;
 }
 
 export interface Settings {
