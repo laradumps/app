@@ -609,6 +609,18 @@ const dispatch = (content: any): void => {
         });
     }
 
+    if (splitPanesStore.splitConfig?.active) {
+        const paneAScreen = screenStore.screen;
+        const targetScreen = content.to_screen.screen_name;
+
+        nextTick(() => {
+            toggleScreen(targetScreen, false);
+            setTimeout(() => toggleScreen(paneAScreen, true), 300)
+        });
+
+        return;
+    }
+
     if (screenStore.get(content.to_screen.screen_name)?.pinned) {
         nextTick(() => toggleScreen(content.to_screen.screen_name, true));
     } else {
