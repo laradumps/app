@@ -109,6 +109,11 @@ export const useSettingsStore = defineStore("settings", () => {
         localStorage.setItem("user-settings", JSON.stringify(newSettings));
     };
 
+    const setSplitPaneScreen = (screenName: string | null) => {
+        settings.value.split_pane_screen = screenName;
+        update();
+    };
+
     watch(
         () => settings.value.theme,
         (newTheme) => {
@@ -131,6 +136,7 @@ export const useSettingsStore = defineStore("settings", () => {
         updateAvailable,
         latestVersion,
         setUpdateAvailable,
-        markUpdated
+        markUpdated,
+        setSplitPaneScreen
     };
 });

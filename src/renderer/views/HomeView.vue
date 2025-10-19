@@ -178,6 +178,10 @@ onMounted(() => {
 
     toggleScreen("home");
 
+    if (settingsStore.settings.split_pane_screen) {
+        splitPanesStore.setSplit(settingsStore.settings.split_pane_screen, "vertical");
+    }
+
     window.addEventListener("add-screen", (event: Event) => {
         const detail: Environment = (event as CustomEvent).detail;
 
@@ -688,6 +692,7 @@ const handleDropZone = (zone: "right" | "bottom") => {
     const orientation = zone === "right" ? "vertical" : "horizontal";
 
     splitPanesStore.setSplit(draggedScreenName.value, orientation);
+    settingsStore.setSplitPaneScreen(draggedScreenName.value);
 
     if (screenStore.screen === draggedScreenName.value) {
         const nextScreen = screenStore.getNext(draggedScreenName.value);
@@ -702,6 +707,7 @@ const handleDropZone = (zone: "right" | "bottom") => {
 
 const handleCloseSplit = () => {
     splitPanesStore.clearSplit();
+    settingsStore.setSplitPaneScreen(null);
 };
 
 const handleDragEnd = () => {

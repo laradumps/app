@@ -34,4 +34,5 @@ export interface Settings {
     show_badge_count: boolean;
     show_context: boolean;
     show_tips: boolean;
+    split_pane_screen?: string | null;
 }
