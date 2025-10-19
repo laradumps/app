@@ -274,7 +274,7 @@ const convertMsToHumanReadable = (): string => {
             <!-- Prettify -->
             <button
                 data-tippy-content="Prettify"
-                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                 @click="formattedQueriesStore.toggle()"
                 :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
                 v-if="queries.length > 0"
@@ -290,7 +290,7 @@ const convertMsToHumanReadable = (): string => {
                 <button
                     tabindex="0"
                     role="button"
-                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                     :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
                     :class="{
                         'border-primary text-primary': filteredClasses.length > 0 || filteredOrigins.length > 0 || duplicatesStore.showOnlyDuplicated
@@ -383,7 +383,7 @@ const convertMsToHumanReadable = (): string => {
                 :class="{
                     'border-primary text-primary': ['asc', 'desc'].includes(timeStore.order)
                 }"
-                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                 @click="timeStore.toggleOrder()"
                 :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
                 :aria-label="orderLabel"
@@ -410,7 +410,7 @@ const convertMsToHumanReadable = (): string => {
                 <div
                     tabindex="0"
                     role="button"
-                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                     data-tippy-content="Chart Visibility"
                     :class="{
                         'border-primary text-primary': ['all', 'by-request', 'percentage-colors'].includes(queriesChart.type)
@@ -468,7 +468,7 @@ const convertMsToHumanReadable = (): string => {
             <!-- Pause -->
             <button
                 @click="pauseQueries.toggle()"
-                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                 :class="{
                     'border-primary text-primary': pauseQueries.is_paused
                 }"
@@ -488,7 +488,7 @@ const convertMsToHumanReadable = (): string => {
             <button
                 v-if="queries.length > 0"
                 @click="clear()"
-                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                 data-tippy-content="Clear"
             >
                 <TrashIcon class="w-4" />

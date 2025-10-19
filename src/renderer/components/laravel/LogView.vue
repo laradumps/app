@@ -371,7 +371,7 @@ const toggleMessageLimit = () => {
                             <button
                                 tabindex="0"
                                 role="button"
-                                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                             >
                                 <FunnelIcon
                                     v-if="levelFilter.length === 0"
@@ -402,7 +402,7 @@ const toggleMessageLimit = () => {
 
                         <button
                             @click="pauseLogsStore.toggle()"
-                            class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                            class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                             :data-tippy-content="$t('pause')"
                         >
                             <PlayIcon
@@ -417,7 +417,7 @@ const toggleMessageLimit = () => {
                         <button
                             v-if="totalLogs > 0"
                             @click="clear()"
-                            class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle"
+                            class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                             data-tippy-content="Clear"
                         >
                             <TrashIcon class="w-4" />

@@ -888,7 +888,7 @@ const handleDragEnd = () => {
                                     <h2 class="text-sm font-semibold capitalize">{{ splitPanesStore.splitConfig.screenName }}</h2>
                                     <button
                                         @click="handleCloseSplit"
-                                        class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle z-[9999]"
+                                        class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft z-[9999]"
                                         aria-label="Close split"
                                         title="Close split"
                                     >
