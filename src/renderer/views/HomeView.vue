@@ -654,7 +654,35 @@ const openScreenWindow = () => {
 };
 
 const groupedDumps = computed(() => {
+    if (!settingsStore.settings.grouped_by_time) {
+        return { ungrouped: dumpsBagFiltered.value };
+    }
+
     return dumpsBagFiltered.value.reduce(
+        (groups, payload) => {
+            const groupKey = moment(payload.date_time).format("YYYY-MM-DD HH:mm:ss");
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
+            }
+            groups[groupKey].push(payload);
+            return groups;
+        },
+        {} as Record<string, Payload[]>
+    );
+});
+
+const groupedSplitDumps = computed(() => {
+    if (!splitPanesStore.splitConfig?.screenName) {
+        return {};
+    }
+
+    const screenPayloads = payloadStore.get(splitPanesStore.splitConfig.screenName);
+
+    if (!settingsStore.settings.grouped_by_time) {
+        return { ungrouped: screenPayloads };
+    }
+
+    return screenPayloads.reduce(
         (groups, payload) => {
             const groupKey = moment(payload.date_time).format("YYYY-MM-DD HH:mm:ss");
             if (!groups[groupKey]) {
@@ -827,7 +855,7 @@ const handleDragEnd = () => {
                                                     class="w-full px-3"
                                                 >
                                                     <div
-                                                        v-if="!['livewire'].includes(screenStore.screen)"
+                                                        v-if="!['livewire'].includes(screenStore.screen) && settingsStore.settings.grouped_by_time"
                                                         class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                                     >
                                                         <span class="opacity-70 px-1" :title="groupKey">
@@ -845,7 +873,7 @@ const handleDragEnd = () => {
                                                             class="w-full group text-sm mb-3"
                                                             v-show="screenStore.screen !== 'livewire'"
                                                             :payload="payload"
-                                                            :show-time="false"
+                                                            :show-time="!settingsStore.settings.grouped_by_time"
                                                             @delete-dump="deleteDump"
                                                         />
                                                     </div>
@@ -911,7 +939,7 @@ const handleDragEnd = () => {
                                         <QueriesView />
                                     </div>
 
-                                    <div v-else class="p-3">
+                                    <div v-else class="px-3">
                                         <div
                                             v-if="payloadStore.get(splitPanesStore.splitConfig.screenName).length === 0"
                                             class="flex items-center justify-center h-full py-20"
@@ -924,18 +952,38 @@ const handleDragEnd = () => {
                                             </div>
                                         </div>
 
-                                        <div v-else>
+                                        <div
+                                            v-else
+                                            :class="{
+                                                'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal'
+                                            }"
+                                        >
                                             <div
-                                                v-for="payload in payloadStore.get(splitPanesStore.splitConfig.screenName)"
-                                                :key="payload.sf_dump_id"
-                                                class="w-full mb-3"
+                                                v-for="(group, groupKey) in groupedSplitDumps"
+                                                :key="groupKey"
+                                                class="w-full"
                                             >
-                                                <DumpItem
-                                                    class="w-full group text-sm"
-                                                    :payload="payload"
-                                                    :show-time="true"
-                                                    @delete-dump="deleteDump"
-                                                />
+                                                <div
+                                                    v-if="!['livewire'].includes(splitPanesStore.splitConfig.screenName) && settingsStore.settings.grouped_by_time"
+                                                    class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
+                                                >
+                                                    <span class="opacity-70 px-1" :title="groupKey">
+                                                        {{ moment(groupKey).format("HH:mm:ss") }}
+                                                    </span>
+                                                </div>
+
+                                                <div
+                                                    v-for="payload in settingsStore.settings.dump_order === 'normal' ? group.slice().reverse() : group"
+                                                    :key="payload.sf_dump_id"
+                                                    class="w-full mb-3"
+                                                >
+                                                    <DumpItem
+                                                        class="w-full group text-sm"
+                                                        :payload="payload"
+                                                        :show-time="!settingsStore.settings.grouped_by_time"
+                                                        @delete-dump="deleteDump"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1013,7 +1061,7 @@ const handleDragEnd = () => {
                                             class="w-full px-3"
                                         >
                                             <div
-                                                v-if="!['livewire'].includes(screenStore.screen)"
+                                                v-if="!['livewire'].includes(screenStore.screen) && settingsStore.settings.grouped_by_time"
                                                 class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                             >
                                                 <span
@@ -1034,7 +1082,7 @@ const handleDragEnd = () => {
                                                     class="w-full group text-sm mb-3"
                                                     v-show="screenStore.screen !== 'livewire'"
                                                     :payload="payload"
-                                                    :show-time="false"
+                                                    :show-time="!settingsStore.settings.grouped_by_time"
                                                     @delete-dump="deleteDump"
                                                 />
                                             </div>

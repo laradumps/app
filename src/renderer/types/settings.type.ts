@@ -35,4 +35,5 @@ export interface Settings {
     show_context: boolean;
     show_tips: boolean;
     split_pane_screen?: string | null;
+    grouped_by_time: boolean;
 }
