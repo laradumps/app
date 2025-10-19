@@ -167,7 +167,11 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
                                                 v-for="profile in selected.profile"
                                                 @mouseover="focusItem(profile)"
                                                 @mouseleave="focus = ''"
-                                                :class="[profile?.classes || {}, { 'bg-neutral text-neutral-content shadow-lg': focus === profile.method }, { hidden: !profile.hasOwnProperty('method') }]"
+                                                :class="[
+                                                    profile?.classes || {},
+                                                    { 'bg-neutral text-neutral-content shadow-lg': focus === profile.method },
+                                                    { hidden: !profile.hasOwnProperty('method') }
+                                                ]"
                                                 class="border-l-4 !border-r-0 !border-y-base-200 cursor-pointer border items-center hover:bg-neutral hover:text-neutral-content flex justify-between rounded p-2 py-1"
                                             >
                                                 <div class="font-semibold text-xs">{{ profile.method }}</div>

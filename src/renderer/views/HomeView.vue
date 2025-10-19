@@ -619,7 +619,7 @@ const dispatch = (content: any): void => {
 
         nextTick(() => {
             toggleScreen(targetScreen, false);
-            setTimeout(() => toggleScreen(paneAScreen, true), 100)
+            setTimeout(() => toggleScreen(paneAScreen, true), 100);
         });
 
         return;
@@ -789,7 +789,10 @@ const handleDragEnd = () => {
             <div v-else>
                 <TheAppUpdateInfo />
 
-                <div v-if="splitPanesStore.splitConfig?.active" class="fixed inset-0 top-[41px] flex flex-col">
+                <div
+                    v-if="splitPanesStore.splitConfig?.active"
+                    class="fixed inset-0 top-[41px] flex flex-col"
+                >
                     <SplitPanes
                         :orientation="splitPanesStore.splitConfig.orientation"
                         @close="handleCloseSplit"
@@ -858,7 +861,10 @@ const handleDragEnd = () => {
                                                         v-if="!['livewire'].includes(screenStore.screen) && settingsStore.settings.grouped_by_time"
                                                         class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                                     >
-                                                        <span class="opacity-70 px-1" :title="groupKey">
+                                                        <span
+                                                            class="opacity-70 px-1"
+                                                            :title="groupKey"
+                                                        >
                                                             {{ moment(groupKey).format("HH:mm:ss") }}
                                                         </span>
                                                     </div>
@@ -908,7 +914,7 @@ const handleDragEnd = () => {
 
                         <template #pane-b>
                             <div class="flex flex-col h-full overflow-hidden">
-                                <div class="flex-shrink-0  h-[48px] px-3 py-1.5 items-center justify-between flex">
+                                <div class="flex-shrink-0 h-[48px] px-3 py-1.5 items-center justify-between flex">
                                     <h2 class="text-sm font-semibold capitalize">{{ splitPanesStore.splitConfig.screenName }}</h2>
                                     <button
                                         @click="handleCloseSplit"
@@ -916,8 +922,18 @@ const handleDragEnd = () => {
                                         aria-label="Close split"
                                         title="Close split"
                                     >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        <svg
+                                            class="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"
+                                            ></path>
                                         </svg>
                                     </button>
                                 </div>
@@ -939,7 +955,10 @@ const handleDragEnd = () => {
                                         <QueriesView />
                                     </div>
 
-                                    <div v-else class="px-3">
+                                    <div
+                                        v-else
+                                        class="px-3"
+                                    >
                                         <div
                                             v-if="payloadStore.get(splitPanesStore.splitConfig.screenName).length === 0"
                                             class="flex items-center justify-center h-full py-20"
@@ -967,7 +986,10 @@ const handleDragEnd = () => {
                                                     v-if="!['livewire'].includes(splitPanesStore.splitConfig.screenName) && settingsStore.settings.grouped_by_time"
                                                     class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                                 >
-                                                    <span class="opacity-70 px-1" :title="groupKey">
+                                                    <span
+                                                        class="opacity-70 px-1"
+                                                        :title="groupKey"
+                                                    >
                                                         {{ moment(groupKey).format("HH:mm:ss") }}
                                                     </span>
                                                 </div>

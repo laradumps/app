@@ -141,5 +141,4 @@ onUnmounted(() => {
 .divider:hover::after {
     @apply bg-blue-500/40;
 }
-
 </style>

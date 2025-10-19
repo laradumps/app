@@ -14,7 +14,7 @@ const handleDragEnter = (zone) => {
 };
 
 const handleDragLeave = (e) => {
-    if (e.target.classList.contains('drop-zone')) {
+    if (e.target.classList.contains("drop-zone")) {
         activeZone.value = null;
     }
 };
@@ -25,7 +25,10 @@ const handleDrop = (zone) => {
 };
 </script>
 <template>
-    <div v-if="isDragging" class="drop-zones-overlay">
+    <div
+        v-if="isDragging"
+        class="drop-zones-overlay"
+    >
         <div
             class="drop-zone drop-zone-right"
             :class="{ 'drop-zone-active': activeZone === 'right' }"
@@ -34,12 +37,13 @@ const handleDrop = (zone) => {
             @dragover.prevent
             @drop.prevent="handleDrop('right')"
         >
-            <span class="drop-zone-indicator">
-                Drop to split right
-            </span>
+            <span class="drop-zone-indicator"> Drop to split right </span>
         </div>
 
-        <div v-if="activeZone" class="split-preview">
+        <div
+            v-if="activeZone"
+            class="split-preview"
+        >
             <div class="preview-pane preview-main"></div>
             <div class="preview-pane preview-new"></div>
         </div>

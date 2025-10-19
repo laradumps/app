@@ -26,4 +26,3 @@ export const useSplitPanesStore = defineStore("split-panes", () => {
         clearSplit
     };
 });
-
