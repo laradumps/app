@@ -9,7 +9,6 @@ import { useQueriesBlockedStore } from "@/store/queries-blocked";
 import { ArrowsRightLeftIcon, ChartBarIcon, FunnelIcon, PlayIcon, SparklesIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
-import "splitpanes/dist/splitpanes.css";
 import QueriesRequests from "@/components/laravel/QueriesRequests.vue";
 import IconPause from "@/components/Icons/IconPause.vue";
 import { usePauseQueriesStore } from "@/store/pause-queries";
@@ -568,10 +567,3 @@ const convertMsToHumanReadable = (): string => {
         </div>
     </div>
 </template>
-<style scoped>
-@reference "./../../styles.css";
-
-::v-deep(.splitpanes__splitter) {
-    @apply opacity-0 hover:opacity-100 min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
-}
-</style>

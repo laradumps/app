@@ -177,7 +177,6 @@ watch(settingsStore.settings, async (value, oldValue) => {
             reset: true
         });
     }
-    await saveSettings();
 });
 
 const editShortcut = () => {

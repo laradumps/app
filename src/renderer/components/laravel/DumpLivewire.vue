@@ -4,8 +4,7 @@ import DumpQuery from "@/components/laravel/DumpQuery.vue";
 import VueJsonPretty from "vue-json-pretty";
 import { useLivewireStore } from "@/store/livewire";
 import { LivewirePayload } from "@/types/Payload";
-import { Pane, Splitpanes } from "splitpanes";
-import "splitpanes/dist/splitpanes.css";
+import SplitPanes from "@/components/split/SplitPanes.vue";
 
 const livewireStore = useLivewireStore();
 
@@ -95,11 +94,11 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
         v-if="livewireStore.requests.length > 0"
     >
         <div class="space-y-3 h-[calc(100vh-140px)]">
-            <Splitpanes vertical>
-                <pane
-                    size="28"
-                    class="overflow-auto pb-1 text-sm"
-                >
+            <SplitPanes
+                orientation="vertical"
+                :initial-split="28"
+            >
+                <template #pane-a>
                     <div
                         class="overflow-auto flex flex-col gap-1"
                         style="height: -webkit-fill-available"
@@ -123,150 +122,152 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
                             </div>
                         </div>
                     </div>
-                </pane>
+                </template>
 
-                <pane class="overflow-auto ml-2 text-sm">
-                    <div
-                        v-if="selected"
-                        class="flex flex-col w-full space-y-2"
-                    >
+                <template #pane-b>
+                    <div class="overflow-auto ml-2 text-sm">
                         <div
-                            role="tablist"
-                            class="tabs tabs-sm tabs-border w-full"
+                            v-if="selected"
+                            class="flex flex-col w-full space-y-2"
                         >
-                            <input
-                                type="radio"
-                                name="livewire_tab"
-                                role="tab"
-                                class="tab capitalize"
-                                aria-label="Profile"
-                                checked
-                            />
-
-                            <!-- Profile Tab -->
                             <div
-                                role="tabpanel"
-                                class="tab-content p-3"
+                                role="tablist"
+                                class="tabs tabs-sm tabs-border w-full"
                             >
-                                <div class="overflow-x-auto flex flex-col gap-3 w-full">
-                                    <div class="progress-container">
-                                        <div
-                                            v-for="(profile, index) in selected.profile"
-                                            :key="index"
-                                            :class="[profile?.graphic_classes, { 'h-[32px] !opacity-100 shadow-lg': focus === profile?.method }]"
-                                            class="progress-bar cursor-pointer opacity-60"
-                                            @mouseover="focusItem(profile)"
-                                            @mouseleave="focus = ''"
-                                            :style="{ width: profile && typeof profile.duration === 'number' && !isNaN(profile.duration) ? itemPercentage(profile) + '%' : '0%' }"
-                                            :title="profile && typeof profile.duration === 'number' && !isNaN(profile.duration) ? itemPercentage(profile).toFixed(1) + '%' : '0%'"
-                                        ></div>
-                                    </div>
+                                <input
+                                    type="radio"
+                                    name="livewire_tab"
+                                    role="tab"
+                                    class="tab capitalize"
+                                    aria-label="Profile"
+                                    checked
+                                />
 
-                                    <div class="overflow-auto space-y-1.5 h-[calc(100vh-15rem)]">
-                                        <div
-                                            v-for="profile in selected.profile"
-                                            @mouseover="focusItem(profile)"
-                                            @mouseleave="focus = ''"
-                                            :class="[profile?.classes || {}, { 'bg-neutral text-neutral-content shadow-lg': focus === profile.method }, { hidden: !profile.hasOwnProperty('method') }]"
-                                            class="border-l-4 !border-r-0 !border-y-base-200 cursor-pointer border items-center hover:bg-neutral hover:text-neutral-content flex justify-between rounded p-2 py-1"
-                                        >
-                                            <div class="font-semibold text-xs">{{ profile.method }}</div>
-                                            <div>
-                                                <span class="text-lg">{{ profile.duration }}</span
-                                                >ms
+                                <!-- Profile Tab -->
+                                <div
+                                    role="tabpanel"
+                                    class="tab-content p-3"
+                                >
+                                    <div class="overflow-x-auto flex flex-col gap-3 w-full">
+                                        <div class="progress-container">
+                                            <div
+                                                v-for="(profile, index) in selected.profile"
+                                                :key="index"
+                                                :class="[profile?.graphic_classes, { 'h-[32px] !opacity-100 shadow-lg': focus === profile?.method }]"
+                                                class="progress-bar cursor-pointer opacity-60"
+                                                @mouseover="focusItem(profile)"
+                                                @mouseleave="focus = ''"
+                                                :style="{ width: profile && typeof profile.duration === 'number' && !isNaN(profile.duration) ? itemPercentage(profile) + '%' : '0%' }"
+                                                :title="profile && typeof profile.duration === 'number' && !isNaN(profile.duration) ? itemPercentage(profile).toFixed(1) + '%' : '0%'"
+                                            ></div>
+                                        </div>
+
+                                        <div class="overflow-auto space-y-1.5 h-[calc(100vh-15rem)]">
+                                            <div
+                                                v-for="profile in selected.profile"
+                                                @mouseover="focusItem(profile)"
+                                                @mouseleave="focus = ''"
+                                                :class="[profile?.classes || {}, { 'bg-neutral text-neutral-content shadow-lg': focus === profile.method }, { hidden: !profile.hasOwnProperty('method') }]"
+                                                class="border-l-4 !border-r-0 !border-y-base-200 cursor-pointer border items-center hover:bg-neutral hover:text-neutral-content flex justify-between rounded p-2 py-1"
+                                            >
+                                                <div class="font-semibold text-xs">{{ profile.method }}</div>
+                                                <div>
+                                                    <span class="text-lg">{{ profile.duration }}</span
+                                                    >ms
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Properties Tab -->
-                            <input
-                                type="radio"
-                                name="livewire_tab"
-                                role="tab"
-                                class="tab capitalize"
-                                aria-label="Properties"
-                            />
-                            <div
-                                role="tabpanel"
-                                class="tab-content p-3 overflow-auto"
-                            >
-                                <div v-html="selected.properties[0]"></div>
-                            </div>
-
-                            <input
-                                v-if="selected.errors.length > 0"
-                                type="radio"
-                                name="livewire_tab"
-                                role="tab"
-                                class="tab capitalize"
-                                aria-label="Validation"
-                            />
-                            <div
-                                role="tabpanel"
-                                class="tab-content bg-base-100 border-base-300 p-4"
-                            >
-                                <div v-html="selected.errors[0]"></div>
-                            </div>
-
-                            <!-- Queries Tab -->
-                            <input
-                                v-if="selected.queries.length > 0"
-                                type="radio"
-                                name="livewire_tab"
-                                role="tab"
-                                class="tab capitalize"
-                                aria-label="Queries"
-                            />
-                            <div
-                                role="tabpanel"
-                                class="tab-content p-3 overflow-auto max-h-[calc(100vh-184px)]"
-                            >
-                                <div>
-                                    <div class="text-sm font-semibold text-base-content mb-2">
-                                        {{ selected.queries.length }} Queries
-                                        <span class="ml-2 text-xs text-gray-500"> ({{ totalQueriesTime.toFixed(2) }} ms) </span>
-                                    </div>
-
-                                    <DumpQuery
-                                        v-for="query in selected.queries"
-                                        class="w-full border-b border-base-300 mb-3 pb-3"
-                                        :query="query"
-                                    />
+                                <!-- Properties Tab -->
+                                <input
+                                    type="radio"
+                                    name="livewire_tab"
+                                    role="tab"
+                                    class="tab capitalize"
+                                    aria-label="Properties"
+                                />
+                                <div
+                                    role="tabpanel"
+                                    class="tab-content p-3 overflow-auto"
+                                >
+                                    <div v-html="selected.properties[0]"></div>
                                 </div>
-                            </div>
 
-                            <input
-                                v-if="selected.events.length > 0"
-                                type="radio"
-                                name="livewire_tab"
-                                role="tab"
-                                class="tab capitalize"
-                                aria-label="Events"
-                            />
-                            <div
-                                role="tabpanel"
-                                class="tab-content bg-base-100 border-base-300 p-4"
-                            >
-                                <div v-for="event in selected.events">
-                                    <div class="font-normal tracking-wider text-sm">{{ event.name }}</div>
+                                <input
+                                    v-if="selected.errors.length > 0"
+                                    type="radio"
+                                    name="livewire_tab"
+                                    role="tab"
+                                    class="tab capitalize"
+                                    aria-label="Validation"
+                                />
+                                <div
+                                    role="tabpanel"
+                                    class="tab-content bg-base-100 border-base-300 p-4"
+                                >
+                                    <div v-html="selected.errors[0]"></div>
+                                </div>
 
-                                    <div class="p-3 rounded-sm">
-                                        <VueJsonPretty
-                                            class="!text-xs"
-                                            :show-icon="true"
-                                            :show-lenght="true"
-                                            :show-line="false"
-                                            :data="event.params"
+                                <!-- Queries Tab -->
+                                <input
+                                    v-if="selected.queries.length > 0"
+                                    type="radio"
+                                    name="livewire_tab"
+                                    role="tab"
+                                    class="tab capitalize"
+                                    aria-label="Queries"
+                                />
+                                <div
+                                    role="tabpanel"
+                                    class="tab-content p-3 overflow-auto max-h-[calc(100vh-184px)]"
+                                >
+                                    <div>
+                                        <div class="text-sm font-semibold text-base-content mb-2">
+                                            {{ selected.queries.length }} Queries
+                                            <span class="ml-2 text-xs text-gray-500"> ({{ totalQueriesTime.toFixed(2) }} ms) </span>
+                                        </div>
+
+                                        <DumpQuery
+                                            v-for="query in selected.queries"
+                                            class="w-full border-b border-base-300 mb-3 pb-3"
+                                            :query="query"
                                         />
+                                    </div>
+                                </div>
+
+                                <input
+                                    v-if="selected.events.length > 0"
+                                    type="radio"
+                                    name="livewire_tab"
+                                    role="tab"
+                                    class="tab capitalize"
+                                    aria-label="Events"
+                                />
+                                <div
+                                    role="tabpanel"
+                                    class="tab-content bg-base-100 border-base-300 p-4"
+                                >
+                                    <div v-for="event in selected.events">
+                                        <div class="font-normal tracking-wider text-sm">{{ event.name }}</div>
+
+                                        <div class="p-3 rounded-sm">
+                                            <VueJsonPretty
+                                                class="!text-xs"
+                                                :show-icon="true"
+                                                :show-lenght="true"
+                                                :show-line="false"
+                                                :data="event.params"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </pane>
-            </Splitpanes>
+                </template>
+            </SplitPanes>
         </div>
     </div>
 </template>
@@ -283,10 +284,6 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
     height: 100%;
     margin: 2px !important;
     border-radius: 2px;
-}
-
-.splitpanes__splitter {
-    @apply opacity-100 min-w-[0.2rem] rounded-box bg-base-300 hover:bg-base-100;
 }
 
 .border-blue-600 {
