@@ -1,4 +1,5 @@
 @import "./sf-dump.css";
+@import "./splitpanes.css";
 
 @import "tailwindcss";
 
@@ -226,26 +227,4 @@ html:not([data-theme="light"]) .hljs-meta .hljs-string {
 .hljs-punctuation,
 .hljs-tag {
     /* purposely ignored */
-}
-
-.divider {
-    @apply bg-black/[0.02] z-40 shrink-0 w-1.5 cursor-col-resize flex items-center justify-center border-l border-r border-black/5 transition-colors duration-200 select-none h-full;
-    margin: var(--divider-m, 0rem 0);
-}
-
-.divider:hover {
-    @apply bg-blue-500/15;
-}
-
-.divider:active {
-    @apply bg-blue-500/25;
-}
-
-.divider::after {
-    content: "";
-    @apply w-0.5 h-[50px] bg-black/15 rounded-[3px] pointer-events-none;
-}
-
-.divider:hover::after {
-    @apply bg-blue-500/40;
 }

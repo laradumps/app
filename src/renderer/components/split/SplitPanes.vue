@@ -84,20 +84,4 @@ onUnmounted(() => {
 
 <style scoped>
 @reference "./../../styles.css";
-
-.split-root {
-    @apply flex flex-row w-full h-full relative;
-}
-
-.pane {
-    @apply overflow-hidden relative flex flex-col;
-}
-
-.pane-a {
-    @apply border-r border-black/5 shrink-0;
-}
-
-.pane-b {
-    @apply flex-1 min-w-0;
-}
 </style>
