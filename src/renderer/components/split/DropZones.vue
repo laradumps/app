@@ -1,4 +1,3 @@
-
 <script setup>
 import { ref } from "vue";
 
@@ -35,11 +34,9 @@ const handleDrop = (zone) => {
             @dragover.prevent
             @drop.prevent="handleDrop('right')"
         >
-            <div class="drop-zone-indicator">
-                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-            </div>
+            <span class="drop-zone-indicator">
+                Drop to split right
+            </span>
         </div>
 
         <div v-if="activeZone" class="split-preview">
@@ -52,42 +49,27 @@ const handleDrop = (zone) => {
 @reference "./../../styles.css";
 
 .drop-zones-overlay {
-    position: fixed;
+    @apply fixed left-0 right-0 bottom-0 pointer-events-none z-[9998];
     top: 44px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    z-index: 9998;
 }
 
 .drop-zone {
-    position: absolute;
-    pointer-events: all;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-    background: transparent;
+    @apply absolute pointer-events-auto flex items-center justify-center transition-all duration-150 ease-in-out bg-transparent;
 }
 
 .drop-zone-right {
-    top: 0;
-    right: 0;
+    @apply top-0 right-0 bottom-0;
     width: 45%;
-    bottom: 0;
 }
 
 .drop-zone-indicator {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
+    @apply opacity-0 transition-opacity duration-200 ease-in-out pointer-events-none;
     color: rgba(59, 130, 246, 0.4);
 }
 
 .drop-zone:hover .drop-zone-indicator,
 .drop-zone-active .drop-zone-indicator {
-    opacity: 1;
+    @apply opacity-100;
 }
 
 .drop-zone-active .drop-zone-indicator {
@@ -95,23 +77,12 @@ const handleDrop = (zone) => {
 }
 
 .split-preview {
-    position: fixed;
+    @apply fixed left-0 right-1 bottom-1 rounded-md pointer-events-none z-[9997] flex flex-row gap-1 p-1;
     top: 44px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    z-index: 9997;
-    display: flex;
-    flex-direction: row;
-    gap: 4px;
-    padding: 4px;
 }
 
 .preview-pane {
-    @apply border-2 border-base-content/30;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    @apply border-2 border-base-content/30 rounded-lg transition-all duration-200 ease-in-out;
 }
 
 .preview-main {

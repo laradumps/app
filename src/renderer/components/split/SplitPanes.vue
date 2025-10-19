@@ -83,66 +83,21 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+@reference "./../../styles.css";
+
 .split-root {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 100%;
-    position: relative;
+    @apply flex flex-row w-full h-full relative;
 }
 
 .pane {
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    flex-direction: column;
+    @apply overflow-hidden relative flex flex-col;
 }
 
 .pane-a {
-    border-right: 1px solid rgba(0,0,0,0.05);
-    flex-shrink: 0;
+    @apply border-r border-black/5 shrink-0;
 }
 
 .pane-b {
-    flex: 1;
-    min-width: 0;
-}
-
-.divider {
-    background: rgba(0,0,0,0.02);
-    z-index: 40;
-    flex-shrink: 0;
-    width: 6px;
-    cursor: col-resize;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-left: 1px solid rgba(0,0,0,0.05);
-    border-right: 1px solid rgba(0,0,0,0.05);
-    transition: background 0.2s ease;
-    user-select: none;
-    height: 100%;
-    margin: var(--divider-m, 0rem 0);
-}
-
-.divider:hover {
-    background: rgba(59, 130, 246, 0.15);
-}
-
-.divider:active {
-    background: rgba(59, 130, 246, 0.25);
-}
-
-.divider::after {
-    content: "";
-    width: 3px;
-    height: 50px;
-    background: rgba(0,0,0,0.15);
-    border-radius: 3px;
-    pointer-events: none;
-}
-
-.divider:hover::after {
-    background: rgba(59, 130, 246, 0.4);
+    @apply flex-1 min-w-0;
 }
 </style>

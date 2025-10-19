@@ -783,7 +783,7 @@ const handleDragEnd = () => {
                                             <button
                                                 v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
                                                 @click="openScreenWindow"
-                                                class="btn btn-sm p-[0.5rem] btn-circle border border-base-content/5"
+                                                class="btn btn-sm p-[0.5rem] btn-circle btn-soft border border-base-content/5"
                                             >
                                                 <IconExternalLink class="w-4 text-base-content" />
                                             </button>
@@ -952,7 +952,7 @@ const handleDragEnd = () => {
                 <div v-else>
                     <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                         <main class="flex flex-col flex-1 min-h-full space-y-1">
-                            <div class="flex z-[380]">
+                            <div class="flex z-[10]">
                                 <div class="flex h-[48px] p-1.5 items-center justify-between w-full overflow-x-auto">
                                     <Screens
                                         @toggleScreen="toggleScreen"
@@ -963,7 +963,7 @@ const handleDragEnd = () => {
                                         <button
                                             v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
                                             @click="openScreenWindow"
-                                            class="btn btn-sm p-[0.5rem] btn-circle border border-base-content/5"
+                                            class="btn btn-sm p-[0.5rem] btn-circle btn-soft border border-base-content/5"
                                         >
                                             <IconExternalLink class="w-4 text-base-content" />
                                         </button>
