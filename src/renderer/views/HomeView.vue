@@ -619,17 +619,13 @@ const dispatch = (content: any): void => {
 
         nextTick(() => {
             toggleScreen(targetScreen, false);
-            setTimeout(() => toggleScreen(paneAScreen, true), 300)
+            setTimeout(() => toggleScreen(paneAScreen, true), 100)
         });
 
         return;
     }
 
-    if (screenStore.get(content.to_screen.screen_name)?.pinned) {
-        nextTick(() => toggleScreen(content.to_screen.screen_name, true));
-    } else {
-        setTimeout(() => toggleScreen(content.to_screen.screen_name, false), 10);
-    }
+    setTimeout(() => toggleScreen(content.to_screen.screen_name, false), 10);
 };
 
 const openScreenWindow = () => {
