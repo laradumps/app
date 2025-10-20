@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("api", {
     invoke: (channel: string, data?: any) => {
-        const validChannels = ['save-dialog', 'write-file'];
+        const validChannels = ["save-dialog", "write-file"];
         if (validChannels.includes(channel)) {
             return ipcRenderer.invoke(channel, data);
         }
