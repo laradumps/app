@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref } from "vue";
+import { defineProps, onMounted, ref, onUnmounted } from "vue";
 import { CodeSnippet } from "@/types/Payload";
 import hljs from "highlight.js/lib/core";
 import DumpLink from "@/components/dumps/DumpLink.vue";
@@ -38,8 +38,38 @@ const getIdeHandleFromStack = (codeSnippet: CodeSnippet, lineNumber: string): Id
     };
 };
 
+const navigateToNextFile = () => {
+    if (activeFileIndex.value < props.code_snippet.length - 1) {
+        activeFileIndex.value++;
+    }
+};
+
+const navigateToPreviousFile = () => {
+    if (activeFileIndex.value > 0) {
+        activeFileIndex.value--;
+    }
+};
+
+const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+        activeFileIndex.value = 0;
+        event.preventDefault();
+    } else if (event.key === "ArrowDown") {
+        navigateToNextFile();
+        event.preventDefault();
+    } else if (event.key === "ArrowUp") {
+        navigateToPreviousFile();
+        event.preventDefault();
+    }
+};
+
 onMounted(() => {
     activeFileIndex.value = 0;
+    window.addEventListener("keydown", handleKeyDown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", handleKeyDown);
 });
 </script>
 

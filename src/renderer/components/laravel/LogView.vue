@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, ref, watch, nextTick } from "vue";
+import { computed, defineProps, ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import moment from "moment";
 import { FunnelIcon, PlayIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
@@ -132,6 +132,21 @@ const toggleLogExpand = (logId: string) => {
         }
     });
 };
+
+const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape" && expandedLogId.value) {
+        expandedLogId.value = null;
+        event.preventDefault();
+    }
+};
+
+onMounted(() => {
+    window.addEventListener("keydown", handleKeyDown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", handleKeyDown);
+});
 
 const clear = () => {
     if (pauseLogsStore.is_paused) {
