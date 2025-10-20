@@ -6,7 +6,7 @@ import { useTimeStore } from "@/store/time";
 import DumpItem from "@/components/dumps/DumpItem.vue";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { ArrowsRightLeftIcon, ChartBarIcon, FunnelIcon, PlayIcon, SparklesIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { ArrowsRightLeftIcon, FunnelIcon, PlayIcon, AdjustmentsHorizontalIcon, TrashIcon, ArrowDownTrayIcon } from "@heroicons/vue/24/outline";
 import tippy from "tippy.js";
 import { usePendingRequestsStore } from "@/store/pending-requests";
 import QueriesRequests from "@/components/laravel/QueriesRequests.vue";
@@ -18,9 +18,10 @@ import { useQueriesChart } from "@/store/queries-chart";
 import QueriesChart from "@/components/laravel/QueriesChart.vue";
 import DumpLink from "@/components/dumps/DumpLink.vue";
 import DumpQueries from "@/components/laravel/DumpQueries.vue";
-import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
 import moment from "moment";
 import { useFormattedQueriesStore } from "@/store/formatted-queries";
+import { convertMsToHumanReadable, exportQueriesToSQL } from "@/utils/queriesUtils";
+import { useSettingsStore } from "@/store/settings";
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
@@ -32,6 +33,7 @@ const globalSearchStore = useGlobalSearchStore();
 const queriesChart = useQueriesChart();
 const duplicatesStore = useQueryDuplicated();
 const formattedQueriesStore = useFormattedQueriesStore();
+const settingsStore = useSettingsStore();
 
 const props = defineProps<{
     items: [];
@@ -111,11 +113,7 @@ const queries = computed<Payload[]>(() => {
             return false;
         }
 
-        if (filteredClasses.value.length && !filteredClasses.value.includes(dump.ide_handle?.class_name || "")) {
-            return false;
-        }
-
-        return true;
+        return !(filteredClasses.value.length && !filteredClasses.value.includes(dump.ide_handle?.class_name || ""));
     });
 
     const sortFn =
@@ -160,11 +158,6 @@ const handlePointClick = (point) => {
     chart_selected_query.showModal();
 };
 
-const orderLabel = computed(() => {
-    if (!timeStore.order) return "Default order";
-    return timeStore.order === "desc" ? "Order by desc" : "Order by asc";
-});
-
 const groupedQueries = computed(() => {
     const isSearchActive = globalSearchStore.search.length > 0;
     return queries.value.reduce(
@@ -195,14 +188,21 @@ const openRequestsModal = () => {
     request_dialog.showModal();
 };
 
-const convertMsToHumanReadable = (): string => {
+const getQueriesCount = (requestId: string): number => {
+    return queriesStore.payload.filter((payload: Payload) => payload.request_id === requestId).length;
+};
+
+const handleExportQueriesToSQL = async () => {
+    await exportQueriesToSQL(sourceItems.value, timeStore.selected);
+};
+
+const getHumanReadableTime = (): string => {
     const ms = timeStore.getTotal(timeStore.selected);
+    return convertMsToHumanReadable(ms);
+};
 
-    if (ms < 1000) return `${ms.toFixed(2)} ms`;
-
-    const seconds = (ms / 1000).toFixed(2);
-
-    return `${seconds} s`;
+const setOrder = (order: string) => {
+    timeStore.order = order;
 };
 </script>
 
@@ -270,19 +270,107 @@ const convertMsToHumanReadable = (): string => {
         </dialog>
 
         <Teleport to="#actions">
-            <!-- Prettify -->
-            <button
-                data-tippy-content="Prettify"
-                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                @click="formattedQueriesStore.toggle()"
-                :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
+            <!-- Actions Dropdown -->
+            <div
                 v-if="queries.length > 0"
-                :class="{
-                    'border-primary text-primary': formattedQueriesStore.formatted
-                }"
+                class="dropdown dropdown-bottom dropdown-end"
             >
-                <SparklesIcon class="w-4" />
-            </button>
+                <button
+                    tabindex="0"
+                    role="button"
+                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
+                    data-tippy-content="Actions"
+                    :class="{
+                        'border-primary text-primary':
+                            formattedQueriesStore.formatted || ['asc', 'desc'].includes(timeStore.order) || ['all', 'by-request', 'percentage-colors'].includes(queriesChart.type)
+                    }"
+                >
+                    <AdjustmentsHorizontalIcon class="size-4" />
+                </button>
+
+                <ul
+                    tabindex="0"
+                    class="dropdown-content menu bg-base-300 rounded-box z-100 w-52 p-2 shadow-sm"
+                >
+                    <li
+                        @click="formattedQueriesStore.toggle()"
+                        :class="{
+                            '!text-primary': formattedQueriesStore.formatted
+                        }"
+                    >
+                        <a class="!text-xs flex items-center gap-2"> Prettify </a>
+                    </li>
+
+                    <li class="menu-title my-1 uppercase !pl-1">
+                        <span class="!text-xs text-base-content/60 font-light">Sort Order</span>
+                    </li>
+
+                    <li
+                        @click="setOrder('default')"
+                        :class="{
+                            '!text-primary': timeStore.order === 'default' || !timeStore.order
+                        }"
+                    >
+                        <a class="!text-xs">Default</a>
+                    </li>
+                    <li
+                        @click="setOrder('asc')"
+                        :class="{
+                            '!text-primary': timeStore.order === 'asc'
+                        }"
+                    >
+                        <a class="!text-xs">Ascending</a>
+                    </li>
+                    <li
+                        @click="setOrder('desc')"
+                        :class="{
+                            '!text-primary': timeStore.order === 'desc'
+                        }"
+                    >
+                        <a class="!text-xs">Descending</a>
+                    </li>
+
+                    <li class="menu-title my-1 uppercase !pl-1">
+                        <span class="!text-xs text-base-content/60 font-light">Appearance</span>
+                    </li>
+
+                    <li
+                        @click="toggleChartType('all')"
+                        :class="{
+                            '!text-primary': queriesChart.type === 'all'
+                        }"
+                    >
+                        <a class="!text-xs">Chart - All Requests</a>
+                    </li>
+                    <li
+                        @click="toggleChartType('by-request')"
+                        :class="{
+                            '!text-primary': queriesChart.type === 'by-request'
+                        }"
+                    >
+                        <a class="!text-xs">Chart - By Request</a>
+                    </li>
+                    <li
+                        @click="toggleChartType('percentage-colors')"
+                        :class="{
+                            '!text-primary': queriesChart.type === 'percentage-colors'
+                        }"
+                    >
+                        <a class="!text-xs">Percentage Colors</a>
+                    </li>
+
+                    <li class="menu-title my-1 uppercase !pl-1">
+                        <span class="!text-xs text-base-content/60 font-light">Tools</span>
+                    </li>
+
+                    <li @click="handleExportQueriesToSQL()">
+                        <a class="!text-xs flex items-center gap-2">
+                            <ArrowDownTrayIcon class="w-4" />
+                            Export SQL
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
             <div class="dropdown dropdown-bottom dropdown-end">
                 <!-- Filter -->
@@ -376,94 +464,6 @@ const convertMsToHumanReadable = (): string => {
                 </div>
             </div>
 
-            <!-- Sort Order -->
-            <button
-                v-if="queries.length > 0"
-                :class="{
-                    'border-primary text-primary': ['asc', 'desc'].includes(timeStore.order)
-                }"
-                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                @click="timeStore.toggleOrder()"
-                :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
-                :aria-label="orderLabel"
-                :data-tippy-content="orderLabel"
-            >
-                <IconChevronDown
-                    :class="[
-                        '!w-4 transition-transform',
-                        {
-                            'rotate-0': timeStore.order === 'desc',
-                            'rotate-180': timeStore.order === 'asc',
-                            'opacity-50': timeStore.order === null || timeStore.order === undefined
-                        }
-                    ]"
-                    stroke-width="2.2"
-                />
-            </button>
-
-            <!-- Chart Dropdown-->
-            <div
-                v-if="queries.length > 0"
-                class="dropdown dropdown-end"
-            >
-                <div
-                    tabindex="0"
-                    role="button"
-                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                    data-tippy-content="Chart Visibility"
-                    :class="{
-                        'border-primary text-primary': ['all', 'by-request', 'percentage-colors'].includes(queriesChart.type)
-                    }"
-                >
-                    <ChartBarIcon class="w-4" />
-                </div>
-
-                <ul
-                    tabindex="0"
-                    class="dropdown-content gap-1 menu text-sm bg-base-300 rounded-box z-1 w-52 p-4 shadow-sm"
-                >
-                    <li>
-                        <a
-                            href="#"
-                            class="!text-xs"
-                            @click.prevent="toggleChartType('all')"
-                            :class="{
-                                'font-bold text-primary': queriesChart.type === 'all',
-                                'text-base-content': queriesChart.type !== 'all'
-                            }"
-                        >
-                            Chart - All Requests
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="#"
-                            class="!text-xs"
-                            @click.prevent="toggleChartType('by-request')"
-                            :class="{
-                                'font-bold text-primary': queriesChart.type === 'by-request',
-                                'text-base-content': queriesChart.type !== 'by-request'
-                            }"
-                        >
-                            Chart - By Request
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="#"
-                            class="!text-xs"
-                            @click.prevent="toggleChartType('percentage-colors')"
-                            :class="{
-                                'font-bold text-primary': queriesChart.type === 'percentage-colors',
-                                'text-base-content': queriesChart.type !== 'percentage-colors'
-                            }"
-                        >
-                            Percentage Colors
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
             <!-- Pause -->
             <button
                 @click="pauseQueries.toggle()"
@@ -498,7 +498,7 @@ const convertMsToHumanReadable = (): string => {
             class="space-y-2"
             v-if="queriesStore.payload.length > 0 && timeStore.selected"
         >
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center gap-3">
                 <button
                     class="btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
                     @click="openRequestsModal()"
@@ -507,7 +507,12 @@ const convertMsToHumanReadable = (): string => {
                     <span class="opacity-80"> ({{ timeStore.getRequestCount() }}) </span>
                     {{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}
                 </button>
-                <span class="text-base font-sans text-primary font-normal">{{ convertMsToHumanReadable() }}</span>
+                <div class="flex items-center gap-2">
+                    <div class="badge badge-ghost badge-sm font-mono">{{ getQueriesCount(timeStore.selected) }} {{ getQueriesCount(timeStore.selected) === 1 ? "query" : "queries" }}</div>
+                    <div class="badge badge-primary badge-sm font-mono">
+                        {{ getHumanReadableTime() }}
+                    </div>
+                </div>
             </div>
 
             <div class="space-y-1">
@@ -527,7 +532,9 @@ const convertMsToHumanReadable = (): string => {
                         :key="groupKey"
                         class="w-full"
                     >
-                        <div class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0">
+                        <div
+                            v-if="settingsStore.settings.grouped_by_time"
+                            class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0">
                             <span
                                 :title="groupKey"
                                 class="opacity-80"
@@ -546,7 +553,7 @@ const convertMsToHumanReadable = (): string => {
                                 <DumpItem
                                     class="w-full group text-sm mb-3"
                                     :payload="payload"
-                                    :show-time="false"
+                                    :show-time="!settingsStore.settings.grouped_by_time"
                                 />
                             </div>
                         </div>
