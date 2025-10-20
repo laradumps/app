@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { computed, defineProps, onMounted, onUnmounted, ref } from "vue";
+import { defineProps, onMounted, ref, onUnmounted } from "vue";
 import { CodeSnippet } from "@/types/Payload";
 import hljs from "highlight.js/lib/core";
 import DumpLink from "@/components/dumps/DumpLink.vue";
 import { IdeHandle } from "@/types/IdeHandle";
-import IconArrowLight from "@/components/Icons/IconArrowLight.vue";
+import IconChevronRight from "@/components/Icons/IconChevronRight.vue";
 
-const containerSize = ref(0);
 const activeFileIndex = ref(0);
 
 const props = defineProps<{
@@ -14,42 +13,8 @@ const props = defineProps<{
     ide_handle: IdeHandle;
 }>();
 
-onMounted(() => {
-    window.addEventListener("keydown", handleKeydown);
-});
-
-onUnmounted(() => {
-    window.removeEventListener("keydown", handleKeydown);
-});
-
-const totalFiles = computed(() => props.code_snippet.length);
-
 const toggleFileVisibility = (index: number) => {
-    activeFileIndex.value = activeFileIndex.value === index ? null : index;
-};
-
-const navigateFiles = (direction: "next" | "prev") => {
-    if (direction === "next") {
-        activeFileIndex.value = (activeFileIndex.value + 1) % totalFiles.value;
-
-        return;
-    }
-
-    if (direction === "prev") {
-        activeFileIndex.value = (activeFileIndex.value - 1 + totalFiles.value) % totalFiles.value;
-    }
-};
-
-const handleKeydown = (event: KeyboardEvent) => {
-    if (event.key === "ArrowRight") {
-        navigateFiles("next");
-
-        return;
-    }
-
-    if (event.key === "ArrowLeft") {
-        navigateFiles("prev");
-    }
+    activeFileIndex.value = activeFileIndex.value === index ? -1 : index;
 };
 
 const getFileLineDisplay = (codeSnippet: any) => {
@@ -62,6 +27,7 @@ const getLineContent = (lineContent: string) => {
 
 const getIdeHandleFromStack = (codeSnippet: CodeSnippet, lineNumber: string): IdeHandle => {
     return {
+        base_path: "",
         workdir: props.ide_handle.workdir,
         project_path: props.ide_handle.project_path,
         real_path: codeSnippet.file,
@@ -72,69 +38,85 @@ const getIdeHandleFromStack = (codeSnippet: CodeSnippet, lineNumber: string): Id
     };
 };
 
-const observeContainer = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-        const resizeObserver = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                containerSize.value = entry.contentRect.width;
-            }
-        });
-        resizeObserver.observe(element);
+const navigateToNextFile = () => {
+    if (activeFileIndex.value < props.code_snippet.length - 1) {
+        activeFileIndex.value++;
     }
 };
 
-const containerWidth = computed(() => containerSize.value - 58 + "px");
+const navigateToPreviousFile = () => {
+    if (activeFileIndex.value > 0) {
+        activeFileIndex.value--;
+    }
+};
 
-observeContainer("dumps-base");
+const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+        activeFileIndex.value = 0;
+        event.preventDefault();
+    } else if (event.key === "ArrowDown") {
+        navigateToNextFile();
+        event.preventDefault();
+    } else if (event.key === "ArrowUp") {
+        navigateToPreviousFile();
+        event.preventDefault();
+    }
+};
 
 onMounted(() => {
     activeFileIndex.value = 0;
+    window.addEventListener("keydown", handleKeyDown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", handleKeyDown);
 });
 </script>
 
 <template>
-    <div
-        v-for="(codeSnippet, index) in props.code_snippet"
-        :key="index"
-        class="text-xs opacity-80 p-1"
-        :class="{ 'hover:rounded hover:bg-base-300': activeFileIndex !== index }"
-    >
+    <div class="space-y-1">
         <div
-            :class="{
-                '!font-semibold text-sm !opacity-100 !text-primary': activeFileIndex === index
-            }"
-            class="text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:text-base-content"
-            @click="toggleFileVisibility(index)"
-        >
-            <IconArrowLight v-if="activeFileIndex === index" />
-            {{ getFileLineDisplay(codeSnippet) }}
-        </div>
-
-        <div
-            v-if="activeFileIndex === index"
-            class="rounded-md scrollable mt-2"
-            :class="{
-                'code-snippet': activeFileIndex === index
-            }"
+            v-for="(codeSnippet, index) in props.code_snippet"
+            :key="index"
+            class="border border-base-content/10 rounded-md overflow-hidden"
         >
             <div
-                :id="`current-snippet-${index}`"
-                v-for="(lineContent, lineNumber) in codeSnippet.snippet"
-                :key="`${lineNumber}-code`"
-                :class="{ 'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === codeSnippet.line }"
-                class="flex items-center tracking-widest leading-6 hover:!bg-red-500/20 group/line"
+                :class="{
+                    '!font-semibold !text-primary': activeFileIndex === index
+                }"
+                class="text-xs px-2 py-1 text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:bg-base-200 transition-colors"
+                @click="toggleFileVisibility(index)"
             >
-                <DumpLink
-                    class="font-normal h-full text-base-content text-xs"
-                    :label="lineNumber"
-                    :show-icon="true"
-                    :ide-handler="getIdeHandleFromStack(codeSnippet, lineNumber)"
-                />
                 <span
-                    class="language-php highlight whitespace-pre hljs h-full text-xs text-primary font-normal"
-                    v-html="getLineContent(lineContent)"
-                ></span>
+                    class="transform transition-transform"
+                    :class="{ 'rotate-90': activeFileIndex === index }"
+                >
+                    <IconChevronRight class="!size-3" />
+                </span>
+                <span class="truncate">{{ getFileLineDisplay(codeSnippet) }}</span>
+            </div>
+
+            <div
+                v-if="activeFileIndex === index"
+                class="code-snippet overflow-x-auto"
+            >
+                <div
+                    v-for="(lineContent, lineNumber) in codeSnippet.snippet"
+                    :key="`${lineNumber}-code`"
+                    :class="{ 'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === codeSnippet.line }"
+                    class="flex items-start tracking-widest leading-6 hover:!bg-red-500/20 group/line min-w-max"
+                >
+                    <DumpLink
+                        class="font-normal h-full text-base-content text-xs flex-shrink-0"
+                        :label="lineNumber"
+                        :show-icon="true"
+                        :ide-handler="getIdeHandleFromStack(codeSnippet, lineNumber)"
+                    />
+                    <span
+                        class="language-php highlight whitespace-pre hljs h-full text-xs text-primary font-normal flex-1"
+                        v-html="getLineContent(lineContent)"
+                    ></span>
+                </div>
             </div>
         </div>
     </div>
@@ -144,7 +126,7 @@ onMounted(() => {
 @reference "./../styles.css";
 
 .code-snippet {
-    @apply bg-black border border-gray-700 rounded-lg;
+    @apply bg-black border-t border-gray-700 text-xs;
 }
 
 .code-snippet .hljs {
@@ -222,10 +204,10 @@ onMounted(() => {
 }
 
 .code-snippet .line-number {
-    @apply inline-block w-[40px] select-none text-gray-500 text-right pr-2;
+    @apply inline-block w-[40px] select-none text-gray-500 text-right pr-2 flex-shrink-0;
 }
 
 .scrollable {
-    @apply overflow-auto;
+    @apply overflow-x-auto;
 }
 </style>
