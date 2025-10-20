@@ -121,7 +121,7 @@ onMounted(() => {
                     :class="{
                         '!right-2': screenStore.screen === 'queries'
                     }"
-                    class="flex absolute right-[44px] z-[400] top-[47px] gap-1 items-center p-0.5 px-1"
+                    class="flex absolute right-[44px] z-[70] top-[47px] gap-1 items-center p-0.5 px-1"
                 ></div>
 
                 <RouterView :key="$route.fullPath" />

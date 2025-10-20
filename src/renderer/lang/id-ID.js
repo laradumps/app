@@ -83,7 +83,8 @@ export default {
         laravel_logs: "Laravel Logs",
         laravel_jobs: "Laravel Jobs",
         shortcut_placeholder: "type here ...",
-        appearance: "Appearance"
+        appearance: "Appearance",
+        grouped_by_time: "Grouped by Time"
     },
     copy: "Copy",
     delete: "Delete",
