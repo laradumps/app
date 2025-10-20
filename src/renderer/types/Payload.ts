@@ -84,6 +84,11 @@ export interface LogApplicationPayload {
     value: string;
     queries: string[];
     request: any;
+    app?: {
+        php_version: string;
+        laravel_version: string;
+        environment: string;
+    };
 }
 
 export interface ScreenPayload {
@@ -102,10 +107,6 @@ export interface CodeSnippet {
     file: string;
     line: number;
     snippet: Record<string, string>;
-}
-export interface Meta {
-    auto_invoke_app: string;
-    laradumps_version: string;
 }
 
 export interface StrContainsPayload {
