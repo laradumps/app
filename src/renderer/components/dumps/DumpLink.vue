@@ -85,7 +85,7 @@ const toggleBreakpoint = () => {
         <div
             v-else
             :title="label"
-            class="flex items-center group h-[32px]"
+            class="flex items-center group"
         >
             <div class="text-right w-16 tracking-wider hover:opacity-75 flex items-center">
                 <div

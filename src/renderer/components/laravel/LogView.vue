@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, defineProps, ref, watch, nextTick } from "vue";
 import moment from "moment";
 import { FunnelIcon, PlayIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
@@ -11,7 +11,6 @@ import CodeSnippet from "@/components/CodeSnippet.vue";
 import { useColorStore } from "@/store/colors";
 import { useSettingsStore } from "@/store/settings";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
-import Divider from "@/components/common/Divider.vue";
 import { useGlobalSearchStore } from "@/store/global-search";
 import IconPause from "@/components/Icons/IconPause.vue";
 import { usePauseLogsStore } from "@/store/pause-logs";
@@ -25,7 +24,7 @@ const globalSearchStore = useGlobalSearchStore();
 const pauseLogsStore = usePauseLogsStore();
 
 const forceUpdate = ref(0);
-const selected = ref();
+const expandedLogId = ref<string | null>(null);
 const collapsedLogGroups = ref<Record<string, boolean>>({});
 const levelFilter = ref<string[]>([]);
 
@@ -96,6 +95,20 @@ const logs = computed(() => {
         });
 });
 
+watch(
+    logs,
+    (newLogs, oldLogs) => {
+        if (newLogs.length > 0) {
+            const newestLogId = newLogs[0].log_id;
+
+            if (!oldLogs || oldLogs.length === 0 || (oldLogs.length > 0 && newestLogId !== oldLogs[0].log_id)) {
+                expandedLogId.value = newestLogId;
+            }
+        }
+    },
+    { immediate: true }
+);
+
 const selectedLevel = (level: string) => {
     const index = levelFilter.value.indexOf(level);
     if (index > -1) {
@@ -121,32 +134,16 @@ const toggleLogGroup = (timeKey: string) => {
     collapsedLogGroups.value[timeKey] = !collapsedLogGroups.value[timeKey];
 };
 
-const clear = () => {
-    if (pauseLogsStore.is_paused) {
-        pauseLogsStore.toggle();
-    }
+const toggleLogExpand = (logId: string) => {
+    if (expandedLogId.value === logId) {
+        expandedLogId.value = null;
 
-    logStore.clear();
-};
-
-const openModal = (id: string) => {
-    const findLog: Log | undefined = logs.value.find((log: Log) => log.log_id === id);
-
-    if (!findLog) {
         return;
     }
 
-    selected.value = {
-        id: findLog.log_id,
-        code_snippet: findLog.code_snippet,
-        message: findLog.message,
-        context: findLog.context[0],
-        level: findLog.level,
-        ide_handle: findLog.ide_handle,
-        created_at: findLog.created_at,
-        requests: findLog.requests,
-        queries: findLog.queries
-    };
+    expandedLogId.value = logId;
+
+    const findLog = logs.value.find((log) => log.log_id === logId);
 
     const sfDumpId = findLog.context[1];
 
@@ -157,212 +154,35 @@ const openModal = (id: string) => {
             sfDump.setAttribute("has-dump-js", "true");
             window.Sfdump(`sf-dump-${sfDumpId}`);
         }
-
-        const toggle = document.getElementById("my-drawer") as HTMLInputElement;
-        if (toggle) {
-            toggle.checked = true;
-        }
     });
 };
 
-onMounted(() => {
-    setInterval(() => {
-        forceUpdate.value++;
-        window.addEventListener("keydown", handleEscape);
-    }, 60_000);
-});
-
-onBeforeUnmount(() => {
-    window.removeEventListener("keydown", handleEscape);
-});
-
-const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-        const drawerToggle = document.getElementById("my-drawer") as HTMLInputElement;
-        if (drawerToggle) {
-            drawerToggle.checked = false;
-            selected.value = null;
-        }
+const clear = () => {
+    if (pauseLogsStore.is_paused) {
+        pauseLogsStore.toggle();
     }
+
+    expandedLogId.value = null;
+    logStore.clear();
 };
 
-const toggleMessageLimit = () => {
-    if (selected.value) {
-        selected.value.messageLimit = !selected.value.messageLimit;
-    }
+const getBorderColor = (level: string) => {
+    const colors: Record<string, string> = {
+        error: "border-error",
+        critical: "border-error",
+        alert: "border-error",
+        emergency: "border-error",
+        warning: "border-warning",
+        notice: "border-success",
+        info: "border-info",
+        debug: "border-gray-500"
+    };
+    return colors[level] || "border-primary";
 };
 </script>
 
 <template>
     <div class="px-3">
-        <div class="drawer drawer-end">
-            <input
-                id="my-drawer"
-                type="checkbox"
-                class="hidden drawer-toggle"
-            />
-
-            <div class="drawer-side z-[400]">
-                <label
-                    for="my-drawer"
-                    class="drawer-overlay"
-                ></label>
-                <div class="bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] px-3 py-5">
-                    <div v-if="selected">
-                        <div class="space-y-3">
-                            <span
-                                class="text-base font-semibold px-2 leading-6"
-                                style="display: -webkit-box"
-                                @click="toggleMessageLimit"
-                                :class="{
-                                    'line-clamp-5 leading-6': !selected.messageLimit
-                                }"
-                                >{{ selected.message }}</span
-                            >
-
-                            <Divider />
-                        </div>
-
-                        <div class="tabs flex mt-3 tabs-border tabs-sm">
-                            <!-- Code Snippet Tab -->
-                            <input
-                                v-if="selected.code_snippet.length > 0"
-                                type="radio"
-                                name="log_viewer_tabs"
-                                class="tab"
-                                aria-label="Frames"
-                                checked="checked"
-                            />
-                            <div
-                                v-if="selected.code_snippet.length > 0"
-                                class="tab-content py-3 overflow-auto"
-                            >
-                                <CodeSnippet
-                                    :code_snippet="selected.code_snippet"
-                                    :ide_handle="selected.ide_handle"
-                                />
-                            </div>
-
-                            <!-- Payload Tab -->
-                            <input
-                                v-if="selected.code_snippet.length === 0"
-                                type="radio"
-                                name="log_viewer_tabs"
-                                class="tab"
-                                aria-label="Payload"
-                                checked="checked"
-                            />
-                            <div
-                                v-if="selected.code_snippet.length === 0"
-                                class="tab-content p-1.5 py-3"
-                            >
-                                <div v-html="selected.context"></div>
-                            </div>
-
-                            <input
-                                v-if="selected.code_snippet.length > 0 && selected.requests.lenght > 0"
-                                type="radio"
-                                name="log_viewer_tabs"
-                                class="tab"
-                                aria-label="Application"
-                            />
-
-                            <!-- Application Tab -->
-                            <div
-                                v-if="selected.requests.lenght > 0"
-                                class="tab-content py-3 overflow-auto space-y-3"
-                            >
-                                <div class="space-y-2">
-                                    <div>
-                                        <span class="font-semibold ml-1"> Routing </span>
-                                    </div>
-
-                                    <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-100">
-                                        <table class="table table-sm">
-                                            <tbody>
-                                                <tr>
-                                                    <th>Controller</th>
-                                                    <td>{{ selected.requests.routeContext.controller }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Middleware</th>
-                                                    <td>{{ selected.requests.routeContext.middleware }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Route name</th>
-                                                    <td>{{ selected.requests.routeContext.routeName }}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <div
-                                    v-if="selected.queries"
-                                    class="space-y-2"
-                                >
-                                    <div>
-                                        <span class="font-semibold ml-1"> Queries </span>
-                                    </div>
-
-                                    <div
-                                        v-for="(query, index) in selected.queries"
-                                        :key="index"
-                                        class="border border-base-content/5 rounded p-2"
-                                    >
-                                        <DumpQuery :query="query" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Request Tab -->
-                            <input
-                                type="radio"
-                                name="log_viewer_tabs"
-                                class="tab"
-                                aria-label="Request"
-                                v-if="selected.requests.lenght > 0"
-                            />
-                            <div class="tab-content py-3 space-y-2">
-                                <div>
-                                    <span class="font-semibold ml-1"> Headers </span>
-                                </div>
-
-                                <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-100">
-                                    <table class="table table-sm">
-                                        <tbody>
-                                            <tr v-for="(value, key) in selected.requests.headers">
-                                                <th class="whitespace-nowrap">{{ key }}</th>
-                                                <td class="break-all">
-                                                    <code class="overflow-y-hidden scrollbar-hidden max-h-32 overflow-x-scroll scrollbar-hidden-x">{{ value }}</code>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div>
-                                    <span class="font-semibold ml-1"> Body </span>
-                                </div>
-
-                                <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-100">
-                                    <div class="flex items-center">
-                                        <span class="min-w-0 flex-grow">
-                                            <pre class="scrollbar-hidden mx-5 my-3 overflow-y-hidden text-xs lg:text-sm">
-                                                <code class="overflow-y-hidden scrollbar-hidden overflow-x-scroll scrollbar-hidden-x">
-                                                    {{ selected.requests.body }}
-                                                </code>
-                                            </pre>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div :class="{ 'h-[calc(100vh-100px)]': inScreenWindow, 'h-[calc(100vh-150px)]': !inScreenWindow }">
             <div class="flex items-center justify-end gap-1">
                 <div class="flex justify-center w-full">
@@ -431,102 +251,193 @@ const toggleMessageLimit = () => {
                 class="overflow-auto"
                 style="height: -webkit-fill-available"
             >
-                <table class="table table-pin-rows table-zebra">
-                    <thead>
-                        <tr class="text-xs !bg-base-300 font-light text-base-content">
-                            <th class="w-4">Level</th>
-                            <th>Message</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template
-                            v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
-                            :key="timeKey"
+                <!-- Header -->
+                <div class="sticky top-0 z-10 bg-base-300 text-xs text-base-content grid grid-cols-[76px_1fr] gap-2 p-2">
+                    <div>Level</div>
+                    <div>Message</div>
+                </div>
+
+                <!-- Body -->
+                <div class="space-y-1">
+                    <template
+                        v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
+                        :key="timeKey"
+                    >
+                        <!-- Time Group Header -->
+                        <div
+                            class="text-xs font-semibold text-center bg-base-200 py-2 transition-all duration-200"
+                            :class="{
+                                'blur-sm opacity-40': expandedLogId !== null && !logsOnTime.some((log) => log.log_id === expandedLogId)
+                            }"
                         >
-                            <tr class="text-xs font-semibold text-center bg-base-200">
-                                <td
-                                    colspan="3"
-                                    class="select-none"
-                                >
-                                    <span
-                                        class="cursor-pointer link"
-                                        @click="toggleLogGroup(timeKey)"
-                                    >
-                                        {{ timeKey }}
-                                        <span class="ml-1">{{ collapsedLogGroups[timeKey] ? "▼" : "▲" }}</span>
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr
-                                v-for="(log, index) in logsOnTime"
-                                v-if="!collapsedLogGroups[timeKey]"
-                                :key="`log-${index}`"
-                                class="cursor-pointer hover:bg-base-100"
-                                @click="openModal(log.log_id)"
+                            <span
+                                class="cursor-pointer link select-none"
+                                @click="toggleLogGroup(timeKey)"
                             >
-                                <td>
-                                    <span
-                                        class="badge text-xs !text-semibold badge-info p-1.5"
-                                        v-if="log.level === 'info'"
-                                        ><InformationCircleIcon class="w-5" /> Info</span
-                                    >
-                                    <span
-                                        class="text-xs badge badge-success"
-                                        v-else-if="log.level === 'notice'"
-                                        ><InformationCircleIcon class="w-5" /> Notice</span
-                                    >
-                                    <span
-                                        class="badge text-xs !text-semibold badge-warning p-1.5"
-                                        v-else-if="log.level === 'warning'"
-                                    >
-                                        <ExclamationTriangleIcon class="w-5" />
-                                        Warning
-                                    </span>
-                                    <span
-                                        class="badge text-xs !text-semibold badge-error p-1.5"
-                                        v-else-if="log.level === 'error'"
-                                    >
-                                        <ExclamationCircleIcon class="w-5" />Error</span
-                                    >
-                                    <span
-                                        class="badge text-xs !text-semibold badge-error p-1.5"
-                                        v-else-if="log.level === 'alert'"
-                                    >
-                                        <ExclamationCircleIcon class="w-5" />Alert</span
-                                    >
-                                    <span
-                                        class="badge text-xs !text-semibold badge-error p-1.5"
-                                        v-else-if="log.level === 'critical'"
-                                    >
-                                        <ExclamationTriangleIcon class="w-5" />Critical</span
-                                    >
-                                    <span
-                                        class="badge text-xs !text-semibold badge-error p-1.5"
-                                        v-else-if="log.level === 'emergency'"
-                                        ><ExclamationCircleIcon class="w-5" />Emergency</span
-                                    >
-                                    <span
-                                        class="badge text-xs !text-semibold bg-gray-500 text-primary-content p-1.5"
-                                        v-else-if="log.level === 'debug'"
-                                        ><InformationCircleIcon class="w-5" />Debug</span
-                                    >
-                                </td>
-                                <td class="break-words break-all space-y-1">
-                                    <div class="line-clamp-2">{{ log.message }}</div>
-                                    <div>
-                                        <a
+                                {{ timeKey }}
+                                <span class="ml-1">{{ collapsedLogGroups[timeKey] ? "▼" : "▲" }}</span>
+                            </span>
+                        </div>
+
+                        <!-- Logs -->
+                        <template v-if="!collapsedLogGroups[timeKey]">
+                            <div
+                                v-for="(log, index) in logsOnTime"
+                                :key="`log-group-${log.log_id}`"
+                                :data-log-id="log.log_id"
+                                class="rounded-md overflow-hidden"
+                                :class="{
+                                    'border-l-2': expandedLogId === log.log_id,
+                                    [getBorderColor(log.level)]: expandedLogId === log.log_id,
+                                    'blur-sm opacity-40': expandedLogId !== null && expandedLogId !== log.log_id
+                                }"
+                            >
+                                <!-- Log Row -->
+                                <div
+                                    class="grid grid-cols-[76px_1fr] border-l-2 border-base-100 gap-2 p-2 cursor-pointer hover:bg-base-100 transition-colors text-sm"
+                                    :class="{
+                                        'bg-base-100': expandedLogId === log.log_id
+                                    }"
+                                    @click="toggleLogExpand(log.log_id)"
+                                >
+                                    <!-- Level Column -->
+                                    <div class="flex items-center">
+                                        <span
+                                            class="badge text-xs !text-semibold badge-info p-1.5"
+                                            v-if="log.level === 'info'"
+                                            ><InformationCircleIcon class="w-5" /> Info</span
+                                        >
+                                        <span
+                                            class="text-xs badge badge-success"
+                                            v-else-if="log.level === 'notice'"
+                                            ><InformationCircleIcon class="w-5" /> Notice</span
+                                        >
+                                        <span
+                                            class="badge text-xs !text-semibold badge-warning p-1.5"
+                                            v-else-if="log.level === 'warning'"
+                                        >
+                                            <ExclamationTriangleIcon class="w-5" />
+                                            Warning
+                                        </span>
+                                        <span
+                                            class="badge text-xs !text-semibold badge-error p-1.5"
+                                            v-else-if="log.level === 'error'"
+                                        >
+                                            <ExclamationCircleIcon class="w-5" />Error</span
+                                        >
+                                        <span
+                                            class="badge text-xs !text-semibold badge-error p-1.5"
+                                            v-else-if="log.level === 'alert'"
+                                        >
+                                            <ExclamationCircleIcon class="w-5" />Alert</span
+                                        >
+                                        <span
+                                            class="badge text-xs !text-semibold badge-error p-1.5"
+                                            v-else-if="log.level === 'critical'"
+                                        >
+                                            <ExclamationTriangleIcon class="w-5" />Critical</span
+                                        >
+                                        <span
+                                            class="badge text-xs !text-semibold badge-error p-1.5"
+                                            v-else-if="log.level === 'emergency'"
+                                            ><ExclamationCircleIcon class="w-5" />Emergency</span
+                                        >
+                                        <span
+                                            class="badge text-xs !text-semibold bg-gray-500 text-primary-content p-1.5"
+                                            v-else-if="log.level === 'debug'"
+                                            ><InformationCircleIcon class="w-5" />Debug</span
+                                        >
+                                    </div>
+
+                                    <!-- Message Column -->
+                                    <div class="break-words space-y-1 min-w-0">
+                                        <div class="line-clamp-2 overflow-hidden">{{ log.message }}</div>
+                                        <div
                                             v-if="log.ide_handle.class_name !== 'empty'"
-                                            :href="generateLink(log.ide_handle)"
-                                            v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
-                                            class="text-xs link opacity-60"
-                                            @click.stop
+                                            class="truncate"
+                                        >
+                                            <a
+                                                :href="generateLink(log.ide_handle)"
+                                                v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
+                                                class="text-xs link opacity-60 inline-block"
+                                                @click.stop
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Expanded Content -->
+                                <div
+                                    v-if="expandedLogId === log.log_id"
+                                    class="bg-base-100 px-4 py-2"
+                                >
+                                    <!-- Stack Trace -->
+                                    <div v-if="log.code_snippet && log.code_snippet.length > 0">
+                                        <CodeSnippet
+                                            :code_snippet="log.code_snippet"
+                                            :ide_handle="log.ide_handle"
                                         />
                                     </div>
-                                </td>
-                            </tr>
+
+                                    <!-- Payload -->
+                                    <div v-else-if="log.context && log.context.length > 0">
+                                        <div class="px-1">
+                                            <div v-html="log.context[0]"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Application -->
+                                    <div
+                                        v-if="log.requests && Object.keys(log.requests.routeContext).length > 0"
+                                        class="mt-4 space-y-3"
+                                    >
+                                        <div class="space-y-2">
+                                            <div>
+                                                <span class="font-semibold ml-1 text-sm">Routing</span>
+                                            </div>
+
+                                            <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200">
+                                                <table class="table table-sm">
+                                                    <tbody>
+                                                        <tr v-if="log.requests.routeContext?.controller">
+                                                            <th>Controller</th>
+                                                            <td>{{ log.requests.routeContext.controller }}</td>
+                                                        </tr>
+                                                        <tr v-if="log.requests.routeContext?.middleware">
+                                                            <th>Middleware</th>
+                                                            <td>{{ log.requests.routeContext.middleware }}</td>
+                                                        </tr>
+                                                        <tr v-if="log.requests.routeContext?.routeName">
+                                                            <th>Route name</th>
+                                                            <td>{{ log.requests.routeContext.routeName }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            v-if="log.queries && log.queries.length > 0"
+                                            class="space-y-2"
+                                        >
+                                            <div>
+                                                <span class="font-semibold ml-1 text-sm">Queries</span>
+                                            </div>
+
+                                            <div
+                                                v-for="(query, queryIndex) in log.queries"
+                                                :key="queryIndex"
+                                                class="border border-base-content/5 rounded p-2 bg-base-200"
+                                            >
+                                                <DumpQuery :query="query" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </template>
-                    </tbody>
-                </table>
+                    </template>
+                </div>
             </div>
 
             <div
@@ -542,18 +453,3 @@ const toggleMessageLimit = () => {
         </div>
     </div>
 </template>
-<style scoped>
-@reference "./../../styles.css";
-
-::v-deep(.table thead) {
-    :where(th, td) {
-        @apply p-2;
-    }
-}
-
-::v-deep(.table tbody) {
-    :where(th, td) {
-        @apply p-1.5 px-2;
-    }
-}
-</style>
