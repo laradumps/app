@@ -13,8 +13,7 @@ import IconContinue from "@/components/Icons/IconContinue.vue";
 import IconStepOver from "@/components/Icons/IconStepOver.vue";
 import IconStepInto from "@/components/Icons/IconStepInto.vue";
 import IconStop from "@/components/Icons/IconStop.vue";
-import { Pane, Splitpanes } from "splitpanes";
-import "splitpanes/dist/splitpanes.css";
+import SplitPanes from "@/components/split/SplitPanes.vue";
 import IconLoading from "@/components/Icons/IconLoading.vue";
 import { useI18n } from "vue-i18n";
 
@@ -717,11 +716,11 @@ onBeforeUnmount(() => {
                     v-else
                     class="flex xdebug flex-row gap-3 w-full h-[calc(100vh-142px)]"
                 >
-                    <Splitpanes vertical>
-                        <pane
-                            size="90"
-                            class="pane-code overflow-auto"
-                        >
+                    <SplitPanes
+                        orientation="vertical"
+                        :initial-split="60"
+                    >
+                        <template #pane-a>
                             <div
                                 v-show="variablesNames.length > 0"
                                 class="pane-code-container mb-0 border-x border-base-content/20 overflow-auto w-full"
@@ -760,12 +759,9 @@ onBeforeUnmount(() => {
                                     <div></div>
                                 </div>
                             </div>
-                        </pane>
+                        </template>
 
-                        <pane
-                            size="40"
-                            class="pane-code"
-                        >
+                        <template #pane-b>
                             <div class="overflow-auto text-sm h-fill-available">
                                 <div
                                     v-for="property in variablesNames"
@@ -810,8 +806,8 @@ onBeforeUnmount(() => {
                                     </template>
                                 </div>
                             </div>
-                        </pane>
-                    </Splitpanes>
+                        </template>
+                    </SplitPanes>
 
                     <div class="fixed bottom-0 break-all border-b mt-1 border-base-content/20 py-1 px-3 text-base-content/60">{{ currentFileName }}:{{ currentLine }}</div>
                 </div>
@@ -914,10 +910,6 @@ onBeforeUnmount(() => {
 
 ::v-deep(.classname) {
     @apply text-gray-400;
-}
-
-::v-deep(.splitpanes__splitter) {
-    @apply min-w-[0.2rem] bg-neutral/10 rounded-box hover:bg-secondary/60;
 }
 
 ::v-deep([data-tippy-root]) {

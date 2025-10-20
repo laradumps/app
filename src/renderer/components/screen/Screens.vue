@@ -2,15 +2,13 @@
 import { defineEmits, ref } from "vue";
 import { useScreenStore } from "@/store/screen";
 import { usePayloadStore } from "@/store/payload";
-import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
 import { useJobStore } from "@/store/jobs";
-import IconPin from "@/components/Icons/IconPin.vue";
 import { useMailStore } from "@/store/mail";
 import { useLogStore } from "@/store/logs.js";
 import { useQueriesPayloadStore } from "@/store/queries.js";
-import { deepClone } from "@/lib/deep_clone.js";
+import { useSplitPanesStore } from "@/store/split-panes";
 
-const emit = defineEmits(["toggleScreen"]);
+const emit = defineEmits(["toggleScreen", "dragScreen"]);
 
 const screenStore = useScreenStore();
 const payloadStore = usePayloadStore();
@@ -18,51 +16,24 @@ const jobStore = useJobStore();
 const mailStore = useMailStore();
 const logStore = useLogStore();
 const queriesStore = useQueriesPayloadStore();
+const splitPanesStore = useSplitPanesStore();
 
 const showTooltip = ref(false);
 const isDraggingIndex = ref(null);
 
-const onDragStart = (index) => {
+const onDragStart = (index, event, screen) => {
     isDraggingIndex.value = index;
     showTooltip.value = true;
+
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", screen.screen_name);
+
+    emit("dragScreen", { screen: screen.screen_name, event });
 };
 
 const onDragEnd = (event, screen) => {
     isDraggingIndex.value = null;
     showTooltip.value = false;
-
-    const mouseX = event.screenX;
-    const mouseY = event.screenY;
-
-    openScreenWindow(screen.screen_name, mouseX, mouseY);
-};
-
-const openScreenWindow = (screen, mouseX, mouseY) => {
-    screenStore.toggleVisible(screen);
-
-    const serializablePayload = deepClone(payloadStore.get(screen));
-    const serializableJobPayload = deepClone(jobStore.jobs);
-    const serializableMailPayload = deepClone(mailStore.mails);
-    const serializableLogPayload = deepClone(logStore.logs);
-    const serializableQueriesPayload = deepClone(queriesStore.payload);
-
-    window.ipcRenderer.send("screen-window:show", {
-        screen: screen,
-        payload: serializablePayload,
-        jobs: serializableJobPayload,
-        mails: serializableMailPayload,
-        logs: serializableLogPayload,
-        queries: serializableQueriesPayload,
-        position: {
-            x: mouseX,
-            y: mouseY
-        }
-    });
-
-    setTimeout(() => {
-        const screenName = screen === "home" ? screenStore.getNext("home").screen_name : "home";
-        emit("toggleScreen", screenName, true);
-    }, 200);
 };
 
 window.ipcRenderer.on("screen-window:xdebug-closed", (event, args) => {
@@ -97,7 +68,12 @@ const getPayloadScreenCount = (screenName) => {
 
     return count > 0 ? `(${count})` : "";
 };
+
+const isScreenInSplit = (screenName) => {
+    return splitPanesStore.splitConfig?.active && splitPanesStore.splitConfig.screenName === screenName;
+};
 </script>
+
 <template>
     <div class="flex">
         <div
@@ -105,16 +81,16 @@ const getPayloadScreenCount = (screenName) => {
             class="tabs tabs-border"
         >
             <div
-                role="tab"
-                class="select-none tabs-xs gap-1 flex py-1"
                 v-for="(screen, index) in screenStore.allVisible()"
                 :key="screen.screen_name"
+                v-show="!isScreenInSplit(screen.screen_name)"
+                role="tab"
+                class="select-none tabs-xs gap-1 flex py-1"
                 :class="{ dragging: isDraggingIndex === index }"
                 v-bind:draggable="!['home', 'livewire', 'queries'].includes(screen.screen_name)"
-                @dragstart="onDragStart(index)"
+                @dragstart="onDragStart(index, $event, screen)"
                 @dragover.prevent
                 @dragend="onDragEnd($event, screen)"
-                title="drag and drop to open in new window"
             >
                 <div
                     class="tab"
@@ -135,14 +111,6 @@ const getPayloadScreenCount = (screenName) => {
                 </div>
             </div>
         </div>
-
-        <div
-            v-if="showTooltip"
-            class="flex gap-2 border border-neutral/30 bg-neutral text-neutral-content py-1 px-1.5 rounded text-xs fixed right-2 top-2"
-        >
-            <IconExternalLink class="size-4" />
-            <span>Drag and drop to open in new window</span>
-        </div>
     </div>
 </template>
 
@@ -162,6 +130,6 @@ const getPayloadScreenCount = (screenName) => {
 }
 
 .dragging {
-    @apply border-dashed border border-primary;
+    @apply opacity-50 border-dashed border border-primary;
 }
 </style>

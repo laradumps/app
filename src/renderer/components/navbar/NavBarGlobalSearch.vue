@@ -203,7 +203,7 @@ onUnmounted(() => {
             aria-modal="true"
         >
             <button
-                class="absolute top-0 right-0 mr-8 mt-8 btn btn-sm btn-circle"
+                class="absolute top-0 right-0 mr-8 mt-8 btn btn-sm btn-circle btn-soft"
                 @click.stop="showInput = false"
                 aria-label="Close search"
             >

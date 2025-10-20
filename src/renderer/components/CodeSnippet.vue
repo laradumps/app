@@ -117,7 +117,6 @@ onMounted(() => {
             :class="{
                 'code-snippet': activeFileIndex === index
             }"
-            :style="{ maxWidth: containerWidth }"
         >
             <div
                 :id="`current-snippet-${index}`"

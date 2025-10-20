@@ -88,6 +88,10 @@ const saveReverse = async () => {
     await nextTick(() => saveSettings());
 };
 
+const saveGroupedByTime = async () => {
+    await nextTick(() => saveSettings());
+};
+
 const saveLimitDumps = async () => {
     await nextTick(() => saveSettings());
 };
@@ -177,7 +181,6 @@ watch(settingsStore.settings, async (value, oldValue) => {
             reset: true
         });
     }
-    await saveSettings();
 });
 
 const editShortcut = () => {
@@ -458,16 +461,22 @@ const openLaravelDocs = () => {
 
                         <Divider class="mt-2" />
                         <div class="mt-2 grid grid-cols-2 items-center">
-                            <div>
-                                {{ $t("settings.show_context") }}
-                                <span class="ml-1"
-                                    ><a
-                                        class="text-xs opacity-70 link link-info"
-                                        @click="openLaravelDocs"
-                                        >{{ $t("settings.laravel_docs") }}</a
-                                    ></span
-                                >
+                            <div>{{ $t("settings.grouped_by_time") }}</div>
+                            <div class="flex items-center justify-end">
+                                <div class="p-1.5">
+                                    <input
+                                        type="checkbox"
+                                        class="toggle toggle-sm toggle-accent"
+                                        v-model="settingsStore.settings.grouped_by_time"
+                                        @change="saveGroupedByTime()"
+                                    />
+                                </div>
                             </div>
+                        </div>
+
+                        <Divider class="mt-2" />
+                        <div class="mt-2 grid grid-cols-2 items-center">
+                            <div>{{ $t("settings.show_context") }}</div>
                             <div class="flex items-center justify-end">
                                 <div class="p-1.5">
                                     <input
