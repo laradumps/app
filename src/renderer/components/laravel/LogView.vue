@@ -377,6 +377,53 @@ const getBorderColor = (level: string) => {
                                         </div>
                                     </div>
 
+                                    <!-- Request -->
+                                    <div
+                                        v-if="log.requests && (log.requests.headers || log.requests.body)"
+                                        class="mt-4 space-y-3"
+                                    >
+                                        <div class="space-y-2">
+                                            <div>
+                                                <span class="font-semibold ml-1 text-sm">Request</span>
+                                            </div>
+
+                                            <!-- Headers -->
+                                            <div v-if="log.requests.headers && Object.keys(log.requests.headers).length > 0">
+                                                <div>
+                                                    <span class="font-semibold ml-1 text-xs">Headers</span>
+                                                </div>
+
+                                                <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200 mt-2">
+                                                    <table class="table table-sm">
+                                                        <tbody>
+                                                            <tr v-for="(value, key) in log.requests.headers" :key="key">
+                                                                <th class="whitespace-nowrap">{{ key }}</th>
+                                                                <td class="break-all">
+                                                                    <code class="overflow-y-hidden scrollbar-hidden max-h-32 overflow-x-scroll scrollbar-hidden-x">{{ value }}</code>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            <!-- Body -->
+                                            <div v-if="log.requests.body" class="mt-2">
+                                                <div>
+                                                    <span class="font-semibold ml-1 text-xs">Body</span>
+                                                </div>
+
+                                                <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200 mt-2">
+                                                    <div class="flex items-center">
+                                                        <span class="min-w-0 flex-grow">
+                                                            <pre class="scrollbar-hidden mx-5 my-3 overflow-y-hidden text-xs lg:text-sm"><code class="overflow-y-hidden scrollbar-hidden overflow-x-scroll scrollbar-hidden-x">{{ log.requests.body }}</code></pre>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Application -->
                                     <div
                                         v-if="log.requests && Object.keys(log.requests?.routeContext || {}).length > 0"

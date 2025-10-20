@@ -6,9 +6,7 @@ export const generateLink = (ideHandler: IdeHandle): string | undefined => {
     const settingsStore = useSettingsStore();
     const currentProjectStore = useCurrentProject();
 
-    const ide_handler = settingsStore.settings.ide_handler
-        ? settingsStore.settings.ide_handler
-        : "phpstorm://open?file={filepath}&line={line}";
+    const ide_handler = settingsStore.settings.ide_handler ? settingsStore.settings.ide_handler : "phpstorm://open?file={filepath}&line={line}";
 
     const { project_path, real_path, workdir, wsl_config, base_path, line } = ideHandler;
 
@@ -31,4 +29,3 @@ export const generateLink = (ideHandler: IdeHandle): string | undefined => {
 
     return link;
 };
-
