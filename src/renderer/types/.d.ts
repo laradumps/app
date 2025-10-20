@@ -4,5 +4,6 @@ declare global {
     interface Window {
         Sfdump: any;
         ipcRenderer: Electron.IpcRenderer;
+        api: any;
     }
 }
