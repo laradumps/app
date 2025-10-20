@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps, ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import moment from "moment";
-import { FunnelIcon, PlayIcon, TrashIcon, ClipboardDocumentIcon } from "@heroicons/vue/24/outline";
+import { FunnelIcon, PlayIcon, TrashIcon, ClipboardDocumentIcon, CheckIcon } from "@heroicons/vue/24/outline";
 import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
 
 import { Log, useLogStore } from "@/store/logs";
@@ -24,6 +24,7 @@ const forceUpdate = ref(0);
 const expandedLogId = ref<string | null>(null);
 const collapsedLogGroups = ref<Record<string, boolean>>({});
 const levelFilter = ref<string[]>([]);
+const copiedLogId = ref<string | null>(null);
 
 const props = defineProps<{
     items: Record<string, Log>;
@@ -144,8 +145,11 @@ const handleKeyDown = (event: KeyboardEvent) => {
 const copyToMarkdown = async (log: Log) => {
     try {
         await copyLogToMarkdown(log);
-        // You can add a toast notification here if you have one
-        console.log("Copied to clipboard");
+        copiedLogId.value = log.log_id;
+
+        setTimeout(() => {
+            copiedLogId.value = null;
+        }, 2000);
     } catch (error) {
         console.error("Failed to copy:", error);
     }
@@ -380,7 +384,14 @@ const getBorderColor = (level: string) => {
                                             class="btn btn-sm btn-soft gap-2"
                                             data-tippy-content="Copy to Markdown"
                                         >
-                                            <ClipboardDocumentIcon class="w-4" />
+                                            <CheckIcon
+                                                v-if="copiedLogId === log.log_id"
+                                                class="w-4 text-success"
+                                            />
+                                            <ClipboardDocumentIcon
+                                                v-else
+                                                class="w-4"
+                                            />
                                             Copy to Markdown
                                         </button>
                                     </div>
