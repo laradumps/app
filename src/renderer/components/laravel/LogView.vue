@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps, ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import moment from "moment";
-import { FunnelIcon, PlayIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import { FunnelIcon, PlayIcon, TrashIcon, ClipboardDocumentIcon, CheckIcon } from "@heroicons/vue/24/outline";
 import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
 
 import { Log, useLogStore } from "@/store/logs";
@@ -13,6 +13,7 @@ import IconPause from "@/components/Icons/IconPause.vue";
 import { usePauseLogsStore } from "@/store/pause-logs";
 import DumpQuery from "@/components/laravel/DumpQuery.vue";
 import { generateLink } from "@/utils/ideHandler";
+import { copyLogToMarkdown } from "@/utils/logToMarkdown";
 
 const logStore = useLogStore();
 const colorStore = useColorStore();
@@ -23,6 +24,7 @@ const forceUpdate = ref(0);
 const expandedLogId = ref<string | null>(null);
 const collapsedLogGroups = ref<Record<string, boolean>>({});
 const levelFilter = ref<string[]>([]);
+const copiedLogId = ref<string | null>(null);
 
 const props = defineProps<{
     items: Record<string, Log>;
@@ -137,6 +139,19 @@ const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape" && expandedLogId.value) {
         expandedLogId.value = null;
         event.preventDefault();
+    }
+};
+
+const copyToMarkdown = async (log: Log) => {
+    try {
+        await copyLogToMarkdown(log);
+        copiedLogId.value = log.log_id;
+
+        setTimeout(() => {
+            copiedLogId.value = null;
+        }, 2000);
+    } catch (error) {
+        console.error("Failed to copy:", error);
     }
 };
 
@@ -362,6 +377,25 @@ const getBorderColor = (level: string) => {
                                     v-if="expandedLogId === log.log_id"
                                     class="bg-base-100 px-4 py-2"
                                 >
+                                    <!-- Copy to Markdown Button -->
+                                    <div class="flex justify-end mb-2">
+                                        <button
+                                            @click.stop="copyToMarkdown(log)"
+                                            class="btn btn-sm btn-soft gap-2"
+                                            data-tippy-content="Copy to Markdown"
+                                        >
+                                            <CheckIcon
+                                                v-if="copiedLogId === log.log_id"
+                                                class="w-4 text-success"
+                                            />
+                                            <ClipboardDocumentIcon
+                                                v-else
+                                                class="w-4"
+                                            />
+                                            Copy to Markdown
+                                        </button>
+                                    </div>
+
                                     <!-- Stack Trace -->
                                     <div v-if="log.code_snippet && log.code_snippet.length > 0">
                                         <CodeSnippet

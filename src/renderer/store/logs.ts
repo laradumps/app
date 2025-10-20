@@ -14,6 +14,11 @@ export type Log = {
     color: string;
     queries: string[];
     requests: any[];
+    app?: {
+        php_version: string;
+        laravel_version: string;
+        environment: string;
+    };
 };
 
 type State = {
@@ -68,7 +73,8 @@ export const useLogStore = defineStore("logStore", {
                 ide_handle,
                 color: this._parseColor(log_application.level),
                 queries: log_application.queries || [],
-                requests: log_application.request || []
+                requests: log_application.request || [],
+                app: log_application.app || undefined
             };
         },
         _parseColor(level: string) {
