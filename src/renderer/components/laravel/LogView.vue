@@ -364,7 +364,7 @@ const getBorderColor = (level: string) => {
 
                                     <!-- Application -->
                                     <div
-                                        v-if="log.requests && Object.keys(log.requests.routeContext).length > 0"
+                                        v-if="log.requests && Object.keys(log.requests?.routeContext || {}).length > 0"
                                         class="mt-4 space-y-3"
                                     >
                                         <div class="space-y-2">
