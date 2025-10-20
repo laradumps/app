@@ -204,6 +204,10 @@ const convertMsToHumanReadable = (): string => {
 
     return `${seconds} s`;
 };
+
+const getQueriesCount = (requestId: string): number => {
+    return queriesStore.payload.filter((payload: Payload) => payload.request_id === requestId).length;
+};
 </script>
 
 <template>
@@ -498,7 +502,7 @@ const convertMsToHumanReadable = (): string => {
             class="space-y-2"
             v-if="queriesStore.payload.length > 0 && timeStore.selected"
         >
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center gap-3">
                 <button
                     class="btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
                     @click="openRequestsModal()"
@@ -507,7 +511,12 @@ const convertMsToHumanReadable = (): string => {
                     <span class="opacity-80"> ({{ timeStore.getRequestCount() }}) </span>
                     {{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}
                 </button>
-                <span class="text-base font-sans text-primary font-normal">{{ convertMsToHumanReadable() }}</span>
+                <div class="flex items-center gap-2">
+                    <div class="badge badge-ghost badge-sm font-mono">{{ getQueriesCount(timeStore.selected) }} {{ getQueriesCount(timeStore.selected) === 1 ? "query" : "queries" }}</div>
+                    <div class="badge badge-primary badge-sm font-mono">
+                        {{ convertMsToHumanReadable() }}
+                    </div>
+                </div>
             </div>
 
             <div class="space-y-1">
