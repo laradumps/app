@@ -5,9 +5,6 @@ import moment from "moment";
 import { PlayIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
 
-import { IdeHandle } from "@/types/IdeHandle";
-import { useCurrentProject } from "@/store/current-project";
-import { useSettingsStore } from "@/store/settings";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { usePauseJobsStore } from "@/store/pause-jobs";
 import IconPause from "@/components/Icons/IconPause.vue";
@@ -16,10 +13,9 @@ import CodeSnippet from "@/components/CodeSnippet.vue";
 import { useGlobalSearchStore } from "@/store/global-search";
 import { FunnelIcon } from "@heroicons/vue/24/outline";
 import { FunnelIcon as FunnelSolidIcon } from "@heroicons/vue/24/solid";
+import { generateLink } from "@/utils/ideHandler";
 
 const jobStore = useJobStore();
-const currentProjectStore = useCurrentProject();
-const settingsStore = useSettingsStore();
 const pauseJobsStore = usePauseJobsStore();
 const globalSearchStore = useGlobalSearchStore();
 
@@ -37,26 +33,6 @@ const props = defineProps<{
 
 const toggleGroup = (timeKey: string) => {
     collapsedGroups.value[timeKey] = !collapsedGroups.value[timeKey];
-};
-
-const generateLink = (ideHandler: IdeHandle) => {
-    const ide_handler = settingsStore.settings.ide_handler || "phpstorm://open?file={filepath}&line={line}";
-    const { project_path, real_path, workdir, wsl_config, base_path, line } = ideHandler;
-
-    const relativePath = real_path?.replace(workdir, "").replace(project_path, "");
-    let linkPath = project_path + relativePath;
-
-    if (base_path) {
-        linkPath = linkPath.replace(base_path, currentProjectStore.value);
-    }
-
-    if (real_path) {
-        let link = ide_handler.replace("{filepath}", linkPath).replace("{line}", line);
-        if (ide_handler.includes("wsl_config") && wsl_config) {
-            link = link.replace("{wsl_config}", wsl_config);
-        }
-        return link;
-    }
 };
 
 const selectedStatus = (status: string) => {

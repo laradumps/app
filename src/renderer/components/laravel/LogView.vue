@@ -4,22 +4,18 @@ import moment from "moment";
 import { FunnelIcon, PlayIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
 
-import { IdeHandle } from "@/types/IdeHandle";
-import { useCurrentProject } from "@/store/current-project";
 import { Log, useLogStore } from "@/store/logs";
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import { useColorStore } from "@/store/colors";
-import { useSettingsStore } from "@/store/settings";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { useGlobalSearchStore } from "@/store/global-search";
 import IconPause from "@/components/Icons/IconPause.vue";
 import { usePauseLogsStore } from "@/store/pause-logs";
 import DumpQuery from "@/components/laravel/DumpQuery.vue";
+import { generateLink } from "@/utils/ideHandler";
 
 const logStore = useLogStore();
-const currentProjectStore = useCurrentProject();
 const colorStore = useColorStore();
-const settingsStore = useSettingsStore();
 const globalSearchStore = useGlobalSearchStore();
 const pauseLogsStore = usePauseLogsStore();
 
@@ -48,26 +44,6 @@ const levelCounts = computed(() => {
         {} as Record<string, number>
     );
 });
-
-const generateLink = (ideHandler: IdeHandle) => {
-    const ide_handler = settingsStore.settings.ide_handler ? settingsStore.settings.ide_handler : "phpstorm://open?file={filepath}&line={line}";
-
-    const { project_path, real_path, workdir, wsl_config, base_path, line } = ideHandler;
-    const relativePath = real_path?.replace(workdir, "").replace(project_path, "");
-    let linkPath = project_path + relativePath;
-
-    if (base_path) {
-        linkPath = linkPath.replace(base_path, currentProjectStore.value);
-    }
-
-    if (real_path) {
-        let link = ide_handler.replace("{filepath}", linkPath).replace("{line}", line);
-        if (ide_handler.includes("wsl_config") && wsl_config) {
-            link = link.replace("{wsl_config}", wsl_config);
-        }
-        return link;
-    }
-};
 
 const logs = computed(() => {
     forceUpdate.value;

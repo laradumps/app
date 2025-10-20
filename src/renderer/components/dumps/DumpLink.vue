@@ -2,8 +2,7 @@
 import { computed, defineProps, onMounted, ref } from "vue";
 import { IdeHandle } from "@/types/IdeHandle";
 import IconPencil from "@/components/Icons/IconPencil.vue";
-import { useCurrentProject } from "@/store/current-project";
-import { useSettingsStore } from "@/store/settings";
+import { generateLink } from "@/utils/ideHandler";
 
 const props = defineProps<{
     ideHandler: IdeHandle;
@@ -14,34 +13,11 @@ const props = defineProps<{
 
 const emit = defineEmits();
 
-const currentProjectStore = useCurrentProject();
-const settingsStore = useSettingsStore();
-
 const link = ref();
 
 onMounted(() => {
-    link.value = generateLink();
+    link.value = generateLink(props.ideHandler);
 });
-
-const generateLink = () => {
-    const ide_handler = settingsStore.settings.ide_handler ? settingsStore.settings.ide_handler : "phpstorm://open?file={filepath}&line={line}";
-
-    const { project_path, real_path, workdir, wsl_config, base_path, line } = props.ideHandler;
-    const relativePath = real_path?.replace(workdir, "").replace(project_path, "");
-    let linkPath = project_path + relativePath;
-
-    if (base_path) {
-        linkPath = linkPath.replace(base_path, currentProjectStore.value);
-    }
-
-    if (real_path) {
-        let link = ide_handler.replace("{filepath}", linkPath).replace("{line}", line);
-        if (ide_handler.includes("wsl_config") && wsl_config) {
-            link = link.replace("{wsl_config}", wsl_config);
-        }
-        return link;
-    }
-};
 
 const label = computed(() => {
     const { label, ideHandler } = props;
