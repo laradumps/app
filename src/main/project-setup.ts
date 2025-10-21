@@ -2,6 +2,7 @@ import { BrowserWindow, dialog, IpcMainEvent, Notification } from "electron";
 import path from "path";
 import fs from "fs";
 import { exec } from "child_process";
+import isWsl from 'is-wsl';
 
 const isWindows = process.platform === "win32";
 
@@ -38,13 +39,7 @@ const runCommand = (command: string, cwd: string): Promise<void> => {
 };
 
 const isWSL = (): boolean => {
-    try {
-        if (process.platform !== "linux") return false;
-        const version = fs.readFileSync("/proc/version", "utf8");
-        return version.toLowerCase().includes("microsoft");
-    } catch {
-        return false;
-    }
+    return isWsl;
 };
 
 const getComposerCandidates = (projectPath: string): string[] => {
