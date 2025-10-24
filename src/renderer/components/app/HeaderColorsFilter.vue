@@ -30,7 +30,7 @@ const isOrange = computed(() => ({
 </script>
 
 <template>
-    <div class="px-3 flex justify-center items-center">
+    <div class="py-2 flex justify-center items-center">
         <slot></slot>
         <div class="h-full flex items-center gap-2.5 px-2">
             <button

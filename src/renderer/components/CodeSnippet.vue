@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref, onUnmounted } from "vue";
+import { defineProps, onMounted, ref, onUnmounted, computed } from "vue";
 import { CodeSnippet } from "@/types/Payload";
 import hljs from "highlight.js/lib/core";
 import DumpLink from "@/components/dumps/DumpLink.vue";
@@ -7,6 +7,7 @@ import { IdeHandle } from "@/types/IdeHandle";
 import IconChevronRight from "@/components/Icons/IconChevronRight.vue";
 
 const activeFileIndex = ref(0);
+const showAllFrames = ref(false);
 
 const props = defineProps<{
     code_snippet: CodeSnippet[];
@@ -38,6 +39,22 @@ const getIdeHandleFromStack = (codeSnippet: CodeSnippet, lineNumber: string): Id
     };
 };
 
+const visibleFrames = computed(() => {
+    const list = props.code_snippet || [];
+
+    if (showAllFrames.value) {
+        return list.map((s, i) => ({ codeSnippet: s, index: i }));
+    }
+
+    if (activeFileIndex.value === -1) {
+        return list.slice(0, 5).map((s, i) => ({ codeSnippet: s, index: i }));
+    }
+
+    const start = activeFileIndex.value;
+    const end = start + 5;
+    return list.slice(start, end + 1).map((s, i) => ({ codeSnippet: s, index: start + i }));
+});
+
 const navigateToNextFile = () => {
     if (activeFileIndex.value < props.code_snippet.length - 1) {
         activeFileIndex.value++;
@@ -63,6 +80,10 @@ const handleKeyDown = (event: KeyboardEvent) => {
     }
 };
 
+const toggleShowAllFrames = () => {
+    showAllFrames.value = !showAllFrames.value;
+};
+
 onMounted(() => {
     activeFileIndex.value = 0;
     window.addEventListener("keydown", handleKeyDown);
@@ -76,41 +97,41 @@ onUnmounted(() => {
 <template>
     <div class="space-y-1">
         <div
-            v-for="(codeSnippet, index) in props.code_snippet"
-            :key="index"
+            v-for="frame in visibleFrames"
+            :key="frame.index"
             class="border border-base-content/10 rounded-md overflow-hidden"
         >
             <div
                 :class="{
-                    '!font-semibold !text-primary': activeFileIndex === index
+                    '!font-semibold !text-primary': activeFileIndex === frame.index
                 }"
                 class="text-xs px-2 py-1 text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:bg-base-200 transition-colors"
-                @click="toggleFileVisibility(index)"
+                @click="toggleFileVisibility(frame.index)"
             >
                 <span
                     class="transform transition-transform"
-                    :class="{ 'rotate-90': activeFileIndex === index }"
+                    :class="{ 'rotate-90': activeFileIndex === frame.index }"
                 >
                     <IconChevronRight class="!size-3" />
                 </span>
-                <span class="truncate">{{ getFileLineDisplay(codeSnippet) }}</span>
+                <span class="truncate">{{ getFileLineDisplay(frame.codeSnippet) }}</span>
             </div>
 
             <div
-                v-if="activeFileIndex === index"
+                v-if="activeFileIndex === frame.index"
                 class="code-snippet overflow-x-auto"
             >
                 <div
-                    v-for="(lineContent, lineNumber) in codeSnippet.snippet"
+                    v-for="(lineContent, lineNumber) in frame.codeSnippet.snippet"
                     :key="`${lineNumber}-code`"
-                    :class="{ 'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === codeSnippet.line }"
+                    :class="{ 'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === frame.codeSnippet.line }"
                     class="flex items-start tracking-widest leading-6 hover:!bg-red-500/20 group/line min-w-max"
                 >
                     <DumpLink
                         class="font-normal h-full text-base-content text-xs flex-shrink-0"
                         :label="lineNumber"
                         :show-icon="true"
-                        :ide-handler="getIdeHandleFromStack(codeSnippet, lineNumber)"
+                        :ide-handler="getIdeHandleFromStack(frame.codeSnippet, lineNumber)"
                     />
                     <span
                         class="language-php highlight whitespace-pre hljs h-full text-xs text-primary font-normal flex-1"
@@ -118,6 +139,18 @@ onUnmounted(() => {
                     ></span>
                 </div>
             </div>
+        </div>
+
+        <!-- View More / View Less -->
+        <div
+            v-if="props.code_snippet.length > 5"
+            class="text-xs flex justify-center px-2 py-1 text-base-content tracking-wide items-center gap-2 cursor-pointer hover:bg-base-200 rounded-md select-none"
+            @click="toggleShowAllFrames"
+        >
+            <span class="truncate">{{ showAllFrames ? 'View Less' : 'View More' }}</span>
+            <span class="transform transition-transform" :class="{ 'rotate-90': showAllFrames }">
+                <IconChevronRight class="!size-3" />
+            </span>
         </div>
     </div>
 </template>
