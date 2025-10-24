@@ -93,4 +93,3 @@ export async function exportQueriesToSQL(queries: Payload[], requestId: string):
         throw error;
     }
 }
-
