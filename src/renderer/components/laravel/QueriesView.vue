@@ -534,7 +534,8 @@ const setOrder = (order: string) => {
                     >
                         <div
                             v-if="settingsStore.settings.grouped_by_time"
-                            class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0">
+                            class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0"
+                        >
                             <span
                                 :title="groupKey"
                                 class="opacity-80"
