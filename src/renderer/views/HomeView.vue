@@ -67,6 +67,7 @@ const blockedStore = useQueriesBlockedStore();
 const pauseQueries = usePauseQueriesStore();
 const currentProjectStore = useCurrentProject();
 const pauseJobsStore = usePauseJobsStore();
+const savedStore = useSavedDumpsStore();
 
 const defaultScreen = ref({
     screen_name: "home",
@@ -93,136 +94,88 @@ onBeforeMount(() => {
 });
 
 onBeforeUnmount(() => {
-    const events = [
-        "dump",
-        "livewire",
-        "jobs",
-        "html",
-        "mailable",
-        "table_v2",
-        "mail",
-        "label",
-        "table",
-        "http-client",
-        "model",
-        "log_application",
-        "color",
-        "screen",
-        "json_validate",
-        "validate",
-        "json",
-        "queries",
-        "query",
-        "time_track"
-    ];
-
-    events.forEach((event) => {
-        window.ipcRenderer.removeAllListeners(event);
-    });
+    clearListeners();
 });
 
-onMounted(() => {
+const handleDump = (_, { content }) => {
+    dispatch(content);
+};
+
+const handleAppVersionReply = (_, arg) => {
+    document.title = "LaraDumps - " + `v${arg.version}`;
+};
+
+const handleAppScreenWindowEnable = async (_, args) => {
+    inScreenWindow.value = args.screen;
+    payloadScreen.value = args.payload;
+    jobScreen.value = args.jobs;
+    mailScreen.value = args.mails;
+    logScreen.value = args.logs;
+    queriesScreen.value = args.queries;
+
+    setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
+};
+
+const handleAppScreenWindowUpdate = async (_, args) => {
+    payloadScreen.value = args.payload;
+    jobScreen.value = args.jobs;
+    mailScreen.value = args.mails;
+    logScreen.value = args.logs;
+    queriesScreen.value = args.queries;
+};
+
+const handleXdebugConnected = (_, arg) => {
+    xdebugMode.value = true;
+};
+
+const handleXdebugDisconnected = (_, arg) => {
     if (xDebugStore.current) {
-        xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
+        xDebugStore.current.project_path = "";
     }
+    xdebugMode.value = false;
+};
 
-    addScreen(defaultScreen.value);
+const handleXdebug = (_, { content }) => dispatch(content);
 
-    window.ipcRenderer.on("dump", (_, { content }) => {
-        dispatch(content);
-    });
+const handleAddScreen = (event: Event) => {
+    const detail: Environment = (event as CustomEvent).detail;
 
-    window.ipcRenderer.send("main:app-version");
+    const screenName = detail.value.replace("_", " ");
 
-    window.ipcRenderer.on("main:app-version.reply", (_, arg) => {
-        document.title = "LaraDumps - " + `v${arg.version}`;
-    });
-
-    window.ipcRenderer.on("app:screen-window-enable", async (_, args) => {
-        inScreenWindow.value = args.screen;
-        payloadScreen.value = args.payload;
-        jobScreen.value = args.jobs;
-        mailScreen.value = args.mails;
-        logScreen.value = args.logs;
-        queriesScreen.value = args.queries;
-
-        setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
-    });
-
-    window.ipcRenderer.on("app:screen-window-update", async (_, args) => {
-        payloadScreen.value = args.payload;
-        jobScreen.value = args.jobs;
-        mailScreen.value = args.mails;
-        logScreen.value = args.logs;
-        queriesScreen.value = args.queries;
-    });
-
-    window.ipcRenderer.send("local-shortcut:get");
-
-    window.ipcRenderer.on("xdebug-connected", (_, arg) => {
-        xdebugMode.value = true;
-    });
-
-    window.ipcRenderer.on("xdebug-disconnected", (_, arg) => {
-        if (xDebugStore.current) {
-            xDebugStore.current.project_path = "";
-        }
-        xdebugMode.value = false;
-    });
-
-    window.ipcRenderer.on("xdebug", (_, { content }) => dispatch(content));
-
-    dumpListeners();
-
-    window.ipcRenderer.send("storage.get");
-
-    toggleScreen("home");
-
-    if (settingsStore.settings.split_pane_screen) {
-        splitPanesStore.setSplit(settingsStore.settings.split_pane_screen, "vertical");
-    }
-
-    window.addEventListener("add-screen", (event: Event) => {
-        const detail: Environment = (event as CustomEvent).detail;
-
-        const screenName = detail.value.replace("_", " ");
-
-        if (detail.selected) {
-            addScreen({
-                screen_name: screenName,
-                raise_in: 0,
-                visible: true,
-                pinned: false,
-                new_window: false
-            });
-        } else {
-            screenStore.remove(screenName);
-        }
-    });
-
-    const savedStore = useSavedDumpsStore();
-
-    window.ipcRenderer.on("saved-dumps:remove", (_event, args) => {
-        const { id } = args || {};
-        if (!id) return;
-
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-
-        savedStore.remove(id);
-
-        const updated = deepClone(savedStore.all);
-
-        window.ipcRenderer.send("send-screen-window-update", {
-            screen: "saved",
-            payload: updated
+    if (detail.selected) {
+        addScreen({
+            screen_name: screenName,
+            raise_in: 0,
+            visible: true,
+            pinned: false,
+            new_window: false
         });
-    });
-});
+    } else {
+        screenStore.remove(screenName);
+    }
+};
 
-const dumpListeners = () => {
-    window.ipcRenderer.on("livewire", (_, { content }) => {
+const handleSavedDumpsRemove = (_event, args) => {
+    const { id } = args || {};
+    if (!id) return;
+
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+
+    savedStore.remove(id);
+
+    const updated = deepClone(savedStore.all);
+
+    window.ipcRenderer.send("send-screen-window-update", {
+        screen: "saved",
+        payload: updated
+    });
+};
+
+const handleLivewire =
+    () =>
+    (_, { content }) => {
         if (pausePayloadStore.is_paused) {
             return;
         }
@@ -236,9 +189,11 @@ const dumpListeners = () => {
 
         livewireStore.add(content.livewire);
         dispatch(content);
-    });
+    };
 
-    window.ipcRenderer.on("jobs", (event, { content }) => {
+const handleJobs =
+    () =>
+    (event, { content }) => {
         if (pauseJobsStore.is_paused) {
             return;
         }
@@ -272,245 +227,337 @@ const dumpListeners = () => {
                 jobs: serializableJobs
             });
         }
-    });
+    };
 
-    window.ipcRenderer.on("html", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-        dispatch(content);
-    });
+const handleHtml = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+    dispatch(content);
+};
 
-    window.ipcRenderer.on("mailable", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-        dispatch(content);
-    });
+const handleMailable = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+    dispatch(content);
+};
 
-    window.ipcRenderer.on("table_v2", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-        dispatch(content);
-    });
+const handleTableV2 = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+    dispatch(content);
+};
 
-    window.ipcRenderer.on("table", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-        dispatch(content);
-    });
+const handleTable = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+    dispatch(content);
+};
 
-    window.ipcRenderer.on("http-client", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-        dispatch(content);
-    });
+const handleHttpClient = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+    dispatch(content);
+};
 
-    window.ipcRenderer.on("model", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-        dispatch(content);
-    });
+const handleModel = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+    dispatch(content);
+};
+const handleJson = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+    dispatch(content);
+};
 
-    window.ipcRenderer.on("json", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-        dispatch(content);
-    });
+const handleQuery = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+    dispatch(content);
+};
 
-    window.ipcRenderer.on("query", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-        dispatch(content);
-    });
+const handleMail = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
 
-    window.ipcRenderer.on("mail", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
+    if (content.application_path && applicationPath.value != content.application_path) {
+        window.ipcRenderer.send("storage.check", {
+            applicationPath: content.application_path
+        });
+        applicationPath.value = content.application_path;
+    }
 
-        if (content.application_path && applicationPath.value != content.application_path) {
-            window.ipcRenderer.send("storage.check", {
-                applicationPath: content.application_path
-            });
-            applicationPath.value = content.application_path;
-        }
+    mailStore.addOrUpdateMail(content.mail, content.ide_handle, content.context);
+};
 
-        mailStore.addOrUpdateMail(content.mail, content.ide_handle, content.context);
-    });
+const handleLabel = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
 
-    window.ipcRenderer.on("label", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
+    payloadStore.updateLabelPayload(content);
+};
 
-        payloadStore.updateLabelPayload(content);
-    });
+const handleContext = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
 
-    window.ipcRenderer.on("context", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
+    payloadStore.updatePayload(content, "context");
+};
 
-        payloadStore.updatePayload(content, "context");
-    });
+const handleLogApplication = (event, { content }) => {
+    if (pausePayloadStore.is_paused || pauseLogsStore.is_paused) {
+        return;
+    }
 
-    window.ipcRenderer.on("log_application", (event, { content }) => {
-        if (pausePayloadStore.is_paused || pauseLogsStore.is_paused) {
-            return;
-        }
+    if (content.application_path && applicationPath.value != content.application_path) {
+        window.ipcRenderer.send("storage.check", {
+            applicationPath: content.application_path
+        });
+        applicationPath.value = content.application_path;
+    }
 
-        if (content.application_path && applicationPath.value != content.application_path) {
-            window.ipcRenderer.send("storage.check", {
-                applicationPath: content.application_path
-            });
-            applicationPath.value = content.application_path;
-        }
+    logStore.add(content);
 
-        logStore.add(content);
+    const serializable = deepClone(logStore.logs);
 
-        const serializable = deepClone(logStore.logs);
+    if (content.to_screen.new_window) {
+        screenStore.hidden(content.to_screen.screen_name);
 
-        if (content.to_screen.new_window) {
-            screenStore.hidden(content.to_screen.screen_name);
+        window.ipcRenderer.send("screen-window:show", {
+            screen: content.to_screen.screen_name,
+            payload: {},
+            logs: serializable,
+            position: {}
+        });
+    }
 
-            window.ipcRenderer.send("screen-window:show", {
-                screen: content.to_screen.screen_name,
-                payload: {},
-                logs: serializable,
-                position: {}
-            });
-        }
+    if (content.to_screen && !content.to_screen.new_window) {
+        window.ipcRenderer.send("send-screen-window-update", {
+            screen: content.to_screen.screen_name,
+            payload: {},
+            logs: serializable
+        });
+    }
+};
 
-        if (content.to_screen && !content.to_screen.new_window) {
-            window.ipcRenderer.send("send-screen-window-update", {
-                screen: content.to_screen.screen_name,
-                payload: {},
-                logs: serializable
-            });
-        }
-    });
+const handleColor = async (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
 
-    window.ipcRenderer.on("color", async (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
+    payloadStore.updateColorPayload(content);
+};
 
-        payloadStore.updateColorPayload(content);
-    });
+const handleScreen = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
 
-    window.ipcRenderer.on("screen", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
+    payloadStore.updateScreenPayload(content);
+    const screen: ScreenPayload = content.to_screen;
+    addScreen(screen);
 
-        payloadStore.updateScreenPayload(content);
-        const screen: ScreenPayload = content.to_screen;
-        addScreen(screen);
+    if (screenStore.get(screen.screen_name)?.pinned) {
+        toggleScreen(screen.screen_name, true);
+    }
 
-        if (screenStore.get(screen.screen_name)?.pinned) {
+    // raise_in: seconds
+    if (screen.raise_in > 0) {
+        setTimeout(() => {
             toggleScreen(screen.screen_name, true);
+        }, screen.raise_in * 1000);
+    }
+};
+
+const handleJsonValidate = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+
+    payloadStore.updateJSONValidatePayload(content);
+};
+
+const handleValidate = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+
+    payloadStore.updateValidatePayload(content);
+};
+
+let lastPayloadTimeout: NodeJS.Timeout | null = null;
+let lastPayloadReceivedTime = 0;
+
+const handleDumpBatches = (event, args) => {
+    if (pauseQueries.is_paused) {
+        return;
+    }
+
+    if (args.type === "batch") {
+        lastPayloadReceivedTime = Date.now();
+
+        if (lastPayloadTimeout) {
+            clearTimeout(lastPayloadTimeout);
+            lastPayloadTimeout = null;
         }
 
-        // raise_in: seconds
-        if (screen.raise_in > 0) {
-            setTimeout(() => {
-                toggleScreen(screen.screen_name, true);
-            }, screen.raise_in * 1000);
-        }
-    });
+        args.contents.forEach(({ content }) => {
+            const requestId = content.request_id;
+            const sqlQuery = content.queries.query?.sql;
 
-    window.ipcRenderer.on("json_validate", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
+            pendingRequestsStore.add(requestId, "queries", sqlQuery);
 
-        payloadStore.updateJSONValidatePayload(content);
-    });
+            const storedQuery = pendingRequestsStore.get(requestId, "queries");
 
-    window.ipcRenderer.on("validate", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
-
-        payloadStore.updateValidatePayload(content);
-    });
-
-    let lastPayloadTimeout: NodeJS.Timeout | null = null;
-    let lastPayloadReceivedTime = 0;
-
-    window.ipcRenderer.on("dump.batches", (event, args) => {
-        if (pauseQueries.is_paused) {
-            return;
-        }
-
-        if (args.type === "batch") {
-            lastPayloadReceivedTime = Date.now();
-
-            if (lastPayloadTimeout) {
-                clearTimeout(lastPayloadTimeout);
-                lastPayloadTimeout = null;
+            if (blockedStore.blocked.includes(storedQuery)) {
+                console.log(`all sql queries are blocked for request id ${requestId}`);
+                return;
             }
 
-            args.contents.forEach(({ content }) => {
-                const requestId = content.request_id;
-                const sqlQuery = content.queries.query?.sql;
+            content.queries && timeStore.increment(content.request_id, content.id, content.queries);
 
-                pendingRequestsStore.add(requestId, "queries", sqlQuery);
+            if (content.application_path && applicationPath.value != content.application_path) {
+                window.ipcRenderer.send("storage.check", {
+                    applicationPath: content.application_path
+                });
+                applicationPath.value = content.application_path;
+            }
 
-                const storedQuery = pendingRequestsStore.get(requestId, "queries");
+            queriesStore.add(content);
 
-                if (blockedStore.blocked.includes(storedQuery)) {
-                    console.log(`all sql queries are blocked for request id ${requestId}`);
-                    return;
+            addScreen(content.to_screen);
+        });
+
+        lastPayloadTimeout = setTimeout(() => {
+            if (Date.now() - lastPayloadReceivedTime >= 200) {
+                const lastPayload: Payload = queriesStore.payload[queriesStore.payload.length - 1];
+                if (lastPayload) {
+                    timeStore.selected = lastPayload.request_id;
                 }
+            }
+        }, 200);
+    }
+};
 
-                content.queries && timeStore.increment(content.request_id, content.id, content.queries);
+const handleTimeTrack = (event, { content }) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
 
-                if (content.application_path && applicationPath.value != content.application_path) {
-                    window.ipcRenderer.send("storage.check", {
-                        applicationPath: content.application_path
-                    });
-                    applicationPath.value = content.application_path;
-                }
+    const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.with_label.label === content.with_label.label);
 
-                queriesStore.add(content);
+    if (exist.length === 0) {
+        dispatch(content);
 
-                addScreen(content.to_screen);
-            });
+        return;
+    }
 
-            lastPayloadTimeout = setTimeout(() => {
-                if (Date.now() - lastPayloadReceivedTime >= 200) {
-                    const lastPayload: Payload = queriesStore.payload[queriesStore.payload.length - 1];
-                    if (lastPayload) {
-                        timeStore.selected = lastPayload.request_id;
-                    }
-                }
-            }, 200);
-        }
-    });
+    payloadStore.updateTimeTrackPayload(content);
+};
 
-    window.ipcRenderer.on("time_track", (event, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
+const clearListeners = () => {
+    window.ipcRenderer.off("dump", handleDump);
+    window.ipcRenderer.off("main:app-version.reply", handleAppVersionReply);
+    window.ipcRenderer.off("app:screen-window-enable", handleAppScreenWindowEnable);
+    window.ipcRenderer.off("app:screen-window-update", handleAppScreenWindowUpdate);
+    window.ipcRenderer.off("xdebug-connected", handleXdebugConnected);
+    window.ipcRenderer.off("xdebug-disconnected", handleXdebugDisconnected);
+    window.ipcRenderer.off("xdebug", handleXdebug);
+    window.ipcRenderer.off("saved-dumps:remove", handleSavedDumpsRemove);
 
-        const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.with_label.label === content.with_label.label);
+    clearDumpListeners();
+};
 
-        if (exist.length === 0) {
-            dispatch(content);
+onMounted(() => {
+    if (xDebugStore.current) {
+        xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
+    }
 
-            return;
-        }
+    addScreen(defaultScreen.value);
 
-        payloadStore.updateTimeTrackPayload(content);
-    });
+    window.ipcRenderer.on("dump", handleDump);
+
+    window.ipcRenderer.send("main:app-version");
+
+    window.ipcRenderer.on("main:app-version.reply", handleAppVersionReply);
+    window.ipcRenderer.on("app:screen-window-enable", handleAppScreenWindowEnable);
+    window.ipcRenderer.on("app:screen-window-update", handleAppScreenWindowUpdate);
+
+    window.ipcRenderer.send("local-shortcut:get");
+
+    window.ipcRenderer.on("xdebug-connected", handleXdebugConnected);
+    window.ipcRenderer.on("xdebug-disconnected", handleXdebugDisconnected);
+    window.ipcRenderer.on("xdebug", handleXdebug);
+
+    dumpListeners();
+
+    window.ipcRenderer.send("storage.get");
+
+    toggleScreen("home");
+
+    if (settingsStore.settings.split_pane_screen) {
+        splitPanesStore.setSplit(settingsStore.settings.split_pane_screen, "vertical");
+    }
+
+    window.addEventListener("add-screen", handleAddScreen);
+    window.ipcRenderer.on("saved-dumps:remove", handleSavedDumpsRemove);
+});
+
+const dumpListeners = () => {
+    window.ipcRenderer.on("livewire", handleLivewire);
+    window.ipcRenderer.on("jobs", handleJobs);
+    window.ipcRenderer.on("html", handleHtml);
+    window.ipcRenderer.on("mailable", handleMailable);
+    window.ipcRenderer.on("table_v2", handleTableV2);
+    window.ipcRenderer.on("table", handleTable);
+    window.ipcRenderer.on("http-client", handleHttpClient);
+    window.ipcRenderer.on("model", handleModel);
+    window.ipcRenderer.on("json", handleJson);
+    window.ipcRenderer.on("query", handleQuery);
+    window.ipcRenderer.on("mail", handleMail);
+    window.ipcRenderer.on("label", handleLabel);
+    window.ipcRenderer.on("context", handleContext);
+    window.ipcRenderer.on("log_application", handleLogApplication);
+    window.ipcRenderer.on("color", handleColor);
+    window.ipcRenderer.on("screen", handleScreen);
+    window.ipcRenderer.on("json_validate", handleJsonValidate);
+    window.ipcRenderer.on("validate", handleValidate);
+    window.ipcRenderer.on("dump.batches", handleDumpBatches);
+    window.ipcRenderer.on("time_track", handleTimeTrack);
+};
+
+const clearDumpListeners = () => {
+    window.ipcRenderer.off("livewire", handleLivewire);
+    window.ipcRenderer.off("jobs", handleJobs);
+    window.ipcRenderer.off("html", handleHtml);
+    window.ipcRenderer.off("mailable", handleMailable);
+    window.ipcRenderer.off("table_v2", handleTableV2);
+    window.ipcRenderer.off("table", handleTable);
+    window.ipcRenderer.off("http-client", handleHttpClient);
+    window.ipcRenderer.off("model", handleModel);
+    window.ipcRenderer.off("json", handleJson);
+    window.ipcRenderer.off("query", handleQuery);
+    window.ipcRenderer.off("mail", handleMail);
+    window.ipcRenderer.off("label", handleLabel);
+    window.ipcRenderer.off("context", handleContext);
+    window.ipcRenderer.off("log_application", handleLogApplication);
+    window.ipcRenderer.off("color", handleColor);
+    window.ipcRenderer.off("screen", handleScreen);
+    window.ipcRenderer.off("json_validate", handleJsonValidate);
+    window.ipcRenderer.off("validate", handleValidate);
+    window.ipcRenderer.off("dump.batches", handleDumpBatches);
+    window.ipcRenderer.off("time_track", handleTimeTrack);
 };
 
 const dumpsBagFiltered = computed((): Payload[] => {
