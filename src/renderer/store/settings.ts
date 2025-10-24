@@ -80,7 +80,8 @@ export const useSettingsStore = defineStore("settings", () => {
     const themes = ref(themeColors);
 
     const savedSettings = localStorage.getItem("user-settings");
-    const settings = ref<Settings>(savedSettings ? JSON.parse(savedSettings) : DEFAULT_SETTINGS);
+    const initial = savedSettings ? JSON.parse(savedSettings) : {};
+    const settings = ref<Settings>({ ...DEFAULT_SETTINGS, ...initial });
 
     const updateAvailable = ref<boolean>(false);
     const latestVersion = ref<string>("");

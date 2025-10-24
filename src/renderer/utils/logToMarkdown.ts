@@ -62,7 +62,7 @@ export function logToMarkdown(log: Log): string {
     }
 
     // Payload
-    if (log.context && log.context.length > 0 && log.context[0]) {
+    if (log.context && log.context.length > 0 && log.context[0] && log.code_snippet.length === 0) {
         lines.push("## Payload");
         lines.push("");
 

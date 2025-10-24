@@ -36,4 +36,5 @@ export interface Settings {
     show_tips: boolean;
     split_pane_screen?: string | null;
     grouped_by_time: boolean;
+    display_last_log: boolean;
 }

@@ -87,7 +87,7 @@ const isScreenInSplit = (screenName) => {
                 role="tab"
                 class="select-none tabs-xs gap-1 flex py-1"
                 :class="{ dragging: isDraggingIndex === index }"
-                v-bind:draggable="!['home', 'livewire', 'queries'].includes(screen.screen_name)"
+                v-bind:draggable="true"
                 @dragstart="onDragStart(index, $event, screen)"
                 @dragover.prevent
                 @dragend="onDragEnd($event, screen)"

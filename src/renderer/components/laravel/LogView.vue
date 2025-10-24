@@ -14,11 +14,13 @@ import { usePauseLogsStore } from "@/store/pause-logs";
 import DumpQuery from "@/components/laravel/DumpQuery.vue";
 import { generateLink } from "@/utils/ideHandler";
 import { copyLogToMarkdown } from "@/utils/logToMarkdown";
+import { useSettingsStore } from "@/store/settings";
 
 const logStore = useLogStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const pauseLogsStore = usePauseLogsStore();
+const settingsStore = useSettingsStore();
 
 const forceUpdate = ref(0);
 const expandedLogId = ref<string | null>(null);
@@ -79,13 +81,34 @@ watch(
         if (newLogs.length > 0) {
             const newestLogId = newLogs[0].log_id;
 
-            if (!oldLogs || oldLogs.length === 0 || (oldLogs.length > 0 && newestLogId !== oldLogs[0].log_id)) {
-                expandedLogId.value = newestLogId;
+            const shouldDisplayLast = settingsStore.settings?.display_last_log ?? true;
+            if (shouldDisplayLast) {
+                if (!oldLogs || oldLogs.length === 0 || (oldLogs.length > 0 && newestLogId !== oldLogs[0].log_id)) {
+                    expandedLogId.value = newestLogId;
+                }
             }
         }
     },
     { immediate: true }
 );
+
+watch(expandedLogId, (newId) => {
+    if (newId === null) {
+        return;
+    }
+
+    nextTick(() => {
+        const findLog = logs.value.find((log) => log.log_id === newId);
+        const sfDumpId = findLog.context[1];
+
+        const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
+
+        if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
+            sfDump.setAttribute("has-dump-js", "true");
+            window.Sfdump(`sf-dump-${sfDumpId}`);
+        }
+    });
+});
 
 const selectedLevel = (level: string) => {
     const index = levelFilter.value.indexOf(level);
@@ -120,19 +143,6 @@ const toggleLogExpand = (logId: string) => {
     }
 
     expandedLogId.value = logId;
-
-    const findLog = logs.value.find((log) => log.log_id === logId);
-
-    const sfDumpId = findLog.context[1];
-
-    nextTick(() => {
-        const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
-
-        if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
-            sfDump.setAttribute("has-dump-js", "true");
-            window.Sfdump(`sf-dump-${sfDumpId}`);
-        }
-    });
 };
 
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -185,6 +195,30 @@ const getBorderColor = (level: string) => {
     };
     return colors[level] || "border-primary";
 };
+
+const canCopyToMarkdown = computed(() => {
+    return (log: Log) => {
+        const hasCode = log.code_snippet && log.code_snippet.length > 0;
+        if (!hasCode) return false;
+
+        const contextZero = log.context && log.context.length > 0 ? String(log.context[0]) : "";
+        const emptySfDumpPattern = /<pre[^>]*>\s*\[\]\s*<\/pre>/i;
+        const containsEmptySfDump = emptySfDumpPattern.test(contextZero);
+
+        return !containsEmptySfDump;
+    };
+});
+
+const displayLastLog = computed<boolean>({
+    get: () => {
+        return settingsStore.settings?.display_last_log ?? true;
+    },
+    set: (val: boolean) => {
+        if (!settingsStore.settings) return;
+        settingsStore.settings.display_last_log = val;
+        settingsStore.update();
+    }
+});
 </script>
 
 <template>
@@ -193,6 +227,23 @@ const getBorderColor = (level: string) => {
             <div class="flex items-center justify-end gap-1">
                 <div class="flex justify-center w-full">
                     <Teleport to="#actions">
+                        <!-- Display Last Toggle -->
+                        <div class="badge badge-soft py-3 flex items-center gap-2 mr-2">
+                            <label
+                                for="toggle-display-last"
+                                class="text-xs opacity-70 select-none"
+                                >Display last</label
+                            >
+
+                            <input
+                                id="toggle-display-last"
+                                type="checkbox"
+                                class="toggle toggle-xs toggle-primary"
+                                v-model="displayLastLog"
+                                data-tippy-content="Display last (auto-expand newest)"
+                            />
+                        </div>
+
                         <div class="dropdown dropdown-bottom dropdown-end">
                             <button
                                 tabindex="0"
@@ -258,7 +309,7 @@ const getBorderColor = (level: string) => {
                 style="height: -webkit-fill-available"
             >
                 <!-- Header -->
-                <div class="sticky top-0 z-10 bg-base-300 text-xs text-base-content grid grid-cols-[76px_1fr] gap-2 p-2">
+                <div class="sticky top-0 z-10 bg-base-300 text-xs text-base-content grid grid-cols-[90px_1fr] gap-2 p-2">
                     <div>Level</div>
                     <div>Message</div>
                 </div>
@@ -295,12 +346,12 @@ const getBorderColor = (level: string) => {
                                 :class="{
                                     'border-l-2': expandedLogId === log.log_id,
                                     [getBorderColor(log.level)]: expandedLogId === log.log_id,
-                                    'blur-sm opacity-40': expandedLogId !== null && expandedLogId !== log.log_id
+                                    'blur-xs opacity-40': expandedLogId !== null && expandedLogId !== log.log_id
                                 }"
                             >
                                 <!-- Log Row -->
                                 <div
-                                    class="grid grid-cols-[76px_1fr] border-l-2 border-base-100 gap-2 p-2 cursor-pointer hover:bg-base-100 transition-colors text-sm"
+                                    class="grid grid-cols-[90px_1fr] border-l-2 border-base-100 gap-2 p-2 cursor-pointer hover:bg-base-100 transition-colors text-sm"
                                     :class="{
                                         'bg-base-100': expandedLogId === log.log_id
                                     }"
@@ -378,7 +429,10 @@ const getBorderColor = (level: string) => {
                                     class="bg-base-100 px-4 py-2"
                                 >
                                     <!-- Copy to Markdown Button -->
-                                    <div class="flex justify-end mb-2">
+                                    <div
+                                        v-if="canCopyToMarkdown(log)"
+                                        class="flex justify-end mb-2"
+                                    >
                                         <button
                                             @click.stop="copyToMarkdown(log)"
                                             class="btn btn-sm btn-soft gap-2"

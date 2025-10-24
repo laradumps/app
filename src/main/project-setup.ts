@@ -2,7 +2,7 @@ import { BrowserWindow, dialog, IpcMainEvent, Notification } from "electron";
 import path from "path";
 import fs from "fs";
 import { exec } from "child_process";
-import isWsl from 'is-wsl';
+import isWsl from "is-wsl";
 
 const isWindows = process.platform === "win32";
 

@@ -500,12 +500,12 @@ const setOrder = (order: string) => {
         >
             <div class="flex justify-between items-center gap-3">
                 <button
-                    class="btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
+                    class="max-w-1/2 btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
                     @click="openRequestsModal()"
                 >
                     <ArrowsRightLeftIcon class="w-4 inline-block" />
                     <span class="opacity-80"> ({{ timeStore.getRequestCount() }}) </span>
-                    {{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}
+                    <span class="truncate">{{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}</span>
                 </button>
                 <div class="flex items-center gap-2">
                     <div class="badge badge-ghost badge-sm font-mono">{{ getQueriesCount(timeStore.selected) }} {{ getQueriesCount(timeStore.selected) === 1 ? "query" : "queries" }}</div>
@@ -534,7 +534,8 @@ const setOrder = (order: string) => {
                     >
                         <div
                             v-if="settingsStore.settings.grouped_by_time"
-                            class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0">
+                            class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0"
+                        >
                             <span
                                 :title="groupKey"
                                 class="opacity-80"
