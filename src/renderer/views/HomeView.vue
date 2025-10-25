@@ -787,8 +787,6 @@ const handleDragEnd = () => {
             <XDebugMode v-if="xdebugMode && xDebugStore.current && xDebugStore.current.project_path" />
 
             <div v-else>
-                <TheAppUpdateInfo />
-
                 <div
                     v-if="splitPanesStore.splitConfig?.active"
                     class="fixed inset-0 top-[41px] flex flex-col"
