@@ -494,13 +494,11 @@ const toggleMessageLimit = () => {
 <style scoped>
 @reference "./../../styles.css";
 
-::v-deep(.table thead) {
-    :where(th, td) {
-        @apply p-2;
-    }
+:deep(.table thead) :where(th, td) {
+    @apply p-2;
 }
 
-::v-deep(.table tbody) {
+:deep(.table tbody) {
     :where(th, td) {
         @apply p-1.5 px-2;
     }

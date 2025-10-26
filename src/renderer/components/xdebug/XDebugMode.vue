@@ -908,79 +908,79 @@ onBeforeUnmount(() => {
     @apply text-[#61aeee];
 }
 
-::v-deep(.classname) {
+:deep(.classname) {
     @apply text-gray-400;
 }
 
-::v-deep([data-tippy-root]) {
+:deep([data-tippy-root]) {
     @apply break-all;
 }
 
-::v-deep(.xdebug .hljs) {
+:deep(.xdebug .hljs) {
     @apply !bg-transparent font-light text-sm leading-8 tracking-wider;
 }
 
-::v-deep(.xdebug .hljs),
-::v-deep(.xdebug .hljs-params) {
+:deep(.xdebug .hljs),
+:deep(.xdebug .hljs-params) {
     color: rgba(171, 178, 191, 0.9);
 }
 
-::v-deep(.xdebug .hljs-comment),
-::v-deep(.xdebug .hljs-quote) {
+:deep(.xdebug .hljs-comment),
+:deep(.xdebug .hljs-quote) {
     color: #5c6370;
     font-style: italic;
 }
 
-::v-deep(.xdebug .hljs-doctag),
-::v-deep(.xdebug .hljs-formula),
-::v-deep(.xdebug .hljs-keyword) {
+:deep(.xdebug .hljs-doctag),
+:deep(.xdebug .hljs-formula),
+:deep(.xdebug .hljs-keyword) {
     color: #c678dd !important;
 }
 
-::v-deep(.xdebug .hljs-deletion),
-::v-deep(.xdebug .hljs-name),
-::v-deep(.xdebug .hljs-section),
-::v-deep(.xdebug .hljs-selector-tag),
-::v-deep(.xdebug .hljs-subst) {
+:deep(.xdebug .hljs-deletion),
+:deep(.xdebug .hljs-name),
+:deep(.xdebug .hljs-section),
+:deep(.xdebug .hljs-selector-tag),
+:deep(.xdebug .hljs-subst) {
     color: #e06c75 !important;
 }
 
-::v-deep(.xdebug .hljs-literal) {
+:deep(.xdebug .hljs-literal) {
     color: #56b6c2 !important;
 }
 
-::v-deep(.xdebug .hljs-addition),
-::v-deep(.xdebug .hljs-attribute),
-::v-deep(.xdebug .hljs-meta .hljs-string),
-::v-deep(.xdebug .hljs-regexp),
-::v-deep(.xdebug .hljs-string) {
+:deep(.xdebug .hljs-addition),
+:deep(.xdebug .hljs-attribute),
+:deep(.xdebug .hljs-meta .hljs-string),
+:deep(.xdebug .hljs-regexp),
+:deep(.xdebug .hljs-string) {
     color: #98c379 !important;
 }
 
-::v-deep(.xdebug .hljs-bullet),
-::v-deep(.xdebug .hljs-link),
-::v-deep(.xdebug .hljs-meta),
-::v-deep(.xdebug .hljs-selector-id),
-::v-deep(.xdebug .hljs-symbol),
-::v-deep(.xdebug .hljs-title) {
+:deep(.xdebug .hljs-bullet),
+:deep(.xdebug .hljs-link),
+:deep(.xdebug .hljs-meta),
+:deep(.xdebug .hljs-selector-id),
+:deep(.xdebug .hljs-symbol),
+:deep(.xdebug .hljs-title) {
     color: #61aeee !important;
 }
 
-::v-deep(.xdebug .hljs-built_in),
-::v-deep(.xdebug .hljs-class .hljs-title),
-::v-deep(.xdebug .hljs-title.class_) {
+:deep(.xdebug .hljs-built_in),
+:deep(.xdebug .hljs-class .hljs-title),
+:deep(.xdebug .hljs-title.class_) {
     color: #e6c07b !important;
 }
 
-::v-deep(.xdebug .hljs-emphasis) {
+:deep(.xdebug .hljs-emphasis) {
     font-style: italic !important;
 }
 
-::v-deep(.xdebug .hljs-strong) {
+:deep(.xdebug .hljs-strong) {
     font-weight: 700 !important;
 }
 
-::v-deep(.xdebug .hljs-link) {
+:deep(.xdebug .hljs-link) {
     text-decoration: underline !important;
 }
 </style>
