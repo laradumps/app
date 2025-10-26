@@ -1,98 +1,88 @@
 <script setup lang="ts">
-import { defineProps, nextTick, onMounted, ref } from "vue";
+import { defineProps, nextTick, computed, ref } from "vue";
 import { Payload } from "@/types/Payload";
 import VueJsonPretty from "vue-json-pretty";
-import { createApp, defineComponent } from "vue";
 
 const props = defineProps<{
     payload: Payload;
 }>();
 
-const table = ref("");
+const sfDump = ref(false);
 
-onMounted(() => {
-    const tableV2 = createTableV2(props.payload.table_v2?.values, props.payload.id, props.payload.table_v2?.headerStyle);
-    table.value = tableV2.div.innerHTML;
+const rows = computed(() => {
+    if (!props.payload.table_v2?.values) return [];
+    return Object.entries(props.payload.table_v2.values).map(([key, val]) => ({
+        key,
+        val,
+        isObject: typeof val === "object",
+        isJsonPretty: typeof val === "object" && typeof val[0] === "object" && typeof val[1] === "object",
+        sfDumpId: typeof val === "object" && !(typeof val[0] === "object" && typeof val[1] === "object") ? val[1] : null,
+        sfDumpInitated: false
+    }));
+});
+
+const sfDumpIds = computed(() => {
+    return rows.value.filter((row) => row.sfDumpId).map((row) => row.sfDumpId);
+});
+
+const initSfDump = () => {
+    if (sfDump.value) {
+        return;
+    }
+
+    sfDump.value = true;
 
     nextTick(() => {
-        tableV2.elements.forEach((el) => {
+        sfDumpIds.value.forEach((id) => {
             try {
-                window.Sfdump(el);
+                window.Sfdump(`sf-dump-${id}`);
             } catch (e) {}
         });
     });
-});
-
-const createTableV2 = (values: string[] | undefined, payloadId: string, headerStyle: string[] | undefined) => {
-    const elements: string[] = [];
-    const div = document.createElement("div");
-    const table = document.createElement("table");
-
-    table.setAttribute("id", `table-${payloadId}`);
-    table.setAttribute("class", "table w-full");
-
-    const tbody = document.createElement("tbody");
-    let tr = document.createElement("tr");
-
-    tbody.setAttribute("class", "tbody");
-
-    Object.entries(values).forEach(([key, val]) => {
-        tr = document.createElement("tr");
-
-        const keyTd = document.createElement("td");
-        keyTd.setAttribute("style", headerStyle);
-        keyTd.setAttribute("class", "text-xs p-2 font-semibold bg-base-200");
-        keyTd.appendChild(document.createTextNode(key));
-        tr.appendChild(keyTd);
-
-        const td = document.createElement("td");
-
-        if (typeof val === "object") {
-            if (typeof val[0] === "object" && typeof val[1] === "object") {
-                const container = document.createElement("div");
-                const VueJsonPrettyComponent = defineComponent(VueJsonPretty);
-                const propsData = {
-                    showIcon: true,
-                    showLength: true,
-                    showLine: false,
-                    data: val[0]
-                };
-                const vueInstance = createApp(VueJsonPrettyComponent, propsData);
-                const mountedComponent = vueInstance.mount(container);
-
-                td.setAttribute("style", "word-break: break-word;");
-                td.appendChild(container);
-                elements.push(mountedComponent);
-            } else {
-                elements.push(`sf-dump-${val[1]}`);
-                const preAttributes = document.createElement("pre");
-                preAttributes.setAttribute("class", "sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line");
-                preAttributes.setAttribute("id", `sf-dump-${val[1]}`);
-                preAttributes.setAttribute("data-indent-pad", "  ");
-                preAttributes.innerHTML = val[0];
-
-                td.setAttribute("style", "word-break: break-word;");
-                td.innerHTML = preAttributes.outerHTML;
-            }
-        } else {
-            td.setAttribute("style", "word-break: break-word;");
-            td.innerText = val;
-        }
-
-        tr.appendChild(td);
-
-        tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-
-    div.appendChild(table);
-
-    return { div, elements };
 };
 </script>
 
 <template>
     <div class="dstable dstable-v2">
-        <div v-html="table"></div>
+        <table
+            :id="`table-${props.payload.id}`"
+            class="table w-full"
+            @mouseover="initSfDump()"
+        >
+            <tbody class="tbody">
+                <tr
+                    v-for="(row, index) in rows"
+                    :key="index"
+                >
+                    <td
+                        :style="props.payload.table_v2?.headerStyle"
+                        class="text-xs p-2 font-semibold bg-base-200"
+                    >
+                        {{ row.key }}
+                    </td>
+                    <td style="word-break: break-word">
+                        <template v-if="row.isJsonPretty">
+                            <VueJsonPretty
+                                :data="row.val[0]"
+                                :showIcon="true"
+                                :showLength="true"
+                                :showLine="false"
+                            />
+                        </template>
+                        <template v-else-if="row.isObject">
+                            <pre
+                                :id="`sf-dump-${row.val[1]}`"
+                                class="sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line"
+                                data-indent-pad="  "
+                                v-html="row.val[0]"
+                            ></pre>
+                        </template>
+                        <template v-else>
+                            {{ row.val }}
+                        </template>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </template>
