@@ -667,7 +667,7 @@ onUnmounted(() => {
 }
 
 .highlight-duplicated {
-    @apply border border-solid border-error/40 bg-error/5 rounded-md shadow-lg;
+    @apply border-2 border-solid border-error/40 bg-error/5 rounded-md shadow-lg;
     animation: blink-red-border 1s 3;
 }
 </style>

@@ -114,7 +114,7 @@ const formattedSql = computed(() => {
 <template>
     <div
         v-if="payload.queries"
-        class="rounded-sm space-y-3 p-2 pt-0"
+        class="rounded-sm space-y-3"
     >
         <dialog
             ref="modalRef"
@@ -154,7 +154,7 @@ const formattedSql = computed(() => {
                 <button
                     v-if="payload.queries.explain_nodes && payload.queries.explain_nodes.length > 0"
                     @click="openModalForExplainQuery()"
-                    class="btn btn-soft btn-warning btn-xs"
+                    class="badge badge-warning hover:opacity-80 badge-sm p-2.5 font-mono"
                     title="This query has problematic nodes in the EXPLAIN plan."
                 >
                     <BoltIcon class="w-4" />
@@ -165,7 +165,7 @@ const formattedSql = computed(() => {
                 <button
                     v-if="duplicatesStore.isDuplicated(payload.request_id, payload.queries?.query.sql)"
                     @click="duplicatesStore.toggleSelectedSql(payload.queries.query.sql)"
-                    class="btn btn-soft btn-xs btn-error"
+                    class="badge badge-error text-error-content hover:opacity-80 badge-sm p-2.5 font-mono"
                 >
                     <ExclamationTriangleIcon class="w-4" />
                     <span>Duplicated</span>

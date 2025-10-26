@@ -13,7 +13,6 @@ const themeColors = {
     retro: "Retro",
     halloween: "Halloween",
     cyberpunk: "Cyberpunk",
-    laravel: "Laravel",
     lemonade: "Lemonade",
     winter: "Winter",
     forest: "Forest",

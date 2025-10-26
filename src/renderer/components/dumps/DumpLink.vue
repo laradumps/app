@@ -49,7 +49,7 @@ const toggleBreakpoint = () => {
             class="flex items-center group whitespace-pre-line"
             @click.stop
         >
-            <span class="break-all tracking-wider hover:opacity-75 flex items-center">
+            <span class="break-all tracking-wider hover:opacity-90 flex items-center">
                 <span
                     class="whitespace-nowrap"
                     :class="{ '!text-gray-400': props.label }"
@@ -63,7 +63,7 @@ const toggleBreakpoint = () => {
             :title="label"
             class="flex items-center group"
         >
-            <div class="text-right w-16 tracking-wider hover:opacity-75 flex items-center">
+            <div class="text-right w-16 tracking-wider hover:opacity-90 flex items-center">
                 <div
                     v-show="breakpoint"
                     @click="toggleBreakpoint"
