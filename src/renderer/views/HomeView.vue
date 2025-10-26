@@ -10,7 +10,6 @@ import { Payload, ScreenPayload } from "@/types/Payload";
 import DumpItem from "@/components/dumps/DumpItem.vue";
 import WelcomePage from "@/components/app/WelcomePage.vue";
 import Screens from "@/components/screen/Screens.vue";
-import TheAppUpdateInfo from "@/components/app/TheAppUpdateInfo.vue";
 import DumpLivewire from "@/components/laravel/DumpLivewire.vue";
 import ScreenWindow from "@/components/screen/ScreenWindow.vue";
 import { usePayloadStore } from "@/store/payload";
@@ -97,15 +96,15 @@ onBeforeUnmount(() => {
     clearListeners();
 });
 
-const handleDump = (_, { content }) => {
+const handleDump = (_: any, { content }: any) => {
     dispatch(content);
 };
 
-const handleAppVersionReply = (_, arg) => {
+const handleAppVersionReply = (_: any, arg: any) => {
     document.title = "LaraDumps - " + `v${arg.version}`;
 };
 
-const handleAppScreenWindowEnable = async (_, args) => {
+const handleAppScreenWindowEnable = async (_: any, args: any) => {
     inScreenWindow.value = args.screen;
     payloadScreen.value = args.payload;
     jobScreen.value = args.jobs;
@@ -116,7 +115,7 @@ const handleAppScreenWindowEnable = async (_, args) => {
     setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
 };
 
-const handleAppScreenWindowUpdate = async (_, args) => {
+const handleAppScreenWindowUpdate = async (_: any, args: any) => {
     payloadScreen.value = args.payload;
     jobScreen.value = args.jobs;
     mailScreen.value = args.mails;
@@ -124,18 +123,18 @@ const handleAppScreenWindowUpdate = async (_, args) => {
     queriesScreen.value = args.queries;
 };
 
-const handleXdebugConnected = (_, arg) => {
+const handleXdebugConnected = (_: any, arg: any) => {
     xdebugMode.value = true;
 };
 
-const handleXdebugDisconnected = (_, arg) => {
+const handleXdebugDisconnected = (_: any, arg: any) => {
     if (xDebugStore.current) {
         xDebugStore.current.project_path = "";
     }
     xdebugMode.value = false;
 };
 
-const handleXdebug = (_, { content }) => dispatch(content);
+const handleXdebug = (_: any, { content }: any) => dispatch(content);
 
 const handleAddScreen = (event: Event) => {
     const detail: Environment = (event as CustomEvent).detail;
@@ -155,7 +154,7 @@ const handleAddScreen = (event: Event) => {
     }
 };
 
-const handleSavedDumpsRemove = (_event, args) => {
+const handleSavedDumpsRemove = (_: any, args: any) => {
     const { id } = args || {};
     if (!id) return;
 
@@ -173,118 +172,114 @@ const handleSavedDumpsRemove = (_event, args) => {
     });
 };
 
-const handleLivewire =
-    () =>
-    (_, { content }) => {
-        if (pausePayloadStore.is_paused) {
-            return;
-        }
+const handleLivewire = (_: any, { content }: any) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
 
-        if (content.application_path && applicationPath.value != content.application_path) {
-            window.ipcRenderer.send("storage.check", {
-                applicationPath: content.application_path
-            });
-            applicationPath.value = content.application_path;
-        }
+    if (content.application_path && applicationPath.value != content.application_path) {
+        window.ipcRenderer.send("storage.check", {
+            applicationPath: content.application_path
+        });
+        applicationPath.value = content.application_path;
+    }
 
-        livewireStore.add(content.livewire);
-        dispatch(content);
-    };
+    livewireStore.add(content.livewire);
+    dispatch(content);
+};
 
-const handleJobs =
-    () =>
-    (event, { content }) => {
-        if (pauseJobsStore.is_paused) {
-            return;
-        }
+const handleJobs = (_: any, { content }: any) => {
+    if (pauseJobsStore.is_paused) {
+        return;
+    }
 
-        if (content.application_path && applicationPath.value != content.application_path) {
-            window.ipcRenderer.send("storage.check", {
-                applicationPath: content.application_path
-            });
-            applicationPath.value = content.application_path;
-        }
+    if (content.application_path && applicationPath.value != content.application_path) {
+        window.ipcRenderer.send("storage.check", {
+            applicationPath: content.application_path
+        });
+        applicationPath.value = content.application_path;
+    }
 
-        jobStore.addOrUpdateJob(content);
+    jobStore.addOrUpdateJob(content);
 
-        const serializableJobs = deepClone(jobStore.jobs);
+    const serializableJobs = deepClone(jobStore.jobs);
 
-        if (content.to_screen.new_window) {
-            screenStore.hidden(content.to_screen.screen_name);
+    if (content.to_screen.new_window) {
+        screenStore.hidden(content.to_screen.screen_name);
 
-            window.ipcRenderer.send("screen-window:show", {
-                screen: content.to_screen.screen_name,
-                payload: {},
-                jobs: serializableJobs,
-                position: {}
-            });
-        }
+        window.ipcRenderer.send("screen-window:show", {
+            screen: content.to_screen.screen_name,
+            payload: {},
+            jobs: serializableJobs,
+            position: {}
+        });
+    }
 
-        if (content.to_screen && !content.to_screen.new_window) {
-            window.ipcRenderer.send("send-screen-window-update", {
-                screen: content.to_screen.screen_name,
-                payload: {},
-                jobs: serializableJobs
-            });
-        }
-    };
+    if (content.to_screen && !content.to_screen.new_window) {
+        window.ipcRenderer.send("send-screen-window-update", {
+            screen: content.to_screen.screen_name,
+            payload: {},
+            jobs: serializableJobs
+        });
+    }
+};
 
-const handleHtml = (event, { content }) => {
+const handleHtml = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
     dispatch(content);
 };
 
-const handleMailable = (event, { content }) => {
+const handleMailable = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
     dispatch(content);
 };
 
-const handleTableV2 = (event, { content }) => {
+const handleTableV2 = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
     dispatch(content);
 };
 
-const handleTable = (event, { content }) => {
+const handleTable = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
     dispatch(content);
 };
 
-const handleHttpClient = (event, { content }) => {
+const handleHttpClient = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
     dispatch(content);
 };
 
-const handleModel = (event, { content }) => {
+const handleModel = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
     dispatch(content);
 };
-const handleJson = (event, { content }) => {
-    if (pausePayloadStore.is_paused) {
-        return;
-    }
-    dispatch(content);
-};
-
-const handleQuery = (event, { content }) => {
+const handleJson = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
     dispatch(content);
 };
 
-const handleMail = (event, { content }) => {
+const handleQuery = (_: any, { content }: any) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+    dispatch(content);
+};
+
+const handleMail = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
@@ -299,7 +294,7 @@ const handleMail = (event, { content }) => {
     mailStore.addOrUpdateMail(content.mail, content.ide_handle, content.context);
 };
 
-const handleLabel = (event, { content }) => {
+const handleLabel = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
@@ -307,7 +302,7 @@ const handleLabel = (event, { content }) => {
     payloadStore.updateLabelPayload(content);
 };
 
-const handleContext = (event, { content }) => {
+const handleContext = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
@@ -315,7 +310,7 @@ const handleContext = (event, { content }) => {
     payloadStore.updatePayload(content, "context");
 };
 
-const handleLogApplication = (event, { content }) => {
+const handleLogApplication = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused || pauseLogsStore.is_paused) {
         return;
     }
@@ -351,7 +346,7 @@ const handleLogApplication = (event, { content }) => {
     }
 };
 
-const handleColor = async (event, { content }) => {
+const handleColor = async (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
@@ -359,7 +354,7 @@ const handleColor = async (event, { content }) => {
     payloadStore.updateColorPayload(content);
 };
 
-const handleScreen = (event, { content }) => {
+const handleScreen = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
@@ -380,7 +375,7 @@ const handleScreen = (event, { content }) => {
     }
 };
 
-const handleJsonValidate = (event, { content }) => {
+const handleJsonValidate = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
@@ -388,7 +383,7 @@ const handleJsonValidate = (event, { content }) => {
     payloadStore.updateJSONValidatePayload(content);
 };
 
-const handleValidate = (event, { content }) => {
+const handleValidate = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
@@ -399,7 +394,7 @@ const handleValidate = (event, { content }) => {
 let lastPayloadTimeout: NodeJS.Timeout | null = null;
 let lastPayloadReceivedTime = 0;
 
-const handleDumpBatches = (event, args) => {
+const handleDumpBatches = (_, args) => {
     if (pauseQueries.is_paused) {
         return;
     }
@@ -450,7 +445,7 @@ const handleDumpBatches = (event, args) => {
     }
 };
 
-const handleTimeTrack = (event, { content }) => {
+const handleTimeTrack = (_: any, { content }: any) => {
     if (pausePayloadStore.is_paused) {
         return;
     }
@@ -750,7 +745,7 @@ const deleteDump = (id: string): void => {
     payloadStore.removePayload(id);
 };
 
-const handleDragScreen = ({ screen, event }) => {
+const handleDragScreen = ({ screen, _ }) => {
     draggedScreenName.value = screen;
     isDraggingScreen.value = true;
 };

@@ -115,11 +115,10 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on("dump", (event: Electron.IpcMainEvent, arg): void => {
-    mainWindow.webContents.send("dumps");
     event.sender.send(arg.type, arg);
 });
 
-ipcMain.on("badge-icon.decrement", (event: Electron.IpcMainEvent, args): void => {
+ipcMain.on("badge-icon.decrement", (_: Electron.IpcMainEvent, args): void => {
     if (badgeCount > 0) {
         badgeCount -= 1;
     }
@@ -127,7 +126,7 @@ ipcMain.on("badge-icon.decrement", (event: Electron.IpcMainEvent, args): void =>
     setBadgeCount(badgeCount);
 });
 
-ipcMain.on("badge-icon.increment", (event: Electron.IpcMainEvent, args): void => {
+ipcMain.on("badge-icon.increment", (_: Electron.IpcMainEvent, args): void => {
     if (args && args.reset) {
         badgeCount = 0;
     } else {

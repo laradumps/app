@@ -147,8 +147,11 @@ onUnmounted(() => {
             class="text-xs flex justify-center px-2 py-1 text-base-content tracking-wide items-center gap-2 cursor-pointer hover:bg-base-200 rounded-md select-none"
             @click="toggleShowAllFrames"
         >
-            <span class="truncate">{{ showAllFrames ? 'View Less' : 'View More' }}</span>
-            <span class="transform transition-transform" :class="{ 'rotate-90': showAllFrames }">
+            <span class="truncate">{{ showAllFrames ? "View Less" : "View More" }}</span>
+            <span
+                class="transform transition-transform"
+                :class="{ 'rotate-90': showAllFrames }"
+            >
                 <IconChevronRight class="!size-3" />
             </span>
         </div>
