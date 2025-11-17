@@ -1,6 +1,6 @@
 {
     "name": "laradumps",
-    "version": "4.9.1",
+    "version": "4.9.2",
     "private": false,
     "description": "LaraDumps is a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
@@ -69,7 +69,7 @@
         "@vitejs/plugin-vue": "6.0.1",
         "concurrently": "^9.2.1",
         "daisyui": "^5.3.10",
-        "electron": "^38.1.0",
+        "electron": "38.1.0",
         "electron-builder": "^26.0.12",
         "esbuild": "^0.25.9",
         "eslint-plugin-prettier": "5.5.4",
