@@ -13,6 +13,7 @@ import { usePendingRequestsStore } from "@/store/pending-requests";
 import { useQueryDuplicated } from "@/store/query-duplicated";
 import { useScreenStore } from "@/store/screen";
 import { useLivewireStore } from "@/store/livewire";
+import { useBrainStore } from "@/store/brains";
 
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
@@ -26,6 +27,7 @@ const pendingRequestsStore = usePendingRequestsStore();
 const duplicatesStore = useQueryDuplicated();
 const screenStore = useScreenStore();
 const livewireStore = useLivewireStore();
+const brainStore = useBrainStore();
 
 const clearAll = (): void => {
     // store
@@ -40,6 +42,7 @@ const clearAll = (): void => {
     duplicatesStore.clear();
     screenStore.clearAll();
     livewireStore.clear();
+    brainStore.clear();
     pendingRequestsStore.clear("queries");
 
     setTimeout(() => {

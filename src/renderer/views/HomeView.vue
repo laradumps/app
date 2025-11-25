@@ -42,6 +42,8 @@ import HeaderColorsFilter from "@/components/app/HeaderColorsFilter.vue";
 import DropZones from "@/components/split/DropZones.vue";
 import SplitPanes from "@/components/split/SplitPanes.vue";
 import { useSplitPanesStore } from "@/store/split-panes";
+import { useBrainStore } from "@/store/brains";
+import BrainView from "@/components/laravel/BrainView.vue"; // added import
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -56,6 +58,7 @@ const pausePayloadStore = usePausePayloadStore();
 const pauseLogsStore = usePauseLogsStore();
 const livewireStore = useLivewireStore();
 const splitPanesStore = useSplitPanesStore();
+const brainStore = useBrainStore();
 
 const { locale } = useI18n({ useScope: "global" });
 const localeStore = useI18nStore();
@@ -82,12 +85,13 @@ const jobScreen = ref({});
 const mailScreen = ref([]);
 const logScreen = ref({});
 const queriesScreen = ref([]);
+const brainScreen = ref({}); // added
 const applicationPath = ref("");
 
 const xdebugMode = ref(false);
 const isDraggingScreen = ref(false);
 const draggedScreenName = ref("");
-
+const sfDump = ref(false);
 onBeforeMount(() => {
     locale.value = localeStore.value;
 });
@@ -111,6 +115,7 @@ const handleAppScreenWindowEnable = async (_: any, args: any) => {
     mailScreen.value = args.mails;
     logScreen.value = args.logs;
     queriesScreen.value = args.queries;
+    brainScreen.value = args.brains; // added
 
     setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
 };
@@ -121,6 +126,7 @@ const handleAppScreenWindowUpdate = async (_: any, args: any) => {
     mailScreen.value = args.mails;
     logScreen.value = args.logs;
     queriesScreen.value = args.queries;
+    brainScreen.value = args.brains; // added
 };
 
 const handleXdebugConnected = (_: any, arg: any) => {
@@ -461,6 +467,42 @@ const handleTimeTrack = (_: any, { content }: any) => {
     payloadStore.updateTimeTrackPayload(content);
 };
 
+const handleBrain = (_: any, { content }: any) => {
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+
+    if (content.application_path && applicationPath.value != content.application_path) {
+        window.ipcRenderer.send("storage.check", {
+            applicationPath: content.application_path
+        });
+        applicationPath.value = content.application_path;
+    }
+
+    brainStore.addOrUpdateBrain(content);
+
+    const serializableBrains = deepClone(brainStore.brains);
+
+    if (content.to_screen?.new_window) {
+        screenStore.hidden(content.to_screen.screen_name);
+
+        window.ipcRenderer.send("screen-window:show", {
+            screen: content.to_screen.screen_name,
+            payload: {},
+            brains: serializableBrains,
+            position: {}
+        });
+    }
+
+    if (content.to_screen && !content.to_screen.new_window) {
+        window.ipcRenderer.send("send-screen-window-update", {
+            screen: content.to_screen.screen_name,
+            payload: {},
+            brains: serializableBrains
+        });
+    }
+};
+
 const clearListeners = () => {
     window.ipcRenderer.off("dump", handleDump);
     window.ipcRenderer.off("main:app-version.reply", handleAppVersionReply);
@@ -530,6 +572,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on("validate", handleValidate);
     window.ipcRenderer.on("dump.batches", handleDumpBatches);
     window.ipcRenderer.on("time_track", handleTimeTrack);
+    window.ipcRenderer.on("brain", handleBrain);
 };
 
 const clearDumpListeners = () => {
@@ -553,6 +596,7 @@ const clearDumpListeners = () => {
     window.ipcRenderer.off("validate", handleValidate);
     window.ipcRenderer.off("dump.batches", handleDumpBatches);
     window.ipcRenderer.off("time_track", handleTimeTrack);
+    window.ipcRenderer.off("brain", handleBrain);
 };
 
 const dumpsBagFiltered = computed((): Payload[] => {
@@ -678,6 +722,7 @@ const openScreenWindow = () => {
     const serializableMailPayload = deepClone(mailStore.mails);
     const serializableLogPayload = deepClone(logStore.logs);
     const serializableQueriesPayload = deepClone(queriesStore.payload);
+    const serializableBrainsPayload = deepClone(brainStore.brains); // added
 
     window.ipcRenderer.send("screen-window:show", {
         screen: screenStore.screen,
@@ -686,6 +731,7 @@ const openScreenWindow = () => {
         mails: serializableMailPayload,
         logs: serializableLogPayload,
         queries: serializableQueriesPayload,
+        brains: serializableBrainsPayload, // added
         position: {}
     });
 
@@ -801,7 +847,7 @@ const handleDragEnd = () => {
             class="mt-3 h-[calc(100vh-50px)] w-[100vw] text-base"
         >
             <ScreenWindow
-                v-if="!['jobs', 'mail', 'logs', 'queries'].includes(inScreenWindow)"
+                v-if="!['jobs', 'mail', 'logs', 'queries', 'brain'].includes(inScreenWindow)"
                 v-model:dumps="payloadScreen"
                 v-model:screen="inScreenWindow"
             />
@@ -810,6 +856,12 @@ const handleDragEnd = () => {
                 :in-screen-window="inScreenWindow.length > 0"
                 v-if="inScreenWindow === 'jobs'"
                 :items="jobScreen"
+            />
+
+            <BrainView
+                :in-screen-window="inScreenWindow.length > 0"
+                v-if="inScreenWindow === 'brain'"
+                :items="brainScreen"
             />
 
             <MailView
@@ -861,6 +913,10 @@ const handleDragEnd = () => {
                                 <div class="flex-1 overflow-auto min-h-0">
                                     <div v-if="screenStore.screen === 'jobs'">
                                         <JobView />
+                                    </div>
+
+                                    <div v-else-if="screenStore.screen === 'brain'">
+                                        <BrainView />
                                     </div>
 
                                     <div v-else-if="screenStore.screen === 'mail'">
@@ -983,6 +1039,10 @@ const handleDragEnd = () => {
                                         <JobView />
                                     </div>
 
+                                    <div v-else-if="splitPanesStore.splitConfig.screenName === 'brain'">
+                                        <BrainView />
+                                    </div>
+
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'mail'">
                                         <MailView />
                                     </div>
@@ -1091,6 +1151,10 @@ const handleDragEnd = () => {
 
                             <div v-if="screenStore.screen === 'queries'">
                                 <QueriesView class="h-[calc(100vh-85px)] text-base" />
+                            </div>
+
+                            <div v-if="screenStore.screen === 'brain'">
+                                <BrainView class="h-[calc(100vh-85px)] w-[100vw] text-base" />
                             </div>
 
                             <div

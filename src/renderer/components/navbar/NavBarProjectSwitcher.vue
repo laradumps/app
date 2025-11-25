@@ -13,6 +13,7 @@ import ProjectsList from "@/components/navbar/ProjectsList.vue";
 import ProjectHeader from "@/components/navbar/ProjectHeader.vue";
 import EnvironmentsList from "@/components/navbar/EnvironmentsList.vue";
 
+const emit = defineEmits(["modalOpen", "modalClose"]);
 const xDebugStore = useXDebug();
 const currentProjectStore = useCurrentProject();
 
@@ -478,13 +479,21 @@ const toggleXdebug = () => {
     isXdebugActive.value = !isXdebugActive.value;
     saveEnvironment(null);
 };
+
+const showModal = () => {
+    modal_navbar_listening.showModal();
+    emit("modalOpen");
+};
+const closeModal = () => {
+    emit("modalClose");
+}
 </script>
 
 <template>
     <div>
         <button
             class="flex font-normal capitalize truncate text-xs btn btn-soft justify-between !px-2.5 !m-0 !h-6.5 gap-2"
-            onclick="modal_navbar_listening.showModal()"
+            @click="showModal()"
         >
             <span
                 v-if="selectedProject.project"
@@ -502,8 +511,9 @@ const toggleXdebug = () => {
             />
         </button>
         <dialog
+            @close="closeModal"
             id="modal_navbar_listening"
-            class="modal"
+            class="modal z-[200]"
         >
             <div class="modal-box max-w-2xl !p-2">
                 <!-- Error banner -->

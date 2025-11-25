@@ -7,6 +7,7 @@ import { useMailStore } from "@/store/mail";
 import { useLogStore } from "@/store/logs.js";
 import { useQueriesPayloadStore } from "@/store/queries.js";
 import { useSplitPanesStore } from "@/store/split-panes";
+import { useBrainStore } from "@/store/brains.ts";
 
 const emit = defineEmits(["toggleScreen", "dragScreen"]);
 
@@ -15,6 +16,7 @@ const payloadStore = usePayloadStore();
 const jobStore = useJobStore();
 const mailStore = useMailStore();
 const logStore = useLogStore();
+const brainStore = useBrainStore();
 const queriesStore = useQueriesPayloadStore();
 const splitPanesStore = useSplitPanesStore();
 
@@ -53,7 +55,8 @@ const getPayloadScreenCount = (screenName) => {
         jobs: jobStore.jobs,
         mail: mailStore.mails,
         logs: logStore.logs,
-        queries: queriesStore.payload
+        queries: queriesStore.payload,
+        brain: brainStore.brains
     };
 
     const items = stores[screenName] || payloadStore.get(screenName);
