@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, computed, onMounted, ref } from "vue";
+import { defineProps, computed, onMounted, ref, watch } from "vue";
 import NavBarAlwaysOnTop from "@/components/navbar/NavBarAlwaysOnTop.vue";
 import NavBarGlobalSearch from "@/components/navbar/NavBarGlobalSearch.vue";
 import NavBarProjectSwitcher from "@/components/navbar/NavBarProjectSwitcher.vue";
@@ -24,6 +24,8 @@ const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 
 const platform = ref("");
+const isListeningModalOpen = ref(false);
+
 const isDev = import.meta.env.MODE === "development" || import.meta.env.DEV === true;
 
 defineProps({
@@ -51,6 +53,9 @@ const hasPayload = computed(() => {
         Object.values(queryStore.payload).length > 0
     );
 });
+
+const modalOpen = () => isListeningModalOpen.value = true;
+const modalClose = () => isListeningModalOpen.value = false;
 </script>
 
 <template>
@@ -68,7 +73,15 @@ const hasPayload = computed(() => {
             </div>
         </div>
 
-        <div class="w-full select-none nav-bar">&nbsp;</div>
+        <div
+            @click="modalClose"
+            class="w-full select-none"
+            :style="{
+                '-webkit-app-region': isListeningModalOpen ? 'no-drag' : 'drag'
+            }"
+        >
+            &nbsp;
+        </div>
 
         <div class="flex gap-1 items-center m-0.5">
             <!-- global search -->
@@ -82,7 +95,11 @@ const hasPayload = computed(() => {
             <!-- saved dumps -->
             <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
             <!-- listening -->
-            <NavBarProjectSwitcher v-if="!inSavedDumpsWindow" />
+            <NavBarProjectSwitcher
+                v-if="!inSavedDumpsWindow"
+                @modal-open="modalOpen"
+                @modal-close="modalClose"
+            />
             <!-- settings -->
             <NavBarSettings />
         </div>
