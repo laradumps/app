@@ -32,10 +32,8 @@ const selectedStatusFilter = ref<string | null>(null);
 const selectedSortDirection = ref<"asc" | "desc">("desc");
 const collapsedProcessGroups = ref<Record<string, boolean>>({});
 const expandedTaskMap = ref<Record<string, boolean>>({});
-const sfDumpInitialized = ref(false);
 
 const localProcessItems = ref<Record<string, BrainProcess>>({});
-const initializedDumpForTask = ref<Record<string, boolean>>({});
 
 const props = defineProps<{
     items?: Record<string, BrainProcess>;
@@ -43,6 +41,12 @@ const props = defineProps<{
 }>();
 
 const itemsProp = toRef(props, "items");
+
+const escapeHandler = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+        closeDrawer();
+    }
+};
 
 onMounted(() => {
     nextTick(() => {
@@ -53,17 +57,11 @@ onMounted(() => {
         });
     });
 
-    const escapeHandler = (event: KeyboardEvent) => {
-        if (event.key === "Escape") {
-            closeDrawer();
-        }
-    };
-
     window.addEventListener("keydown", escapeHandler);
+});
 
-    onUnmounted(() => {
-        window.removeEventListener("keydown", escapeHandler);
-    });
+onUnmounted(() => {
+    window.removeEventListener("keydown", escapeHandler);
 });
 
 watch(
@@ -164,6 +162,8 @@ const openProcessModal = (runId: string) => {
 
         setTimeout(() => {
             if (drawer) drawer.checked = true;
+
+            initializeSfDump();
         }, 20);
     });
 };
@@ -225,19 +225,17 @@ watch(
 );
 
 const initializeSfDump = () => {
-    nextTick(() => {
-        selectedProcess.value.tasks.forEach((task) => {
-            const sfDumpId = task.payload[1];
-            try {
-                const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
-                if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
-                    window.Sfdump(`sf-dump-${sfDumpId}`);
-                    sfDump.setAttribute("has-dump-js", "true");
-                }
-            } catch {
-                console.warn(`Failed to initialize sf-dump for task ${sfDumpId}`);
+    selectedProcess.value.tasks.forEach((task) => {
+        const sfDumpId = task.payload[1];
+        try {
+            const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
+            if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
+                window.Sfdump(`sf-dump-${sfDumpId}`);
+                sfDump.setAttribute("has-dump-js", "true");
             }
-        });
+        } catch {
+            console.warn(`Failed to initialize sf-dump for task ${sfDumpId}`);
+        }
     });
 };
 
@@ -280,15 +278,8 @@ const computeProcessDuration = (processEntry: BrainProcess) => {
 };
 
 const toggleTaskExpanded = (task: any) => {
-    const currentlyOpen = expandedTaskMap.value[task.id];
-    expandedTaskMap.value[task.id] = !currentlyOpen;
-
-    if (currentlyOpen) return;
-
-    if (!initializedDumpForTask.value[task.id]) {
-        initializedDumpForTask.value[task.id] = true;
-        nextTick(() => initializeSfDump());
-    }
+    const isOpen = expandedTaskMap.value[task.id];
+    expandedTaskMap.value[task.id] = !isOpen;
 };
 </script>
 
@@ -332,15 +323,13 @@ const toggleTaskExpanded = (task: any) => {
                                 :key="task.id"
                                 class="flex flex-col items-center"
                             >
-                                <details
+                                <div
                                     class="w-full rounded-lg bg-base-300 border border-base-content/10 shadow-sm mb-2"
-                                    :class="{
-                                        '!bg-base-300': expandedTaskMap[task.id]
-                                    }"
-                                    :open="expandedTaskMap[task.id]"
-                                    @toggle="toggleTaskExpanded(task)"
                                 >
-                                    <summary class="hover:rounded-lg flex items-center justify-between p-2 cursor-pointer select-none text-sm">
+                                    <div
+                                        class="border-b border-base-content/10 flex items-center justify-between p-2 cursor-pointer select-none text-sm"
+                                        @click="toggleTaskExpanded(task)"
+                                    >
                                         <div class="flex items-center gap-2 break-all">
                                             <ChevronDownIcon
                                                 class="w-4 h-4 transition-all"
@@ -389,9 +378,12 @@ const toggleTaskExpanded = (task: any) => {
                                         <div class="text-xs opacity-60 whitespace-nowrap ml-2">
                                             {{ formatDuration(task.firstSeen, task.lastSeen) }}
                                         </div>
-                                    </summary>
+                                    </div>
 
-                                    <div class="px-4 py-3 border-t border-base-content/10 space-y-3">
+                                    <div
+                                        v-show="expandedTaskMap[task.id]"
+                                        class="px-4 py-3 bg-base-200 rounded-lg space-y-3"
+                                    >
                                         <div v-if="task.payload">
                                             <pre
                                                 class="sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line"
@@ -413,7 +405,7 @@ const toggleTaskExpanded = (task: any) => {
                                             />
                                         </div>
                                     </div>
-                                </details>
+                                </div>
                             </div>
                         </div>
                     </div>
