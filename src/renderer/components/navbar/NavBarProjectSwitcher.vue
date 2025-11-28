@@ -486,7 +486,7 @@ const showModal = () => {
 };
 const closeModal = () => {
     emit("modalClose");
-}
+};
 </script>
 
 <template>
