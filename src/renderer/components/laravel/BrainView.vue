@@ -3,7 +3,7 @@ import { computed, defineProps, nextTick, onMounted, onUnmounted, ref, toRef, wa
 import moment from "moment";
 import SvgEmpty from "@/components/svg/SvgEmpty.vue";
 import { useGlobalSearchStore } from "@/store/global-search";
-import { useBrainStore, BrainProcess } from "@/store/brains";
+import { useBrainStore, BrainProcess, BrainTask } from "@/store/brains";
 import { CheckIcon, NoSymbolIcon, XMarkIcon, ArrowPathIcon, ChevronDownIcon } from "@heroicons/vue/24/solid";
 import VueJsonPretty from "vue-json-pretty";
 import { TrashIcon } from "@heroicons/vue/24/outline";
@@ -32,10 +32,8 @@ const selectedStatusFilter = ref<string | null>(null);
 const selectedSortDirection = ref<"asc" | "desc">("desc");
 const collapsedProcessGroups = ref<Record<string, boolean>>({});
 const expandedTaskMap = ref<Record<string, boolean>>({});
-const sfDumpInitialized = ref(false);
 
 const localProcessItems = ref<Record<string, BrainProcess>>({});
-const initializedDumpForTask = ref<Record<string, boolean>>({});
 
 const props = defineProps<{
     items?: Record<string, BrainProcess>;
@@ -43,6 +41,12 @@ const props = defineProps<{
 }>();
 
 const itemsProp = toRef(props, "items");
+
+const escapeHandler = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+        closeDrawer();
+    }
+};
 
 onMounted(() => {
     nextTick(() => {
@@ -53,17 +57,11 @@ onMounted(() => {
         });
     });
 
-    const escapeHandler = (event: KeyboardEvent) => {
-        if (event.key === "Escape") {
-            closeDrawer();
-        }
-    };
-
     window.addEventListener("keydown", escapeHandler);
+});
 
-    onUnmounted(() => {
-        window.removeEventListener("keydown", escapeHandler);
-    });
+onUnmounted(() => {
+    window.removeEventListener("keydown", escapeHandler);
 });
 
 watch(
@@ -164,6 +162,8 @@ const openProcessModal = (runId: string) => {
 
         setTimeout(() => {
             if (drawer) drawer.checked = true;
+
+            initializeSfDump();
         }, 20);
     });
 };
@@ -224,24 +224,18 @@ watch(
     { deep: true }
 );
 
-const sfDumpIds = computed(() => {
-    if (!selectedProcess.value) return [];
-    return selectedProcess.value.tasks.filter((t) => t.payload).map((t) => t.payload[1]);
-});
-
 const initializeSfDump = () => {
-    if (sfDumpInitialized.value) return;
-
-    sfDumpInitialized.value = true;
-
-    nextTick(() => {
-        sfDumpIds.value.forEach((id) => {
-            try {
-                window.Sfdump(`sf-dump-${id}`);
-            } catch {
-                console.warn(`Failed to initialize sf-dump for task ${id}`);
+    selectedProcess.value.tasks.forEach((task) => {
+        const sfDumpId = task.payload[1];
+        try {
+            const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
+            if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
+                window.Sfdump(`sf-dump-${sfDumpId}`);
+                sfDump.setAttribute("has-dump-js", "true");
             }
-        });
+        } catch {
+            console.warn(`Failed to initialize sf-dump for task ${sfDumpId}`);
+        }
     });
 };
 
@@ -270,8 +264,8 @@ const computeProcessDuration = (processEntry: BrainProcess) => {
     const tasks = processEntry.process.tasks;
     if (!tasks.length) return "-";
 
-    const first = Math.min(...tasks.map((t) => t.firstSeen ?? t.timestamp));
-    const last = Math.max(...tasks.map((t) => t.lastSeen ?? t.timestamp));
+    const first = Math.min(...tasks.map((task: BrainTask) => task.firstSeen ?? task.timestamp));
+    const last = Math.max(...tasks.map((task: BrainTask) => task.lastSeen ?? task.timestamp));
 
     if (!first || !last || last < first) return "-";
 
@@ -284,15 +278,8 @@ const computeProcessDuration = (processEntry: BrainProcess) => {
 };
 
 const toggleTaskExpanded = (task: any) => {
-    const currentlyOpen = expandedTaskMap.value[task.id];
-    expandedTaskMap.value[task.id] = !currentlyOpen;
-
-    if (currentlyOpen) return;
-
-    if (!initializedDumpForTask.value[task.id]) {
-        initializedDumpForTask.value[task.id] = true;
-        nextTick(() => initializeSfDump());
-    }
+    const isOpen = expandedTaskMap.value[task.id];
+    expandedTaskMap.value[task.id] = !isOpen;
 };
 </script>
 
@@ -311,20 +298,20 @@ const toggleTaskExpanded = (task: any) => {
                     class="drawer-overlay"
                 ></label>
 
-                <div class="menu bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-6 overflow-y-auto">
+                <div class="menu bg-base-100 text-base-content min-h-full w-[calc(100vw-120px)] p-5 overflow-y-auto">
                     <div
                         v-if="selectedProcess"
                         class="space-y-6"
                     >
-                        <div class="flex nav-bar justify-between items-center">
-                            <div class="flex flex-col items-center gap-2">
+                        <div class="flex nav-bar justify-between">
+                            <div class="flex text-left items-start flex-col gap-2">
                                 <div class="text-sm">
                                     <span class="opacity-50">{{ splitClassName(selectedProcess.className).prefix }}</span>
                                     <span class="font-bold">{{ splitClassName(selectedProcess.className).suffix }}</span>
                                 </div>
 
                                 <div class="text-xs opacity-75">
-                                    Started: {{ moment(selectedProcess.startedAt).format("HH:mm:ss") }} | Updated: {{ moment(selectedProcess.updatedAt).format("HH:mm:ss") }} | Duration:
+                                    Started: {{ moment(selectedProcess.startedAt).format("HH:mm:ss") }} | Duration:
                                     {{ computeProcessDuration(selectedProcess) }}
                                 </div>
                             </div>
@@ -336,15 +323,16 @@ const toggleTaskExpanded = (task: any) => {
                                 :key="task.id"
                                 class="flex flex-col items-center"
                             >
-                                <details
-                                    class="w-full rounded-lg border border-base-content/10 bg-base-300 shadow-sm mb-2"
-                                    :open="expandedTaskMap[task.id]"
-                                    @toggle="toggleTaskExpanded(task)"
+                                <div
+                                    class="w-full rounded-lg bg-base-300 border border-base-content/10 shadow-sm mb-2"
                                 >
-                                    <summary class="flex items-center justify-between p-2 cursor-pointer select-none text-sm">
+                                    <div
+                                        class="border-b border-base-content/10 flex items-center justify-between p-2 cursor-pointer select-none text-sm"
+                                        @click="toggleTaskExpanded(task)"
+                                    >
                                         <div class="flex items-center gap-2 break-all">
                                             <ChevronDownIcon
-                                                class="w-4 h-4 transition-transform duration-200"
+                                                class="w-4 h-4 transition-all"
                                                 :class="expandedTaskMap[task.id] ? 'rotate-0' : '-rotate-90'"
                                             />
 
@@ -381,21 +369,23 @@ const toggleTaskExpanded = (task: any) => {
                                                 />
                                             </span>
 
-                                            <div class="font-mono text-xs">
-                                                <span class="opacity-50">{{ splitClassName(task.class).prefix }}</span>
-                                                <span class="font-bold">{{ splitClassName(task.class).suffix }}</span>
+                                            <div class="text-sm tracking-wide">
+                                                <span class="opacity-60">{{ splitClassName(task.class).prefix }}</span>
+                                                <span class="font-semibold">{{ splitClassName(task.class).suffix }}</span>
                                             </div>
                                         </div>
 
                                         <div class="text-xs opacity-60 whitespace-nowrap ml-2">
                                             {{ formatDuration(task.firstSeen, task.lastSeen) }}
                                         </div>
-                                    </summary>
+                                    </div>
 
-                                    <div class="px-4 py-3 border-t border-base-content/10 space-y-3">
+                                    <div
+                                        v-show="expandedTaskMap[task.id]"
+                                        class="px-4 py-3 bg-base-200 rounded-lg space-y-3"
+                                    >
                                         <div v-if="task.payload">
                                             <pre
-                                                :id="`sf-dump-${task.payload?.[1]}`"
                                                 class="sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line"
                                                 v-html="task.payload[0]"
                                             ></pre>
@@ -405,7 +395,7 @@ const toggleTaskExpanded = (task: any) => {
                                             v-if="task.meta"
                                             class="space-y-1"
                                         >
-                                            <div class="font-mono font-semibold text-xs">Meta</div>
+                                            <div class="border-t py-2 border-base-content/5 text-sm">Meta</div>
                                             <VueJsonPretty
                                                 :show-icon="true"
                                                 :show-length="true"
@@ -415,7 +405,7 @@ const toggleTaskExpanded = (task: any) => {
                                             />
                                         </div>
                                     </div>
-                                </details>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -427,7 +417,7 @@ const toggleTaskExpanded = (task: any) => {
             <div class="flex items-center gap-1 justify-center">
                 <Teleport to="#actions">
                     <button
-                        v-if="itemsCount > 0"
+                        v-if="totalProcesses > 0"
                         @click="clearAll"
                         class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                         data-tippy-content="Clear"
@@ -447,8 +437,9 @@ const toggleTaskExpanded = (task: any) => {
                         <tr class="text-xs !bg-base-300 font-light text-base-content">
                             <th class="w-4">#</th>
                             <th>Process</th>
-                            <th class="text-right">Tasks</th>
-                            <th class="text-right w-20">Updated</th>
+                            <th class="w-20 text-center">Tasks</th>
+                            <th class="w-20 text-right">Created At</th>
+                            <th class="text-right w-20">Duration</th>
                         </tr>
                     </thead>
 
@@ -502,7 +493,7 @@ const toggleTaskExpanded = (task: any) => {
                                     </div>
                                 </td>
 
-                                <td class="break-all flex gap-1 flex-col">
+                                <td class="break-all flex gap-2 flex-col">
                                     <p>
                                         <span class="font-normal">
                                             {{ splitClassName(processEntry.className).suffix }}
@@ -521,10 +512,13 @@ const toggleTaskExpanded = (task: any) => {
                                     </div>
                                 </td>
 
-                                <td class="whitespace-nowrap text-right">
+                                <td class="whitespace-nowrap text-center">
                                     {{ processEntry.process.tasks.length }}
                                 </td>
 
+                                <td class="text-right">
+                                    {{ moment(processEntry.updatedAt ?? processEntry.startedAt).format("HH:mm:ss") }}
+                                </td>
                                 <td class="whitespace-nowrap text-right">
                                     {{ computeProcessDuration(processEntry) }}
                                 </td>

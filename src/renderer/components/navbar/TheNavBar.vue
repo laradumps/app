@@ -54,8 +54,8 @@ const hasPayload = computed(() => {
     );
 });
 
-const modalOpen = () => isListeningModalOpen.value = true;
-const modalClose = () => isListeningModalOpen.value = false;
+const modalOpen = () => (isListeningModalOpen.value = true);
+const modalClose = () => (isListeningModalOpen.value = false);
 </script>
 
 <template>
