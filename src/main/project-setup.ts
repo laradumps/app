@@ -19,7 +19,8 @@ const notifyOnce = (title: string, body: string) => {
     setTimeout(() => (notifyLock = false), 1000);
 };
 
-const runCommand = (command: string, cwd: string): Promise<void> => {
+// Run a command and return stdout as string (throws on non-zero exit)
+const runCommand = (command: string, cwd: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         const isDarwin = process.platform === "darwin";
         const isLinux = process.platform === "linux";
@@ -33,7 +34,7 @@ const runCommand = (command: string, cwd: string): Promise<void> => {
                 return;
             }
             console.log(stdout);
-            resolve();
+            resolve(stdout);
         });
     });
 };
@@ -42,8 +43,31 @@ const isWSL = (): boolean => {
     return isWsl;
 };
 
-const getComposerCandidates = (projectPath: string): string[] => {
+// Check whether current project uses DDEV and the web service is running
+const isDdevRunning = async (projectPath: string): Promise<boolean> => {
+    const ddevDir = path.join(projectPath, ".ddev");
+    if (!fs.existsSync(ddevDir)) return false;
+    try {
+        // Ensure ddev command is available
+        await runCommand(`ddev --version`, projectPath);
+        // Query status via JSON
+        const desc = await runCommand(`ddev describe -j`, projectPath);
+        const data = JSON.parse(desc);
+        const raw = (data && data.raw) || undefined;
+        const status: string | undefined = raw?.services?.web?.status;
+        return status === "running";
+    } catch (_e) {
+        return false;
+    }
+};
+
+const getComposerCandidates = async (projectPath: string): Promise<string[]> => {
     const candidates: string[] = [];
+
+    // 0) If DDEV is running, prefer running composer inside DDEV first
+    if (await isDdevRunning(projectPath)) {
+        candidates.push("ddev composer");
+    }
 
     // 1) Prefer local composer.phar executed via PHP
     const composerPhar = path.join(projectPath, "composer.phar");
@@ -64,8 +88,21 @@ const installLaraDumps = async (projectPath: string) => {
     const artisanPath = path.join(projectPath, "artisan");
     const errors: string[] = [];
 
-    // 1) Try with Sail (if artisan and sail are present)
+    // 1) Try with DDEV (if .ddev exists and ddev is running)
     if (fs.existsSync(artisanPath)) {
+        try {
+            if (await isDdevRunning(projectPath)) {
+                console.log(`Using DDEV to run artisan commands.`);
+                await runCommand(`ddev artisan ds:init "${projectPath}"`, projectPath);
+                return;
+            }
+        } catch (e) {
+            const msg = (e as Error)?.message || String(e);
+            console.warn(`DDEV failed, will try Sail/PHP.`, msg);
+            errors.push(`DDEV: ${msg}`);
+        }
+
+        // 2) Try with Sail (if artisan and sail are present)
         const sailPath = path.join(projectPath, "vendor", "bin", isWindows ? "sail.bat" : "sail");
         if (fs.existsSync(sailPath)) {
             try {
@@ -79,7 +116,7 @@ const installLaraDumps = async (projectPath: string) => {
             }
         }
 
-        // 2) Try with PHP artisan
+        // 3) Try with PHP artisan
         try {
             console.log(`Using PHP to run artisan commands.`, artisanPath);
             await runCommand(`php artisan ds:init "${projectPath}"`, projectPath);
@@ -91,7 +128,7 @@ const installLaraDumps = async (projectPath: string) => {
         }
     }
 
-    // 3) Try with LaraDumps binary
+    // 4) Try with LaraDumps binary
     const bin = isWindows ? path.join(projectPath, "vendor", "bin", "laradumps.bat") : path.join(projectPath, "vendor", "bin", "laradumps");
 
     console.log(`Using binary commands.`, bin);
@@ -131,13 +168,16 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "composer-require", running: true });
         {
             const errors: string[] = [];
-            const candidates = getComposerCandidates(selectedDir);
+            const candidates = await getComposerCandidates(selectedDir);
             const requireCmd = fs.existsSync(artisanPath) ? "require laradumps/laradumps laradumps/laradumps-core --dev" : "require laradumps/laradumps-core --dev";
             let success = false;
             for (const cmd of candidates) {
                 try {
-                    await runCommand(`${cmd} ${requireCmd}`, selectedDir);
+                    const command = `${cmd} ${requireCmd}`;
+                    console.log(`Running composer require via: ${command}`);
+                    await runCommand(command, selectedDir);
                     success = true;
+                    console.log("composer require successful");
                     break;
                 } catch (e) {
                     const msg = (e as Error)?.message || String(e);
