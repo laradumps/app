@@ -12,6 +12,7 @@ const CHANNELS = {
 };
 
 let notifyLock = false;
+
 const notifyOnce = (title: string, body: string) => {
     if (notifyLock) return;
     notifyLock = true;
@@ -43,7 +44,7 @@ const isWSL = (): boolean => {
     return isWsl;
 };
 
-// Check whether current project uses DDEV and the web service is running
+// Check whether the current project uses DDEV and the web service is running
 const isDdevRunning = async (projectPath: string): Promise<boolean> => {
     const ddevDir = path.join(projectPath, ".ddev");
     if (!fs.existsSync(ddevDir)) return false;
@@ -88,9 +89,9 @@ const installLaraDumps = async (projectPath: string) => {
     const artisanPath = path.join(projectPath, "artisan");
     const errors: string[] = [];
 
-    // 1) Try with DDEV (if .ddev exists and ddev is running)
     if (fs.existsSync(artisanPath)) {
         try {
+            // 1) Try with DDEV (if .ddev exists and ddev is running)
             if (await isDdevRunning(projectPath)) {
                 console.log(`Using DDEV to run artisan commands.`);
                 await runCommand(`ddev artisan ds:init "${projectPath}"`, projectPath);
@@ -164,12 +165,15 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
 
         const artisanPath = path.join(selectedDir, "artisan");
 
-        // Step: composer require start
+        // Step: composer requires start
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "composer-require", running: true });
         {
             const errors: string[] = [];
             const candidates = await getComposerCandidates(selectedDir);
-            const requireCmd = fs.existsSync(artisanPath) ? "require laradumps/laradumps laradumps/laradumps-core --dev" : "require laradumps/laradumps-core --dev";
+            const requireCmd = fs.existsSync(artisanPath)
+                ? "require laradumps/laradumps laradumps/laradumps-core --dev --ignore-platform-reqs"
+                : "require laradumps/laradumps-core --dev --ignore-platform-reqs";
+
             let success = false;
             for (const cmd of candidates) {
                 try {
@@ -192,7 +196,7 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
             }
         }
 
-        // Step: composer require done
+        // Step: composer requires to be done
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "composer-require", done: true });
 
         // Step: remove laradumps.yaml
@@ -232,7 +236,7 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
         });
         notifyOnce("LaraDumps", "LaraDumps installed successfully.");
 
-        // Notify that project directory is ready/selected post install
+        // Notify that the project directory is ready/selected post install
         mainWindow.webContents.send(CHANNELS.PROJECT_DIRECTORY_SELECTED, selectedDir);
     } catch (error) {
         console.log(error);
