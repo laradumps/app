@@ -323,9 +323,7 @@ const toggleTaskExpanded = (task: any) => {
                                 :key="task.id"
                                 class="flex flex-col items-center"
                             >
-                                <div
-                                    class="w-full rounded-lg bg-base-300 border border-base-content/10 shadow-sm mb-2"
-                                >
+                                <div class="w-full rounded-lg bg-base-300 border border-base-content/10 shadow-sm mb-2">
                                     <div
                                         class="border-b border-base-content/10 flex items-center justify-between p-2 cursor-pointer select-none text-sm"
                                         @click="toggleTaskExpanded(task)"
