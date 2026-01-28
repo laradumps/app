@@ -370,10 +370,11 @@ onUnmounted(() => {
                     >
                         {{ moment(payload.date_time).format("hh:mm:ss a") }}
                     </li>
-                    <li class="select-none opacity-70">
+                    <li class="select-none opacity-70 truncate max-w-[400px]">
                         <DumpLink
                             v-if="payload.ide_handle.real_path"
                             :ide-handler="payload.ide_handle"
+                            :truncate="true"
                         />
                         <span v-else> Unknown </span>
                     </li>

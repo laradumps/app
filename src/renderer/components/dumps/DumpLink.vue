@@ -9,6 +9,7 @@ const props = defineProps<{
     label?: string;
     showIcon?: boolean;
     breakpoint?: boolean;
+    truncate?: boolean;
 }>();
 
 const emit = defineEmits();
@@ -25,6 +26,7 @@ const label = computed(() => {
 
     if (label) return label;
     if (class_name === "empty") return "";
+    if (class_name.includes("&platform=")) return "JavaScript";
     if (class_name === "empty" || !real_path || real_path.includes("ExecutionLoopClosure")) return "Tinker";
     if (line?.toString() !== "") return `${class_name}:${line}`;
 
@@ -45,40 +47,20 @@ const toggleBreakpoint = () => {
             v-if="!showIcon"
             :href="label === 'Tinker' ? '#' : link"
             :title="label"
-            :class="{ 'cursor-pointer': link && label !== 'Tinker' }"
-            class="flex items-center group whitespace-pre-line"
+            :class="{ 'cursor-pointer': link && label !== 'Tinker', 'whitespace-pre-line': !truncate, truncate: truncate }"
+            class="flex items-center group"
             @click.stop
         >
-            <span class="break-all tracking-wider hover:opacity-90 flex items-center">
-                <span
-                    class="whitespace-nowrap"
-                    :class="{ '!text-gray-400': props.label }"
-                    >{{ label }}</span
-                >
+            <span :class="{ 'break-all': !truncate, truncate: truncate }" class="tracking-wider hover:opacity-90 flex items-center">
+                <span class="truncate" :class="{ '!text-gray-400': props.label }">{{ label }}</span>
             </span>
         </a>
 
-        <div
-            v-else
-            :title="label"
-            class="flex items-center group"
-        >
+        <div v-else :title="label" class="flex items-center group">
             <div class="text-right w-16 tracking-wider hover:opacity-90 flex items-center">
-                <div
-                    v-show="breakpoint"
-                    @click="toggleBreakpoint"
-                    class="rounded-full cursor-pointer bg-red-500 w-2 h-2 p-[.3rem]"
-                ></div>
-                <span
-                    class="whitespace-nowrap w-full"
-                    :class="{ 'text-gray-400 font-normal': label }"
-                    >{{ label }}</span
-                >
-                <a
-                    v-if="label"
-                    :href="link"
-                    class="z-30 p-1 cursor-pointer text-gray-300 bg-gray-800 border border-gray-600 shadow-lg rounded-full opacity-0 group-hover/line:opacity-100 sticky ml-1"
-                >
+                <div v-show="breakpoint" @click="toggleBreakpoint" class="rounded-full cursor-pointer bg-red-500 w-2 h-2 p-[.3rem]"></div>
+                <span class="whitespace-nowrap w-full" :class="{ 'text-gray-400 font-normal': label }">{{ label }}</span>
+                <a v-if="label" :href="link" class="z-30 p-1 cursor-pointer text-gray-300 bg-gray-800 border border-gray-600 shadow-lg rounded-full opacity-0 group-hover/line:opacity-100 sticky ml-1">
                     <IconPencil class="size-4" />
                 </a>
             </div>
