@@ -9,6 +9,7 @@ const props = defineProps<{
     label?: string;
     showIcon?: boolean;
     breakpoint?: boolean;
+    truncate?: boolean;
 }>();
 
 const emit = defineEmits();
@@ -25,6 +26,7 @@ const label = computed(() => {
 
     if (label) return label;
     if (class_name === "empty") return "";
+    if (class_name.includes("&platform=")) return "JavaScript";
     if (class_name === "empty" || !real_path || real_path.includes("ExecutionLoopClosure")) return "Tinker";
     if (line?.toString() !== "") return `${class_name}:${line}`;
 
@@ -45,13 +47,16 @@ const toggleBreakpoint = () => {
             v-if="!showIcon"
             :href="label === 'Tinker' ? '#' : link"
             :title="label"
-            :class="{ 'cursor-pointer': link && label !== 'Tinker' }"
-            class="flex items-center group whitespace-pre-line"
+            :class="{ 'cursor-pointer': link && label !== 'Tinker', 'whitespace-pre-line': !truncate, truncate: truncate }"
+            class="flex items-center group"
             @click.stop
         >
-            <span class="break-all tracking-wider hover:opacity-90 flex items-center">
+            <span
+                :class="{ 'break-all': !truncate, truncate: truncate }"
+                class="tracking-wider hover:opacity-90 flex items-center"
+            >
                 <span
-                    class="whitespace-nowrap"
+                    class="truncate"
                     :class="{ '!text-gray-400': props.label }"
                     >{{ label }}</span
                 >
