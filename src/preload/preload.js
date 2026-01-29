@@ -75,6 +75,50 @@ app.post("/api/dumps", (req, res) => {
     return res.send({ id: body.id });
 });
 
+app.get("/api/mcp/logs", (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.logStore) {
+            return res.status(503).send({ error: "Store not initialized" });
+        }
+        res.send(window.LaraDumps.logStore.logs);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get("/api/mcp/queries", (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.queriesStore) {
+            return res.status(503).send({ error: "Store not initialized" });
+        }
+        res.send(window.LaraDumps.queriesStore.payload);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get("/api/mcp/jobs", (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.jobStore) {
+            return res.status(503).send({ error: "Store not initialized" });
+        }
+        res.send(window.LaraDumps.jobStore.jobs);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get("/api/mcp/brains", (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.brainStore) {
+            return res.status(503).send({ error: "Store not initialized" });
+        }
+        res.send(window.LaraDumps.brainStore.brains);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
 const server = app
     .listen(port, "0.0.0.0", () => {})
     .on("error", (err) => {

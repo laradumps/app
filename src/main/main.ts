@@ -9,6 +9,7 @@ import * as ssh from "./ssh";
 
 import storage from "electron-json-storage";
 import "./watcher";
+import "./ipc";
 
 import * as electronStore from "./storage";
 import * as electronAutoUpdate from "./auto-update";
@@ -17,6 +18,7 @@ import * as customWindow from "./custom-window";
 import * as electronAutoLaunch from "./auto-launch";
 import * as settings from "./settings";
 import * as xdebug from "./xdebug";
+import * as mcpManager from "./mcp-manager";
 
 import { CompletedInfo } from "@/types/Updater";
 import { createMenu } from "./main-menu";
@@ -262,6 +264,7 @@ app.whenReady().then(async (): Promise<void> => {
     await electronAutoLaunch.init();
     await electronStore.init();
     await ssh.init();
+    await mcpManager.init();
 
     await createMenu();
 
@@ -282,6 +285,7 @@ app.whenReady().then(async (): Promise<void> => {
     });
 
     mainWindow.on("closed", (): void => {
+        mcpManager.stopMcpServer();
         app.exit(0);
     });
 

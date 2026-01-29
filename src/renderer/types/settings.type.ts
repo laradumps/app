@@ -28,6 +28,8 @@ export interface Settings {
     show_variable_type: boolean;
     limit_dumps: number;
     limit_laravel_queries: number;
+    mcp_enabled: boolean;
+    mcp_port: number;
     limit_laravel_logs: number;
     limit_laravel_jobs: number;
     custom_css: string;

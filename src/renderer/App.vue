@@ -4,12 +4,31 @@ import { usePayloadStore } from "@/store/payload";
 import { onMounted, ref } from "vue";
 import { useSettingsStore } from "@/store/settings";
 import { useScreenStore } from "@/store/screen";
+import { useLogStore } from "@/store/logs";
+import { useJobStore } from "@/store/jobs";
+import { useBrainStore } from "@/store/brains";
+import { useQueriesPayloadStore } from "@/store/queries";
+
 import Toasters from "@/components/common/Toasters.vue";
 import TheAppUpdateInfo from "@/components/app/TheAppUpdateInfo.vue";
 
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 const screenStore = useScreenStore();
+const logStore = useLogStore();
+const jobStore = useJobStore();
+const brainStore = useBrainStore();
+const queriesStore = useQueriesPayloadStore();
+
+onMounted(() => {
+    window.LaraDumps = {
+        logStore,
+        jobStore,
+        brainStore,
+        queriesStore,
+        settingsStore
+    };
+});
 
 const readyToLoad = ref(false);
 const screen = ref<string | null>("");

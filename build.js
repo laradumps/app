@@ -31,5 +31,18 @@ buildSync({
     ...options
 });
 
+buildSync({
+    entryPoints: ["src/mcp-server/index.ts"],
+    outfile: "dist/mcp-server.js",
+    ...options,
+    format: "esm",
+    banner: {
+        js: `#!/usr/bin/env node
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+`
+    }
+});
+
 copyFileSync("build/icon.png", "dist/icon.png");
 copyFileSync("build/icon.icns", "dist/icon.icns");
