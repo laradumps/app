@@ -19,6 +19,22 @@ const mcpClient = ref('cursor');
 const mcpLogs = ref<string[]>([]);
 const activeMcpTab = ref('setup');
 
+const mcpTools = ref([
+    { name: 'get_logs', description: 'Get all captured logs' },
+    { name: 'get_log_details', description: 'Get full details of a specific log by ID' },
+    { name: 'get_queries', description: 'Get captured SQL queries' },
+    { name: 'get_jobs', description: 'Get captured background jobs' },
+    { name: 'get_brains', description: "Get collected 'Brains' data" },
+    { name: 'get_dumps', description: 'Get all captured dumps' },
+    { name: 'get_project_info', description: 'Get current project information' },
+    { name: 'get_mails', description: 'Get all captured emails' },
+    { name: 'get_livewire_events', description: 'Get all captured Livewire events' },
+    { name: 'search_dumps', description: 'Search across all captured dumps, queries, logs, and mails' },
+    { name: 'analyze_last_exception', description: 'Analyze the most recent exception or error log (Prompt)' },
+    { name: 'summarize_logs', description: 'Summarize the recent application logs (Prompt)' },
+    { name: 'optimize_latest_query', description: 'Analyze and optimize the latest SQL query (Prompt)' }
+]);
+
 const settingsStore = useSettingsStore();
 const toast = useToastStore();
 
@@ -768,6 +784,14 @@ const saveCustomTheme = async () => {
                                 :checked="activeMcpTab === 'advanced'"
                                 @click="activeMcpTab = 'advanced'"
                             />
+                            <input
+                                type="radio"
+                                name="mcp_tabs"
+                                class="tab"
+                                aria-label="Tools"
+                                :checked="activeMcpTab === 'tools'"
+                                @click="activeMcpTab = 'tools'"
+                            />
                         </div>
 
                         <div
@@ -854,8 +878,33 @@ const saveCustomTheme = async () => {
                         </div>
 
                         <div
+                            v-if="activeMcpTab === 'tools'"
+                            class="flex flex-col gap-3"
+                        >
+                            <div class="overflow-x-auto border border-base-300 rounded-lg">
+                                <table class="table table-sm table-zebra">
+                                    <thead>
+                                        <tr class="bg-base-200">
+                                            <th>Tool Name</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            v-for="tool in mcpTools"
+                                            :key="tool.name"
+                                        >
+                                            <td class="font-mono text-xs font-bold">{{ tool.name }}</td>
+                                            <td class="text-xs">{{ tool.description }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div
                             v-if="activeMcpTab === 'advanced'"
-                            class="flex flex-col gap-3 px-4"
+                            class="flex flex-col gap-3"
                         >
                             <fieldset class="fieldset">
                                 <legend class="fieldset-legend">Stdio Command</legend>
