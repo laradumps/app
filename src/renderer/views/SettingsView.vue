@@ -8,6 +8,7 @@ import { useI18nStore } from '@/store/i18n';
 import hotkeys from 'hotkeys-js';
 import { useToastStore } from '@/store/toast';
 import { Cog6ToothIcon, RectangleGroupIcon, Bars3Icon, KeyIcon, CommandLineIcon } from '@heroicons/vue/24/outline';
+import { useRoute } from 'vue-router';
 
 const editMode = ref(false);
 const selected = ref<string | null>('settings');
@@ -24,8 +25,12 @@ const toast = useToastStore();
 const i18n = useI18n();
 const { locale } = useI18n({ useScope: 'global' });
 const localeStore = useI18nStore();
+const route = useRoute();
 
 onMounted(async () => {
+    if (route.query.tab) {
+        selected.value = route.query.tab as string;
+    }
     customTheme.value = settingsStore.settings.custom_css;
     mcpServerPath.value = await window.ipcRenderer.invoke('get-mcp-server-path');
 

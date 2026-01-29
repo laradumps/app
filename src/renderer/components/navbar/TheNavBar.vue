@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, computed, onMounted, ref, watch } from 'vue';
+import { defineProps, computed, onMounted, ref } from 'vue';
 import NavBarAlwaysOnTop from '@/components/navbar/NavBarAlwaysOnTop.vue';
 import NavBarGlobalSearch from '@/components/navbar/NavBarGlobalSearch.vue';
 import NavBarProjectSwitcher from '@/components/navbar/NavBarProjectSwitcher.vue';
@@ -16,12 +16,14 @@ import { useLogStore } from '@/store/logs.js';
 import { useJobStore } from '@/store/jobs.js';
 import { useQueriesPayloadStore } from '@/store/queries.js';
 import { useMailStore } from '@/store/mail.js';
+import { useRouter } from 'vue-router';
 
 const jobStore = useJobStore();
 const queryStore = useQueriesPayloadStore();
 const mailStore = useMailStore();
 const settingsStore = useSettingsStore();
 const logStore = useLogStore();
+const router = useRouter();
 
 const platform = ref('');
 const isListeningModalOpen = ref(false);
@@ -94,6 +96,23 @@ const modalClose = () => (isListeningModalOpen.value = false);
             <NavBarAlwaysOnTop />
             <!-- ssh -->
             <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
+
+            <!-- MCP Indicator -->
+            <div
+                v-if="settingsStore.settings.mcp_enabled"
+                class="flex items-center gap-1 mx-2 select-none cursor-pointer hover:bg-base-300 rounded px-1 transition-colors"
+                title="MCP Server Active - Click to Configure"
+                @click="router.push('/settings?tab=mcp')"
+            >
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+                    ></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span class="text-[10px] uppercase font-bold text-base-content/70">MCP</span>
+            </div>
+
             <!-- saved dumps -->
             <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
             <!-- listening -->

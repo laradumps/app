@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import TheNavBar from '@/components/navbar/TheNavBar.vue';
 import { usePayloadStore } from '@/store/payload';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useSettingsStore } from '@/store/settings';
 import { useScreenStore } from '@/store/screen';
 import { useLogStore } from '@/store/logs';
 import { useJobStore } from '@/store/jobs';
 import { useBrainStore } from '@/store/brains';
 import { useQueriesPayloadStore } from '@/store/queries';
+import { useCurrentProject } from '@/store/current-project';
+import { useMailStore } from '@/store/mail';
+import { useLivewireStore } from '@/store/livewire';
 
 import Toasters from '@/components/common/Toasters.vue';
 import TheAppUpdateInfo from '@/components/app/TheAppUpdateInfo.vue';
@@ -19,16 +22,35 @@ const logStore = useLogStore();
 const jobStore = useJobStore();
 const brainStore = useBrainStore();
 const queriesStore = useQueriesPayloadStore();
+const currentProjectStore = useCurrentProject();
+const mailStore = useMailStore();
+const livewireStore = useLivewireStore();
 
-onMounted(() => {
-    window.LaraDumps = {
-        logStore,
-        jobStore,
-        brainStore,
-        queriesStore,
-        settingsStore
-    };
-});
+const exposeMcp = () => {
+    if (settingsStore.settings.mcp_enabled) {
+        window.LaraDumps = {
+            logStore,
+            jobStore,
+            brainStore,
+            queriesStore,
+            settingsStore,
+            payloadStore,
+            currentProjectStore,
+            mailStore,
+            livewireStore
+        };
+    } else {
+        // @ts-ignore
+        delete window.LaraDumps;
+    }
+};
+
+watch(
+    () => settingsStore.settings.mcp_enabled,
+    () => {
+        exposeMcp();
+    }
+);
 
 const readyToLoad = ref(false);
 const screen = ref<string | null>('');
@@ -84,6 +106,7 @@ onMounted(() => {
     window.ipcRenderer.on('init.reply', async (e: any, args) => {
         settingsStore.settings = args.settings;
         readyToLoad.value = true;
+        exposeMcp();
         window.ipcRenderer.send('settings.init-shortcuts');
     });
 

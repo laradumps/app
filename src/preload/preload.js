@@ -119,6 +119,95 @@ app.get('/api/mcp/brains', (req, res) => {
     }
 });
 
+app.get('/api/mcp/dumps', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.payloadStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        res.send(window.LaraDumps.payloadStore.payload);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get('/api/mcp/project-info', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.currentProjectStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        res.send(window.LaraDumps.currentProjectStore.projectInfo);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get('/api/mcp/mails', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.mailStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        res.send(window.LaraDumps.mailStore.mails);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get('/api/mcp/livewire', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.livewireStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        res.send(window.LaraDumps.livewireStore.requests);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get('/api/mcp/search', (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q) {
+            return res.send([]);
+        }
+        const query = q.toLowerCase();
+        const results = [];
+
+        if (window.LaraDumps) {
+            if (window.LaraDumps.logStore) {
+                const logs = Object.values(window.LaraDumps.logStore.logs || {}).filter((log) =>
+                    JSON.stringify(log).toLowerCase().includes(query)
+                );
+                if (logs.length > 0) results.push({ type: 'logs', items: logs });
+            }
+
+            if (window.LaraDumps.queriesStore) {
+                const queries = (window.LaraDumps.queriesStore.payload || []).filter((item) =>
+                    JSON.stringify(item).toLowerCase().includes(query)
+                );
+                if (queries.length > 0) results.push({ type: 'queries', items: queries });
+            }
+
+            if (window.LaraDumps.payloadStore) {
+                const dumps = (window.LaraDumps.payloadStore.payload || []).filter((item) =>
+                    JSON.stringify(item).toLowerCase().includes(query)
+                );
+                if (dumps.length > 0) results.push({ type: 'dumps', items: dumps });
+            }
+
+            if (window.LaraDumps.mailStore) {
+                const mails = (window.LaraDumps.mailStore.mails || []).filter((item) =>
+                    JSON.stringify(item).toLowerCase().includes(query)
+                );
+                if (mails.length > 0) results.push({ type: 'mails', items: mails });
+            }
+        }
+
+        res.send(results);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
 const server = app
     .listen(port, '0.0.0.0', () => {})
     .on('error', (err) => {

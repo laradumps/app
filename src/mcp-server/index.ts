@@ -115,6 +115,55 @@ server.registerTool('get_brains', { description: "Get collected 'Brains' data" }
     };
 });
 
+server.registerTool('get_dumps', { description: 'Get all captured dumps' }, async () => {
+    const data = await fetchData('dumps');
+    if (data.error) return { content: [{ type: 'text', text: `Error: ${data.error}` }] };
+    return {
+        content: [{ type: 'text', text: JSON.stringify(data, null, 2) }]
+    };
+});
+
+server.registerTool('get_project_info', { description: 'Get current project information' }, async () => {
+    const data = await fetchData('project-info');
+    if (data.error) return { content: [{ type: 'text', text: `Error: ${data.error}` }] };
+    return {
+        content: [{ type: 'text', text: JSON.stringify(data, null, 2) }]
+    };
+});
+
+server.registerTool('get_mails', { description: 'Get all captured emails' }, async () => {
+    const data = await fetchData('mails');
+    if (data.error) return { content: [{ type: 'text', text: `Error: ${data.error}` }] };
+    return {
+        content: [{ type: 'text', text: JSON.stringify(data, null, 2) }]
+    };
+});
+
+server.registerTool('get_livewire_events', { description: 'Get all captured Livewire events' }, async () => {
+    const data = await fetchData('livewire');
+    if (data.error) return { content: [{ type: 'text', text: `Error: ${data.error}` }] };
+    return {
+        content: [{ type: 'text', text: JSON.stringify(data, null, 2) }]
+    };
+});
+
+server.registerTool(
+    'search_dumps',
+    {
+        description: 'Search across all captured dumps, queries, logs, and mails',
+        inputSchema: {
+            query: z.string().describe('The text to search for')
+        }
+    },
+    async ({ query }) => {
+        const data = await fetchData(`search?q=${encodeURIComponent(query)}`);
+        if (data.error) return { content: [{ type: 'text', text: `Error: ${data.error}` }] };
+        return {
+            content: [{ type: 'text', text: JSON.stringify(data, null, 2) }]
+        };
+    }
+);
+
 async function startServer() {
     if (port > 0) {
         const app = express();
@@ -125,17 +174,17 @@ async function startServer() {
         await server.connect(transport);
 
         // Handle SSE initialization
-        app.get('/sse', async (req, res) => {
+        app.get('/sse', async (req: any, res: any) => {
             await transport.handleRequest(req, res);
         });
 
         // Handle POST messages on /messages (standard)
-        app.post('/messages', async (req, res) => {
+        app.post('/messages', async (req: any, res: any) => {
             await transport.handleRequest(req, res);
         });
 
         // Handle POST messages on /sse (fallback/compatibility)
-        app.post('/sse', async (req, res) => {
+        app.post('/sse', async (req: any, res: any) => {
             await transport.handleRequest(req, res);
         });
 
