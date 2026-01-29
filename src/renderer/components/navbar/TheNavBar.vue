@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { defineProps, computed, onMounted, ref, watch } from "vue";
-import NavBarAlwaysOnTop from "@/components/navbar/NavBarAlwaysOnTop.vue";
-import NavBarGlobalSearch from "@/components/navbar/NavBarGlobalSearch.vue";
-import NavBarProjectSwitcher from "@/components/navbar/NavBarProjectSwitcher.vue";
-import NavBarPause from "@/components/navbar/NavBarPause.vue";
-import NavBarCollapse from "@/components/navbar/NavBarCollapse.vue";
-import NavBarSSH from "@/components/navbar/NavBarSSH.vue";
-import NavBarSettings from "@/components/navbar/NavBarSettings.vue";
-import NavBarSavedDumps from "@/components/navbar/NavBarSavedDumps.vue";
-import NavBarUpdateAvailable from "@/components/navbar/NavBarUpdateAvailable.vue";
-import { usePayloadStore } from "@/store/payload";
-import ClearAll from "@/components/common/ClearAll.vue";
-import { useSettingsStore } from "@/store/settings";
-import { useLogStore } from "@/store/logs.js";
-import { useJobStore } from "@/store/jobs.js";
-import { useQueriesPayloadStore } from "@/store/queries.js";
-import { useMailStore } from "@/store/mail.js";
+import { defineProps, computed, onMounted, ref, watch } from 'vue';
+import NavBarAlwaysOnTop from '@/components/navbar/NavBarAlwaysOnTop.vue';
+import NavBarGlobalSearch from '@/components/navbar/NavBarGlobalSearch.vue';
+import NavBarProjectSwitcher from '@/components/navbar/NavBarProjectSwitcher.vue';
+import NavBarPause from '@/components/navbar/NavBarPause.vue';
+import NavBarCollapse from '@/components/navbar/NavBarCollapse.vue';
+import NavBarSSH from '@/components/navbar/NavBarSSH.vue';
+import NavBarSettings from '@/components/navbar/NavBarSettings.vue';
+import NavBarSavedDumps from '@/components/navbar/NavBarSavedDumps.vue';
+import NavBarUpdateAvailable from '@/components/navbar/NavBarUpdateAvailable.vue';
+import { usePayloadStore } from '@/store/payload';
+import ClearAll from '@/components/common/ClearAll.vue';
+import { useSettingsStore } from '@/store/settings';
+import { useLogStore } from '@/store/logs.js';
+import { useJobStore } from '@/store/jobs.js';
+import { useQueriesPayloadStore } from '@/store/queries.js';
+import { useMailStore } from '@/store/mail.js';
 
 const jobStore = useJobStore();
 const queryStore = useQueriesPayloadStore();
@@ -23,10 +23,10 @@ const mailStore = useMailStore();
 const settingsStore = useSettingsStore();
 const logStore = useLogStore();
 
-const platform = ref("");
+const platform = ref('');
 const isListeningModalOpen = ref(false);
 
-const isDev = import.meta.env.MODE === "development" || import.meta.env.DEV === true;
+const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV === true;
 
 defineProps({
     inSavedDumpsWindow: {
@@ -36,8 +36,8 @@ defineProps({
 });
 
 onMounted(() => {
-    window.ipcRenderer.send("platform");
-    window.ipcRenderer.on("platform.reply", (event, args) => {
+    window.ipcRenderer.send('platform');
+    window.ipcRenderer.on('platform.reply', (event, args) => {
         platform.value = args;
     });
 });
@@ -59,7 +59,9 @@ const modalClose = () => (isListeningModalOpen.value = false);
 </script>
 
 <template>
-    <div class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10">
+    <div
+        class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10"
+    >
         <div :class="{ 'ml-[4.6rem]': platform === 'darwin' }">
             <div class="w-auto h-full">
                 <div class="flex items-center gap-2">

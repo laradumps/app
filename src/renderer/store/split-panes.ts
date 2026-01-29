@@ -1,14 +1,14 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
-export const useSplitPanesStore = defineStore("split-panes", () => {
+export const useSplitPanesStore = defineStore('split-panes', () => {
     const splitConfig = ref<{
         active: boolean;
-        orientation: "vertical" | "horizontal";
+        orientation: 'vertical' | 'horizontal';
         screenName: string;
     } | null>(null);
 
-    const setSplit = (screenName: string, orientation: "vertical" | "horizontal") => {
+    const setSplit = (screenName: string, orientation: 'vertical' | 'horizontal') => {
         splitConfig.value = {
             active: true,
             orientation,

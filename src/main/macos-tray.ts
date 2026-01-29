@@ -1,13 +1,13 @@
-import path from "path";
-import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from "electron";
-import { isMac } from "./main";
-import { deepClone } from "@/lib/deep_clone";
+import path from 'path';
+import { app, BrowserWindow, ipcMain, Menu, nativeImage, Tray } from 'electron';
+import { isMac } from './main';
+import { deepClone } from '@/lib/deep_clone';
 
 let tray: Electron.Tray;
 
 export const init = async (mainWindow: BrowserWindow) => {
     if (isMac) {
-        const iconPath: string = path.join(app.getAppPath(), "src/img/icon@2x.png");
+        const iconPath: string = path.join(app.getAppPath(), 'src/img/icon@2x.png');
         let trayIcon: Electron.NativeImage = nativeImage.createFromPath(iconPath);
 
         trayIcon = trayIcon.resize({
@@ -17,22 +17,22 @@ export const init = async (mainWindow: BrowserWindow) => {
 
         tray = new Tray(trayIcon);
 
-        tray.setToolTip("LaraDumps");
+        tray.setToolTip('LaraDumps');
 
         let options: { [key: string]: boolean } = {};
         let projectName: string;
 
         function toSnakeCase(str: string): string {
             return str
-                .replace(/([a-z])([A-Z])/g, "$1_$2")
-                .replace(/\s+/g, "_")
+                .replace(/([a-z])([A-Z])/g, '$1_$2')
+                .replace(/\s+/g, '_')
                 .toLowerCase();
         }
 
         function createMenuItem(label: string, selected: boolean) {
             return {
                 label: label,
-                type: "checkbox",
+                type: 'checkbox',
                 checked: selected,
                 click: () => {
                     options[toSnakeCase(label)] = !options[toSnakeCase(label)];
@@ -43,29 +43,29 @@ export const init = async (mainWindow: BrowserWindow) => {
                     }));
 
                     tray.setContextMenu(buildContextMenu());
-                    mainWindow.webContents.send("main:tray-updated-environment-options", deepClone(selectedOptions));
+                    mainWindow.webContents.send('main:tray-updated-environment-options', deepClone(selectedOptions));
                 }
             } as MenuItem;
         }
 
         function capitalizeLabel(label: string): string {
             return label
-                .split("_")
+                .split('_')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ");
+                .join(' ');
         }
 
         function buildContextMenu(): Menu {
-            const menuTemplate: (MenuItem | { type: "separator" })[] = [
+            const menuTemplate: (MenuItem | { type: 'separator' })[] = [
                 {
-                    label: projectName ?? "Observers",
+                    label: projectName ?? 'Observers',
                     enabled: false
                 } as MenuItem,
-                { type: "separator" },
+                { type: 'separator' },
                 ...Object.entries(options).map(([label, selected]) => createMenuItem(capitalizeLabel(label), selected)),
-                { type: "separator" },
+                { type: 'separator' },
                 {
-                    label: "Exit",
+                    label: 'Exit',
                     click: () => {
                         app.quit();
                     }
@@ -75,12 +75,12 @@ export const init = async (mainWindow: BrowserWindow) => {
             return Menu.buildFromTemplate(menuTemplate);
         }
 
-        tray.on("click", (event, bounds) => {
+        tray.on('click', (event, bounds) => {
             const { x, y } = bounds;
             tray.popUpContextMenu(buildContextMenu(), { x, y });
         });
 
-        ipcMain.on("main:tray-update-context-menu", (event, args) => {
+        ipcMain.on('main:tray-update-context-menu', (event, args) => {
             console.log(args.environmentYmlList);
             options = args.environmentYmlList?.reduce(
                 (acc, { value, selected }) => {

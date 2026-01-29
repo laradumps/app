@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch } from 'vue';
 
 // Define props
 const props = defineProps({
@@ -11,10 +11,10 @@ const props = defineProps({
 const selectedValue = ref(props.modelValue);
 
 // Emit the change event to update the parent component
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(['update:modelValue']);
 
 const emitChange = () => {
-    emit("update:modelValue", selectedValue.value);
+    emit('update:modelValue', selectedValue.value);
 };
 
 // Watch for changes in the prop modelValue to update the local state

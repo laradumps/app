@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { defineProps, nextTick, computed, ref } from "vue";
-import { Payload } from "@/types/Payload";
-import VueJsonPretty from "vue-json-pretty";
+import { defineProps, nextTick, computed, ref } from 'vue';
+import { Payload } from '@/types/Payload';
+import VueJsonPretty from 'vue-json-pretty';
 
 const props = defineProps<{
     payload: Payload;
@@ -14,9 +14,10 @@ const rows = computed(() => {
     return Object.entries(props.payload.table_v2.values).map(([key, val]) => ({
         key,
         val,
-        isObject: typeof val === "object",
-        isJsonPretty: typeof val === "object" && typeof val[0] === "object" && typeof val[1] === "object",
-        sfDumpId: typeof val === "object" && !(typeof val[0] === "object" && typeof val[1] === "object") ? val[1] : null,
+        isObject: typeof val === 'object',
+        isJsonPretty: typeof val === 'object' && typeof val[0] === 'object' && typeof val[1] === 'object',
+        sfDumpId:
+            typeof val === 'object' && !(typeof val[0] === 'object' && typeof val[1] === 'object') ? val[1] : null,
         sfDumpInitated: false
     }));
 });

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useTimeStore } from "@/store/time";
-import { useFormattedQueriesStore } from "@/store/formatted-queries";
-import { SparklesIcon, AdjustmentsHorizontalIcon } from "@heroicons/vue/24/outline";
+import { useTimeStore } from '@/store/time';
+import { useFormattedQueriesStore } from '@/store/formatted-queries';
+import { SparklesIcon, AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline';
 
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();

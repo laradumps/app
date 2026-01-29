@@ -1,11 +1,11 @@
 <script setup>
-import { ref } from "vue";
+import { ref } from 'vue';
 
 const props = defineProps({
     isDragging: Boolean
 });
 
-const emit = defineEmits(["drop"]);
+const emit = defineEmits(['drop']);
 
 const activeZone = ref(null);
 
@@ -14,13 +14,13 @@ const handleDragEnter = (zone) => {
 };
 
 const handleDragLeave = (e) => {
-    if (e.target.classList.contains("drop-zone")) {
+    if (e.target.classList.contains('drop-zone')) {
         activeZone.value = null;
     }
 };
 
 const handleDrop = (zone) => {
-    emit("drop", zone);
+    emit('drop', zone);
     activeZone.value = null;
 };
 </script>

@@ -5,7 +5,7 @@ on:
         branches:
             - main
         paths-ignore:
-            - "README.md"
+            - 'README.md'
     pull_request:
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "22.x"
+                  node-version: '22.x'
 
             - name: Install NPM Dependencies
               run: npm install --force

@@ -1,13 +1,13 @@
-import { defineStore } from "pinia";
-import { Payload } from "@/types/Payload";
-import { useSettingsStore } from "@/store/settings";
-import { useQueriesBlockedStore } from "@/store/queries-blocked";
+import { defineStore } from 'pinia';
+import { Payload } from '@/types/Payload';
+import { useSettingsStore } from '@/store/settings';
+import { useQueriesBlockedStore } from '@/store/queries-blocked';
 
 type State = {
     payload: Payload[];
 };
 
-export const useQueriesPayloadStore = defineStore("queriesPayload", {
+export const useQueriesPayloadStore = defineStore('queriesPayload', {
     state: (): State => ({
         payload: []
     }),
@@ -34,7 +34,12 @@ export const useQueriesPayloadStore = defineStore("queriesPayload", {
             }
         },
         hasExplainNodes(requestId: string): boolean {
-            return this.payload.some((payload) => payload.request_id === requestId && payload.queries?.explain_nodes && payload.queries.explain_nodes.length > 0);
+            return this.payload.some(
+                (payload) =>
+                    payload.request_id === requestId &&
+                    payload.queries?.explain_nodes &&
+                    payload.queries.explain_nodes.length > 0
+            );
         }
     }
 });

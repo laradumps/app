@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Environment } from "../../main/storage";
+import type { Environment } from '../../main/storage';
 
 const props = defineProps<{
     environments: Environment[];
@@ -8,15 +8,15 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: "onEnvChange", env: Environment): void;
-    (e: "onEnvDragStart", index: number): void;
-    (e: "onEnvDrop", index: number): void;
-    (e: "saveEnvironment", env: Environment | null): void;
-    (e: "toggleXdebug"): void;
+    (e: 'onEnvChange', env: Environment): void;
+    (e: 'onEnvDragStart', index: number): void;
+    (e: 'onEnvDrop', index: number): void;
+    (e: 'saveEnvironment', env: Environment | null): void;
+    (e: 'toggleXdebug'): void;
 }>();
 
 const onEnvDragOver = (e: DragEvent) => e.preventDefault();
-const formattedName = (s: string) => s?.replace(/[-_.]/g, " ") ?? "";
+const formattedName = (s: string) => s?.replace(/[-_.]/g, ' ') ?? '';
 </script>
 
 <template>
@@ -45,7 +45,9 @@ const formattedName = (s: string) => s?.replace(/[-_.]/g, " ") ?? "";
             >
                 <label
                     :title="formattedName(env.value)"
-                    :class="{ '!bg-neutral text-neutral-content rounded-md': props.activeEnvKey === env.value && env.selected }"
+                    :class="{
+                        '!bg-neutral text-neutral-content rounded-md': props.activeEnvKey === env.value && env.selected
+                    }"
                     class="capitalize space-x-1 cursor-pointer"
                 >
                     <input

@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, onUnmounted, ref, computed } from "vue";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/24/outline";
-import { useI18n } from "vue-i18n";
-import { useSettingsStore } from "@/store/settings.js";
+import { onMounted, onUnmounted, ref, computed } from 'vue';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
+import { useI18n } from 'vue-i18n';
+import { useSettingsStore } from '@/store/settings.js';
 
 const i18n = useI18n();
 const settingsStore = useSettingsStore();
@@ -13,47 +13,47 @@ const iconPath = ref();
 
 const tips = ref([
     `<div class="space-y-3 text-base-content">
-        <div class="font-semibold text-base mb-4">${i18n.t("doc.guide")}</div>
+        <div class="font-semibold text-base mb-4">${i18n.t('doc.guide')}</div>
         <li>${i18n.t(
-            "doc.install_laradumps"
+            'doc.install_laradumps'
         )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-info underline cursor-pointer ml-1">https://laradumps.dev</span></li>
-        <li>${i18n.t("doc.add")}
+        <li>${i18n.t('doc.add')}
             <code class="bg-base-300 p-1 rounded">ds('Hello world!')</code>
-             ${i18n.t("doc.somewhere_in_your_code")}</li>
-        <li>${i18n.t("doc.run_your_application_and_see_what_happens_here")}</li>
+             ${i18n.t('doc.somewhere_in_your_code')}</li>
+        <li>${i18n.t('doc.run_your_application_and_see_what_happens_here')}</li>
     </div>`,
     `<div class="space-y-3 text-base-content">
       <div class="font-semibold text-base mb-4">LaraDumps JS</div>
-      <li>${i18n.t("doc.install_laradumps_js")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/laradumps-js')" class="text-info underline cursor-pointer ml-1">https://github.com/laradumps/laradumps-js</span></li>
+      <li>${i18n.t('doc.install_laradumps_js')}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/laradumps-js')" class="text-info underline cursor-pointer ml-1">https://github.com/laradumps/laradumps-js</span></li>
       <li><code class="bg-base-300 p-1 rounded">import { ds } from 'laradumps-js'</code></li>
-      <li>${i18n.t("doc.use_ds_in_browser")}</li>
+      <li>${i18n.t('doc.use_ds_in_browser')}</li>
      </div>`,
     `<div class="space-y-3 text-base-content">
-        <div class="font-semibold !text-base mb-4">${i18n.t("doc.support")}</div>
-        <li>⭐️ <span class="ml-2">${i18n.t("doc.give_us_start")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/app')" class="text-info text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</span></span></li>
-        <li>🥷🏻 <span class="ml-2">${i18n.t("doc.contribute_code")}</span></li>
-        <li>🙌 <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/sponsors/luanfreitasdev')" class="ml-2 text-info text-sm underline cursor-pointer">${i18n.t("doc.buy_me_a_coffee")}</span></li>
+        <div class="font-semibold !text-base mb-4">${i18n.t('doc.support')}</div>
+        <li>⭐️ <span class="ml-2">${i18n.t('doc.give_us_start')}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/app')" class="text-info text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</span></span></li>
+        <li>🥷🏻 <span class="ml-2">${i18n.t('doc.contribute_code')}</span></li>
+        <li>🙌 <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/sponsors/luanfreitasdev')" class="ml-2 text-info text-sm underline cursor-pointer">${i18n.t('doc.buy_me_a_coffee')}</span></li>
     </div>`,
 
     `<div class="space-y-3 text-base-content">
         <div class="font-semibold text-base mb-4">Xdebug step debugging</div>
-        <li>${i18n.t("doc.install_php_extension")}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-info underline cursor-pointer ml-1">download</span></li>
-        <li>${i18n.t("doc.in_any_project_toggle")}</li>
-        <li>${i18n.t("doc.add")} <code class="bg-base-300 p-1 rounded">xdebug_break()</code> ${i18n.t("doc.in_any_line_of_code")}</li>
+        <li>${i18n.t('doc.install_php_extension')}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-info underline cursor-pointer ml-1">download</span></li>
+        <li>${i18n.t('doc.in_any_project_toggle')}</li>
+        <li>${i18n.t('doc.add')} <code class="bg-base-300 p-1 rounded">xdebug_break()</code> ${i18n.t('doc.in_any_line_of_code')}</li>
         <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
     </div>`,
 
     `<div>
         <div class="space-y-3 text-base-content">
-            <div class="font-semibold text-base mb-4">${i18n.t("doc.global_shortcuts")}</div>
-            <li>${i18n.t("doc.customize_shortcuts")}</li>
-            <li>${i18n.t("doc.available")}: <span class="italic font-light">${i18n.t("doc.shortcuts_list")}</span></li>
+            <div class="font-semibold text-base mb-4">${i18n.t('doc.global_shortcuts')}</div>
+            <li>${i18n.t('doc.customize_shortcuts')}</li>
+            <li>${i18n.t('doc.available')}: <span class="italic font-light">${i18n.t('doc.shortcuts_list')}</span></li>
         </div>
     </div>`,
 
     `<div>
         <div class="space-y-3 text-base-content">
-            <div class="font-semibold text-base">${i18n.t("doc.select_your_preferred_theme")}</div>
+            <div class="font-semibold text-base">${i18n.t('doc.select_your_preferred_theme')}</div>
             <li><span>Settings -> Theme</span></li>
             <li><span>light, dark, dracula, dim, laravel ...</span></li>
         </div>
@@ -61,7 +61,7 @@ const tips = ref([
 
     `<div>
         <div class="space-y-3 text-base-content">
-            <div class="font-semibold text-base mb-4">${i18n.t("doc.change_your_ide_at_runtime")}</div>
+            <div class="font-semibold text-base mb-4">${i18n.t('doc.change_your_ide_at_runtime')}</div>
             <li><span>Menu -> IDE</span></li>
             <li><span>PHPStorm, vs code, vs code remote ...</span></li>
         </div>
@@ -84,24 +84,24 @@ function stopTimer() {
 
 onMounted(() => {
     startTimer();
-    document.addEventListener("keydown", handleKeyboardEvents);
-    window.ipcRenderer.send("get-icon");
-    window.ipcRenderer.on("icon", (event, args) => {
+    document.addEventListener('keydown', handleKeyboardEvents);
+    window.ipcRenderer.send('get-icon');
+    window.ipcRenderer.on('icon', (event, args) => {
         iconPath.value = args;
     });
 });
 
 onUnmounted(() => {
     stopTimer();
-    document.removeEventListener("keydown", handleKeyboardEvents);
+    document.removeEventListener('keydown', handleKeyboardEvents);
 });
 
 function handleKeyboardEvents(event) {
     const key = event.key;
 
-    if (key === "ArrowRight") {
+    if (key === 'ArrowRight') {
         next();
-    } else if (key === "ArrowLeft") {
+    } else if (key === 'ArrowLeft') {
         previous();
     }
 }

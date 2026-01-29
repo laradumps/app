@@ -18,7 +18,7 @@ jobs:
             - name: Install Node.js and npm
               uses: actions/setup-node@v4
               with:
-                  node-version: "22.x"
+                  node-version: '22.x'
 
             - name: Install dependencies
               run: npm install --force
@@ -28,17 +28,17 @@ jobs:
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-#            - name: Install Snapcraft
-#              if: matrix.os == 'ubuntu-latest'
-#              run: |
-#                  sudo snap install snapcraft --classic
+            #            - name: Install Snapcraft
+            #              if: matrix.os == 'ubuntu-latest'
+            #              run: |
+            #                  sudo snap install snapcraft --classic
 
-#            - name: 🐧 Release Linux
-#              if: matrix.os == 'ubuntu-latest'
-#              run: npm run publish-linux
-#              env:
-#                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
-#                  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+            #            - name: 🐧 Release Linux
+            #              if: matrix.os == 'ubuntu-latest'
+            #              run: npm run publish-linux
+            #              env:
+            #                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+            #                  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
             - name: 💻 Release Windows
               if: matrix.os == 'windows-latest'

@@ -1,7 +1,7 @@
 <script setup>
-import IconPause from "@/components/Icons/IconPause.vue";
-import IconPlay from "@/components/Icons/IconPlay.vue";
-import { usePausePayloadStore } from "@/store/pause.js";
+import IconPause from '@/components/Icons/IconPause.vue';
+import IconPlay from '@/components/Icons/IconPlay.vue';
+import { usePausePayloadStore } from '@/store/pause.js';
 
 const pauseStore = usePausePayloadStore();
 </script>

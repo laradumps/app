@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onMounted, onUnmounted, ref, toRef, watch } from "vue";
-import moment from "moment";
-import SvgEmpty from "@/components/svg/SvgEmpty.vue";
-import { useGlobalSearchStore } from "@/store/global-search";
-import { useBrainStore, BrainProcess, BrainTask } from "@/store/brains";
-import { CheckIcon, NoSymbolIcon, XMarkIcon, ArrowPathIcon, ChevronDownIcon } from "@heroicons/vue/24/solid";
-import VueJsonPretty from "vue-json-pretty";
-import { TrashIcon } from "@heroicons/vue/24/outline";
-import tippy from "tippy.js";
-import "tippy.js/dist/tippy.css";
-import "tippy.js/themes/light-border.css";
-import "tippy.js/themes/light.css";
-import DumpLink from "@/components/dumps/DumpLink.vue";
+import { computed, defineProps, nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'vue';
+import moment from 'moment';
+import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import { useGlobalSearchStore } from '@/store/global-search';
+import { useBrainStore, BrainProcess, BrainTask } from '@/store/brains';
+import { CheckIcon, NoSymbolIcon, XMarkIcon, ArrowPathIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
+import VueJsonPretty from 'vue-json-pretty';
+import { TrashIcon } from '@heroicons/vue/24/outline';
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
+import 'tippy.js/themes/light-border.css';
+import 'tippy.js/themes/light.css';
+import DumpLink from '@/components/dumps/DumpLink.vue';
 
 const brainStore = useBrainStore();
 const globalSearchStore = useGlobalSearchStore();
@@ -29,7 +29,7 @@ const selectedProcess = ref<{
 } | null>(null);
 
 const selectedStatusFilter = ref<string | null>(null);
-const selectedSortDirection = ref<"asc" | "desc">("desc");
+const selectedSortDirection = ref<'asc' | 'desc'>('desc');
 const collapsedProcessGroups = ref<Record<string, boolean>>({});
 const expandedTaskMap = ref<Record<string, boolean>>({});
 
@@ -40,28 +40,28 @@ const props = defineProps<{
     inScreenWindow?: boolean;
 }>();
 
-const itemsProp = toRef(props, "items");
+const itemsProp = toRef(props, 'items');
 
 const escapeHandler = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
         closeDrawer();
     }
 };
 
 onMounted(() => {
     nextTick(() => {
-        tippy("[data-tippy-content]", {
+        tippy('[data-tippy-content]', {
             allowHTML: true,
-            theme: "dark",
-            placement: "bottom-end"
+            theme: 'dark',
+            placement: 'bottom-end'
         });
     });
 
-    window.addEventListener("keydown", escapeHandler);
+    window.addEventListener('keydown', escapeHandler);
 });
 
 onUnmounted(() => {
-    window.removeEventListener("keydown", escapeHandler);
+    window.removeEventListener('keydown', escapeHandler);
 });
 
 watch(
@@ -95,9 +95,13 @@ const filteredAndSortedProcesses = computed(() => {
     return items
         .filter((processEntry) => {
             const query = globalSearchStore.search.toLowerCase();
-            const matchesQuery = processEntry.className.toLowerCase().includes(query) || processEntry.run_process_id.toLowerCase().includes(query);
+            const matchesQuery =
+                processEntry.className.toLowerCase().includes(query) ||
+                processEntry.run_process_id.toLowerCase().includes(query);
 
-            const matchesStatus = !selectedStatusFilter.value || processEntry.process.tasks.some((task) => task.status === selectedStatusFilter.value);
+            const matchesStatus =
+                !selectedStatusFilter.value ||
+                processEntry.process.tasks.some((task) => task.status === selectedStatusFilter.value);
 
             return matchesQuery && matchesStatus;
         })
@@ -105,7 +109,7 @@ const filteredAndSortedProcesses = computed(() => {
             const timeA = new Date(a.updatedAt ?? 0).getTime();
             const timeB = new Date(b.updatedAt ?? 0).getTime();
 
-            return selectedSortDirection.value === "asc" ? timeA - timeB : timeB - timeA;
+            return selectedSortDirection.value === 'asc' ? timeA - timeB : timeB - timeA;
         });
 });
 
@@ -158,7 +162,7 @@ const openProcessModal = (runId: string) => {
     };
 
     nextTick(() => {
-        const drawer = document.getElementById("brain-drawer") as HTMLInputElement;
+        const drawer = document.getElementById('brain-drawer') as HTMLInputElement;
 
         setTimeout(() => {
             if (drawer) drawer.checked = true;
@@ -170,7 +174,7 @@ const openProcessModal = (runId: string) => {
 
 const formatDuration = (firstSeen?: number, lastSeen?: number) => {
     if (firstSeen == null || lastSeen == null || lastSeen < firstSeen) {
-        return "-";
+        return '-';
     }
 
     const ms = lastSeen - firstSeen;
@@ -188,8 +192,8 @@ const formatDuration = (firstSeen?: number, lastSeen?: number) => {
 
 const trimZeroes = (value: number): string => {
     const fixed = value.toFixed(2);
-    if (fixed.endsWith(".00")) return fixed.replace(".00", "");
-    return fixed.replace(/0+$/, "").replace(/\.$/, "");
+    if (fixed.endsWith('.00')) return fixed.replace('.00', '');
+    return fixed.replace(/0+$/, '').replace(/\.$/, '');
 };
 
 watch(
@@ -197,7 +201,9 @@ watch(
     (newItems) => {
         if (!selectedProcess.value) return;
 
-        const updatedEntry = Object.values(newItems).find((p) => p.run_process_id === selectedProcess.value?.id || p.id === selectedProcess.value?.id);
+        const updatedEntry = Object.values(newItems).find(
+            (p) => p.run_process_id === selectedProcess.value?.id || p.id === selectedProcess.value?.id
+        );
 
         if (!updatedEntry) return;
 
@@ -229,9 +235,9 @@ const initializeSfDump = () => {
         const sfDumpId = task.payload[1];
         try {
             const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
-            if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
+            if (sfDump && !sfDump.hasAttribute('has-dump-js')) {
                 window.Sfdump(`sf-dump-${sfDumpId}`);
-                sfDump.setAttribute("has-dump-js", "true");
+                sfDump.setAttribute('has-dump-js', 'true');
             }
         } catch {
             console.warn(`Failed to initialize sf-dump for task ${sfDumpId}`);
@@ -245,14 +251,14 @@ const clearAll = () => {
 };
 
 const closeDrawer = () => {
-    const drawer = document.getElementById("brain-drawer") as HTMLInputElement;
+    const drawer = document.getElementById('brain-drawer') as HTMLInputElement;
 
     if (drawer) drawer.checked = false;
 };
 
 const splitClassName = (className: string) => {
-    const position = className.lastIndexOf("\\");
-    if (position === -1) return { prefix: "", suffix: className };
+    const position = className.lastIndexOf('\\');
+    if (position === -1) return { prefix: '', suffix: className };
 
     return {
         prefix: className.substring(0, position + 1),
@@ -262,12 +268,12 @@ const splitClassName = (className: string) => {
 
 const computeProcessDuration = (processEntry: BrainProcess) => {
     const tasks = processEntry.process.tasks;
-    if (!tasks.length) return "-";
+    if (!tasks.length) return '-';
 
     const first = Math.min(...tasks.map((task: BrainTask) => task.firstSeen ?? task.timestamp));
     const last = Math.max(...tasks.map((task: BrainTask) => task.lastSeen ?? task.timestamp));
 
-    if (!first || !last || last < first) return "-";
+    if (!first || !last || last < first) return '-';
 
     const ms = last - first;
 
@@ -306,12 +312,16 @@ const toggleTaskExpanded = (task: any) => {
                         <div class="flex nav-bar justify-between">
                             <div class="flex text-left items-start flex-col gap-2">
                                 <div class="text-sm">
-                                    <span class="opacity-50">{{ splitClassName(selectedProcess.className).prefix }}</span>
-                                    <span class="font-bold">{{ splitClassName(selectedProcess.className).suffix }}</span>
+                                    <span class="opacity-50">{{
+                                        splitClassName(selectedProcess.className).prefix
+                                    }}</span>
+                                    <span class="font-bold">{{
+                                        splitClassName(selectedProcess.className).suffix
+                                    }}</span>
                                 </div>
 
                                 <div class="text-xs opacity-75">
-                                    Started: {{ moment(selectedProcess.startedAt).format("HH:mm:ss") }} | Duration:
+                                    Started: {{ moment(selectedProcess.startedAt).format('HH:mm:ss') }} | Duration:
                                     {{ computeProcessDuration(selectedProcess) }}
                                 </div>
                             </div>
@@ -340,7 +350,8 @@ const toggleTaskExpanded = (task: any) => {
                                                     'text-primary': task.status === 'processing',
                                                     'text-success': task.status === 'processed',
                                                     'text-error': task.status === 'error',
-                                                    'text-warning': task.status === 'cancelled' || task.status === 'skipped',
+                                                    'text-warning':
+                                                        task.status === 'cancelled' || task.status === 'skipped',
                                                     'text-info': task.status === 'pending'
                                                 }"
                                                 :data-tippy-content="task.status"
@@ -369,7 +380,9 @@ const toggleTaskExpanded = (task: any) => {
 
                                             <div class="text-sm tracking-wide">
                                                 <span class="opacity-60">{{ splitClassName(task.class).prefix }}</span>
-                                                <span class="font-semibold">{{ splitClassName(task.class).suffix }}</span>
+                                                <span class="font-semibold">{{
+                                                    splitClassName(task.class).suffix
+                                                }}</span>
                                             </div>
                                         </div>
 
@@ -457,7 +470,7 @@ const toggleTaskExpanded = (task: any) => {
                                     >
                                         {{ timeKey }}
                                         <span class="ml-1">
-                                            {{ collapsedProcessGroups[timeKey] ? "▼" : "▲" }}
+                                            {{ collapsedProcessGroups[timeKey] ? '▼' : '▲' }}
                                         </span>
                                     </span>
                                 </td>
@@ -515,7 +528,7 @@ const toggleTaskExpanded = (task: any) => {
                                 </td>
 
                                 <td class="text-right">
-                                    {{ moment(processEntry.updatedAt ?? processEntry.startedAt).format("HH:mm:ss") }}
+                                    {{ moment(processEntry.updatedAt ?? processEntry.startedAt).format('HH:mm:ss') }}
                                 </td>
                                 <td class="whitespace-nowrap text-right">
                                     {{ computeProcessDuration(processEntry) }}

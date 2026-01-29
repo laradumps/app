@@ -1,44 +1,44 @@
-const colors = require("tailwindcss/colors");
-const defaultTheme = require("tailwindcss/defaultTheme");
+const colors = require('tailwindcss/colors');
+const defaultTheme = require('tailwindcss/defaultTheme');
 
 export default {
-    content: ["./src/renderer/*.vue", "./src/renderer/components/*.vue", "./src/renderer/views/*.vue"],
-    darkMode: "class",
+    content: ['./src/renderer/*.vue', './src/renderer/components/*.vue', './src/renderer/views/*.vue'],
+    darkMode: 'class',
     safelist: [
-        "bg-black",
-        "w-[1rem]",
-        "h-[1rem]",
-        "w-20",
-        "gap-2",
-        "bg-green-500",
-        "bg-blue-500",
-        "bg-purple-500",
-        "bg-orange-500",
-        "bg-violet-500",
-        "bg-red-500",
-        "border-purple-500",
-        "border-blue-500",
-        "border-orange-500",
-        "border-green-500",
-        "border-violet-500",
-        "border-red-500"
+        'bg-black',
+        'w-[1rem]',
+        'h-[1rem]',
+        'w-20',
+        'gap-2',
+        'bg-green-500',
+        'bg-blue-500',
+        'bg-purple-500',
+        'bg-orange-500',
+        'bg-violet-500',
+        'bg-red-500',
+        'border-purple-500',
+        'border-blue-500',
+        'border-orange-500',
+        'border-green-500',
+        'border-violet-500',
+        'border-red-500'
     ],
     theme: {
         listStyleType: {
-            none: "none",
-            square: "square",
-            roman: "upper-roman"
+            none: 'none',
+            square: 'square',
+            roman: 'upper-roman'
         },
         height: {
-            "fill-available": "-webkit-fill-available"
+            'fill-available': '-webkit-fill-available'
         },
         zIndex: {
-            100: "100",
-            200: "200",
-            300: "300"
+            100: '100',
+            200: '200',
+            300: '300'
         },
         screens: {
-            xs: "475px",
+            xs: '475px',
             ...defaultTheme.screens
         },
         extend: {

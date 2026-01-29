@@ -31,7 +31,7 @@
                         ></span
                     >
 
-                    <span class="classname">{{ " {" + (property.classname ?? property.type) + "}" }}</span>
+                    <span class="classname">{{ ' {' + (property.classname ?? property.type) + '}' }}</span>
                 </div>
             </div>
         </div>
@@ -59,11 +59,11 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref } from "vue";
-import XDebugLoadingChildren from "@/components/xdebug/XDebugLoadingChildren.vue";
-import IconArrowRight from "@/components/Icons/IconArrowRight.vue";
-import IconArrowDown from "@/components/Icons/IconArrowDown.vue";
-import IconListBullet from "@/components/Icons/IconListBullet.vue";
+import { defineProps, ref } from 'vue';
+import XDebugLoadingChildren from '@/components/xdebug/XDebugLoadingChildren.vue';
+import IconArrowRight from '@/components/Icons/IconArrowRight.vue';
+import IconArrowDown from '@/components/Icons/IconArrowDown.vue';
+import IconListBullet from '@/components/Icons/IconListBullet.vue';
 
 const props = defineProps({
     property: Object,
@@ -78,12 +78,12 @@ const hasArrayIndexAtEnd = (classname) => {
 };
 
 const formatValue = (): string => {
-    if (["bool", "int", "float"].includes(props.property.type)) {
+    if (['bool', 'int', 'float'].includes(props.property.type)) {
         return props.property.value;
     }
 
-    if (props.property.type === "null") {
-        return "null";
+    if (props.property.type === 'null') {
+        return 'null';
     }
 
     return `"${props.property.value}"`;
@@ -123,7 +123,7 @@ const propertyGet = (variableName): void => {
 };
 
 const sendCommand = (cmd): void => {
-    window.ipcRenderer.send("send-xdebug-command", cmd);
+    window.ipcRenderer.send('send-xdebug-command', cmd);
 };
 </script>
 

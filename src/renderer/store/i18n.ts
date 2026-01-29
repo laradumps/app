@@ -1,6 +1,6 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
-export const useI18nStore = defineStore("i18n", {
+export const useI18nStore = defineStore('i18n', {
     state: () => {
         return {
             value: localStorage.locale
@@ -12,7 +12,7 @@ export const useI18nStore = defineStore("i18n", {
             this.value = value;
         },
         remove() {
-            localStorage.removeItem("locale");
+            localStorage.removeItem('locale');
             this.value = null;
         }
     }

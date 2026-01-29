@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, defineProps, onMounted, ref } from "vue";
-import { IdeHandle } from "@/types/IdeHandle";
-import IconPencil from "@/components/Icons/IconPencil.vue";
-import { generateLink } from "@/utils/ideHandler";
+import { computed, defineProps, onMounted, ref } from 'vue';
+import { IdeHandle } from '@/types/IdeHandle';
+import IconPencil from '@/components/Icons/IconPencil.vue';
+import { generateLink } from '@/utils/ideHandler';
 
 const props = defineProps<{
     ideHandler: IdeHandle;
@@ -25,16 +25,16 @@ const label = computed(() => {
     const { class_name, real_path, line } = ideHandler;
 
     if (label) return label;
-    if (class_name === "empty") return "";
-    if (class_name.includes("&platform=")) return "JavaScript";
-    if (class_name === "empty" || !real_path || real_path.includes("ExecutionLoopClosure")) return "Tinker";
-    if (line?.toString() !== "") return `${class_name}:${line}`;
+    if (class_name === 'empty') return '';
+    if (class_name.includes('&platform=')) return 'JavaScript';
+    if (class_name === 'empty' || !real_path || real_path.includes('ExecutionLoopClosure')) return 'Tinker';
+    if (line?.toString() !== '') return `${class_name}:${line}`;
 
-    return "";
+    return '';
 });
 
 const toggleBreakpoint = () => {
-    emit("toggleBreakpoint", {
+    emit('toggleBreakpoint', {
         file: props.ideHandler.real_path,
         line: props.ideHandler.line
     });
@@ -47,7 +47,11 @@ const toggleBreakpoint = () => {
             v-if="!showIcon"
             :href="label === 'Tinker' ? '#' : link"
             :title="label"
-            :class="{ 'cursor-pointer': link && label !== 'Tinker', 'whitespace-pre-line': !truncate, truncate: truncate }"
+            :class="{
+                'cursor-pointer': link && label !== 'Tinker',
+                'whitespace-pre-line': !truncate,
+                truncate: truncate
+            }"
             class="flex items-center group"
             @click.stop
         >

@@ -1,4 +1,4 @@
-import { IdeHandle } from "@/types/IdeHandle";
+import { IdeHandle } from '@/types/IdeHandle';
 
 export interface QueryPayload {
     sql: string;

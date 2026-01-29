@@ -1,12 +1,12 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
 interface Type {
     id: string;
 }
 
-export const useQueriesChartSelectedPoint = defineStore("queriesChartSelectPoint", {
+export const useQueriesChartSelectedPoint = defineStore('queriesChartSelectPoint', {
     state: (): Type => ({
-        id: ""
+        id: ''
     }),
     actions: {
         set(id: string) {

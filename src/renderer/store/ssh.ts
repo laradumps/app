@@ -1,10 +1,10 @@
-import { Ref, ref } from "vue";
-import { defineStore } from "pinia";
-import { ConnectionConfig } from "@/types/ssh.type";
+import { Ref, ref } from 'vue';
+import { defineStore } from 'pinia';
+import { ConnectionConfig } from '@/types/ssh.type';
 
-export const useSSHStore = defineStore("ssh", () => {
+export const useSSHStore = defineStore('ssh', () => {
     let storedConnections: ConnectionConfig[] = [];
-    const storedConnectionsRaw = localStorage.getItem("ssh-connections");
+    const storedConnectionsRaw = localStorage.getItem('ssh-connections');
     if (storedConnectionsRaw) {
         storedConnections = JSON.parse(storedConnectionsRaw);
     }
@@ -26,14 +26,14 @@ export const useSSHStore = defineStore("ssh", () => {
 
     const addConnection = (config: ConnectionConfig) => {
         connections.value.push(config);
-        localStorage.setItem("ssh-connections", JSON.stringify(connections.value));
+        localStorage.setItem('ssh-connections', JSON.stringify(connections.value));
     };
 
     const updateConnection = (id: number, config: ConnectionConfig): void => {
         const index = connections.value.findIndex((connection: ConnectionConfig) => connection.id === id);
         if (index !== -1) {
             connections.value[index] = config;
-            localStorage.setItem("ssh-connections", JSON.stringify(connections.value));
+            localStorage.setItem('ssh-connections', JSON.stringify(connections.value));
         }
     };
 
@@ -41,9 +41,18 @@ export const useSSHStore = defineStore("ssh", () => {
         const index = connections.value.findIndex((connection: ConnectionConfig) => connection.id === id);
         if (index !== -1) {
             connections.value.splice(index, 1);
-            localStorage.setItem("ssh-connections", JSON.stringify(connections.value));
+            localStorage.setItem('ssh-connections', JSON.stringify(connections.value));
         }
     };
 
-    return { connections, setConnecting, connecting, remove, getConnection, addConnection, updateConnection, setConnected };
+    return {
+        connections,
+        setConnecting,
+        connecting,
+        remove,
+        getConnection,
+        addConnection,
+        updateConnection,
+        setConnected
+    };
 });

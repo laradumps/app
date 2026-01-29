@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed, defineProps, ref, watch, nextTick, onMounted, onUnmounted } from "vue";
-import moment from "moment";
-import { FunnelIcon, PlayIcon, TrashIcon, ClipboardDocumentIcon, CheckIcon } from "@heroicons/vue/24/outline";
-import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
+import { computed, defineProps, ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import moment from 'moment';
+import { FunnelIcon, PlayIcon, TrashIcon, ClipboardDocumentIcon, CheckIcon } from '@heroicons/vue/24/outline';
+import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 
-import { Log, useLogStore } from "@/store/logs";
-import CodeSnippet from "@/components/CodeSnippet.vue";
-import { useColorStore } from "@/store/colors";
-import SvgEmpty from "@/components/svg/SvgEmpty.vue";
-import { useGlobalSearchStore } from "@/store/global-search";
-import IconPause from "@/components/Icons/IconPause.vue";
-import { usePauseLogsStore } from "@/store/pause-logs";
-import DumpQuery from "@/components/laravel/DumpQuery.vue";
-import { generateLink } from "@/utils/ideHandler";
-import { copyLogToMarkdown } from "@/utils/logToMarkdown";
-import { useSettingsStore } from "@/store/settings";
+import { Log, useLogStore } from '@/store/logs';
+import CodeSnippet from '@/components/CodeSnippet.vue';
+import { useColorStore } from '@/store/colors';
+import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import { useGlobalSearchStore } from '@/store/global-search';
+import IconPause from '@/components/Icons/IconPause.vue';
+import { usePauseLogsStore } from '@/store/pause-logs';
+import DumpQuery from '@/components/laravel/DumpQuery.vue';
+import { generateLink } from '@/utils/ideHandler';
+import { copyLogToMarkdown } from '@/utils/logToMarkdown';
+import { useSettingsStore } from '@/store/settings';
 
 const logStore = useLogStore();
 const colorStore = useColorStore();
@@ -63,7 +63,11 @@ const logs = computed(() => {
         })
         .filter((log: Log) => {
             const searchTerm = globalSearchStore.search.toLowerCase();
-            return log.message.toLowerCase().includes(searchTerm) || log.level.includes(searchTerm) || log.context[0].includes(searchTerm);
+            return (
+                log.message.toLowerCase().includes(searchTerm) ||
+                log.level.includes(searchTerm) ||
+                log.context[0].includes(searchTerm)
+            );
         })
         .filter((log: Log) => {
             return levelFilter.value.length === 0 || levelFilter.value.includes(log.level);
@@ -103,8 +107,8 @@ watch(expandedLogId, (newId) => {
 
         const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
 
-        if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
-            sfDump.setAttribute("has-dump-js", "true");
+        if (sfDump && !sfDump.hasAttribute('has-dump-js')) {
+            sfDump.setAttribute('has-dump-js', 'true');
             window.Sfdump(`sf-dump-${sfDumpId}`);
         }
     });
@@ -146,7 +150,7 @@ const toggleLogExpand = (logId: string) => {
 };
 
 const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape" && expandedLogId.value) {
+    if (event.key === 'Escape' && expandedLogId.value) {
         expandedLogId.value = null;
         event.preventDefault();
     }
@@ -161,16 +165,16 @@ const copyToMarkdown = async (log: Log) => {
             copiedLogId.value = null;
         }, 2000);
     } catch (error) {
-        console.error("Failed to copy:", error);
+        console.error('Failed to copy:', error);
     }
 };
 
 onMounted(() => {
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
 });
 
 onUnmounted(() => {
-    window.removeEventListener("keydown", handleKeyDown);
+    window.removeEventListener('keydown', handleKeyDown);
 });
 
 const clear = () => {
@@ -184,16 +188,16 @@ const clear = () => {
 
 const getBorderColor = (level: string) => {
     const colors: Record<string, string> = {
-        error: "border-error",
-        critical: "border-error",
-        alert: "border-error",
-        emergency: "border-error",
-        warning: "border-warning",
-        notice: "border-success",
-        info: "border-info",
-        debug: "border-gray-500"
+        error: 'border-error',
+        critical: 'border-error',
+        alert: 'border-error',
+        emergency: 'border-error',
+        warning: 'border-warning',
+        notice: 'border-success',
+        info: 'border-info',
+        debug: 'border-gray-500'
     };
-    return colors[level] || "border-primary";
+    return colors[level] || 'border-primary';
 };
 
 const canCopyToMarkdown = computed(() => {
@@ -201,7 +205,7 @@ const canCopyToMarkdown = computed(() => {
         const hasCode = log.code_snippet && log.code_snippet.length > 0;
         if (!hasCode) return false;
 
-        const contextZero = log.context && log.context.length > 0 ? String(log.context[0]) : "";
+        const contextZero = log.context && log.context.length > 0 ? String(log.context[0]) : '';
         const emptySfDumpPattern = /<pre[^>]*>\s*\[\]\s*<\/pre>/i;
         const containsEmptySfDump = emptySfDumpPattern.test(contextZero);
 
@@ -264,7 +268,16 @@ const displayLastLog = computed<boolean>({
                                 class="p-2 shadow-sm dropdown-content menu bg-base-300 rounded-box z-100 w-52"
                             >
                                 <li
-                                    v-for="level in ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency']"
+                                    v-for="level in [
+                                        'debug',
+                                        'info',
+                                        'notice',
+                                        'warning',
+                                        'error',
+                                        'critical',
+                                        'alert',
+                                        'emergency'
+                                    ]"
                                     :key="level"
                                     :class="{ 'text-primary': levelFilter.includes(level) }"
                                     @click="selectedLevel(level)"
@@ -309,7 +322,9 @@ const displayLastLog = computed<boolean>({
                 style="height: -webkit-fill-available"
             >
                 <!-- Header -->
-                <div class="sticky top-0 z-10 bg-base-300 text-xs text-base-content grid grid-cols-[90px_1fr] gap-2 p-2">
+                <div
+                    class="sticky top-0 z-10 bg-base-300 text-xs text-base-content grid grid-cols-[90px_1fr] gap-2 p-2"
+                >
                     <div>Level</div>
                     <div>Message</div>
                 </div>
@@ -324,7 +339,8 @@ const displayLastLog = computed<boolean>({
                         <div
                             class="text-xs font-semibold text-center bg-base-200 py-2 transition-all duration-200"
                             :class="{
-                                'blur-sm opacity-40': expandedLogId !== null && !logsOnTime.some((log) => log.log_id === expandedLogId)
+                                'blur-sm opacity-40':
+                                    expandedLogId !== null && !logsOnTime.some((log) => log.log_id === expandedLogId)
                             }"
                         >
                             <span
@@ -332,7 +348,7 @@ const displayLastLog = computed<boolean>({
                                 @click="toggleLogGroup(timeKey)"
                             >
                                 {{ timeKey }}
-                                <span class="ml-1">{{ collapsedLogGroups[timeKey] ? "▼" : "▲" }}</span>
+                                <span class="ml-1">{{ collapsedLogGroups[timeKey] ? '▼' : '▲' }}</span>
                             </span>
                         </div>
 
@@ -476,12 +492,18 @@ const displayLastLog = computed<boolean>({
                                             </div>
 
                                             <!-- Headers -->
-                                            <div v-if="log.requests.headers && Object.keys(log.requests.headers).length > 0">
+                                            <div
+                                                v-if="
+                                                    log.requests.headers && Object.keys(log.requests.headers).length > 0
+                                                "
+                                            >
                                                 <div>
                                                     <span class="font-semibold ml-1 text-xs">Headers</span>
                                                 </div>
 
-                                                <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200 mt-2">
+                                                <div
+                                                    class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200 mt-2"
+                                                >
                                                     <table class="table table-sm">
                                                         <tbody>
                                                             <tr
@@ -490,7 +512,10 @@ const displayLastLog = computed<boolean>({
                                                             >
                                                                 <th class="whitespace-nowrap">{{ key }}</th>
                                                                 <td class="break-all">
-                                                                    <code class="overflow-y-hidden scrollbar-hidden max-h-32 overflow-x-scroll scrollbar-hidden-x">{{ value }}</code>
+                                                                    <code
+                                                                        class="overflow-y-hidden scrollbar-hidden max-h-32 overflow-x-scroll scrollbar-hidden-x"
+                                                                        >{{ value }}</code
+                                                                    >
                                                                 </td>
                                                             </tr>
                                                         </tbody>
@@ -507,7 +532,9 @@ const displayLastLog = computed<boolean>({
                                                     <span class="font-semibold ml-1 text-xs">Body</span>
                                                 </div>
 
-                                                <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200 mt-2">
+                                                <div
+                                                    class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200 mt-2"
+                                                >
                                                     <div class="flex items-center">
                                                         <span class="min-w-0 flex-grow">
                                                             <pre
@@ -530,7 +557,9 @@ const displayLastLog = computed<boolean>({
                                                 <span class="font-semibold ml-1 text-sm">Routing</span>
                                             </div>
 
-                                            <div class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200">
+                                            <div
+                                                class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
+                                            >
                                                 <table class="table table-sm">
                                                     <tbody>
                                                         <tr v-if="log.requests.routeContext?.controller">

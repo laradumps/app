@@ -1,10 +1,10 @@
-import { AcceptConnection, Client, ConnectConfig, TcpConnectionDetails } from "ssh2";
-import { readFileSync } from "fs";
-import { ipcMain, Notification } from "electron";
-import net from "net";
-import axios from "axios";
-import { Payload } from "@/types/Payload";
-import { ConnectionConfig } from "@/types/ssh.type";
+import { AcceptConnection, Client, ConnectConfig, TcpConnectionDetails } from 'ssh2';
+import { readFileSync } from 'fs';
+import { ipcMain, Notification } from 'electron';
+import net from 'net';
+import axios from 'axios';
+import { Payload } from '@/types/Payload';
+import { ConnectionConfig } from '@/types/ssh.type';
 
 class SSHClient {
     private readonly config: ConnectConfig;
@@ -18,26 +18,26 @@ class SSHClient {
             host: connectionConfig.host,
             port: connectionConfig.port,
             username: connectionConfig.username,
-            password: "",
-            privateKey: "",
-            passphrase: "",
+            password: '',
+            privateKey: '',
+            passphrase: '',
             authHandler: undefined
         };
 
         this.name = connectionConfig.name;
         this.newWindow = connectionConfig.new_window;
 
-        if (connectionConfig.auth_type === "password" && connectionConfig.password) {
+        if (connectionConfig.auth_type === 'password' && connectionConfig.password) {
             this.config.password = connectionConfig.password;
         }
-        if (connectionConfig.auth_type === "key" && connectionConfig.private_key) {
+        if (connectionConfig.auth_type === 'key' && connectionConfig.private_key) {
             try {
-                this.config.privateKey = readFileSync(connectionConfig.private_key, "utf8");
+                this.config.privateKey = readFileSync(connectionConfig.private_key, 'utf8');
                 this.config.passphrase = connectionConfig.passphrase;
             } catch (error: any) {
                 //
             }
-            this.config.authHandler = ["publickey"];
+            this.config.authHandler = ['publickey'];
         }
         this.conn = new Client();
         this.isConnected = false;
@@ -46,11 +46,11 @@ class SSHClient {
     async connect(): Promise<void> {
         return new Promise((resolve, reject) => {
             this.conn
-                .on("ready", () => {
+                .on('ready', () => {
                     this.isConnected = true;
                     resolve();
                 })
-                .on("error", (err) => {
+                .on('error', (err) => {
                     reject(err);
                 })
                 .connect(this.config);
@@ -60,20 +60,20 @@ class SSHClient {
     async forwardIn(port: number): Promise<void> {
         return new Promise((resolve, reject) => {
             this.conn
-                .forwardIn("localhost", port, (err: unknown) => {
+                .forwardIn('localhost', port, (err: unknown) => {
                     if (err) {
                         reject(err);
                     }
                     resolve();
                 })
-                .on("tcp connection", (info: TcpConnectionDetails, accept: AcceptConnection) => {
+                .on('tcp connection', (info: TcpConnectionDetails, accept: AcceptConnection) => {
                     // Forward the connection to the local application
                     const stream = accept();
-                    const localSocket = net.connect(port, "127.0.0.1", () => {
-                        let buffer = "";
+                    const localSocket = net.connect(port, '127.0.0.1', () => {
+                        let buffer = '';
                         let expectedLength = 0;
 
-                        stream.on("data", async (data: Buffer) => {
+                        stream.on('data', async (data: Buffer) => {
                             try {
                                 buffer += data.toString();
 
@@ -84,9 +84,12 @@ class SSHClient {
                                     }
                                 }
 
-                                const jsonStartIndex = buffer.indexOf("{");
+                                const jsonStartIndex = buffer.indexOf('{');
                                 if (expectedLength > 0 && buffer.length >= expectedLength + jsonStartIndex) {
-                                    const jsonString = buffer.substring(jsonStartIndex, jsonStartIndex + expectedLength);
+                                    const jsonString = buffer.substring(
+                                        jsonStartIndex,
+                                        jsonStartIndex + expectedLength
+                                    );
 
                                     const payload: Payload = JSON.parse(jsonString);
 
@@ -96,7 +99,7 @@ class SSHClient {
 
                                     const screenPayload = {
                                         ...payload,
-                                        type: "screen",
+                                        type: 'screen',
                                         screen: {
                                             screen_name: this.name,
                                             new_window: this.newWindow,
@@ -112,18 +115,18 @@ class SSHClient {
                                 }
                             } catch (postError) {
                                 new Notification({
-                                    title: "SSH",
-                                    body: "Error sending HTTP POST"
+                                    title: 'SSH',
+                                    body: 'Error sending HTTP POST'
                                 }).show();
-                                console.error("Error sending HTTP POST:", postError);
+                                console.error('Error sending HTTP POST:', postError);
                             }
                         });
 
                         localSocket.pipe(stream);
                     });
 
-                    localSocket.on("error", (err) => {
-                        console.error("Local socket error:", err);
+                    localSocket.on('error', (err) => {
+                        console.error('Local socket error:', err);
                         stream.end();
                     });
                 });
@@ -141,9 +144,9 @@ class SSHClient {
 let sshClient: SSHClient | null = null;
 
 export const init = async () => {
-    ipcMain.on("ssh:connect", connect);
-    ipcMain.on("ssh:listen", listen);
-    ipcMain.on("ssh:disconnect", disconnect);
+    ipcMain.on('ssh:connect', connect);
+    ipcMain.on('ssh:listen', listen);
+    ipcMain.on('ssh:disconnect', disconnect);
 };
 
 export const connect = async (event: any, config: any, data: any = {}) => {
@@ -153,11 +156,11 @@ export const connect = async (event: any, config: any, data: any = {}) => {
 
         if (data.notify) {
             new Notification({
-                title: "Connected",
+                title: 'Connected',
                 body: config.host
             }).show();
         }
-        event.reply("ssh:connect-response", {
+        event.reply('ssh:connect-response', {
             connected: true,
             data: data,
             config: config
@@ -174,18 +177,18 @@ export const listen = async (event: any, config: ConnectionConfig) => {
     try {
         await sshClient.connect();
         await sshClient.forwardIn(9191);
-        event.reply("ssh:listen-response", {
+        event.reply('ssh:listen-response', {
             connected: true,
             id: config.id
         });
     } catch (error: any) {
-        event.reply("ssh:listen-response", {
+        event.reply('ssh:listen-response', {
             connected: false,
             id: config.id
         });
         new Notification({
-            title: "Error",
-            body: error.message ?? "Connection to the server failed"
+            title: 'Error',
+            body: error.message ?? 'Connection to the server failed'
         }).show();
     }
 };
@@ -198,10 +201,10 @@ export const disconnect = async (event: any) => {
 
 const handleConnectionFailed = (event: any, config: any, error: any, data: object = {}) => {
     new Notification({
-        title: "Error",
+        title: 'Error',
         body: error.message
     }).show();
-    event.reply("ssh:connect-response", {
+    event.reply('ssh:connect-response', {
         connected: false,
         data: data,
         config: config

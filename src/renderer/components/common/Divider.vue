@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
 
 const props = defineProps({
     class: {
         type: String,
-        default: ""
+        default: ''
     }
 });
 
 const classes = computed(() => {
-    let defaultClasses = "h-[1px] border-t border-base-content/10";
+    let defaultClasses = 'h-[1px] border-t border-base-content/10';
     return `${defaultClasses} ${props.class}`;
 });
 </script>

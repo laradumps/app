@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useColorStore } from "@/store/colors";
+import { computed } from 'vue';
+import { useColorStore } from '@/store/colors';
 
 const colorStore = useColorStore();
 
 const isRed = computed(() => ({
-    "bg-error": colorStore.colors.includes("red")
+    'bg-error': colorStore.colors.includes('red')
 }));
 
 const isGray = computed(() => ({
-    "bg-gray-600": colorStore.colors.includes("gray")
+    'bg-gray-600': colorStore.colors.includes('gray')
 }));
 
 const isBlack = computed(() => ({
-    "bg-black": colorStore.colors.includes("black")
+    'bg-black': colorStore.colors.includes('black')
 }));
 
 const isBlue = computed(() => ({
-    "bg-info": colorStore.colors.includes("blue")
+    'bg-info': colorStore.colors.includes('blue')
 }));
 
 const isGreen = computed(() => ({
-    "bg-success": colorStore.colors.includes("green")
+    'bg-success': colorStore.colors.includes('green')
 }));
 
 const isOrange = computed(() => ({
-    "bg-warning": colorStore.colors.includes("orange")
+    'bg-warning': colorStore.colors.includes('orange')
 }));
 </script>
 

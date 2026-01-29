@@ -1,6 +1,6 @@
-import { defineStore } from "pinia";
-import { ContextPayload, MailPayload } from "@/types/Payload";
-import { IdeHandle } from "@/types/IdeHandle";
+import { defineStore } from 'pinia';
+import { ContextPayload, MailPayload } from '@/types/Payload';
+import { IdeHandle } from '@/types/IdeHandle';
 
 export type Mail = {
     message_id: string;
@@ -29,18 +29,18 @@ export interface Attachment {
 }
 
 export const mimeTypeMap: { [key: string]: string } = {
-    pdf: "application/pdf",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    png: "image/png",
-    gif: "image/gif",
-    txt: "text/plain",
-    html: "text/html"
+    pdf: 'application/pdf',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    txt: 'text/plain',
+    html: 'text/html'
 };
 
-export const useMailStore = defineStore("mailStore", {
+export const useMailStore = defineStore('mailStore', {
     state: (): State => ({
-        mails: JSON.parse(localStorage.getItem("emails") || "[]")
+        mails: JSON.parse(localStorage.getItem('emails') || '[]')
     }),
     actions: {
         addOrUpdateMail(payload: MailPayload, ide_handle: IdeHandle, context: ContextPayload) {
@@ -55,7 +55,7 @@ export const useMailStore = defineStore("mailStore", {
             this.mails[existingMailIndex] = { ...this.mails[existingMailIndex], ...payload };
         },
         store() {
-            localStorage.setItem("emails", JSON.stringify(this.mails));
+            localStorage.setItem('emails', JSON.stringify(this.mails));
         },
         clear() {
             this.mails = [];
@@ -63,13 +63,15 @@ export const useMailStore = defineStore("mailStore", {
         },
         _initialize(payload: MailPayload, ide_handle: IdeHandle, context: ContextPayload) {
             const date = new Date();
-            const fromHeader = payload.headers.find((header) => header.startsWith("From:")) ?? "";
-            const subjectHeader = payload.headers.find((header) => header.startsWith("Subject:")) ?? "";
-            const toHeader = payload.headers.find((header) => header.startsWith("To:")) ?? "";
+            const fromHeader = payload.headers.find((header) => header.startsWith('From:')) ?? '';
+            const subjectHeader = payload.headers.find((header) => header.startsWith('Subject:')) ?? '';
+            const toHeader = payload.headers.find((header) => header.startsWith('To:')) ?? '';
 
             const decodeMimeEncodedWord = (encodedText: string) => {
                 return encodedText.replace(/=\?utf-8\?Q\?(.*?)\?=/gi, (match, content) => {
-                    const decoded = content.replace(/_/g, " ").replace(/=([A-Fa-f0-9]{2})/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+                    const decoded = content
+                        .replace(/_/g, ' ')
+                        .replace(/=([A-Fa-f0-9]{2})/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
 
                     return decodeURIComponent(escape(decoded));
                 });
@@ -77,12 +79,12 @@ export const useMailStore = defineStore("mailStore", {
 
             const regex = /From:\s*(.*)\s*<(.+)>/;
             const matches = fromHeader.match(regex) ?? [];
-            const from = matches[1] ?? "";
-            const fromMail = matches[2] ?? "";
-            const subjectEncoded = subjectHeader.replace("Subject: ", "").trim();
+            const from = matches[1] ?? '';
+            const fromMail = matches[2] ?? '';
+            const subjectEncoded = subjectHeader.replace('Subject: ', '').trim();
             const subject = decodeMimeEncodedWord(subjectEncoded);
 
-            const to = toHeader.replace("To: ", "").trim();
+            const to = toHeader.replace('To: ', '').trim();
 
             this.mails.push({
                 message_id: payload.messageId,

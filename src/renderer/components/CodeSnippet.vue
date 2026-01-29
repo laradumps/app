@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref, onUnmounted, computed } from "vue";
-import { CodeSnippet } from "@/types/Payload";
-import hljs from "highlight.js/lib/core";
-import DumpLink from "@/components/dumps/DumpLink.vue";
-import { IdeHandle } from "@/types/IdeHandle";
-import IconChevronRight from "@/components/Icons/IconChevronRight.vue";
+import { defineProps, onMounted, ref, onUnmounted, computed } from 'vue';
+import { CodeSnippet } from '@/types/Payload';
+import hljs from 'highlight.js/lib/core';
+import DumpLink from '@/components/dumps/DumpLink.vue';
+import { IdeHandle } from '@/types/IdeHandle';
+import IconChevronRight from '@/components/Icons/IconChevronRight.vue';
 
 const activeFileIndex = ref(0);
 const showAllFrames = ref(false);
@@ -23,12 +23,12 @@ const getFileLineDisplay = (codeSnippet: any) => {
 };
 
 const getLineContent = (lineContent: string) => {
-    return hljs.highlight(lineContent, { language: "php" }).value;
+    return hljs.highlight(lineContent, { language: 'php' }).value;
 };
 
 const getIdeHandleFromStack = (codeSnippet: CodeSnippet, lineNumber: string): IdeHandle => {
     return {
-        base_path: "",
+        base_path: '',
         workdir: props.ide_handle.workdir,
         project_path: props.ide_handle.project_path,
         real_path: codeSnippet.file,
@@ -68,13 +68,13 @@ const navigateToPreviousFile = () => {
 };
 
 const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
         activeFileIndex.value = 0;
         event.preventDefault();
-    } else if (event.key === "ArrowDown") {
+    } else if (event.key === 'ArrowDown') {
         navigateToNextFile();
         event.preventDefault();
-    } else if (event.key === "ArrowUp") {
+    } else if (event.key === 'ArrowUp') {
         navigateToPreviousFile();
         event.preventDefault();
     }
@@ -86,11 +86,11 @@ const toggleShowAllFrames = () => {
 
 onMounted(() => {
     activeFileIndex.value = 0;
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
 });
 
 onUnmounted(() => {
-    window.removeEventListener("keydown", handleKeyDown);
+    window.removeEventListener('keydown', handleKeyDown);
 });
 </script>
 
@@ -147,7 +147,7 @@ onUnmounted(() => {
             class="text-xs flex justify-center px-2 py-1 text-base-content tracking-wide items-center gap-2 cursor-pointer hover:bg-base-200 rounded-md select-none"
             @click="toggleShowAllFrames"
         >
-            <span class="truncate">{{ showAllFrames ? "View Less" : "View More" }}</span>
+            <span class="truncate">{{ showAllFrames ? 'View Less' : 'View More' }}</span>
             <span
                 class="transform transition-transform"
                 :class="{ 'rotate-90': showAllFrames }"

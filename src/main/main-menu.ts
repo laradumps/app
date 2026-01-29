@@ -1,26 +1,26 @@
-import { app, Menu, shell } from "electron";
+import { app, Menu, shell } from 'electron';
 
 async function getMenuTemplate() {
     const menuTemplate = [
         {
-            label: "Menu",
+            label: 'Menu',
             submenu: [
                 {
-                    label: "Version: " + app.getVersion(),
+                    label: 'Version: ' + app.getVersion(),
                     enabled: false
                 },
                 {
-                    label: "About LaraDumps",
+                    label: 'About LaraDumps',
                     click: async (): Promise<void> => {
-                        await shell.openExternal("https://github.com/laradumps/app");
+                        await shell.openExternal('https://github.com/laradumps/app');
                     }
                 },
                 {
-                    type: "separator"
+                    type: 'separator'
                 },
                 {
-                    label: "Quit LaraDumps",
-                    accelerator: process.platform === "darwin" ? "Command+Q" : "Ctrl+Q",
+                    label: 'Quit LaraDumps',
+                    accelerator: process.platform === 'darwin' ? 'Command+Q' : 'Ctrl+Q',
                     click: () => {
                         app.quit();
                     }
@@ -28,58 +28,58 @@ async function getMenuTemplate() {
             ]
         },
         {
-            label: "Help",
+            label: 'Help',
             submenu: [
                 {
-                    label: "Documentation",
+                    label: 'Documentation',
                     click: async (): Promise<void> => {
-                        await shell.openExternal("https://laradumps.dev");
+                        await shell.openExternal('https://laradumps.dev');
                     }
                 },
                 {
-                    type: "separator"
+                    type: 'separator'
                 },
                 {
-                    label: "Desktop Releases",
+                    label: 'Desktop Releases',
                     click: async (): Promise<void> => {
-                        await shell.openExternal("https://github.com/laradumps/app/releases");
+                        await shell.openExternal('https://github.com/laradumps/app/releases');
                     }
                 },
                 {
-                    label: "Laravel Package",
+                    label: 'Laravel Package',
                     click: async (): Promise<void> => {
-                        await shell.openExternal("https://github.com/laradumps/laradumps");
+                        await shell.openExternal('https://github.com/laradumps/laradumps');
                     }
                 },
                 {
-                    label: "Core Package",
+                    label: 'Core Package',
                     click: async (): Promise<void> => {
-                        await shell.openExternal("https://github.com/laradumps/laradumps-core");
+                        await shell.openExternal('https://github.com/laradumps/laradumps-core');
                     }
                 },
                 {
-                    type: "separator"
+                    type: 'separator'
                 },
                 {
-                    label: "Sponsors",
+                    label: 'Sponsors',
                     click: async (): Promise<void> => {
-                        await shell.openExternal("https://github.com/sponsors/luanfreitasdev");
+                        await shell.openExternal('https://github.com/sponsors/luanfreitasdev');
                     }
                 }
             ]
         }
     ];
 
-    if (process.platform === "darwin") {
+    if (process.platform === 'darwin') {
         menuTemplate.splice(1, 0, {
-            label: "Edit",
+            label: 'Edit',
             submenu: [
-                { label: "Undo", role: "undo", accelerator: "CmdOrCtrl+Z" },
-                { label: "Redo", role: "redo", accelerator: "Shift+CmdOrCtrl+Z" },
-                { type: "separator" },
-                { label: "Copy", role: "copy", accelerator: "CmdOrCtrl+C" },
-                { label: "Paste", role: "paste", accelerator: "CmdOrCtrl+V" },
-                { label: "Select All", role: "selectall", accelerator: "CmdOrCtrl+A" }
+                { label: 'Undo', role: 'undo', accelerator: 'CmdOrCtrl+Z' },
+                { label: 'Redo', role: 'redo', accelerator: 'Shift+CmdOrCtrl+Z' },
+                { type: 'separator' },
+                { label: 'Copy', role: 'copy', accelerator: 'CmdOrCtrl+C' },
+                { label: 'Paste', role: 'paste', accelerator: 'CmdOrCtrl+V' },
+                { label: 'Select All', role: 'selectall', accelerator: 'CmdOrCtrl+A' }
             ]
         });
     }

@@ -1,12 +1,12 @@
-import { IdeHandle } from "@/types/IdeHandle";
-import { defineStore } from "pinia";
-import { useSettingsStore } from "@/store/settings";
+import { IdeHandle } from '@/types/IdeHandle';
+import { defineStore } from 'pinia';
+import { useSettingsStore } from '@/store/settings';
 
 export type BrainTask = {
     id: string;
     name: string;
     class: string;
-    status: "pending" | "processing" | "processed" | "error" | "cancelled" | "skipped" | "stale";
+    status: 'pending' | 'processing' | 'processed' | 'error' | 'cancelled' | 'skipped' | 'stale';
     payload: any;
     timestamp: number;
     ide_handle?: IdeHandle | null;
@@ -43,7 +43,7 @@ export type BrainStoreState = {
     brains: Record<string, BrainProcess>;
 };
 
-export const useBrainStore = defineStore("brainStore", {
+export const useBrainStore = defineStore('brainStore', {
     state: (): BrainStoreState => ({
         brains: {}
     }),
@@ -57,9 +57,9 @@ export const useBrainStore = defineStore("brainStore", {
             const applicationPath = payload.application_path || null;
             const ideHandle: IdeHandle | undefined = payload.ide_handle;
 
-            const status = String(payload.brain.status || "pending").toLowerCase();
+            const status = String(payload.brain.status || 'pending').toLowerCase();
             const microtimeRaw = payload.brain.meta?.microtime;
-            const microtime = typeof microtimeRaw === "number" ? Math.round(microtimeRaw * 1000) : Date.now();
+            const microtime = typeof microtimeRaw === 'number' ? Math.round(microtimeRaw * 1000) : Date.now();
 
             const taskPayload = payload.brain.payload ?? null;
             const taskMeta = payload.brain.meta ?? null;
@@ -73,11 +73,11 @@ export const useBrainStore = defineStore("brainStore", {
             const brain = this.brains[runProcessId];
             brain.updatedAt = new Date().toISOString();
 
-            if (!brain.startedAt && status === "processing") {
+            if (!brain.startedAt && status === 'processing') {
                 brain.startedAt = brain.updatedAt;
             }
 
-            if (eventType === "task") {
+            if (eventType === 'task') {
                 if (!className) return;
 
                 const taskClass = className;
@@ -89,9 +89,9 @@ export const useBrainStore = defineStore("brainStore", {
                 if (taskIndex === -1) {
                     tasks.push({
                         id: taskExecutionId,
-                        name: taskClass.split("\\").pop() || taskClass,
+                        name: taskClass.split('\\').pop() || taskClass,
                         class: taskClass,
-                        status: status as BrainTask["status"],
+                        status: status as BrainTask['status'],
                         payload: taskPayload,
                         timestamp: microtime,
                         firstSeen: microtime,
@@ -101,7 +101,7 @@ export const useBrainStore = defineStore("brainStore", {
                     });
                 } else {
                     const previous = tasks[taskIndex];
-                    const nextStatus = previous.status === "error" && status !== "processing" ? "error" : status;
+                    const nextStatus = previous.status === 'error' && status !== 'processing' ? 'error' : status;
 
                     tasks[taskIndex] = {
                         ...previous,
@@ -145,9 +145,10 @@ export const useBrainStore = defineStore("brainStore", {
                 occurrences.sort((a, b) => a.firstSeen - b.firstSeen);
                 const last = occurrences[occurrences.length - 1];
 
-                const firstProcessing = occurrences.find((o) => o.status === "processing")?.firstSeen ?? null;
+                const firstProcessing = occurrences.find((o) => o.status === 'processing')?.firstSeen ?? null;
 
-                const lastProcessed = [...occurrences].reverse().find((o) => o.status === "processed")?.lastSeen ?? null;
+                const lastProcessed =
+                    [...occurrences].reverse().find((o) => o.status === 'processed')?.lastSeen ?? null;
 
                 let duration: number | null = null;
 
@@ -169,19 +170,19 @@ export const useBrainStore = defineStore("brainStore", {
         },
 
         _computeSummaryStatus(summaryTasks: ProcessSummaryTask[]): string {
-            if (summaryTasks.some((t) => t.status === "error")) {
-                return "error";
+            if (summaryTasks.some((t) => t.status === 'error')) {
+                return 'error';
             }
 
-            if (summaryTasks.some((t) => t.status === "processing")) {
-                return "processing";
+            if (summaryTasks.some((t) => t.status === 'processing')) {
+                return 'processing';
             }
 
-            if (summaryTasks.length > 0 && summaryTasks.every((t) => t.status === "processed")) {
-                return "processed";
+            if (summaryTasks.length > 0 && summaryTasks.every((t) => t.status === 'processed')) {
+                return 'processed';
             }
 
-            return "pending";
+            return 'pending';
         },
 
         _initializeBrainProcess(id: string, applicationPath: string | null, className: string, ideHandle?: IdeHandle) {
@@ -196,7 +197,7 @@ export const useBrainStore = defineStore("brainStore", {
                 process: {
                     id,
                     name: className,
-                    status: "pending",
+                    status: 'pending',
                     tasks: []
                 }
             };
@@ -210,9 +211,13 @@ export const useBrainStore = defineStore("brainStore", {
             if (keys.length <= limit) return;
 
             const oldest = keys.reduce((currentOldest, current) => {
-                const currentTime = this.brains[current].updatedAt ? new Date(this.brains[current].updatedAt!).getTime() : 0;
+                const currentTime = this.brains[current].updatedAt
+                    ? new Date(this.brains[current].updatedAt!).getTime()
+                    : 0;
 
-                const oldestTime = this.brains[currentOldest].updatedAt ? new Date(this.brains[currentOldest].updatedAt!).getTime() : 0;
+                const oldestTime = this.brains[currentOldest].updatedAt
+                    ? new Date(this.brains[currentOldest].updatedAt!).getTime()
+                    : 0;
 
                 return currentTime < oldestTime ? current : currentOldest;
             }, keys[0]);

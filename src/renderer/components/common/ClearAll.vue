@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
-import { useTimeStore } from "@/store/time";
-import { useColorStore } from "@/store/colors";
-import { useGlobalSearchStore } from "@/store/global-search";
-import { usePayloadStore } from "@/store/payload";
-import { TrashIcon } from "@heroicons/vue/24/outline";
-import { useQueriesPayloadStore } from "@/store/queries";
-import { useMailStore } from "@/store/mail";
-import { useJobStore } from "@/store/jobs";
-import { useLogStore } from "@/store/logs";
-import { usePendingRequestsStore } from "@/store/pending-requests";
-import { useQueryDuplicated } from "@/store/query-duplicated";
-import { useScreenStore } from "@/store/screen";
-import { useLivewireStore } from "@/store/livewire";
-import { useBrainStore } from "@/store/brains";
+import { computed, onMounted } from 'vue';
+import { useTimeStore } from '@/store/time';
+import { useColorStore } from '@/store/colors';
+import { useGlobalSearchStore } from '@/store/global-search';
+import { usePayloadStore } from '@/store/payload';
+import { TrashIcon } from '@heroicons/vue/24/outline';
+import { useQueriesPayloadStore } from '@/store/queries';
+import { useMailStore } from '@/store/mail';
+import { useJobStore } from '@/store/jobs';
+import { useLogStore } from '@/store/logs';
+import { usePendingRequestsStore } from '@/store/pending-requests';
+import { useQueryDuplicated } from '@/store/query-duplicated';
+import { useScreenStore } from '@/store/screen';
+import { useLivewireStore } from '@/store/livewire';
+import { useBrainStore } from '@/store/brains';
 
 const timeStore = useTimeStore();
 const colorStore = useColorStore();
@@ -43,20 +43,20 @@ const clearAll = (): void => {
     screenStore.clearAll();
     livewireStore.clear();
     brainStore.clear();
-    pendingRequestsStore.clear("queries");
+    pendingRequestsStore.clear('queries');
 
     setTimeout(() => {
         screenStore.add({
-            screen_name: "home",
+            screen_name: 'home',
             raise_in: 0,
             visible: true,
             pinned: false,
             new_window: false
         });
-        window.ipcRenderer.send("storage.get");
+        window.ipcRenderer.send('storage.get');
     }, 10);
 
-    window.ipcRenderer.send("badge-icon.increment", {
+    window.ipcRenderer.send('badge-icon.increment', {
         reset: true
     });
 };
@@ -73,8 +73,8 @@ const hasPayload = computed(() => {
 });
 
 onMounted(() => {
-    window.ipcRenderer.on("clear", () => clearAll());
-    window.ipcRenderer.on("app:local-shortcut-execute::clear_all", () => clearAll());
+    window.ipcRenderer.on('clear', () => clearAll());
+    window.ipcRenderer.on('app:local-shortcut-execute::clear_all', () => clearAll());
 });
 </script>
 

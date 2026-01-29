@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from "vue";
-import DumpQuery from "@/components/laravel/DumpQuery.vue";
-import VueJsonPretty from "vue-json-pretty";
-import { useLivewireStore } from "@/store/livewire";
-import { LivewirePayload } from "@/types/Payload";
-import SplitPanes from "@/components/split/SplitPanes.vue";
+import { computed, nextTick, onMounted, ref } from 'vue';
+import DumpQuery from '@/components/laravel/DumpQuery.vue';
+import VueJsonPretty from 'vue-json-pretty';
+import { useLivewireStore } from '@/store/livewire';
+import { LivewirePayload } from '@/types/Payload';
+import SplitPanes from '@/components/split/SplitPanes.vue';
 
 const livewireStore = useLivewireStore();
 
@@ -28,17 +28,17 @@ const select = (value: string | undefined) => {
         setTimeout(() => {
             if (sfDumpsErrorsId && selected.value) {
                 sfDump = document.getElementById(`sf-dump-${sfDumpsErrorsId}`);
-                if (sfDump && !sfDump.hasAttribute("has-dump-js") && selected.value.errors.length > 0) {
+                if (sfDump && !sfDump.hasAttribute('has-dump-js') && selected.value.errors.length > 0) {
                     window.Sfdump?.(`sf-dump-${sfDumpsErrorsId}`);
-                    sfDump.setAttribute("has-dump-js", "true");
+                    sfDump.setAttribute('has-dump-js', 'true');
                 }
             }
 
             if (sfDumpsPropertiesId && selected.value) {
                 sfDump = document.getElementById(`sf-dump-${sfDumpsPropertiesId}`);
-                if (sfDump && !sfDump.hasAttribute("has-dump-js") && selected.value.properties.length > 0) {
+                if (sfDump && !sfDump.hasAttribute('has-dump-js') && selected.value.properties.length > 0) {
                     window.Sfdump?.(`sf-dump-${sfDumpsPropertiesId}`);
-                    sfDump.setAttribute("has-dump-js", "true");
+                    sfDump.setAttribute('has-dump-js', 'true');
                 }
             }
         }, 50);
@@ -53,7 +53,12 @@ const totalDuration = computed(() => {
 
     for (const method in profile) {
         const item = profile[method];
-        if (Object.prototype.hasOwnProperty.call(profile, method) && item && typeof item.duration === "number" && !isNaN(item.duration)) {
+        if (
+            Object.prototype.hasOwnProperty.call(profile, method) &&
+            item &&
+            typeof item.duration === 'number' &&
+            !isNaN(item.duration)
+        ) {
             duration += item.duration;
         }
     }
@@ -61,7 +66,8 @@ const totalDuration = computed(() => {
     return duration;
 });
 
-const itemPercentage = (item: { duration: number }) => (totalDuration.value > 0 ? (item.duration / totalDuration.value) * 100 : 0);
+const itemPercentage = (item: { duration: number }) =>
+    totalDuration.value > 0 ? (item.duration / totalDuration.value) * 100 : 0;
 
 const focusItem = (item: { method: string }) => {
     focus.value = item.method;
@@ -109,7 +115,8 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
                             :id="request.request"
                             :class="{
                                 'hover:bg-base-300 hover:rounded-md': request.request !== selected?.request,
-                                'border-primary text-primary rounded-xs bg-base-300': request.request == selected?.request
+                                'border-primary text-primary rounded-xs bg-base-300':
+                                    request.request == selected?.request
                             }"
                             class="p-2 space-y-2 cursor-pointer focus:bg-primary"
                             @click="select(request.request)"
@@ -153,12 +160,28 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
                                             <div
                                                 v-for="(profile, index) in selected.profile"
                                                 :key="index"
-                                                :class="[profile?.graphic_classes, { 'h-[32px] !opacity-100 shadow-lg': focus === profile?.method }]"
+                                                :class="[
+                                                    profile?.graphic_classes,
+                                                    { 'h-[32px] !opacity-100 shadow-lg': focus === profile?.method }
+                                                ]"
                                                 class="progress-bar cursor-pointer opacity-60"
                                                 @mouseover="focusItem(profile)"
                                                 @mouseleave="focus = ''"
-                                                :style="{ width: profile && typeof profile.duration === 'number' && !isNaN(profile.duration) ? itemPercentage(profile) + '%' : '0%' }"
-                                                :title="profile && typeof profile.duration === 'number' && !isNaN(profile.duration) ? itemPercentage(profile).toFixed(1) + '%' : '0%'"
+                                                :style="{
+                                                    width:
+                                                        profile &&
+                                                        typeof profile.duration === 'number' &&
+                                                        !isNaN(profile.duration)
+                                                            ? itemPercentage(profile) + '%'
+                                                            : '0%'
+                                                }"
+                                                :title="
+                                                    profile &&
+                                                    typeof profile.duration === 'number' &&
+                                                    !isNaN(profile.duration)
+                                                        ? itemPercentage(profile).toFixed(1) + '%'
+                                                        : '0%'
+                                                "
                                             ></div>
                                         </div>
 
@@ -169,7 +192,10 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
                                                 @mouseleave="focus = ''"
                                                 :class="[
                                                     profile?.classes || {},
-                                                    { 'bg-neutral text-neutral-content shadow-lg': focus === profile.method },
+                                                    {
+                                                        'bg-neutral text-neutral-content shadow-lg':
+                                                            focus === profile.method
+                                                    },
                                                     { hidden: !profile.hasOwnProperty('method') }
                                                 ]"
                                                 class="border-l-4 !border-r-0 !border-y-base-200 cursor-pointer border items-center hover:bg-neutral hover:text-neutral-content flex justify-between rounded p-2 py-1"
@@ -230,7 +256,9 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
                                     <div>
                                         <div class="text-sm font-semibold text-base-content mb-2">
                                             {{ selected.queries.length }} Queries
-                                            <span class="ml-2 text-xs text-gray-500"> ({{ totalQueriesTime.toFixed(2) }} ms) </span>
+                                            <span class="ml-2 text-xs text-gray-500">
+                                                ({{ totalQueriesTime.toFixed(2) }} ms)
+                                            </span>
                                         </div>
 
                                         <DumpQuery

@@ -1,9 +1,9 @@
 <script setup>
-import { ClipboardIcon } from "@heroicons/vue/24/outline";
+import { ClipboardIcon } from '@heroicons/vue/24/outline';
 
-import { ref } from "vue";
-import IconSave from "@/components/Icons/IconSave.vue";
-import { CheckIcon } from "@heroicons/vue/20/solid";
+import { ref } from 'vue';
+import IconSave from '@/components/Icons/IconSave.vue';
+import { CheckIcon } from '@heroicons/vue/20/solid';
 
 const showCheck = ref(false);
 

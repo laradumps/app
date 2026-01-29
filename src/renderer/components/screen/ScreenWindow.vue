@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { defineProps, onUpdated, nextTick } from "vue";
-import DumpItem from "@/components/dumps/DumpItem.vue";
-import { useSettingsStore } from "@/store/settings";
+import { defineProps, onUpdated, nextTick } from 'vue';
+import DumpItem from '@/components/dumps/DumpItem.vue';
+import { useSettingsStore } from '@/store/settings';
 
 const settingsStore = useSettingsStore();
 
@@ -13,8 +13,8 @@ defineProps<{
 onUpdated(async () => {
     await nextTick();
 
-    document.getElementById("top").scrollIntoView({
-        behavior: "smooth"
+    document.getElementById('top').scrollIntoView({
+        behavior: 'smooth'
     });
 });
 </script>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useTimeStore } from "@/store/time";
+import { computed } from 'vue';
+import { useTimeStore } from '@/store/time';
 
 const timeStore = useTimeStore();
 

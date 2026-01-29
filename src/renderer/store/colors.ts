@@ -1,10 +1,10 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
 type State = {
     colors: string[];
 };
 
-export const useColorStore = defineStore("colorStore", {
+export const useColorStore = defineStore('colorStore', {
     state: (): State => ({
         colors: []
     }),
@@ -21,16 +21,16 @@ export const useColorStore = defineStore("colorStore", {
         },
         match(color: string) {
             switch (color) {
-                case "blue":
-                    return "info";
-                case "red":
-                    return "error";
-                case "orange":
-                    return "warning";
-                case "green":
-                    return "success";
+                case 'blue':
+                    return 'info';
+                case 'red':
+                    return 'error';
+                case 'orange':
+                    return 'warning';
+                case 'green':
+                    return 'success';
                 default:
-                    return "gray";
+                    return 'gray';
             }
         }
     }

@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
-import { Payload } from "@/types/Payload";
+import { defineStore } from 'pinia';
+import { Payload } from '@/types/Payload';
 
-const STORAGE_KEY = "laradumps:saved_dumps";
+const STORAGE_KEY = 'laradumps:saved_dumps';
 
 function loadFromStorage() {
     try {
@@ -9,7 +9,7 @@ function loadFromStorage() {
         if (!raw) return [];
         return JSON.parse(raw);
     } catch (e) {
-        console.error("Failed to load saved dumps from storage", e);
+        console.error('Failed to load saved dumps from storage', e);
         return [];
     }
 }
@@ -18,11 +18,11 @@ function saveToStorage(items: Payload[]) {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch (e) {
-        console.error("Failed to save dumps to storage", e);
+        console.error('Failed to save dumps to storage', e);
     }
 }
 
-export const useSavedDumpsStore = defineStore("savedDumps", {
+export const useSavedDumpsStore = defineStore('savedDumps', {
     state: () => ({
         items: loadFromStorage()
     }),

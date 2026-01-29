@@ -34,7 +34,7 @@ export default function (path: string) {
     // Check for a drive letter prefix so as not to mistake the following
     // path separator as an extra separator at the end of the path that can be
     // disregarded
-    if (path.length >= 2 && isWindowsDeviceRoot(path.charAt(0)) && path.charAt(1) === ":") {
+    if (path.length >= 2 && isWindowsDeviceRoot(path.charAt(0)) && path.charAt(1) === ':') {
         start = 2;
     }
 
@@ -54,14 +54,14 @@ export default function (path: string) {
         }
     }
 
-    if (end === -1) return "";
+    if (end === -1) return '';
     return path.slice(start, end);
 }
 
 function isPathSeparator(char: string) {
-    return char === "/" || char === "\\";
+    return char === '/' || char === '\\';
 }
 
 function isWindowsDeviceRoot(char: string) {
-    return (char >= "A" && char <= "Z") || (char >= "a" && char <= "z");
+    return (char >= 'A' && char <= 'Z') || (char >= 'a' && char <= 'z');
 }

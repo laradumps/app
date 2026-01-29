@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { SparklesIcon } from "@heroicons/vue/24/outline";
+import { SparklesIcon } from '@heroicons/vue/24/outline';
 
 const openUpdateModal = () => {
-    const modal = document.getElementById("update_modal") as HTMLDialogElement;
+    const modal = document.getElementById('update_modal') as HTMLDialogElement;
     modal?.showModal();
 };
 </script>
@@ -14,7 +14,7 @@ const openUpdateModal = () => {
         title="Update Available"
     >
         <SparklesIcon class="h-4 w-4" />
-        {{ $t("settings.update_available") }}
+        {{ $t('settings.update_available') }}
     </button>
 </template>
 

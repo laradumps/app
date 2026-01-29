@@ -1,15 +1,15 @@
-import { ipcRenderer, webFrame, shell } from "electron";
-import express from "express";
-import bodyParser from "body-parser";
+import { ipcRenderer, webFrame, shell } from 'electron';
+import express from 'express';
+import bodyParser from 'body-parser';
 
 window.ipcRenderer = ipcRenderer;
 window.webFrame = webFrame;
 window.shell = shell;
 
-import cors from "cors";
-import fs from "fs";
-import path from "path";
-import os from "os";
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
 const port = 9191;
 const app = express();
@@ -22,7 +22,7 @@ app.use(cors());
 
 app.use(
     bodyParser.urlencoded({
-        limit: "50mb",
+        limit: '50mb',
         extended: true,
         parameterLimit: 50000
     })
@@ -30,15 +30,15 @@ app.use(
 
 app.use(
     bodyParser.json({
-        limit: "50mb"
+        limit: '50mb'
     })
 );
 
 const sendBatch = () => {
     if (batchBuffer.length === 0) return;
 
-    ipcRenderer.send("dump.batches", {
-        type: "batch",
+    ipcRenderer.send('dump.batches', {
+        type: 'batch',
         contents: [...batchBuffer],
         batch_size: batchBuffer.length
     });
@@ -48,11 +48,11 @@ const sendBatch = () => {
     batchTimeout = null;
 };
 
-app.post("/api/dumps", (req, res) => {
+app.post('/api/dumps', (req, res) => {
     const { body } = req;
     body.date_time = new Date();
 
-    if (body.type === "queries") {
+    if (body.type === 'queries') {
         batchBuffer.push({
             type: body.type,
             content: body
@@ -67,7 +67,7 @@ app.post("/api/dumps", (req, res) => {
         return res.send({ id: body.id });
     }
 
-    ipcRenderer.send("dump", {
+    ipcRenderer.send('dump', {
         type: body.type,
         content: body
     });
@@ -75,10 +75,10 @@ app.post("/api/dumps", (req, res) => {
     return res.send({ id: body.id });
 });
 
-app.get("/api/mcp/logs", (req, res) => {
+app.get('/api/mcp/logs', (req, res) => {
     try {
         if (!window.LaraDumps || !window.LaraDumps.logStore) {
-            return res.status(503).send({ error: "Store not initialized" });
+            return res.status(503).send({ error: 'Store not initialized' });
         }
         res.send(window.LaraDumps.logStore.logs);
     } catch (e) {
@@ -86,10 +86,10 @@ app.get("/api/mcp/logs", (req, res) => {
     }
 });
 
-app.get("/api/mcp/queries", (req, res) => {
+app.get('/api/mcp/queries', (req, res) => {
     try {
         if (!window.LaraDumps || !window.LaraDumps.queriesStore) {
-            return res.status(503).send({ error: "Store not initialized" });
+            return res.status(503).send({ error: 'Store not initialized' });
         }
         res.send(window.LaraDumps.queriesStore.payload);
     } catch (e) {
@@ -97,10 +97,10 @@ app.get("/api/mcp/queries", (req, res) => {
     }
 });
 
-app.get("/api/mcp/jobs", (req, res) => {
+app.get('/api/mcp/jobs', (req, res) => {
     try {
         if (!window.LaraDumps || !window.LaraDumps.jobStore) {
-            return res.status(503).send({ error: "Store not initialized" });
+            return res.status(503).send({ error: 'Store not initialized' });
         }
         res.send(window.LaraDumps.jobStore.jobs);
     } catch (e) {
@@ -108,10 +108,10 @@ app.get("/api/mcp/jobs", (req, res) => {
     }
 });
 
-app.get("/api/mcp/brains", (req, res) => {
+app.get('/api/mcp/brains', (req, res) => {
     try {
         if (!window.LaraDumps || !window.LaraDumps.brainStore) {
-            return res.status(503).send({ error: "Store not initialized" });
+            return res.status(503).send({ error: 'Store not initialized' });
         }
         res.send(window.LaraDumps.brainStore.brains);
     } catch (e) {
@@ -120,22 +120,22 @@ app.get("/api/mcp/brains", (req, res) => {
 });
 
 const server = app
-    .listen(port, "0.0.0.0", () => {})
-    .on("error", (err) => {
+    .listen(port, '0.0.0.0', () => {})
+    .on('error', (err) => {
         console.error(err);
-        setTimeout(() => ipcRenderer.send("preload:server-failed", err), 3000);
+        setTimeout(() => ipcRenderer.send('preload:server-failed', err), 3000);
     });
 
-ipcRenderer.on("server:close", (event, arg) => {
+ipcRenderer.on('server:close', (event, arg) => {
     sendBatch();
     server.close(() => {
-        event.sender.send("app:quit", arg);
+        event.sender.send('app:quit', arg);
     });
 });
 
-ipcRenderer.on("preload:create-static-tmp-file", (event, value) => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "temp-"));
-    const tmpFile = path.join(tmpDir, "temp.html");
+ipcRenderer.on('preload:create-static-tmp-file', (event, value) => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'temp-'));
+    const tmpFile = path.join(tmpDir, 'temp.html');
 
     fs.writeFileSync(tmpFile, value.content);
 

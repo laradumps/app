@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted, watch } from "vue";
-import { UpdateInfo } from "electron-updater";
-import { CompletedInfo, DownloadInfo } from "@/types/Updater";
-import moment from "moment";
-import IconDownload from "@/components/Icons/IconDownload.vue";
-import { useSettingsStore } from "@/store/settings";
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue';
+import { UpdateInfo } from 'electron-updater';
+import { CompletedInfo, DownloadInfo } from '@/types/Updater';
+import moment from 'moment';
+import IconDownload from '@/components/Icons/IconDownload.vue';
+import { useSettingsStore } from '@/store/settings';
 
 const settingsStore = useSettingsStore();
 
@@ -19,27 +19,27 @@ const progressPercentage = computed(() => Math.round(progress.value * 100));
 
 const releaseNotesHtml = computed<string>(() => {
     const rn: any = (updateInfo.value as any)?.releaseNotes;
-    if (!rn) return "";
-    if (typeof rn === "string") return rn;
+    if (!rn) return '';
+    if (typeof rn === 'string') return rn;
     if (Array.isArray(rn)) {
         return rn
             .map((item) => {
-                const title = item?.version ? `<h2>${String(item.version)}</h2>` : "";
-                const body = item?.note || item?.notes || "";
+                const title = item?.version ? `<h2>${String(item.version)}</h2>` : '';
+                const body = item?.note || item?.notes || '';
                 return `${title}\n<div>${String(body)}</div>`;
             })
-            .join("\n<hr/>\n");
+            .join('\n<hr/>\n');
     }
     try {
         return String(rn);
     } catch {
-        return "";
+        return '';
     }
 });
 
 const install = (): void => {
     downloading.value = true;
-    window.ipcRenderer.send("main:download-update");
+    window.ipcRenderer.send('main:download-update');
 };
 
 const sanitizeReleaseNotes = async (): Promise<void> => {
@@ -48,10 +48,10 @@ const sanitizeReleaseNotes = async (): Promise<void> => {
     if (!releaseNotes.value) return;
 
     releaseNotes.value.replaceWith(releaseNotes.value.cloneNode(true));
-    releaseNotes.value = document.getElementById("release-notes") as HTMLElement;
+    releaseNotes.value = document.getElementById('release-notes') as HTMLElement;
 
-    releaseNotes.value?.querySelectorAll("a").forEach((anchor) => {
-        const text = document.createTextNode(anchor.textContent || "");
+    releaseNotes.value?.querySelectorAll('a').forEach((anchor) => {
+        const text = document.createTextNode(anchor.textContent || '');
         anchor.replaceWith(text);
     });
 };
@@ -62,19 +62,19 @@ const onUpdateAvailable = (_: any, arg: UpdateInfo) => {
 };
 
 const onUpdateInfo = (_: any, args: UpdateInfo): void => {
-    if (settingsStore.settings.check_for_updates === "manual_download") return;
+    if (settingsStore.settings.check_for_updates === 'manual_download') return;
 
-    const baseURL = "https://github.com/laradumps/app/releases/download/";
+    const baseURL = 'https://github.com/laradumps/app/releases/download/';
     const tag = (args as any).tag;
     const files = args.files || [];
 
-    const dmgFile = files.find((file) => file.url.includes("dmg"));
+    const dmgFile = files.find((file) => file.url.includes('dmg'));
     if (!dmgFile) return;
 
     const downloadURL = `${baseURL}${tag}/${dmgFile.url}`;
 
     loading.value = true;
-    window.ipcRenderer.send("main:download-progress-info", downloadURL);
+    window.ipcRenderer.send('main:download-progress-info', downloadURL);
 };
 
 const onDownloadProgress = (_: any, args: DownloadInfo): void => {
@@ -83,7 +83,7 @@ const onDownloadProgress = (_: any, args: DownloadInfo): void => {
 
 const onDownloadComplete = (_: any, args: CompletedInfo): void => {
     if (!downloadCompleted.value) {
-        window.ipcRenderer.send("main:download-complete", args.path);
+        window.ipcRenderer.send('main:download-complete', args.path);
     }
 
     downloadCompleted.value = true;
@@ -93,17 +93,17 @@ const onDownloadComplete = (_: any, args: CompletedInfo): void => {
 watch(releaseNotesHtml, () => sanitizeReleaseNotes());
 
 onMounted(() => {
-    window.ipcRenderer.on("update-available", onUpdateAvailable);
-    window.ipcRenderer.on("autoUpdater:update-info", onUpdateInfo);
-    window.ipcRenderer.on("autoUpdater:download-progress", onDownloadProgress);
-    window.ipcRenderer.on("autoUpdater:download-complete", onDownloadComplete);
+    window.ipcRenderer.on('update-available', onUpdateAvailable);
+    window.ipcRenderer.on('autoUpdater:update-info', onUpdateInfo);
+    window.ipcRenderer.on('autoUpdater:download-progress', onDownloadProgress);
+    window.ipcRenderer.on('autoUpdater:download-complete', onDownloadComplete);
 });
 
 onUnmounted(() => {
-    window.ipcRenderer.removeListener("update-available", onUpdateAvailable);
-    window.ipcRenderer.removeListener("autoUpdater:update-info", onUpdateInfo);
-    window.ipcRenderer.removeListener("autoUpdater:download-progress", onDownloadProgress);
-    window.ipcRenderer.removeListener("autoUpdater:download-complete", onDownloadComplete);
+    window.ipcRenderer.removeListener('update-available', onUpdateAvailable);
+    window.ipcRenderer.removeListener('autoUpdater:update-info', onUpdateInfo);
+    window.ipcRenderer.removeListener('autoUpdater:download-progress', onDownloadProgress);
+    window.ipcRenderer.removeListener('autoUpdater:download-complete', onDownloadComplete);
 });
 </script>
 
@@ -114,19 +114,25 @@ onUnmounted(() => {
             class="modal"
         >
             <div class="modal-box w-11/12 max-w-5xl">
-                <div class="font-bold text-lg text-center">✨ {{ $t("app_update_info.update_available") }}</div>
+                <div class="font-bold text-lg text-center">✨ {{ $t('app_update_info.update_available') }}</div>
 
                 <div class="mt-2 space-y-3">
                     <div class="card card-side bg-neutral shadow-xl">
                         <div class="select-none space-y-3 card-body text-neutral-content/80">
                             <div class="flex justify-between">
                                 <div>
-                                    <h2 class="card-title">{{ $t("app_update_info.version") }}</h2>
+                                    <h2 class="card-title">{{ $t('app_update_info.version') }}</h2>
                                     <p>{{ updateInfo.version }}</p>
                                 </div>
                                 <div>
-                                    <h2 class="card-title">{{ $t("app_update_info.release_date") }}</h2>
-                                    <p>{{ updateInfo.releaseDate ? moment(updateInfo.releaseDate as any).format("MMM Do YY") : "" }}</p>
+                                    <h2 class="card-title">{{ $t('app_update_info.release_date') }}</h2>
+                                    <p>
+                                        {{
+                                            updateInfo.releaseDate
+                                                ? moment(updateInfo.releaseDate as any).format('MMM Do YY')
+                                                : ''
+                                        }}
+                                    </p>
                                 </div>
                             </div>
 
@@ -153,7 +159,7 @@ onUnmounted(() => {
                             class="btn btn-secondary"
                             :disabled="downloading"
                         >
-                            {{ $t("app_update_info.not_now") }}
+                            {{ $t('app_update_info.not_now') }}
                         </button>
                     </form>
                     <button
@@ -162,7 +168,7 @@ onUnmounted(() => {
                         @click="install"
                     >
                         <IconDownload class="w-5" />
-                        {{ $t("app_update_info.install") }}
+                        {{ $t('app_update_info.install') }}
                     </button>
                 </div>
             </div>

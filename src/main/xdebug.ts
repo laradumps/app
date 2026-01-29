@@ -1,80 +1,80 @@
-import { BrowserWindow, ipcMain, IpcMainEvent } from "electron";
-import fs from "fs";
-import XDebugServer from "./xdebug-server";
+import { BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
+import fs from 'fs';
+import XDebugServer from './xdebug-server';
 
 const xdebugServer = XDebugServer.getInstance();
 
 export const init = async (mainWindow: BrowserWindow) => {
-    ipcMain.on("send-xdebug-command", async (event, command) => {
+    ipcMain.on('send-xdebug-command', async (event, command) => {
         try {
             xdebugServer.sendCommand(command);
             const response = await xdebugServer.getResponse();
-            event.reply("xdebug-response", response);
+            event.reply('xdebug-response', response);
         } catch (error) {
-            event.reply("xdebug-error", error.message);
+            event.reply('xdebug-error', error.message);
         }
     });
 
-    ipcMain.on("read-file", (event, filePath) => {
-        fs.readFile(filePath, "utf-8", (err, data) => {
+    ipcMain.on('read-file', (event, filePath) => {
+        fs.readFile(filePath, 'utf-8', (err, data) => {
             if (err) {
-                event.reply("file-read-error", err.message);
+                event.reply('file-read-error', err.message);
             } else {
-                event.reply("file-read-success", data);
+                event.reply('file-read-success', data);
             }
         });
     });
 
-    ipcMain.on("connect-xdebug", (event) => {
+    ipcMain.on('connect-xdebug', (event) => {
         try {
-            event.reply("xdebug-connected", true);
+            event.reply('xdebug-connected', true);
         } catch (error) {
-            event.reply("xdebug-disconnected", false);
+            event.reply('xdebug-disconnected', false);
         }
     });
 
-    ipcMain.on("disconnect-xdebug", (event) => {
+    ipcMain.on('disconnect-xdebug', (event) => {
         if (xdebugServer) {
             xdebugServer.closeClient();
-            event.reply("xdebug-disconnected");
+            event.reply('xdebug-disconnected');
         }
     });
 
-    ipcMain.on("main:setting-get-xdebug-environments", (event: IpcMainEvent, applicationPath: string): void => {
-        const file = applicationPath + "/laradumps.yaml";
+    ipcMain.on('main:setting-get-xdebug-environments', (event: IpcMainEvent, applicationPath: string): void => {
+        const file = applicationPath + '/laradumps.yaml';
 
         try {
-            const yaml = require("js-yaml");
-            const fs = require("fs");
+            const yaml = require('js-yaml');
+            const fs = require('fs');
 
-            const readFile = yaml.load(fs.readFileSync(file, "utf8"));
+            const readFile = yaml.load(fs.readFileSync(file, 'utf8'));
 
             const parseYaml = {
                 workdir: readFile.app.workdir,
                 project_path: readFile.app.project_path,
-                separator: readFile.app?.separator ?? "/",
+                separator: readFile.app?.separator ?? '/',
                 wsl_config: readFile.app.wsl_config,
-                client_host: readFile.xdebug?.client_host ?? "0.0.0.0",
+                client_host: readFile.xdebug?.client_host ?? '0.0.0.0',
                 client_port: readFile.xdebug?.client_port ?? 9003
             };
 
             xdebugServer.startClient(mainWindow, parseYaml);
 
-            event.reply("settings:env-xdebug-file-contents", parseYaml);
+            event.reply('settings:env-xdebug-file-contents', parseYaml);
         } catch (e) {
             console.error(e);
             const parseYaml = {
-                workdir: "",
-                project_path: "",
-                separator: "/",
-                wsl_config: "",
-                client_host: "0.0.0.0",
+                workdir: '',
+                project_path: '',
+                separator: '/',
+                wsl_config: '',
+                client_host: '0.0.0.0',
                 client_port: 9003
             };
 
             xdebugServer.startClient(mainWindow, parseYaml);
 
-            event.reply("settings:env-xdebug-file-contents");
+            event.reply('settings:env-xdebug-file-contents');
         }
     });
 };

@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
-import { LivewirePayload } from "@/types/Payload";
+import { defineStore } from 'pinia';
+import { LivewirePayload } from '@/types/Payload';
 
-export const useLivewireStore = defineStore("livewire", {
+export const useLivewireStore = defineStore('livewire', {
     state: () => ({
         requests: [] as LivewirePayload[]
     }),

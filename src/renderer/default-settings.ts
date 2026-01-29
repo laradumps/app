@@ -1,29 +1,29 @@
-import { Settings } from "@/types/settings.type";
+import { Settings } from '@/types/settings.type';
 
 export const DEFAULT_SETTINGS: Settings = {
-    version: "",
-    theme: "dark",
-    language: "en",
-    check_for_updates: "auto_download",
-    ide_handler: "phpstorm://open?file={filepath}&line={line}",
-    auto_launch: "disabled",
-    scroll_direction: "top",
-    dump_order: "normal",
+    version: '',
+    theme: 'dark',
+    language: 'en',
+    check_for_updates: 'auto_download',
+    ide_handler: 'phpstorm://open?file={filepath}&line={line}',
+    auto_launch: 'disabled',
+    scroll_direction: 'top',
+    dump_order: 'normal',
     shortcuts: {
         always_on_top: {
-            originalValue: process.platform === "darwin" ? "⌥+⇧+T" : "Ctrl+Shift+T",
-            keys: process.platform === "darwin" ? "Alt+Shift+T" : "Ctrl+Shift+T",
-            label: "settings.shortcut.alwaysOnTop"
+            originalValue: process.platform === 'darwin' ? '⌥+⇧+T' : 'Ctrl+Shift+T',
+            keys: process.platform === 'darwin' ? 'Alt+Shift+T' : 'Ctrl+Shift+T',
+            label: 'settings.shortcut.alwaysOnTop'
         },
         clear_all: {
-            originalValue: process.platform === "darwin" ? "⌥+⇧+K" : "Ctrl+Shift+K",
-            keys: process.platform === "darwin" ? "Alt+Shift+K" : "Ctrl+Shift+K",
-            label: "settings.shortcut.clear"
+            originalValue: process.platform === 'darwin' ? '⌥+⇧+K' : 'Ctrl+Shift+K',
+            keys: process.platform === 'darwin' ? 'Alt+Shift+K' : 'Ctrl+Shift+K',
+            label: 'settings.shortcut.clear'
         },
         global_search: {
-            originalValue: process.platform === "darwin" ? "⌘+K" : "Ctrl+K",
-            keys: "CommandOrControl+K",
-            label: "settings.shortcut.globalSearch"
+            originalValue: process.platform === 'darwin' ? '⌘+K' : 'Ctrl+K',
+            keys: 'CommandOrControl+K',
+            label: 'settings.shortcut.globalSearch'
         }
     },
     window_width: 760,
