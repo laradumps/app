@@ -11,6 +11,7 @@ import { useQueriesPayloadStore } from '@/store/queries';
 import { useCurrentProject } from '@/store/current-project';
 import { useMailStore } from '@/store/mail';
 import { useLivewireStore } from '@/store/livewire';
+import { useClearAll } from '@/composables/useClearAll';
 
 import Toasters from '@/components/common/Toasters.vue';
 import TheAppUpdateInfo from '@/components/app/TheAppUpdateInfo.vue';
@@ -26,6 +27,8 @@ const currentProjectStore = useCurrentProject();
 const mailStore = useMailStore();
 const livewireStore = useLivewireStore();
 
+const { clear } = useClearAll();
+
 const exposeMcp = () => {
     if (settingsStore.settings.mcp_enabled) {
         window.LaraDumps = {
@@ -37,7 +40,8 @@ const exposeMcp = () => {
             payloadStore,
             currentProjectStore,
             mailStore,
-            livewireStore
+            livewireStore,
+            clearAll: () => clear()
         };
     } else {
         // @ts-ignore

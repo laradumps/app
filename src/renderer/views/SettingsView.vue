@@ -29,6 +29,7 @@ const mcpTools = ref([
     { name: 'get_project_info', description: 'Get current project information' },
     { name: 'get_mails', description: 'Get all captured emails' },
     { name: 'get_livewire_events', description: 'Get all captured Livewire events' },
+    { name: 'clear_dumps', description: 'Clears all dumps/events from the main application screen' },
     { name: 'search_dumps', description: 'Search across all captured dumps, queries, logs, and mails' },
     { name: 'analyze_last_exception', description: 'Analyze the most recent exception or error log (Prompt)' },
     { name: 'summarize_logs', description: 'Summarize the recent application logs (Prompt)' },

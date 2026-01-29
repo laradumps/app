@@ -169,68 +169,54 @@ app.get('/api/mcp/search', (req, res) => {
         if (!q) {
             return res.send([]);
         }
-        const query = q.toLowerCase();
-        const results = [];
-
-        if (window.LaraDumps) {
-            if (window.LaraDumps.logStore) {
-                const logs = Object.values(window.LaraDumps.logStore.logs || {}).filter((log) =>
-                    JSON.stringify(log).toLowerCase().includes(query)
-                );
-                if (logs.length > 0) results.push({ type: 'logs', items: logs });
-            }
-
-            if (window.LaraDumps.queriesStore) {
-                const queries = (window.LaraDumps.queriesStore.payload || []).filter((item) =>
-                    JSON.stringify(item).toLowerCase().includes(query)
-                );
-                if (queries.length > 0) results.push({ type: 'queries', items: queries });
-            }
-
-            if (window.LaraDumps.payloadStore) {
-                const dumps = (window.LaraDumps.payloadStore.payload || []).filter((item) =>
-                    JSON.stringify(item).toLowerCase().includes(query)
-                );
-                if (dumps.length > 0) results.push({ type: 'dumps', items: dumps });
-            }
-
-            if (window.LaraDumps.mailStore) {
-                const mails = (window.LaraDumps.mailStore.mails || []).filter((item) =>
-                    JSON.stringify(item).toLowerCase().includes(query)
-                );
-                if (mails.length > 0) results.push({ type: 'mails', items: mails });
-            }
-        }
-
-        res.send(results);
+        window.ipcRenderer.send('global-search', q);
+        window.ipcRenderer.once('global-search.reply', (e, args) => {
+            res.send(args);
+        });
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
 });
 
-const server = app
-    .listen(port, '0.0.0.0', () => {})
-    .on('error', (err) => {
-        console.error(err);
-        setTimeout(() => ipcRenderer.send('preload:server-failed', err), 3000);
-    });
-
-ipcRenderer.on('server:close', (event, arg) => {
-    sendBatch();
-    server.close(() => {
-        event.sender.send('app:quit', arg);
-    });
+app.post('/api/mcp/clear-dumps', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.clearAll) {
+            return res.status(503).send({ error: 'Store or clearAll not initialized' });
+        }
+        window.LaraDumps.clearAll();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
 });
 
-ipcRenderer.on('preload:create-static-tmp-file', (event, value) => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'temp-'));
-    const tmpFile = path.join(tmpDir, 'temp.html');
+async function startServer() {
+    const server = app
+        .listen(port, '0.0.0.0', () => {})
+        .on('error', (err) => {
+            console.error(err);
+            setTimeout(() => ipcRenderer.send('preload:server-failed', err), 3000);
+        });
 
-    fs.writeFileSync(tmpFile, value.content);
-
-    app.get(`/${value.name}.html`, (req, res) => {
-        res.sendFile(tmpFile);
+    ipcRenderer.on('server:close', (event, arg) => {
+        sendBatch();
+        server.close(() => {
+            event.sender.send('app:quit', arg);
+        });
     });
 
-    app.use(express.static(path.dirname(tmpFile)));
-});
+    ipcRenderer.on('preload:create-static-tmp-file', (event, value) => {
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'temp-'));
+        const tmpFile = path.join(tmpDir, 'temp.html');
+
+        fs.writeFileSync(tmpFile, value.content);
+
+        app.get(`/${value.name}.html`, (req, res) => {
+            res.sendFile(tmpFile);
+        });
+
+        app.use(express.static(path.dirname(tmpFile)));
+    });
+}
+
+startServer();

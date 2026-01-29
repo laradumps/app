@@ -160,6 +160,31 @@ server.registerTool('get_livewire_events', { description: 'Get all captured Live
 });
 
 server.registerTool(
+    'clear_dumps',
+    { description: 'Clears all dumps/events from the main application screen' },
+    async () => {
+        try {
+            const response = await fetch(`${API_BASE}/clear-dumps`, {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to clear dumps: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (data.error) return { content: [{ type: 'text', text: `Error: ${data.error}` }] };
+
+            return { content: [{ type: 'text', text: 'All dumps have been cleared successfully.' }] };
+        } catch (error) {
+            return {
+                content: [{ type: 'text', text: `Error: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    }
+);
+
+server.registerTool(
     'search_dumps',
     {
         description: 'Search across all captured dumps, queries, logs, and mails',
