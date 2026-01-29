@@ -110,8 +110,20 @@ server.registerTool('get_jobs', { description: 'Get captured background jobs' },
 server.registerTool('get_brains', { description: "Get collected 'Brains' data" }, async () => {
     const data = await fetchData('brains');
     if (data.error) return { content: [{ type: 'text', text: `Error: ${data.error}` }] };
+
+    let context = '';
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/r2luna/brain/main/README.md');
+        if (response.ok) {
+            const text = await response.text();
+            context = `\n\n--- Context (Brain Documentation) ---\n${text}\n-------------------------------------\n`;
+        }
+    } catch (error) {
+        // Silently fail to fetch documentation to not break the tool
+    }
+
     return {
-        content: [{ type: 'text', text: JSON.stringify(data, null, 2) }]
+        content: [{ type: 'text', text: `${JSON.stringify(data, null, 2)}${context}` }]
     };
 });
 
