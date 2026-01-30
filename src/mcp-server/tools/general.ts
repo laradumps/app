@@ -38,6 +38,28 @@ async function fetchTool(endpoint: string): Promise<McpToolResponse> {
     return textResponse(JSON.stringify(data, null, 2));
 }
 
+async function executeCommand(endpoint: string, successMessage: string): Promise<McpToolResponse> {
+    try {
+        const response = await fetch(`${API_URL}/${endpoint}`, {
+            method: 'POST'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+            return errorResponse(data.error);
+        }
+
+        return textResponse(successMessage);
+    } catch (error) {
+        return errorResponse(error);
+    }
+}
+
 async function fetchBrainsTool(): Promise<McpToolResponse> {
     const data = await fetchData('brains');
 
@@ -93,26 +115,22 @@ export function registerGeneralTools(server: McpServer) {
     server.registerTool(
         'clear_dumps',
         { description: 'Clears all dumps/events from the main application screen' },
-        async () => {
-            try {
-                const response = await fetch(`${API_URL}/clear-dumps`, {
-                    method: 'POST'
-                });
+        () => executeCommand('clear-dumps', 'All dumps have been cleared successfully.')
+    );
 
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
+    server.registerTool('confetti', { description: 'Fires a confetti animation on the main application screen' }, () =>
+        executeCommand('confetti', 'Confetti fired successfully!')
+    );
 
-                const data = await response.json();
+    server.registerTool('clear_jobs', { description: 'Clears all captured background jobs' }, () =>
+        executeCommand('clear-jobs', 'All jobs have been cleared successfully.')
+    );
 
-                if (data.error) {
-                    return errorResponse(data.error);
-                }
+    server.registerTool('clear_mails', { description: 'Clears all captured emails' }, () =>
+        executeCommand('clear-mails', 'All emails have been cleared successfully.')
+    );
 
-                return textResponse('All dumps have been cleared successfully.');
-            } catch (error) {
-                return errorResponse(error);
-            }
-        }
+    server.registerTool('clear_logs', { description: 'Clears all captured logs' }, () =>
+        executeCommand('clear-logs', 'All logs have been cleared successfully.')
     );
 }

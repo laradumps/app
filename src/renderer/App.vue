@@ -12,6 +12,7 @@ import { useCurrentProject } from '@/store/current-project';
 import { useMailStore } from '@/store/mail';
 import { useLivewireStore } from '@/store/livewire';
 import { useClearAll } from '@/composables/useClearAll';
+import JSConfetti from 'js-confetti';
 
 import Toasters from '@/components/common/Toasters.vue';
 import TheAppUpdateInfo from '@/components/app/TheAppUpdateInfo.vue';
@@ -28,6 +29,7 @@ const mailStore = useMailStore();
 const livewireStore = useLivewireStore();
 
 const { clear } = useClearAll();
+const fireConfetti = () => new JSConfetti().addConfetti();
 
 const exposeMcp = () => {
     if (settingsStore.settings.mcp_enabled) {
@@ -41,7 +43,8 @@ const exposeMcp = () => {
             currentProjectStore,
             mailStore,
             livewireStore,
-            clearAll: () => clear()
+            clearAll: () => clear(),
+            confetti: () => fireConfetti()
         };
     } else {
         // @ts-ignore

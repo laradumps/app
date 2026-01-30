@@ -178,6 +178,54 @@ app.get('/api/mcp/search', (req, res) => {
     }
 });
 
+app.post('/api/mcp/confetti', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.confetti) {
+            return res.status(503).send({ error: 'Store or confetti not initialized' });
+        }
+        window.LaraDumps.confetti();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.post('/api/mcp/clear-jobs', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.jobStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        window.LaraDumps.jobStore.clear();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.post('/api/mcp/clear-mails', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.mailStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        window.LaraDumps.mailStore.clear();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.post('/api/mcp/clear-logs', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.logStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        window.LaraDumps.logStore.clear();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
 app.post('/api/mcp/clear-dumps', (req, res) => {
     try {
         if (!window.LaraDumps || !window.LaraDumps.clearAll) {
