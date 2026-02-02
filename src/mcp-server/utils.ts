@@ -16,7 +16,7 @@ export async function fetchData(endpoint: string, data?: any) {
         const response = await fetch(`${API_BASE}/${endpoint}`, options);
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
+            return { error: `Failed to fetch ${endpoint}: ${response.statusText}` };
         }
 
         return await response.json();

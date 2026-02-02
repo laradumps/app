@@ -256,7 +256,7 @@ app.post('/api/mcp/toggle-env', (req, res) => {
             const targetEnv = envs.find((e) => e.value === env);
 
             if (targetEnv) {
-                let newState = targetEnv.selected;
+                let newState;
                 if (action === 'enable') newState = true;
                 else if (action === 'disable') newState = false;
                 else newState = !targetEnv.selected;

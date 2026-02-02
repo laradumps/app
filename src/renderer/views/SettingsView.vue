@@ -79,7 +79,7 @@ const copyMcpCommand = (command: string) => {
 };
 
 const copyMcpConfig = () => {
-    let config = {};
+    let config: {};
 
     if (mcpClient.value === 'cursor') {
         config = {
@@ -262,7 +262,7 @@ const saveShortcuts = async () => {
     editMode.value = false;
 };
 
-watch(settingsStore.settings, async (value, oldValue) => {
+watch(settingsStore.settings, async (value) => {
     if (!settingsStore.settings.show_badge_count) {
         window.ipcRenderer.send('badge-icon.increment', {
             reset: true

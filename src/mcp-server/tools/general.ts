@@ -45,7 +45,7 @@ async function executeCommand(endpoint: string, successMessage: string): Promise
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP Error: ${response.statusText}`);
+            return errorResponse(`HTTP Error: ${response.statusText}`);
         }
 
         const data = await response.json();
