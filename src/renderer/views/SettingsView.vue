@@ -94,7 +94,7 @@ const copyMcpConfig = () => {
         config = {
             $schema: 'https://opencode.ai/config.json',
             mcp: {
-                laradumps: {
+                LaraDumps: {
                     type: 'remote',
                     url: `http://127.0.0.1:${settingsStore.settings.mcp_port}/sse`
                 }
