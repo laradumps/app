@@ -20,20 +20,27 @@ const mcpLogs = ref<string[]>([]);
 const activeMcpTab = ref('setup');
 
 const mcpTools = ref([
-    { name: 'get_logs', description: 'Get all captured logs' },
+    { name: 'get_logs', description: 'Get all logs' },
     { name: 'get_log_details', description: 'Get full details of a specific log by ID' },
-    { name: 'get_queries', description: 'Get captured SQL queries' },
-    { name: 'get_jobs', description: 'Get captured background jobs' },
+    { name: 'get_queries', description: 'Get SQL queries' },
+    { name: 'get_jobs', description: 'Get jobs' },
     { name: 'get_brains', description: "Get collected 'Brains' data" },
-    { name: 'get_dumps', description: 'Get all captured dumps' },
+    { name: 'get_dumps', description: 'Get all dumps' },
     { name: 'get_project_info', description: 'Get current project information' },
-    { name: 'get_mails', description: 'Get all captured emails' },
-    { name: 'get_livewire_events', description: 'Get all captured Livewire events' },
-    { name: 'clear_dumps', description: 'Clears all dumps/events from the main application screen' },
-    { name: 'search_dumps', description: 'Search across all captured dumps, queries, logs, and mails' },
+    { name: 'get_mails', description: 'Get all emails' },
+    { name: 'get_livewire_components', description: 'Get all Livewire components' },
+    { name: 'search_dumps', description: 'Search across all dumps, queries, logs, and mails' },
     { name: 'analyze_last_exception', description: 'Analyze the most recent exception or error log (Prompt)' },
     { name: 'summarize_logs', description: 'Summarize the recent application logs (Prompt)' },
     { name: 'optimize_latest_query', description: 'Analyze and optimize the latest SQL query (Prompt)' }
+]);
+
+const mcpActions = ref([
+    { name: 'clear_dumps', description: 'Clears all dumps' },
+    { name: 'clear_jobs', description: 'Clears all jobs' },
+    { name: 'clear_mails', description: 'Clears all emails' },
+    { name: 'clear_logs', description: 'Clears all logs' },
+    { name: 'confetti', description: 'Fires a confetti animation on the main application screen' }
 ]);
 
 const settingsStore = useSettingsStore();
@@ -799,7 +806,7 @@ const saveCustomTheme = async () => {
                             v-if="activeMcpTab === 'setup'"
                             class="flex flex-col gap-2"
                         >
-                            <fieldset class="fieldset bg-base-200 border border-base-300 p-4 rounded-box">
+                            <fieldset class="fieldset bg-base-100 border border-base-300 p-4 rounded-box">
                                 <label class="fieldset-label justify-between cursor-pointer w-full">
                                     <span class="text-base font-bold text-base-content">Enable MCP Server</span>
                                     <input
@@ -882,24 +889,50 @@ const saveCustomTheme = async () => {
                             v-if="activeMcpTab === 'tools'"
                             class="flex flex-col gap-3"
                         >
-                            <div class="overflow-x-auto border border-base-300 rounded-lg">
-                                <table class="table table-sm table-zebra">
-                                    <thead>
-                                        <tr class="bg-base-200">
-                                            <th>Tool Name</th>
-                                            <th>Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr
-                                            v-for="tool in mcpTools"
-                                            :key="tool.name"
-                                        >
-                                            <td class="font-mono text-xs font-bold">{{ tool.name }}</td>
-                                            <td class="text-xs">{{ tool.description }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="flex flex-col gap-2">
+                                <h3 class="font-bold text-sm">Data Retrieval & Analysis</h3>
+                                <div class="overflow-x-auto border border-base-300 rounded-lg">
+                                    <table class="table table-sm table-zebra">
+                                        <thead>
+                                            <tr class="bg-base-200">
+                                                <th>Tool Name</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr
+                                                v-for="tool in mcpTools"
+                                                :key="tool.name"
+                                            >
+                                                <td class="font-mono text-xs font-bold">{{ tool.name }}</td>
+                                                <td class="text-xs">{{ tool.description }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <h3 class="font-bold text-sm">Actions</h3>
+                                <div class="overflow-x-auto border border-base-300 rounded-lg">
+                                    <table class="table table-sm table-zebra">
+                                        <thead>
+                                            <tr class="bg-base-200">
+                                                <th>Action Name</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr
+                                                v-for="action in mcpActions"
+                                                :key="action.name"
+                                            >
+                                                <td class="font-mono text-xs font-bold">{{ action.name }}</td>
+                                                <td class="text-xs">{{ action.description }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
 

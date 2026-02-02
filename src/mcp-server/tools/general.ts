@@ -97,7 +97,7 @@ export function registerGeneralTools(server: McpServer) {
 
     server.registerTool('get_mails', { description: 'Get all captured emails' }, () => fetchTool('mails'));
 
-    server.registerTool('get_livewire_events', { description: 'Get all captured Livewire events' }, () =>
+    server.registerTool('get_livewire_components', { description: 'Get all Livewire components' }, () =>
         fetchTool('livewire')
     );
 

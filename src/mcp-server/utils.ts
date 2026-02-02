@@ -1,8 +1,19 @@
 const API_BASE = 'http://0.0.0.0:9191/api/mcp';
 
-export async function fetchData(endpoint: string) {
+export async function fetchData(endpoint: string, data?: any) {
     try {
-        const response = await fetch(`${API_BASE}/${endpoint}`);
+        const options: RequestInit = {
+            method: data ? 'POST' : 'GET'
+        };
+
+        if (data) {
+            options.headers = {
+                'Content-Type': 'application/json'
+            };
+            options.body = JSON.stringify(data);
+        }
+
+        const response = await fetch(`${API_BASE}/${endpoint}`, options);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
