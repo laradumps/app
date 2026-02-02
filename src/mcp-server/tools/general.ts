@@ -101,36 +101,49 @@ export function registerGeneralTools(server: McpServer) {
         fetchTool('livewire')
     );
 
+    server.registerTool('confetti', { description: 'Fire confetti implementation' }, () =>
+        executeCommand('confetti', 'Confetti fired!')
+    );
+
+    server.registerTool('clear_jobs', { description: 'Clear all captured jobs' }, () =>
+        executeCommand('clear-jobs', 'Jobs cleared!')
+    );
+
+    server.registerTool('clear_mails', { description: 'Clear all captured emails' }, () =>
+        executeCommand('clear-mails', 'Emails cleared!')
+    );
+
+    server.registerTool('clear_logs', { description: 'Clear all captured logs' }, () =>
+        executeCommand('clear-logs', 'Logs cleared!')
+    );
+
+    server.registerTool('clear_dumps', { description: 'Clear all captured dumps' }, () =>
+        executeCommand('clear-dumps', 'Dumps cleared!')
+    );
+
     server.registerTool(
-        'search_dumps',
+        'toggle_env',
         {
-            description: 'Search across all captured dumps, queries, logs, and mails',
+            description:
+                'Enable, disable or toggle a environment/watcher (e.g. queries, logs, cache, jobs, etc) for the current project. Use this to control what LaraDumps listens to.',
             inputSchema: {
-                query: z.string().describe('The text to search for')
+                env: z
+                    .string()
+                    .describe('The environment name to toggle (e.g. queries, logs, jobs, cache, http, livewire)'),
+                action: z
+                    .enum(['enable', 'disable', 'toggle'])
+                    .optional()
+                    .describe('The action to perform. Defaults to toggle.')
             }
         },
-        ({ query }) => fetchTool(`search?q=${encodeURIComponent(query)}`)
-    );
+        async ({ env, action }) => {
+            const data = await fetchData('toggle-env', { env, action });
 
-    server.registerTool(
-        'clear_dumps',
-        { description: 'Clears all dumps/events from the main application screen' },
-        () => executeCommand('clear-dumps', 'All dumps have been cleared successfully.')
-    );
+            if (data.error) {
+                return errorResponse(data.error);
+            }
 
-    server.registerTool('confetti', { description: 'Fires a confetti animation on the main application screen' }, () =>
-        executeCommand('confetti', 'Confetti fired successfully!')
-    );
-
-    server.registerTool('clear_jobs', { description: 'Clears all captured background jobs' }, () =>
-        executeCommand('clear-jobs', 'All jobs have been cleared successfully.')
-    );
-
-    server.registerTool('clear_mails', { description: 'Clears all captured emails' }, () =>
-        executeCommand('clear-mails', 'All emails have been cleared successfully.')
-    );
-
-    server.registerTool('clear_logs', { description: 'Clears all captured logs' }, () =>
-        executeCommand('clear-logs', 'All logs have been cleared successfully.')
+            return textResponse(`Successfully set ${env} to ${data.enabled ? 'enabled' : 'disabled'}`);
+        }
     );
 }

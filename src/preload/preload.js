@@ -238,6 +238,59 @@ app.post('/api/mcp/clear-dumps', (req, res) => {
     }
 });
 
+app.post('/api/mcp/toggle-env', (req, res) => {
+    try {
+        const { env, action } = req.body;
+
+        if (!window.LaraDumps || !window.LaraDumps.currentProjectStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+
+        const projectPath = window.LaraDumps.currentProjectStore.projectInfo?.path;
+
+        if (!projectPath) {
+            return res.status(400).send({ error: 'No active project' });
+        }
+
+        ipcRenderer.once('storage.get-environments.reply', (event, envs) => {
+            const targetEnv = envs.find((e) => e.value === env);
+
+            if (targetEnv) {
+                let newState = targetEnv.selected;
+                if (action === 'enable') newState = true;
+                else if (action === 'disable') newState = false;
+                else newState = !targetEnv.selected;
+
+                if (newState !== targetEnv.selected) {
+                    targetEnv.selected = newState;
+
+                    ipcRenderer.send('storage.update', {
+                        selected: envs.map((e) => ({ value: e.value, selected: e.selected })),
+                        path: projectPath
+                    });
+
+                    const ignored = ['dump', 'enabled_in_testing', 'original_dump', 'auto_invoke_app'];
+                    if (!ignored.includes(env)) {
+                        window.dispatchEvent(new CustomEvent('add-screen', { detail: targetEnv }));
+                    }
+                }
+
+                res.send({
+                    status: 'success',
+                    env: targetEnv.value,
+                    enabled: newState
+                });
+            } else {
+                res.status(404).send({ error: `Environment ${env} not found` });
+            }
+        });
+
+        ipcRenderer.send('storage.get-environments', projectPath);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
 async function startServer() {
     const server = app
         .listen(port, '0.0.0.0', () => {})
@@ -267,4 +320,4 @@ async function startServer() {
     });
 }
 
-startServer();
+await startServer();

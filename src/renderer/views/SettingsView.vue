@@ -40,7 +40,12 @@ const mcpActions = ref([
     { name: 'clear_jobs', description: 'Clears all jobs' },
     { name: 'clear_mails', description: 'Clears all emails' },
     { name: 'clear_logs', description: 'Clears all logs' },
-    { name: 'confetti', description: 'Fires a confetti animation on the main application screen' }
+    { name: 'confetti', description: 'Fires a confetti animation on the main application screen' },
+    {
+        name: 'toggle_env',
+        description:
+            'Enable, disable or toggle a environment/watcher (e.g. queries, logs, cache, jobs, etc) for the current project.'
+    }
 ]);
 
 const settingsStore = useSettingsStore();
