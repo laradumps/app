@@ -28,11 +28,17 @@ function errorResponse(error: unknown): McpToolResponse {
     return textResponse(`Error: ${message}`);
 }
 
-async function fetchTool(endpoint: string): Promise<McpToolResponse> {
+async function fetchTool(endpoint: string, limit?: number): Promise<McpToolResponse> {
     const data = await fetchData(endpoint);
 
     if (data.error) {
         return errorResponse(data.error);
+    }
+
+    if (limit) {
+        let items = Array.isArray(data) ? data : Object.values(data);
+        items = items.slice(-limit);
+        return textResponse(JSON.stringify(items, null, 2));
     }
 
     return textResponse(JSON.stringify(data, null, 2));
@@ -85,20 +91,63 @@ async function fetchBrainsTool(): Promise<McpToolResponse> {
 }
 
 export function registerGeneralTools(server: McpServer) {
-    server.registerTool('get_jobs', { description: 'Get captured background jobs' }, () => fetchTool('jobs'));
+    server.registerTool(
+        'get_jobs',
+        {
+            description: 'Get captured background jobs',
+            inputSchema: {
+                limit: z.number().optional().describe('Limit the number of jobs returned')
+            }
+        },
+        ({ limit }) => fetchTool('jobs', limit)
+    );
 
-    server.registerTool('get_brains', { description: "Get collected 'Brains' data" }, fetchBrainsTool);
+    server.registerTool(
+        'get_brains',
+        {
+            description: "Get collected 'Brains' data",
+            inputSchema: {
+                limit: z.number().optional().describe('Limit the number of brains returned')
+            }
+        },
+        ({ limit }) => fetchBrainsTool(limit)
+    );
 
-    server.registerTool('get_dumps', { description: 'Get all captured dumps' }, () => fetchTool('dumps'));
+    server.registerTool(
+        'get_dumps',
+        {
+            description: 'Get all captured dumps',
+            inputSchema: {
+                limit: z.number().optional().describe('Limit the number of dumps returned')
+            }
+        },
+        ({ limit }) => fetchTool('dumps', limit)
+    );
 
     server.registerTool('get_project_info', { description: 'Get current project information' }, () =>
         fetchTool('project-info')
     );
 
-    server.registerTool('get_mails', { description: 'Get all captured emails' }, () => fetchTool('mails'));
+    server.registerTool(
+        'get_mails',
+        {
+            description: 'Get all captured emails',
+            inputSchema: {
+                limit: z.number().optional().describe('Limit the number of emails returned')
+            }
+        },
+        ({ limit }) => fetchTool('mails', limit)
+    );
 
-    server.registerTool('get_livewire_components', { description: 'Get all Livewire components' }, () =>
-        fetchTool('livewire')
+    server.registerTool(
+        'get_livewire_components',
+        {
+            description: 'Get all Livewire components',
+            inputSchema: {
+                limit: z.number().optional().describe('Limit the number of livewire components returned')
+            }
+        },
+        ({ limit }) => fetchTool('livewire', limit)
     );
 
     server.registerTool('confetti', { description: 'Fire confetti implementation' }, () =>

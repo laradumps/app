@@ -34,6 +34,19 @@ app.use(
     })
 );
 
+const applyLimit = (data) => {
+    if (!data) return [];
+    const settings = window.LaraDumps?.settingsStore?.settings;
+    // Default to 10 if not set or invalid
+    const limit = settings && settings.mcp_limit_payload_objects ? parseInt(settings.mcp_limit_payload_objects) : 10;
+
+    const items = Array.isArray(data) ? data : Object.values(data);
+
+    if (items.length <= limit) return items;
+
+    return items.slice(-limit);
+};
+
 const sendBatch = () => {
     if (batchBuffer.length === 0) return;
 
@@ -80,7 +93,7 @@ app.get('/api/mcp/logs', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.logStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(window.LaraDumps.logStore.logs);
+        res.send(applyLimit(window.LaraDumps.logStore.logs));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -91,7 +104,7 @@ app.get('/api/mcp/queries', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.queriesStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(window.LaraDumps.queriesStore.payload);
+        res.send(applyLimit(window.LaraDumps.queriesStore.payload));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -102,7 +115,7 @@ app.get('/api/mcp/jobs', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.jobStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(window.LaraDumps.jobStore.jobs);
+        res.send(applyLimit(window.LaraDumps.jobStore.jobs));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -113,7 +126,7 @@ app.get('/api/mcp/brains', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.brainStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(window.LaraDumps.brainStore.brains);
+        res.send(applyLimit(window.LaraDumps.brainStore.brains));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -124,7 +137,7 @@ app.get('/api/mcp/dumps', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.payloadStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(window.LaraDumps.payloadStore.payload);
+        res.send(applyLimit(window.LaraDumps.payloadStore.payload));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -146,7 +159,7 @@ app.get('/api/mcp/mails', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.mailStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(window.LaraDumps.mailStore.mails);
+        res.send(applyLimit(window.LaraDumps.mailStore.mails));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -157,7 +170,7 @@ app.get('/api/mcp/livewire', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.livewireStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(window.LaraDumps.livewireStore.requests);
+        res.send(applyLimit(window.LaraDumps.livewireStore.requests));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }

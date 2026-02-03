@@ -44,5 +44,6 @@ export const DEFAULT_SETTINGS: Settings = {
     show_tips: true,
     split_pane_screen: null,
     grouped_by_time: true,
-    display_last_log: false
+    display_last_log: false,
+    mcp_limit_payload_objects: 10
 };

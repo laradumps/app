@@ -8,15 +8,18 @@ export function registerQueryTools(server: McpServer) {
         {
             description: 'Get captured SQL queries',
             inputSchema: {
-                limit: z.number().optional().describe('Limit the number of queries returned (default: 50)')
+                limit: z.number().optional().describe('Limit the number of queries returned')
             }
         },
-        async ({ limit = 50 }) => {
+        async ({ limit }) => {
             const data = await fetchData('queries');
             if (data.error) return { content: [{ type: 'text', text: `Error: ${data.error}` }] };
 
             let queries = Array.isArray(data) ? data : Object.values(data);
-            queries = queries.slice(-limit);
+
+            if (limit) {
+                queries = queries.slice(-limit);
+            }
 
             return {
                 content: [{ type: 'text', text: JSON.stringify(queries, null, 2) }]

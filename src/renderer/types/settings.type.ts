@@ -39,4 +39,5 @@ export interface Settings {
     split_pane_screen?: string | null;
     grouped_by_time: boolean;
     display_last_log: boolean;
+    mcp_limit_payload_objects?: number;
 }

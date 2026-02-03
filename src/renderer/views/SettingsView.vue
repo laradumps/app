@@ -840,6 +840,25 @@ const saveCustomTheme = async () => {
                                 />
                             </fieldset>
 
+                            <fieldset
+                                class="fieldset w-fit"
+                                :class="{ 'opacity-50 pointer-events-none': !settingsStore.settings.mcp_enabled }"
+                            >
+                                <legend class="fieldset-legend">Limit Payload objects</legend>
+                                <div
+                                    class="tooltip"
+                                    data-tip="Max number of items returned to AI (logs, queries, etc)"
+                                >
+                                    <input
+                                        type="number"
+                                        class="input input-sm w-24"
+                                        v-model="settingsStore.settings.mcp_limit_payload_objects"
+                                        @change="saveMcpSettings"
+                                        placeholder="300"
+                                    />
+                                </div>
+                            </fieldset>
+
                             <fieldset class="fieldset">
                                 <legend class="fieldset-legend">Configuration</legend>
 
