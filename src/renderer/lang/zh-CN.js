@@ -34,7 +34,7 @@ export default {
     settings: {
         settings: 'Settings',
         layout: 'Layout',
-        limited_dumps: 'Limited dumps',
+        limited_dumps: 'Limited Dumps',
         language: '语言',
         environment: '环境',
         shortcuts: '快捷键',

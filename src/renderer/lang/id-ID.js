@@ -34,7 +34,7 @@ export default {
     settings: {
         settings: 'Pengaturan',
         layout: 'Layout',
-        limited_dumps: 'Limited dumps',
+        limited_dumps: 'Limited Dumps',
         language: 'Bahasan',
         environment: 'Environment',
         shortcuts: 'Shortcuts',

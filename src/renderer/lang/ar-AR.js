@@ -34,7 +34,7 @@ export default {
     settings: {
         settings: 'الإعدادات',
         layout: 'Layout',
-        limited_dumps: 'Limited dumps',
+        limited_dumps: 'Limited Dumps',
         language: 'اللغة',
         environment: 'البيئة',
         shortcuts: 'الإختصارات',

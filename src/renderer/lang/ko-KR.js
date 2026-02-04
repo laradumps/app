@@ -34,7 +34,7 @@ export default {
     settings: {
         settings: '설정',
         layout: 'Layout',
-        limited_dumps: 'Limited dumps',
+        limited_dumps: 'Limited Dumps',
         language: '언어',
         environment: '환경',
         shortcuts: '단축키',

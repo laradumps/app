@@ -34,7 +34,7 @@ export default {
     settings: {
         settings: 'Cilësimet',
         layout: 'Layout',
-        limited_dumps: 'Limited dumps',
+        limited_dumps: 'Limited Dumps',
         language: 'Gjuha',
         environment: 'Mjedisi',
         shortcuts: 'Shkurtesat',

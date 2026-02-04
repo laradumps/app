@@ -34,7 +34,7 @@ export default {
     settings: {
         settings: 'Ayarlar',
         layout: 'Layout',
-        limited_dumps: 'Limited dumps',
+        limited_dumps: 'Limited Dumps',
         language: 'Dil',
         environment: 'Ortam',
         shortcuts: 'Kısayollar',

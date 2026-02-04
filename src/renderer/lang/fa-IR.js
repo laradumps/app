@@ -34,7 +34,7 @@ export default {
     settings: {
         settings: 'تنظیمات',
         layout: 'Layout',
-        limited_dumps: 'Limited dumps',
+        limited_dumps: 'Limited Dumps',
         language: 'زبان',
         environment: 'محیط',
         shortcuts: 'میانبرها',
