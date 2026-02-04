@@ -14,7 +14,14 @@ const isJson = (str: string | undefined): boolean => {
 };
 
 // @ts-ignore
-const escapeHtml = (content: string | undefined) => content.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+const escapeHtml = (content: string | undefined) =>
+    content
+        .toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 
 export interface SearchSettings {
     is_case_sensitive: boolean;
@@ -23,13 +30,13 @@ export interface SearchSettings {
 
 const strContains = (content: string, searchString: string, searchSettings: SearchSettings) => {
     // @see https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-    searchString = searchString.replace(/[.*+?^$"{}()|[\]\\]/g, "\\$&");
+    searchString = searchString.replace(/[.*+?^$"{}()|[\]\\]/g, '\\$&');
 
     let regexExpression = searchString;
-    let regexMode = "gim";
+    let regexMode = 'gim';
 
     if (searchSettings.is_case_sensitive) {
-        regexMode = regexMode.replace("i", "");
+        regexMode = regexMode.replace('i', '');
     }
 
     if (searchSettings.is_whole_word) {

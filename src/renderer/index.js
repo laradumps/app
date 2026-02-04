@@ -1,40 +1,40 @@
-import { createApp } from "vue";
-import App from "@/App.vue";
-import "@/styles.css";
-import router from "./router/index";
+import { createApp } from 'vue';
+import App from '@/App.vue';
+import '@/styles.css';
+import router from './router/index';
 
-import hljs from "highlight.js/lib/core";
-import php from "highlight.js/lib/languages/php";
-import hljsVuePlugin from "@highlightjs/vue-plugin";
-import { createPinia } from "pinia";
-import { createI18n } from "vue-i18n";
+import hljs from 'highlight.js/lib/core';
+import php from 'highlight.js/lib/languages/php';
+import hljsVuePlugin from '@highlightjs/vue-plugin';
+import { createPinia } from 'pinia';
+import { createI18n } from 'vue-i18n';
 
-import en from "@/lang/en";
-import ptBR from "@/lang/pt-BR";
-import esES from "@/lang/es-ES";
-import faIR from "@/lang/fa-IR";
-import arAR from "@/lang/ar-AR";
-import itIT from "@/lang/it-IT";
-import zhCN from "@/lang/zh-CN";
-import idID from "@/lang/id-ID";
-import alAL from "@/lang/al-AL";
-import trTR from "@/lang/tr-TR";
-import koKR from "@/lang/ko-KR";
+import en from '@/lang/en';
+import ptBR from '@/lang/pt-BR';
+import esES from '@/lang/es-ES';
+import faIR from '@/lang/fa-IR';
+import arAR from '@/lang/ar-AR';
+import itIT from '@/lang/it-IT';
+import zhCN from '@/lang/zh-CN';
+import idID from '@/lang/id-ID';
+import alAL from '@/lang/al-AL';
+import trTR from '@/lang/tr-TR';
+import koKR from '@/lang/ko-KR';
 
-import clipboard from "@/plugins/clipboard";
+import clipboard from '@/plugins/clipboard';
 
-import "vue-json-pretty/lib/styles.css";
-import "@/sf-dump";
+import 'vue-json-pretty/lib/styles.css';
+import '@/sf-dump';
 
 const pinia = createPinia();
 
-hljs.registerLanguage("php", php);
+hljs.registerLanguage('php', php);
 hljs.highlightAll();
 
 const i18n = createI18n({
-    locale: "en",
+    locale: 'en',
     legacy: false,
-    fallbackLocale: "en",
+    fallbackLocale: 'en',
     fallbackWarn: false,
     silentFallbackWarn: true,
     messages: {
@@ -60,6 +60,6 @@ app.use(i18n);
 app.use(clipboard);
 app.use(router);
 
-app.mount("#app");
+app.mount('#app');
 
 window.app = app;

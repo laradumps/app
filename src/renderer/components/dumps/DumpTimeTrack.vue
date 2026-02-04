@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { defineProps } from "vue";
-import { Payload } from "@/types/Payload";
+import { defineProps } from 'vue';
+import { Payload } from '@/types/Payload';
 
 const props = defineProps<{
     payload: Payload;
@@ -9,7 +9,7 @@ const props = defineProps<{
 
 <template>
     <div class="w-full text-base-content text-sm">
-        &#8987; {{ $t("elapsed_time") }}:
+        &#8987; {{ $t('elapsed_time') }}:
 
         <div class="mt-3 px-5 font-semibold">
             <div
@@ -22,7 +22,7 @@ const props = defineProps<{
                 class="animate-pulse"
                 v-else
             >
-                {{ $t("processing") }} ...
+                {{ $t('processing') }} ...
             </div>
         </div>
     </div>

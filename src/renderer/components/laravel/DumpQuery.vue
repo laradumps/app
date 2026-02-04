@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, defineProps } from "vue";
-import { format } from "sql-formatter";
+import { computed, defineProps } from 'vue';
+import { format } from 'sql-formatter';
 
-import hljs from "highlight.js/lib/core";
-import sql from "highlight.js/lib/languages/sql";
-hljs.registerLanguage("sql", sql);
+import hljs from 'highlight.js/lib/core';
+import sql from 'highlight.js/lib/languages/sql';
+hljs.registerLanguage('sql', sql);
 
 interface Query {
     sql: string;
@@ -21,20 +21,20 @@ const props = defineProps<{
 const formattedSql = computed(() => {
     const sql = props.query.sql ?? props.query.query;
 
-    let language = "sql";
+    let language = 'sql';
 
-    if (props.query.hasOwnProperty("driver")) {
+    if (props.query.hasOwnProperty('driver')) {
         const driverMap = {
-            pgsql: "postgresql",
-            postgresql: "postgresql"
+            pgsql: 'postgresql',
+            postgresql: 'postgresql'
         };
 
-        language = driverMap[props.query.driver] || "sql";
+        language = driverMap[props.query.driver] || 'sql';
     }
 
     if (sql != null) {
         let formattedSql = format(sql, {
-            indent: "    ",
+            indent: '    ',
             language
         });
 

@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useToastStore } from "@/store/toast";
+import { computed } from 'vue';
+import { useToastStore } from '@/store/toast';
 
 const toast = useToastStore();
 const items = computed(() => toast.all);
 
 const typeClasses = (type: string) => {
     switch (type) {
-        case "success":
-            return "bg-success text-success-content border-success/30";
-        case "warning":
-            return "bg-warning text-warning-content border-warning/30";
-        case "error":
-            return "bg-error text-error-content border-error/30";
+        case 'success':
+            return 'bg-success text-success-content border-success/30';
+        case 'warning':
+            return 'bg-warning text-warning-content border-warning/30';
+        case 'error':
+            return 'bg-error text-error-content border-error/30';
         default:
-            return "bg-base-200 text-base-content border-base-content/20";
+            return 'bg-base-200 text-base-content border-base-content/20';
     }
 };
 </script>

@@ -1,15 +1,16 @@
-import { ipcRenderer, webFrame, shell } from "electron";
-import express from "express";
-import bodyParser from "body-parser";
+import { ipcRenderer, webFrame, shell } from 'electron';
+import express from 'express';
+import bodyParser from 'body-parser';
 
 window.ipcRenderer = ipcRenderer;
 window.webFrame = webFrame;
 window.shell = shell;
 
-import cors from "cors";
-import fs from "fs";
-import path from "path";
-import os from "os";
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { applyLimit, slimForMcp } from './utils.js';
 
 const port = 9191;
 const app = express();
@@ -22,7 +23,7 @@ app.use(cors());
 
 app.use(
     bodyParser.urlencoded({
-        limit: "50mb",
+        limit: '50mb',
         extended: true,
         parameterLimit: 50000
     })
@@ -30,15 +31,15 @@ app.use(
 
 app.use(
     bodyParser.json({
-        limit: "50mb"
+        limit: '50mb'
     })
 );
 
 const sendBatch = () => {
     if (batchBuffer.length === 0) return;
 
-    ipcRenderer.send("dump.batches", {
-        type: "batch",
+    ipcRenderer.send('dump.batches', {
+        type: 'batch',
         contents: [...batchBuffer],
         batch_size: batchBuffer.length
     });
@@ -48,11 +49,11 @@ const sendBatch = () => {
     batchTimeout = null;
 };
 
-app.post("/api/dumps", (req, res) => {
+app.post('/api/dumps', (req, res) => {
     const { body } = req;
     body.date_time = new Date();
 
-    if (body.type === "queries") {
+    if (body.type === 'queries') {
         batchBuffer.push({
             type: body.type,
             content: body
@@ -67,7 +68,7 @@ app.post("/api/dumps", (req, res) => {
         return res.send({ id: body.id });
     }
 
-    ipcRenderer.send("dump", {
+    ipcRenderer.send('dump', {
         type: body.type,
         content: body
     });
@@ -75,29 +76,256 @@ app.post("/api/dumps", (req, res) => {
     return res.send({ id: body.id });
 });
 
-const server = app
-    .listen(port, "0.0.0.0", () => {})
-    .on("error", (err) => {
-        console.error(err);
-        setTimeout(() => ipcRenderer.send("preload:server-failed", err), 3000);
-    });
-
-ipcRenderer.on("server:close", (event, arg) => {
-    sendBatch();
-    server.close(() => {
-        event.sender.send("app:quit", arg);
-    });
+app.get('/api/mcp/logs', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.logStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        const logs = applyLimit(window.LaraDumps.logStore.logs);
+        res.send(slimForMcp(logs));
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
 });
 
-ipcRenderer.on("preload:create-static-tmp-file", (event, value) => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "temp-"));
-    const tmpFile = path.join(tmpDir, "temp.html");
+app.get('/api/mcp/queries', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.queriesStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        const queries = applyLimit(window.LaraDumps.queriesStore.payload);
+        res.send(slimForMcp(queries));
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
 
-    fs.writeFileSync(tmpFile, value.content);
+app.get('/api/mcp/jobs', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.jobStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        const jobs = applyLimit(window.LaraDumps.jobStore.jobs);
+        res.send(slimForMcp(jobs));
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
 
-    app.get(`/${value.name}.html`, (req, res) => {
-        res.sendFile(tmpFile);
+app.get('/api/mcp/brains', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.brainStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        const brains = applyLimit(window.LaraDumps.brainStore.brains);
+        res.send(slimForMcp(brains));
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get('/api/mcp/dumps', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.payloadStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        const dumps = applyLimit(window.LaraDumps.payloadStore.payload);
+        res.send(slimForMcp(dumps));
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get('/api/mcp/project-info', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.currentProjectStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        res.send(window.LaraDumps.currentProjectStore.projectInfo);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get('/api/mcp/mails', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.mailStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        const mails = applyLimit(window.LaraDumps.mailStore.mails);
+        res.send(slimForMcp(mails));
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get('/api/mcp/livewire', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.livewireStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        const livewire = applyLimit(window.LaraDumps.livewireStore.requests);
+        res.send(slimForMcp(livewire));
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.get('/api/mcp/search', (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q) {
+            return res.send([]);
+        }
+        window.ipcRenderer.send('global-search', q);
+        window.ipcRenderer.once('global-search.reply', (e, args) => {
+            res.send(args);
+        });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.post('/api/mcp/confetti', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.confetti) {
+            return res.status(503).send({ error: 'Store or confetti not initialized' });
+        }
+        window.LaraDumps.confetti();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.post('/api/mcp/clear-jobs', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.jobStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        window.LaraDumps.jobStore.clear();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.post('/api/mcp/clear-mails', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.mailStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        window.LaraDumps.mailStore.clear();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.post('/api/mcp/clear-logs', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.logStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        window.LaraDumps.logStore.clear();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.post('/api/mcp/clear-dumps', (req, res) => {
+    try {
+        if (!window.LaraDumps || !window.LaraDumps.clearAll) {
+            return res.status(503).send({ error: 'Store or clearAll not initialized' });
+        }
+        window.LaraDumps.clearAll();
+        res.send({ status: 'success' });
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+app.post('/api/mcp/toggle-env', (req, res) => {
+    try {
+        const { env, action } = req.body;
+
+        if (!window.LaraDumps || !window.LaraDumps.currentProjectStore) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+
+        const projectPath = window.LaraDumps.currentProjectStore.projectInfo?.path;
+
+        if (!projectPath) {
+            return res.status(400).send({ error: 'No active project' });
+        }
+
+        ipcRenderer.once('storage.get-environments.reply', (event, envs) => {
+            const targetEnv = envs.find((e) => e.value === env);
+
+            if (targetEnv) {
+                let newState;
+                if (action === 'enable') newState = true;
+                else if (action === 'disable') newState = false;
+                else newState = !targetEnv.selected;
+
+                if (newState !== targetEnv.selected) {
+                    targetEnv.selected = newState;
+
+                    ipcRenderer.send('storage.update', {
+                        selected: envs.map((e) => ({ value: e.value, selected: e.selected })),
+                        path: projectPath
+                    });
+
+                    const ignored = ['dump', 'enabled_in_testing', 'original_dump', 'auto_invoke_app'];
+                    if (!ignored.includes(env)) {
+                        window.dispatchEvent(new CustomEvent('add-screen', { detail: targetEnv }));
+                    }
+                }
+
+                res.send({
+                    status: 'success',
+                    env: targetEnv.value,
+                    enabled: newState
+                });
+            } else {
+                res.status(404).send({ error: `Environment ${env} not found` });
+            }
+        });
+
+        ipcRenderer.send('storage.get-environments', projectPath);
+    } catch (e) {
+        res.status(500).send({ error: e.toString() });
+    }
+});
+
+async function startServer() {
+    const server = app
+        .listen(port, '0.0.0.0', () => {})
+        .on('error', (err) => {
+            console.error(err);
+            setTimeout(() => ipcRenderer.send('preload:server-failed', err), 3000);
+        });
+
+    ipcRenderer.on('server:close', (event, arg) => {
+        sendBatch();
+        server.close(() => {
+            event.sender.send('app:quit', arg);
+        });
     });
 
-    app.use(express.static(path.dirname(tmpFile)));
-});
+    ipcRenderer.on('preload:create-static-tmp-file', (event, value) => {
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'temp-'));
+        const tmpFile = path.join(tmpDir, 'temp.html');
+
+        fs.writeFileSync(tmpFile, value.content);
+
+        app.get(`/${value.name}.html`, (req, res) => {
+            res.sendFile(tmpFile);
+        });
+
+        app.use(express.static(path.dirname(tmpFile)));
+    });
+}
+
+startServer();

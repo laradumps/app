@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, defineProps } from "vue";
-import { Payload } from "@/types/Payload";
+import { computed, defineProps } from 'vue';
+import { Payload } from '@/types/Payload';
 
-const style = computed(() => (props.payload.is_json ? "bg-green-500" : "bg-red-500"));
+const style = computed(() => (props.payload.is_json ? 'bg-green-500' : 'bg-red-500'));
 
-const text = computed(() => (props.payload.is_json ? "valid_json_format" : "invalid_json_format"));
+const text = computed(() => (props.payload.is_json ? 'valid_json_format' : 'invalid_json_format'));
 
 const props = defineProps<{
     payload: Payload;

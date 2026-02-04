@@ -1,37 +1,45 @@
-import { defineStore } from "pinia";
-import { ScreenPayload } from "@/types/Payload";
+import { defineStore } from 'pinia';
+import { ScreenPayload } from '@/types/Payload';
+
+export type Screen = ScreenPayload & {
+    original_content?: string;
+};
 
 type State = {
     screen: string;
-    screens: ScreenPayload[];
+    screens: Screen[];
     pinned: string;
 };
 
-export const useScreenStore = defineStore("screen", {
+export const useScreenStore = defineStore('screen', {
     state: (): State => ({
-        screen: "home",
+        screen: 'home',
         screens: [],
-        pinned: ""
+        pinned: ''
     }),
     actions: {
         activeScreen(value: string) {
             this.screen = value;
         },
         remove(screenName: string) {
-            this.screens = this.screens.filter((screenPayload: ScreenPayload) => screenPayload.screen_name !== screenName);
+            this.screens = this.screens.filter((screenPayload) => screenPayload.screen_name !== screenName);
         },
         pin(screen: string) {
-            this.screens = this.screens.map((screenPayload: ScreenPayload) => ({
+            this.screens = this.screens.map((screenPayload) => ({
                 ...screenPayload,
                 pinned: screenPayload.screen_name === screen && screen !== this.pinned
             }));
             this.pinned = screen;
         },
         add(screen: ScreenPayload) {
-            const exists = this.screens.some((screenPayload: ScreenPayload) => screenPayload.screen_name === screen.screen_name);
+            const exists = this.screens.some((screenPayload) => screenPayload.screen_name === screen.screen_name);
 
             if (!exists) {
-                this.screens.push(screen);
+                const screenData: Screen = {
+                    ...screen,
+                    original_content: screen.original_content
+                };
+                this.screens.push(screenData);
             }
         },
         clearAll() {
@@ -44,7 +52,9 @@ export const useScreenStore = defineStore("screen", {
             return this.screens;
         },
         get(screenName: string) {
-            return this.screens.find((screenPayload: ScreenPayload) => screenPayload.screen_name === screenName) || null;
+            return (
+                this.screens.find((screenPayload: ScreenPayload) => screenPayload.screen_name === screenName) || null
+            );
         },
         toggleVisible(screenName: string) {
             this.screens = this.screens.map((screen: ScreenPayload) => {

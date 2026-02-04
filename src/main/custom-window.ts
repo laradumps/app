@@ -1,8 +1,8 @@
-import { BrowserWindow, ipcMain } from "electron";
-import { resolve } from "path";
+import { BrowserWindow, ipcMain } from 'electron';
+import { resolve } from 'path';
 
 export const init = async () => {
-    ipcMain.on("main:open-custom-window", (event, link) => {
+    ipcMain.on('main:open-custom-window', (event, link) => {
         const window: BrowserWindow = new BrowserWindow({
             show: true,
             width: 830,
@@ -11,7 +11,7 @@ export const init = async () => {
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,
-                preload: resolve(__dirname, "preload.cjs"),
+                preload: resolve(__dirname, 'preload.cjs'),
                 experimentalFeatures: true
             },
             alwaysOnTop: true,
@@ -20,7 +20,7 @@ export const init = async () => {
 
         window.loadURL(link.url);
 
-        window.webContents.on("did-finish-load", () => {
+        window.webContents.on('did-finish-load', () => {
             window.webContents.executeJavaScript(`
             document.addEventListener('click', function(event) {
                 var target = event.target;

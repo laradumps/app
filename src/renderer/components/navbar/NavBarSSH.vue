@@ -1,47 +1,47 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { ArrowPathIcon, PencilIcon, TrashIcon } from "@heroicons/vue/24/outline";
-import { ServerIcon } from "@heroicons/vue/24/solid";
-import { ServerIcon as ServerIconOutline } from "@heroicons/vue/24/outline";
+import { onMounted, ref } from 'vue';
+import { ArrowPathIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { ServerIcon } from '@heroicons/vue/24/solid';
+import { ServerIcon as ServerIconOutline } from '@heroicons/vue/24/outline';
 
-import { useSSHStore } from "@/store/ssh";
-import { Ref } from "vue";
-import { ConnectionConfig } from "@/types/ssh.type";
-import { onUnmounted } from "vue";
-import { useI18n } from "vue-i18n";
-import { PlusIcon } from "@heroicons/vue/24/outline";
-import Divider from "@/components/common/Divider.vue";
-import { ArrowUpTrayIcon } from "@heroicons/vue/20/solid";
+import { useSSHStore } from '@/store/ssh';
+import { Ref } from 'vue';
+import { ConnectionConfig } from '@/types/ssh.type';
+import { onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { PlusIcon } from '@heroicons/vue/24/outline';
+import Divider from '@/components/common/Divider.vue';
+import { ArrowUpTrayIcon } from '@heroicons/vue/20/solid';
 
 const i18n = useI18n();
 const connected = ref(false);
 const sshStore = useSSHStore();
 const form: Ref<ConnectionConfig> = ref({
     id: Date.now(),
-    name: "",
-    host: "",
+    name: '',
+    host: '',
     port: 22,
-    username: "",
-    auth_type: "key",
-    password: "",
-    private_key: "",
-    passphrase: "",
+    username: '',
+    auth_type: 'key',
+    password: '',
+    private_key: '',
+    passphrase: '',
     new_window: false,
     connected: false
 });
 const editId = ref<number | null>(null);
-const emit = defineEmits(["connected"]);
+const emit = defineEmits(['connected']);
 const listenId = ref<number | null>();
 
 onMounted(() => {
-    window.ipcRenderer.on("ssh:connect-response", connectResponse);
-    window.ipcRenderer.on("ssh:listen-response", listenResponse);
+    window.ipcRenderer.on('ssh:connect-response', connectResponse);
+    window.ipcRenderer.on('ssh:listen-response', listenResponse);
 });
 
 onUnmounted(() => {
-    window.ipcRenderer.removeAllListeners("ssh:connect-response");
-    window.ipcRenderer.removeAllListeners("ssh:listen-response");
-    window.ipcRenderer.removeAllListeners("choose-file-response");
+    window.ipcRenderer.removeAllListeners('ssh:connect-response');
+    window.ipcRenderer.removeAllListeners('ssh:listen-response');
+    window.ipcRenderer.removeAllListeners('choose-file-response');
 });
 
 const connect = () => {
@@ -49,36 +49,36 @@ const connect = () => {
     sshStore.setConnecting(true);
 
     if (editId.value) {
-        window.ipcRenderer.send("ssh:connect", { ...form.value }, { state: "edit", notify: true });
+        window.ipcRenderer.send('ssh:connect', { ...form.value }, { state: 'edit', notify: true });
         return;
     }
-    window.ipcRenderer.send("ssh:connect", { ...form.value }, { state: "create", notify: true });
+    window.ipcRenderer.send('ssh:connect', { ...form.value }, { state: 'create', notify: true });
 };
 
 const connectResponse = (event: any, response: any) => {
     sshStore.setConnecting(false);
 
-    if (response.data.state === "create" && response.connected) {
+    if (response.data.state === 'create' && response.connected) {
         sshStore.addConnection(response.config);
         ssh_modal.close();
-        emit("connected");
+        emit('connected');
     }
 
-    if (response.data.state === "edit" && response.connected) {
+    if (response.data.state === 'edit' && response.connected) {
         sshStore.updateConnection(response.config.id, response.config);
         ssh_modal.close();
-        emit("connected");
+        emit('connected');
     }
 };
 
 const listen = (id: number, event: any) => {
     connected.value = false;
-    window.ipcRenderer.send("ssh:disconnect");
+    window.ipcRenderer.send('ssh:disconnect');
     listenId.value = event.target.checked ? id : null;
     if (listenId.value) {
         sshStore.setConnecting(true);
         let conn = sshStore.getConnection(id);
-        window.ipcRenderer.send("ssh:listen", { ...conn });
+        window.ipcRenderer.send('ssh:listen', { ...conn });
     } else {
         const connection: ConnectionConfig | undefined = sshStore.getConnection(id);
 
@@ -104,36 +104,36 @@ const listenResponse = (event: any, response: { connected: boolean }) => {
         return;
     }
 
-    window.ipcRenderer.send("ssh:disconnect");
+    window.ipcRenderer.send('ssh:disconnect');
 };
 
 const removeConnection = (id: number) => {
     if (listenId.value === id) {
-        window.ipcRenderer.send("ssh:disconnect");
+        window.ipcRenderer.send('ssh:disconnect');
         listenId.value = null;
     }
-    window.ipcRenderer.on("main:dialog-choice", (event, arg) => {
+    window.ipcRenderer.on('main:dialog-choice', (event, arg) => {
         if (arg === 0) {
             sshStore.remove(id);
         }
     });
-    window.ipcRenderer.send("main:dialog", {
-        buttons: [i18n.t("yes"), i18n.t("no")],
-        title: i18n.t("ssh.remove_connection"),
-        message: i18n.t("ssh.remove_connection_confirm")
+    window.ipcRenderer.send('main:dialog', {
+        buttons: [i18n.t('yes'), i18n.t('no')],
+        title: i18n.t('ssh.remove_connection'),
+        message: i18n.t('ssh.remove_connection_confirm')
     });
 };
 
 const addConnection = () => {
     form.value = {
         id: Date.now(),
-        name: "",
-        host: "",
+        name: '',
+        host: '',
         port: 22,
-        username: "",
-        auth_type: "key",
-        password: "",
-        private_key: "",
+        username: '',
+        auth_type: 'key',
+        password: '',
+        private_key: '',
         new_window: false,
         connected: false
     };
@@ -149,11 +149,11 @@ const editConnection = (id: number) => {
 };
 
 const chooseFile = () => {
-    window.ipcRenderer.send("choose-file");
+    window.ipcRenderer.send('choose-file');
 };
 
-window.ipcRenderer.on("choose-file-response", (_, filePath) => {
-    form.value.passphrase = "";
+window.ipcRenderer.on('choose-file-response', (_, filePath) => {
+    form.value.passphrase = '';
     form.value.private_key = filePath;
 });
 </script>
@@ -185,7 +185,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                     @click="addConnection"
                 >
                     <PlusIcon class="w-4" />
-                    {{ $t("ssh.add_connection") }}
+                    {{ $t('ssh.add_connection') }}
                 </button>
             </div>
             <div
@@ -205,7 +205,9 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                                 class="toggle toggle-sm toggle-primary mr-1"
                                 :value="connection.id"
                             />
-                            <span class="text-xs whitespace-nowrap font-semibold uppercase truncate max-w-[100px]">{{ connection.name }}</span>
+                            <span class="text-xs whitespace-nowrap font-semibold uppercase truncate max-w-[100px]">{{
+                                connection.name
+                            }}</span>
                         </label>
                         <div class="flex gap-2 items-center justify-end">
                             <template v-if="sshStore.connecting && connection.id === listenId">
@@ -246,7 +248,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
         >
             <div class="modal-box">
                 <h3 class="text-lg font-bold">
-                    {{ editId ? $t("ssh.edit_connection") : $t("ssh.add_connection") }}
+                    {{ editId ? $t('ssh.edit_connection') : $t('ssh.add_connection') }}
                 </h3>
                 <div class="py-4">
                     <form
@@ -254,7 +256,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                         @submit.prevent="connect"
                     >
                         <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t("ssh.name") }}</div>
+                            <div>{{ $t('ssh.name') }}</div>
                             <input
                                 type="text"
                                 id="name"
@@ -265,7 +267,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                         </div>
                         <Divider />
                         <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t("ssh.host") }}</div>
+                            <div>{{ $t('ssh.host') }}</div>
                             <input
                                 type="text"
                                 id="host"
@@ -276,7 +278,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                         </div>
                         <Divider />
                         <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t("ssh.port") }}</div>
+                            <div>{{ $t('ssh.port') }}</div>
                             <input
                                 type="number"
                                 id="port"
@@ -286,7 +288,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                         </div>
                         <Divider />
                         <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t("ssh.auth_type") }}</div>
+                            <div>{{ $t('ssh.auth_type') }}</div>
                             <select
                                 id="auth-type"
                                 v-model="form.auth_type"
@@ -299,7 +301,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                         </div>
                         <Divider />
                         <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t("ssh.username") }}</div>
+                            <div>{{ $t('ssh.username') }}</div>
                             <input
                                 type="text"
                                 id="username"
@@ -312,7 +314,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                             v-if="form.auth_type === 'password'"
                             class="grid grid-cols-3 items-center"
                         >
-                            <div>{{ $t("ssh.password") }}</div>
+                            <div>{{ $t('ssh.password') }}</div>
                             <input
                                 type="password"
                                 id="password"
@@ -324,7 +326,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                             v-if="form.auth_type === 'key'"
                             class="grid grid-cols-3 items-center"
                         >
-                            <div>{{ $t("ssh.private_key") }}</div>
+                            <div>{{ $t('ssh.private_key') }}</div>
                             <div class="join col-span-2">
                                 <div class="w-full">
                                     <label class="input join-item input-bordered input-base">
@@ -386,7 +388,7 @@ window.ipcRenderer.on("choose-file-response", (_, filePath) => {
                                     v-if="sshStore.connecting"
                                     class="w-4 animate-spin"
                                 />
-                                <span v-else>{{ $t("ssh.connect") }}</span>
+                                <span v-else>{{ $t('ssh.connect') }}</span>
                             </button>
                         </div>
                     </form>

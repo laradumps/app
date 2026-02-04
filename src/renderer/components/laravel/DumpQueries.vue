@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import { format } from "sql-formatter";
-import { useTimeStore } from "@/store/time";
-import { Payload } from "@/types/Payload";
-import { useFormattedQueriesStore } from "@/store/formatted-queries";
+import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { format } from 'sql-formatter';
+import { useTimeStore } from '@/store/time';
+import { Payload } from '@/types/Payload';
+import { useFormattedQueriesStore } from '@/store/formatted-queries';
 
-import hljs from "highlight.js/lib/core";
-import sql from "highlight.js/lib/languages/sql";
+import hljs from 'highlight.js/lib/core';
+import sql from 'highlight.js/lib/languages/sql';
 
-import { useQueryDuplicated } from "@/store/query-duplicated";
-import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
-import IconChevronDown from "@/components/Icons/IconChevronDown.vue";
-import { BoltIcon } from "@heroicons/vue/24/outline";
-import VueJsonPretty from "vue-json-pretty";
+import { useQueryDuplicated } from '@/store/query-duplicated';
+import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
+import IconChevronDown from '@/components/Icons/IconChevronDown.vue';
+import { BoltIcon } from '@heroicons/vue/24/outline';
+import VueJsonPretty from 'vue-json-pretty';
 
-hljs.registerLanguage("sql", sql);
-hljs.registerLanguage("postgresql", sql);
+hljs.registerLanguage('sql', sql);
+hljs.registerLanguage('postgresql', sql);
 
 const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
@@ -87,21 +87,21 @@ const formattedSql = computed(() => {
 
     let sql = props.payload.queries.query.sql;
 
-    let language = "sql";
+    let language = 'sql';
 
-    if (props.payload.queries.hasOwnProperty("driver")) {
+    if (props.payload.queries.hasOwnProperty('driver')) {
         const driverMap = {
-            pgsql: "postgresql",
-            postgresql: "postgresql"
+            pgsql: 'postgresql',
+            postgresql: 'postgresql'
         };
-        language = driverMap[props.payload.queries.driver] || "sql";
+        language = driverMap[props.payload.queries.driver] || 'sql';
     }
 
     if (sql != null) {
         let formattedSql =
             formattedQueriesStore.formatted || props.isPrettified
                 ? format(sql, {
-                      indent: "    ",
+                      indent: '    ',
                       language
                   })
                 : sql;

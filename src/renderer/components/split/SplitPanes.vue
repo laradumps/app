@@ -1,12 +1,12 @@
 <script setup>
-import { ref, computed, onUnmounted } from "vue";
+import { ref, computed, onUnmounted } from 'vue';
 
 const props = defineProps({
-    orientation: { type: String, default: "vertical" },
+    orientation: { type: String, default: 'vertical' },
     initialSplit: { type: Number, default: 50 }
 });
 
-const emit = defineEmits(["resize"]);
+const emit = defineEmits(['resize']);
 
 const splitRoot = ref(null);
 const paneA = ref(null);
@@ -16,7 +16,7 @@ const splitPosition = ref(props.initialSplit);
 const isDragging = ref(false);
 
 const paneAStyle = computed(() => {
-    if (props.orientation === "horizontal") {
+    if (props.orientation === 'horizontal') {
         return { height: `${splitPosition.value}%` };
     }
 
@@ -24,7 +24,7 @@ const paneAStyle = computed(() => {
 });
 
 const paneBStyle = computed(() => {
-    if (props.orientation === "horizontal") {
+    if (props.orientation === 'horizontal') {
         return { height: `${100 - splitPosition.value}%` };
     }
     return { width: `${100 - splitPosition.value}%` };
@@ -32,8 +32,8 @@ const paneBStyle = computed(() => {
 
 const startDrag = (e) => {
     isDragging.value = true;
-    document.addEventListener("mousemove", onDrag);
-    document.addEventListener("mouseup", stopDrag);
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', stopDrag);
     e.preventDefault();
 };
 
@@ -43,7 +43,7 @@ const onDrag = (e) => {
     const rect = splitRoot.value.getBoundingClientRect();
     let newPosition;
 
-    if (props.orientation === "horizontal") {
+    if (props.orientation === 'horizontal') {
         const y = e.clientY - rect.top;
         newPosition = (y / rect.height) * 100;
     } else {
@@ -54,18 +54,18 @@ const onDrag = (e) => {
     newPosition = Math.max(10, Math.min(90, newPosition));
     splitPosition.value = newPosition;
 
-    emit("resize", { splitPosition: newPosition });
+    emit('resize', { splitPosition: newPosition });
 };
 
 const stopDrag = () => {
     isDragging.value = false;
-    document.removeEventListener("mousemove", onDrag);
-    document.removeEventListener("mouseup", stopDrag);
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', stopDrag);
 };
 
 onUnmounted(() => {
-    document.removeEventListener("mousemove", onDrag);
-    document.removeEventListener("mouseup", stopDrag);
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', stopDrag);
 });
 </script>
 
@@ -134,7 +134,7 @@ onUnmounted(() => {
 }
 
 .divider::after {
-    content: "";
+    content: '';
     @apply w-0.5 h-[50px] bg-black/15 rounded-[3px] pointer-events-none;
 }
 

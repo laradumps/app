@@ -24,7 +24,7 @@
 
 <script>
 export default {
-    name: "IconAlwaysOnTop"
+    name: 'IconAlwaysOnTop'
 };
 </script>
 

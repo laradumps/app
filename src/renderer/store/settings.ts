@@ -1,92 +1,92 @@
-import { defineStore } from "pinia";
-import { ref, watch } from "vue";
-import { Settings } from "@/types/settings.type";
-import { DEFAULT_SETTINGS } from "@/default-settings";
-import { deepClone } from "@/lib/deep_clone";
+import { defineStore } from 'pinia';
+import { ref, watch } from 'vue';
+import { Settings } from '@/types/settings.type';
+import { DEFAULT_SETTINGS } from '@/default-settings';
+import { deepClone } from '@/lib/deep_clone';
 
 const themeColors = {
-    system: "System",
-    light: "Light",
-    dark: "Dark",
-    dracula: "Dracula",
-    dim: "Dim",
-    retro: "Retro",
-    halloween: "Halloween",
-    cyberpunk: "Cyberpunk",
-    lemonade: "Lemonade",
-    winter: "Winter",
-    forest: "Forest",
-    valentine: "Valentine",
-    aqua: "Aqua",
-    emerald: "Emerald",
-    midnight: "Midnight",
-    nord: "Nord",
-    silk: "Silk",
-    luxury: "Luxury",
-    cupcake: "Cupcake",
-    caramellatte: "Caramel Latte",
-    custom: "Custom",
-    laravel12: "Laravel 12 Dark"
+    system: 'System',
+    light: 'Light',
+    dark: 'Dark',
+    dracula: 'Dracula',
+    dim: 'Dim',
+    retro: 'Retro',
+    halloween: 'Halloween',
+    cyberpunk: 'Cyberpunk',
+    lemonade: 'Lemonade',
+    winter: 'Winter',
+    forest: 'Forest',
+    valentine: 'Valentine',
+    aqua: 'Aqua',
+    emerald: 'Emerald',
+    midnight: 'Midnight',
+    nord: 'Nord',
+    silk: 'Silk',
+    luxury: 'Luxury',
+    cupcake: 'Cupcake',
+    caramellatte: 'Caramel Latte',
+    custom: 'Custom',
+    laravel12: 'Laravel 12 Dark'
 };
 
 const languageOptions = {
-    en: "English",
-    pt_BR: "Português (BR)",
-    es_ES: "Español (ES)",
-    fa_IR: "فارسی (IR)",
-    ar_AR: "عربي (AR)",
-    it_IT: "Italiano (IT)",
-    zh_CN: "Chinese (CN)",
-    id_ID: "Indonesian (ID)",
-    al_AL: "Shqip (AL)",
-    tr_TR: "Türkçe (TR)",
-    ko_KR: "한국어 (KR)"
+    en: 'English',
+    pt_BR: 'Português (BR)',
+    es_ES: 'Español (ES)',
+    fa_IR: 'فارسی (IR)',
+    ar_AR: 'عربي (AR)',
+    it_IT: 'Italiano (IT)',
+    zh_CN: 'Chinese (CN)',
+    id_ID: 'Indonesian (ID)',
+    al_AL: 'Shqip (AL)',
+    tr_TR: 'Türkçe (TR)',
+    ko_KR: '한국어 (KR)'
 };
 
 const ideHandlerOptions = {
-    "phpstorm://open?file={filepath}&line={line}": "PHPStorm",
-    "phpstorm://open?file={wsl_config}{filepath}&line={line}": "PHPStorm WSL",
-    "vscode://file/{filepath}:{line}": "VS Code",
-    "vscode://vscode-remote/{wsl_config}{filepath}:{line}": "VS Code Remote",
-    "vscode-insiders://file/{filepath}:{line}": "VS Code Insiders",
-    "cursor://file/{filepath}:{line}": "Cursor",
-    "subl://open?url=file://{filepath}&line={line}": "Sublime",
-    "atom://core/open/file?filename={filepath}&line={line}": "Atom",
-    "windsurf://file/{filepath}:{line}": "WindSurf"
+    'phpstorm://open?file={filepath}&line={line}': 'PHPStorm',
+    'phpstorm://open?file={wsl_config}{filepath}&line={line}': 'PHPStorm WSL',
+    'vscode://file/{filepath}:{line}': 'VS Code',
+    'vscode://vscode-remote/{wsl_config}{filepath}:{line}': 'VS Code Remote',
+    'vscode-insiders://file/{filepath}:{line}': 'VS Code Insiders',
+    'cursor://file/{filepath}:{line}': 'Cursor',
+    'subl://open?url=file://{filepath}&line={line}': 'Sublime',
+    'atom://core/open/file?filename={filepath}&line={line}': 'Atom',
+    'windsurf://file/{filepath}:{line}': 'WindSurf'
 };
 
 const checkForUpdateOptions = {
-    auto_download: "Automatic",
-    manual_download: "Manual Download"
+    auto_download: 'Automatic',
+    manual_download: 'Manual Download'
 };
 
 const autoLaunchOptions = {
-    disabled: "Disabled",
-    enabled: "Enabled"
+    disabled: 'Disabled',
+    enabled: 'Enabled'
 };
 
 const scrollDirection = {
-    top: "Top",
-    bottom: "Bottom"
+    top: 'Top',
+    bottom: 'Bottom'
 };
 
 const dumpOrder = {
-    normal: "Normal",
-    reversed: "Reversed"
+    normal: 'Normal',
+    reversed: 'Reversed'
 };
 
-export const useSettingsStore = defineStore("settings", () => {
+export const useSettingsStore = defineStore('settings', () => {
     const themes = ref(themeColors);
 
-    const savedSettings = localStorage.getItem("user-settings");
+    const savedSettings = localStorage.getItem('user-settings');
     const initial = savedSettings ? JSON.parse(savedSettings) : {};
     const settings = ref<Settings>({ ...DEFAULT_SETTINGS, ...initial });
 
     const updateAvailable = ref<boolean>(false);
-    const latestVersion = ref<string>("");
+    const latestVersion = ref<string>('');
 
     const setUpdateAvailable = (version) => {
-        latestVersion.value = String(version || "");
+        latestVersion.value = String(version || '');
         setTimeout(() => {
             updateAvailable.value = true;
         }, 3000);
@@ -99,14 +99,14 @@ export const useSettingsStore = defineStore("settings", () => {
     const update = () => {
         const serializablePayload = deepClone(settings.value);
 
-        localStorage.setItem("user-settings", JSON.stringify(serializablePayload));
+        localStorage.setItem('user-settings', JSON.stringify(serializablePayload));
 
-        window.ipcRenderer.send("settings.store", serializablePayload);
+        window.ipcRenderer.send('settings.store', serializablePayload);
     };
 
     const setSettings = (newSettings: any) => {
         settings.value = newSettings;
-        localStorage.setItem("user-settings", JSON.stringify(newSettings));
+        localStorage.setItem('user-settings', JSON.stringify(newSettings));
     };
 
     const setSplitPaneScreen = (screenName: string | null) => {
@@ -117,8 +117,8 @@ export const useSettingsStore = defineStore("settings", () => {
     watch(
         () => settings.value.theme,
         (newTheme) => {
-            localStorage.setItem("user-settings", JSON.stringify(settings.value));
-            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem('user-settings', JSON.stringify(settings.value));
+            document.documentElement.setAttribute('data-theme', newTheme);
         }
     );
 

@@ -12,5 +12,5 @@ export const modifyHtml = (html, id) => {
         });
         </script>`;
 
-    return html.replace("</body>", script + "</body>");
+    return html.replace('</body>', script + '</body>');
 };

@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
 interface DuplicateInfo {
     request_id: string;
@@ -13,7 +13,7 @@ interface QueryDuplicatedState {
     selectedSql: string | null;
 }
 
-export const useQueryDuplicated = defineStore("queryDuplicated", {
+export const useQueryDuplicated = defineStore('queryDuplicated', {
     state: (): QueryDuplicatedState => ({
         showOnlyDuplicated: false,
         duplicatesInfo: [],
@@ -34,7 +34,9 @@ export const useQueryDuplicated = defineStore("queryDuplicated", {
             if (!state.currentRequestId) {
                 return 0;
             }
-            return state.duplicatesInfo.filter((info) => info.request_id === state.currentRequestId && info.occurrences > 1).reduce((acc, info) => acc + info.occurrences, 0);
+            return state.duplicatesInfo
+                .filter((info) => info.request_id === state.currentRequestId && info.occurrences > 1)
+                .reduce((acc, info) => acc + info.occurrences, 0);
         },
         isDuplicated(state) {
             return (request_id: string, sql: string): boolean => {
@@ -46,7 +48,9 @@ export const useQueryDuplicated = defineStore("queryDuplicated", {
             if (!state.currentRequestId) {
                 return false;
             }
-            return state.duplicatesInfo.some((info) => info.request_id === state.currentRequestId && info.occurrences > 1);
+            return state.duplicatesInfo.some(
+                (info) => info.request_id === state.currentRequestId && info.occurrences > 1
+            );
         }
     },
     actions: {

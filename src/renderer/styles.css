@@ -1,6 +1,6 @@
-@import "./sf-dump.css";
+@import './sf-dump.css';
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @config "../../tailwind.config.js";
 
@@ -60,7 +60,7 @@
 
 @layer base {
     button:not(:disabled),
-    [role="button"]:not(:disabled) {
+    [role='button']:not(:disabled) {
         cursor: pointer;
     }
 }
@@ -86,8 +86,8 @@ body {
 }
 
 .collapse-title,
-:where(.collapse > input[type="checkbox"]),
-:where(.collapse > input[type="radio"]) {
+:where(.collapse > input[type='checkbox']),
+:where(.collapse > input[type='radio']) {
     padding-inline-end: 1rem !important;
     min-height: 2.75rem;
 }
@@ -156,15 +156,15 @@ code.hljs {
     color: #79c0ff;
 }
 
-html[data-theme="light"] .hljs-regexp,
-html[data-theme="light"] .hljs-string,
-html[data-theme="light"] .hljs-meta .hljs-string {
+html[data-theme='light'] .hljs-regexp,
+html[data-theme='light'] .hljs-string,
+html[data-theme='light'] .hljs-meta .hljs-string {
     @apply !text-primary;
 }
 
-html:not([data-theme="light"]) .hljs-regexp,
-html:not([data-theme="light"]) .hljs-string,
-html:not([data-theme="light"]) .hljs-meta .hljs-string {
+html:not([data-theme='light']) .hljs-regexp,
+html:not([data-theme='light']) .hljs-string,
+html:not([data-theme='light']) .hljs-meta .hljs-string {
     color: #a5d6ff !important;
 }
 

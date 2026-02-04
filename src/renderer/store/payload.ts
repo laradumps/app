@@ -1,11 +1,11 @@
-import { defineStore } from "pinia";
-import { Payload, ScreenPayload, TimeTrackPayload, ValidatePayload } from "@/types/Payload";
-import * as Helper from "@/helpers";
-import moment from "moment";
-import humanizeDuration from "humanize-duration";
+import { defineStore } from 'pinia';
+import { Payload, ScreenPayload, TimeTrackPayload, ValidatePayload } from '@/types/Payload';
+import * as Helper from '@/helpers';
+import moment from 'moment';
+import humanizeDuration from 'humanize-duration';
 
 let payloadIds = [];
-export const usePayloadStore = defineStore("payload", {
+export const usePayloadStore = defineStore('payload', {
     state: () => ({
         payload: [] as Payload[],
         filteredPayload: [] as Payload[]
@@ -56,24 +56,28 @@ export const usePayloadStore = defineStore("payload", {
             }
         },
         updateColorPayload(content: { id: string; color: { color: string } }) {
-            this.updatePayload(content, "color", (color) => color.color);
+            this.updatePayload(content, 'color', (color) => color.color);
         },
         updateScreenPayload(content: { id: string; to_screen: ScreenPayload }) {
-            this.updatePayload(content, "to_screen");
+            this.updatePayload(content, 'to_screen');
         },
         updateJSONValidatePayload(content: { id: string; json_validate: any }) {
-            this.updatePayload(content, "validate_json", () => true);
+            this.updatePayload(content, 'validate_json', () => true);
 
             const indexPayload = this.findById(content.id);
             const indexFiltered = this.findPayloadIndex(content.id);
 
             if (indexPayload !== -1) {
-                const toValidate = this.payload[indexPayload]?.dump?.original_content || this.payload[indexPayload]?.json?.original_content;
+                const toValidate =
+                    this.payload[indexPayload]?.dump?.original_content ||
+                    this.payload[indexPayload]?.json?.original_content;
                 this.payload[indexPayload].is_json = toValidate ? Helper.isJson(toValidate) : false;
             }
 
             if (indexFiltered !== -1) {
-                const toValidate = this.filteredPayload[indexFiltered]?.dump?.original_content || this.filteredPayload[indexFiltered]?.json?.original_content;
+                const toValidate =
+                    this.filteredPayload[indexFiltered]?.dump?.original_content ||
+                    this.filteredPayload[indexFiltered]?.json?.original_content;
                 this.filteredPayload[indexFiltered].is_json = toValidate ? Helper.isJson(toValidate) : false;
             }
         },
@@ -82,7 +86,9 @@ export const usePayloadStore = defineStore("payload", {
             const indexFiltered = this.findPayloadIndex(content.id);
 
             if (indexPayload !== -1) {
-                const textContent = this.payload[indexPayload]?.json?.original_content || this.payload[indexPayload]?.dump?.original_content;
+                const textContent =
+                    this.payload[indexPayload]?.json?.original_content ||
+                    this.payload[indexPayload]?.dump?.original_content;
                 this.payload[indexPayload].str_contains = Helper.strContains(textContent, content.validate.content, {
                     is_case_sensitive: content.validate.is_case_sensitive,
                     is_whole_word: content.validate.is_whole_word
@@ -90,11 +96,17 @@ export const usePayloadStore = defineStore("payload", {
             }
 
             if (indexFiltered !== -1) {
-                const textContent = this.filteredPayload[indexFiltered]?.json?.original_content || this.filteredPayload[indexFiltered]?.dump?.original_content;
-                this.filteredPayload[indexFiltered].str_contains = Helper.strContains(textContent, content.validate.content, {
-                    is_case_sensitive: content.validate.is_case_sensitive,
-                    is_whole_word: content.validate.is_whole_word
-                });
+                const textContent =
+                    this.filteredPayload[indexFiltered]?.json?.original_content ||
+                    this.filteredPayload[indexFiltered]?.dump?.original_content;
+                this.filteredPayload[indexFiltered].str_contains = Helper.strContains(
+                    textContent,
+                    content.validate.content,
+                    {
+                        is_case_sensitive: content.validate.is_case_sensitive,
+                        is_whole_word: content.validate.is_whole_word
+                    }
+                );
             }
         },
         updateTimeTrackPayload(content: { id: string; with_label: { label: string }; time_track: TimeTrackPayload }) {
@@ -115,16 +127,18 @@ export const usePayloadStore = defineStore("payload", {
                     const _end = moment.unix(Number(content.time_track.end_time));
                     const _start = moment.unix(Number(exist.time_track?.time));
                     const duration = moment.duration(_start.diff(_end));
-                    this.filteredPayload[indexFiltered].time_track.elapsed_time = humanizeDuration(duration.asMilliseconds());
+                    this.filteredPayload[indexFiltered].time_track.elapsed_time = humanizeDuration(
+                        duration.asMilliseconds()
+                    );
                 }
             }
         },
         updateLabelPayload(content: { id: string; label: any }) {
-            this.updatePayload(content, "with_label");
+            this.updatePayload(content, 'with_label');
         },
         clearCache() {
-            this.payload = this.payload.filter((payload) => payload.to_screen.screen_name !== "cache");
-            this.filteredPayload = this.filteredPayload.filter((payload) => payload.to_screen.screen_name !== "cache");
+            this.payload = this.payload.filter((payload) => payload.to_screen.screen_name !== 'cache');
+            this.filteredPayload = this.filteredPayload.filter((payload) => payload.to_screen.screen_name !== 'cache');
         },
         removePayload(id: string) {
             const indexPayload = this.findById(id);

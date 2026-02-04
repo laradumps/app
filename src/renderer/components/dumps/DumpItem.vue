@@ -1,32 +1,38 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import DumpLink from "@/components/dumps/DumpLink.vue";
-import DumpQueries from "@/components/laravel/DumpQueries.vue";
-import DumpJson from "@/components/dumps/DumpJson.vue";
-import DumpModel from "@/components/laravel/DumpModel.vue";
-import DumpTable from "@/components/dumps/DumpTable.vue";
-import DumpHTML from "@/components/dumps/DumpHTML.vue";
-import DumpTimeTrack from "@/components/dumps/DumpTimeTrack.vue";
-import DumpContains from "@/components/dumps/DumpContains.vue";
-import DumpMailable from "@/components/laravel/DumpMailable.vue";
-import DumpIsJson from "@/components/dumps/DumpIsJson.vue";
-import DumpTableV2 from "@/components/dumps/DumpTableV2.vue";
-import DumpQuery from "@/components/laravel/DumpQuery.vue";
-import { Payload } from "@/types/Payload";
-import DumpDump from "@/components/dumps/DumpDump.vue";
-import { useCollapse } from "@/store/collapse";
-import { useSettingsStore } from "@/store/settings";
-import moment from "moment";
-import { useQueriesChart } from "@/store/queries-chart";
-import { ExclamationTriangleIcon, TrashIcon, ClipboardIcon, BookmarkIcon, SparklesIcon } from "@heroicons/vue/24/outline";
-import { useTimeStore } from "@/store/time";
-import { useQueryDuplicated } from "@/store/query-duplicated";
-import { usePayloadStore } from "@/store/payload";
-import VueJsonPretty from "vue-json-pretty";
-import { BoltIcon } from "@heroicons/vue/20/solid";
-import { useSavedDumpsStore } from "@/store/saved-dumps";
-import { useToastStore } from "@/store/toast";
-import { useI18n } from "vue-i18n";
+import { computed, defineProps, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import DumpLink from '@/components/dumps/DumpLink.vue';
+import DumpQueries from '@/components/laravel/DumpQueries.vue';
+import DumpJson from '@/components/dumps/DumpJson.vue';
+import DumpModel from '@/components/laravel/DumpModel.vue';
+import DumpTable from '@/components/dumps/DumpTable.vue';
+import DumpHTML from '@/components/dumps/DumpHTML.vue';
+import DumpTimeTrack from '@/components/dumps/DumpTimeTrack.vue';
+import DumpContains from '@/components/dumps/DumpContains.vue';
+import DumpMailable from '@/components/laravel/DumpMailable.vue';
+import DumpIsJson from '@/components/dumps/DumpIsJson.vue';
+import DumpTableV2 from '@/components/dumps/DumpTableV2.vue';
+import DumpQuery from '@/components/laravel/DumpQuery.vue';
+import { Payload } from '@/types/Payload';
+import DumpDump from '@/components/dumps/DumpDump.vue';
+import { useCollapse } from '@/store/collapse';
+import { useSettingsStore } from '@/store/settings';
+import moment from 'moment';
+import { useQueriesChart } from '@/store/queries-chart';
+import {
+    ExclamationTriangleIcon,
+    TrashIcon,
+    ClipboardIcon,
+    BookmarkIcon,
+    SparklesIcon
+} from '@heroicons/vue/24/outline';
+import { useTimeStore } from '@/store/time';
+import { useQueryDuplicated } from '@/store/query-duplicated';
+import { usePayloadStore } from '@/store/payload';
+import VueJsonPretty from 'vue-json-pretty';
+import { BoltIcon } from '@heroicons/vue/20/solid';
+import { useSavedDumpsStore } from '@/store/saved-dumps';
+import { useToastStore } from '@/store/toast';
+import { useI18n } from 'vue-i18n';
 
 const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
@@ -35,10 +41,10 @@ const queriesChart = useQueriesChart();
 const timeStore = useTimeStore();
 const duplicatesStore = useQueryDuplicated();
 const toast = useToastStore();
-const { t } = useI18n({ useScope: "global" });
+const { t } = useI18n({ useScope: 'global' });
 
 const emit = defineEmits<{
-    (e: "deleteDump", id: string): void;
+    (e: 'deleteDump', id: string): void;
 }>();
 
 const open = ref(true);
@@ -51,33 +57,33 @@ const isPrettified = ref(false);
 
 const savedStore = useSavedDumpsStore();
 const isSaved = computed(() => savedStore.exists(props.payload.id));
-const inSavedWindow = computed(() => new URLSearchParams(window.location.search).get("screen") === "saved");
+const inSavedWindow = computed(() => new URLSearchParams(window.location.search).get('screen') === 'saved');
 
 const onSaveDump = () => {
     savedStore.add(props.payload);
-    toast.show(t("toast_added_to_saved"), "success");
+    toast.show(t('toast_added_to_saved'), 'success');
 };
 const onRemoveFromSaved = () => {
     if (inSavedWindow.value) {
-        window.ipcRenderer.send("saved-dumps:remove", { id: props.payload.id });
-        toast.show(t("toast_removed_successfully"), "success");
+        window.ipcRenderer.send('saved-dumps:remove', { id: props.payload.id });
+        toast.show(t('toast_removed_successfully'), 'success');
         return;
     }
 
     savedStore.remove(props.payload.id);
-    toast.show(t("toast_removed_successfully"), "success");
+    toast.show(t('toast_removed_successfully'), 'success');
 };
 
 const wrapperRef = ref<HTMLElement | null>(null);
 
 const onContextMenu = (e: MouseEvent) => {
-    if (["table", "table_v2"].includes(props.payload.type)) {
+    if (['table', 'table_v2'].includes(props.payload.type)) {
         return;
     }
 
     e.preventDefault();
 
-    window.dispatchEvent(new CustomEvent("ld-context-open", { detail: selfId }));
+    window.dispatchEvent(new CustomEvent('ld-context-open', { detail: selfId }));
 
     menuX.value = e.clientX;
     menuY.value = e.clientY;
@@ -86,7 +92,7 @@ const onContextMenu = (e: MouseEvent) => {
 };
 
 const onKeydown = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
         openOptions.value = false;
     }
 };
@@ -106,14 +112,14 @@ const props = defineProps<{
 const deleteDump = (id: string | null) => {
     if (!id) return;
 
-    emit("deleteDump", id);
+    emit('deleteDump', id);
 };
 
 const copyDump = () => {
     nextTick(() => {
-        if (props.payload.type === "queries" && props.payload.queries?.query.sql) {
+        if (props.payload.type === 'queries' && props.payload.queries?.query.sql) {
             navigator.clipboard.writeText(props.payload.queries?.query.sql).then(() => {
-                toast.show(t("toast_copied_to_clipboard"), "success");
+                toast.show(t('toast_copied_to_clipboard'), 'success');
             });
 
             return;
@@ -121,14 +127,14 @@ const copyDump = () => {
 
         if (props.payload.dump?.original_content) {
             navigator.clipboard.writeText(props.payload.dump?.original_content).then(() => {
-                toast.show(t("toast_copied_to_clipboard"), "success");
+                toast.show(t('toast_copied_to_clipboard'), 'success');
             });
             return;
         }
 
         if (props.payload.json?.original_content) {
             navigator.clipboard.writeText(props.payload.json?.original_content).then(() => {
-                toast.show(t("toast_copied_to_clipboard"), "success");
+                toast.show(t('toast_copied_to_clipboard'), 'success');
             });
             return;
         }
@@ -136,7 +142,7 @@ const copyDump = () => {
         const value = document.getElementById(`dump-content-${props.payload.sf_dump_id}`)?.innerText;
 
         navigator.clipboard.writeText(value).then(() => {
-            toast.show(t("toast_copied_to_clipboard"), "success");
+            toast.show(t('toast_copied_to_clipboard'), 'success');
         });
     });
 };
@@ -150,23 +156,27 @@ const onGlobalClick = () => {
 };
 
 onMounted(() => {
-    window.addEventListener("keydown", onKeydown);
-    window.addEventListener("ld-context-open", onOtherContextOpen as EventListener);
-    window.addEventListener("click", onGlobalClick, { capture: true });
+    window.addEventListener('keydown', onKeydown);
+    window.addEventListener('ld-context-open', onOtherContextOpen as EventListener);
+    window.addEventListener('click', onGlobalClick, { capture: true });
     if (props.payload.dump?.dump) {
         const { dump } = props.payload.dump;
 
-        if (typeof dump === "string" && props.payload.sf_dump_id) {
+        if (typeof dump === 'string' && props.payload.sf_dump_id) {
             const sfDump = document.getElementById(`sf-dump-${props.payload.sf_dump_id}`);
 
-            if (sfDump && !sfDump?.hasAttribute("has-dump-js")) {
-                sfDump?.setAttribute("has-dump-js", "true");
+            if (sfDump && !sfDump?.hasAttribute('has-dump-js')) {
+                sfDump?.setAttribute('has-dump-js', 'true');
                 window.Sfdump(`sf-dump-${props.payload.sf_dump_id}`);
             }
         }
 
-        if (props.payload.show_badge_count && props.payload.to_screen.screen_name === "home" && settingsStore.settings.show_badge_count) {
-            window.ipcRenderer.send("badge-icon.increment");
+        if (
+            props.payload.show_badge_count &&
+            props.payload.to_screen.screen_name === 'home' &&
+            settingsStore.settings.show_badge_count
+        ) {
+            window.ipcRenderer.send('badge-icon.increment');
         }
     }
 });
@@ -175,36 +185,37 @@ const badgeClasses = computed(() => {
     const { color } = props.payload;
     const { label } = props.payload.with_label;
 
-    const baseClass = "badge uppercase font-semibold text-xs text-base-content/80 bg-base-content/10 shadow-sm rounded-box w-auto";
+    const baseClass =
+        'badge uppercase font-semibold text-xs text-base-content/80 bg-base-content/10 shadow-sm rounded-box w-auto';
 
     const dynamicClass = {
-        "!bg-error !text-error-content": ["error", "emergency"].includes(label) || color === "red",
-        "!bg-info !text-info-content": label === "info" || color === "blue",
-        "!bg-warning !text-warning-content": label === "warning" || color === "orange",
-        "!bg-gray-400! text-warning-content": label === "debug",
-        "!bg-success !text-success-content": color === "green",
-        "!bg-black !text-white": color === "black"
+        '!bg-error !text-error-content': ['error', 'emergency'].includes(label) || color === 'red',
+        '!bg-info !text-info-content': label === 'info' || color === 'blue',
+        '!bg-warning !text-warning-content': label === 'warning' || color === 'orange',
+        '!bg-gray-400! text-warning-content': label === 'debug',
+        '!bg-success !text-success-content': color === 'green',
+        '!bg-black !text-white': color === 'black'
     };
 
     const additionalClasses = Object.entries(dynamicClass)
         .filter(([_, condition]) => condition)
         .map(([className]) => className)
-        .join(" ");
+        .join(' ');
 
     return `${baseClass} ${additionalClasses}`;
 });
 
 const containerClasses = computed(() => {
-    const color = props.payload.color ?? "default";
+    const color = props.payload.color ?? 'default';
 
     const colors = {
-        red: "bg-error/10",
-        blue: "bg-info/10",
-        orange: "bg-warning/10",
-        green: "bg-success/10",
-        black: "bg-black/10",
-        gray: "bg-base-100",
-        default: "bg-base-100"
+        red: 'bg-error/10',
+        blue: 'bg-info/10',
+        orange: 'bg-warning/10',
+        green: 'bg-success/10',
+        black: 'bg-black/10',
+        gray: 'bg-base-100',
+        default: 'bg-base-100'
     };
 
     return colors[color];
@@ -215,7 +226,7 @@ watch(collapseStore, (value) => {
 });
 
 const getLabel = computed(() => {
-    if (Object.values(props.payload.with_label).length > 0 && props.payload.with_label.label !== "") {
+    if (Object.values(props.payload.with_label).length > 0 && props.payload.with_label.label !== '') {
         return props.payload.with_label.label;
     }
 
@@ -223,20 +234,26 @@ const getLabel = computed(() => {
 });
 
 const isDuplicated = (sql: string) => {
-    return duplicatesStore.duplicatesInfo.some((info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated);
+    return duplicatesStore.duplicatesInfo.some(
+        (info) => info.request_id === timeStore.selected && info.sql === sql && info.has_duplicated
+    );
 };
 
 const decrementBadgeCount = () => {
     if (shouldDisplayBadge) {
-        window.ipcRenderer.send("badge-icon.decrement");
+        window.ipcRenderer.send('badge-icon.decrement');
 
-        payloadStore.updatePayload(props.payload, "show_badge_count", () => false);
+        payloadStore.updatePayload(props.payload, 'show_badge_count', () => false);
         return;
     }
 };
 
 const shouldDisplayBadge = computed(() => {
-    return props.payload.show_badge_count && props.payload.to_screen.screen_name === "home" && settingsStore.settings.show_badge_count;
+    return (
+        props.payload.show_badge_count &&
+        props.payload.to_screen.screen_name === 'home' &&
+        settingsStore.settings.show_badge_count
+    );
 });
 
 const hasContext = computed(() => {
@@ -294,27 +311,28 @@ const endPercentage = computed(() => {
 const getPercentageColors = () => {
     if (percentage.value > 50) {
         return {
-            start: "rgba(239, 68, 68, 0.1)",
-            end: "rgba(239, 68, 68, 0.1)"
+            start: 'rgba(239, 68, 68, 0.1)',
+            end: 'rgba(239, 68, 68, 0.1)'
         };
     }
     if (percentage.value > 20) {
         return {
-            start: "rgba(245, 158, 11, 0.1)",
-            end: "rgba(245, 158, 11, 0.2)"
+            start: 'rgba(245, 158, 11, 0.1)',
+            end: 'rgba(245, 158, 11, 0.2)'
         };
     }
     return {
-        start: "rgba(106, 157, 239, 0.1)",
-        end: "rgba(106, 157, 239, 0.2)"
+        start: 'rgba(106, 157, 239, 0.1)',
+        end: 'rgba(106, 157, 239, 0.2)'
     };
 };
 
 const computedBackgroundStyle = computed(() => {
     const colors = getPercentageColors();
 
-    const start = typeof startPercentage === "object" && "value" in startPercentage ? startPercentage.value : startPercentage;
-    const end = typeof endPercentage === "object" && "value" in endPercentage ? endPercentage.value : endPercentage;
+    const start =
+        typeof startPercentage === 'object' && 'value' in startPercentage ? startPercentage.value : startPercentage;
+    const end = typeof endPercentage === 'object' && 'value' in endPercentage ? endPercentage.value : endPercentage;
 
     return {
         background: `linear-gradient(to right,
@@ -325,7 +343,7 @@ const computedBackgroundStyle = computed(() => {
 });
 
 const isPercentageColors = computed(() => {
-    return props.payload.type == "queries" && queriesChart.type === "percentage-colors";
+    return props.payload.type == 'queries' && queriesChart.type === 'percentage-colors';
 });
 
 const isHighlighted = computed(() => {
@@ -336,13 +354,17 @@ const isHighlighted = computed(() => {
 });
 
 onUnmounted(() => {
-    window.removeEventListener("keydown", onKeydown);
-    window.removeEventListener("ld-context-open", onOtherContextOpen as EventListener);
-    window.removeEventListener("click", onGlobalClick, { capture: true } as any);
+    window.removeEventListener('keydown', onKeydown);
+    window.removeEventListener('ld-context-open', onOtherContextOpen as EventListener);
+    window.removeEventListener('click', onGlobalClick, { capture: true } as any);
 });
 </script>
 <template>
-    <div v-if="(payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'">
+    <div
+        v-if="
+            (payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'
+        "
+    >
         <div
             @mouseenter="decrementBadgeCount"
             :class="{
@@ -368,7 +390,7 @@ onUnmounted(() => {
                         class="list-none opacity-70"
                         v-if="showTime"
                     >
-                        {{ moment(payload.date_time).format("hh:mm:ss a") }}
+                        {{ moment(payload.date_time).format('hh:mm:ss a') }}
                     </li>
                     <li class="select-none opacity-70 truncate max-w-[400px]">
                         <DumpLink
@@ -565,7 +587,7 @@ onUnmounted(() => {
                                             openOptions = false;
                                         "
                                     >
-                                        {{ $t("copy") }}
+                                        {{ $t('copy') }}
                                         <ClipboardIcon class="w-4 inline-block" />
                                     </button>
                                 </li>
@@ -589,16 +611,20 @@ onUnmounted(() => {
                                             openOptions = false;
                                         "
                                     >
-                                        {{ $t("remove_from_saved") }}
+                                        {{ $t('remove_from_saved') }}
                                         <BookmarkIcon class="w-4 inline-block" />
                                     </button>
                                 </li>
                                 <li v-else>
                                     <button
                                         class="hover:bg-base-300 rounded flex justify-between items-center"
-                                        @click.stop="isSaved ? (onRemoveFromSaved(), (openOptions = false)) : (onSaveDump(), (openOptions = false))"
+                                        @click.stop="
+                                            isSaved
+                                                ? (onRemoveFromSaved(), (openOptions = false))
+                                                : (onSaveDump(), (openOptions = false))
+                                        "
                                     >
-                                        {{ isSaved ? $t("remove_from_saved") : $t("save_dump") }}
+                                        {{ isSaved ? $t('remove_from_saved') : $t('save_dump') }}
                                         <BookmarkIcon class="w-4 inline-block" />
                                     </button>
                                 </li>
@@ -610,7 +636,7 @@ onUnmounted(() => {
                                             openOptions = false;
                                         "
                                     >
-                                        {{ $t("delete") }}
+                                        {{ $t('delete') }}
                                         <TrashIcon class="w-4 inline-block" />
                                     </button>
                                 </li>

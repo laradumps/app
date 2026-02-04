@@ -1,25 +1,31 @@
 <script setup lang="ts">
-import { computed, defineProps } from "vue";
-import { Payload } from "@/types/Payload";
-import VueJsonPretty from "vue-json-pretty";
+import { computed, defineProps } from 'vue';
+import { Payload } from '@/types/Payload';
+import VueJsonPretty from 'vue-json-pretty';
 
 const props = defineProps<{
     payload: Payload;
 }>();
 
 const isExplainPlan = computed(() => {
-    return props.payload.dump?.variable_type === "string" && props.payload.with_label?.label?.toLowerCase().includes("explain");
+    return (
+        props.payload.dump?.variable_type === 'string' &&
+        props.payload.with_label?.label?.toLowerCase().includes('explain')
+    );
 });
 
 const formattedDump = computed(() => {
-    if (isExplainPlan && props.payload.dump?.variable_type === "string") {
-        return props.payload.dump?.dump.replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;").replace(/\n/g, "<br>").replace(/->/g, "→");
+    if (isExplainPlan && props.payload.dump?.variable_type === 'string') {
+        return props.payload.dump?.dump
+            .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;')
+            .replace(/\n/g, '<br>')
+            .replace(/->/g, '→');
     }
     return props.payload.dump?.dump;
 });
 
 const rawDumpContent = computed(() => {
-    return props.payload.dump?.dump === null ? "null" : props.payload.dump?.dump;
+    return props.payload.dump?.dump === null ? 'null' : props.payload.dump?.dump;
 });
 </script>
 

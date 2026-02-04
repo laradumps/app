@@ -1,7 +1,7 @@
 <script setup>
-import IconCollapseClose from "@/components/Icons/IconCollapseClose.vue";
-import IconCollapseOpen from "@/components/Icons/IconCollapseOpen.vue";
-import { useCollapse } from "@/store/collapse";
+import IconCollapseClose from '@/components/Icons/IconCollapseClose.vue';
+import IconCollapseOpen from '@/components/Icons/IconCollapseOpen.vue';
+import { useCollapse } from '@/store/collapse';
 
 const collapseStore = useCollapse();
 </script>

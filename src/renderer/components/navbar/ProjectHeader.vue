@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { StarIcon as StarSolid } from "@heroicons/vue/24/solid";
-import { StarIcon as StarOutline, TrashIcon } from "@heroicons/vue/24/outline";
+import { StarIcon as StarSolid } from '@heroicons/vue/24/solid';
+import { StarIcon as StarOutline, TrashIcon } from '@heroicons/vue/24/outline';
 
 interface Project {
     path: string;
@@ -13,11 +13,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: "toggleStar", name: string): void;
-    (e: "confirmProjectRemoval", path: string): void;
+    (e: 'toggleStar', name: string): void;
+    (e: 'confirmProjectRemoval', path: string): void;
 }>();
 
-const formattedName = (name?: string) => name?.replace(/[-_.]/g, " ") ?? "";
+const formattedName = (name?: string) => name?.replace(/[-_.]/g, ' ') ?? '';
 </script>
 
 <template>

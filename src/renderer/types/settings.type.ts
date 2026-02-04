@@ -16,10 +16,10 @@ export interface Settings {
     language: string;
     check_for_updates: string;
     auto_launch: string;
-    scroll_direction: "top" | "bottom";
+    scroll_direction: 'top' | 'bottom';
     ide_handler: string;
     shortcuts: Shortcuts;
-    dump_order: "normal" | "reversed";
+    dump_order: 'normal' | 'reversed';
     window_width: number;
     window_height: number;
     show_collapse_button: boolean;
@@ -28,6 +28,8 @@ export interface Settings {
     show_variable_type: boolean;
     limit_dumps: number;
     limit_laravel_queries: number;
+    mcp_enabled: boolean;
+    mcp_port: number;
     limit_laravel_logs: number;
     limit_laravel_jobs: number;
     custom_css: string;
@@ -37,4 +39,5 @@ export interface Settings {
     split_pane_screen?: string | null;
     grouped_by_time: boolean;
     display_last_log: boolean;
+    mcp_limit_payload_objects?: number;
 }

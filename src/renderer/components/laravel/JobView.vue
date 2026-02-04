@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { Job, useJobStore } from "@/store/jobs";
-import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import moment from "moment";
-import { PlayIcon, TrashIcon } from "@heroicons/vue/24/outline";
-import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from "@heroicons/vue/24/solid";
+import { Job, useJobStore } from '@/store/jobs';
+import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import moment from 'moment';
+import { PlayIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
 
-import SvgEmpty from "@/components/svg/SvgEmpty.vue";
-import { usePauseJobsStore } from "@/store/pause-jobs";
-import IconPause from "@/components/Icons/IconPause.vue";
-import Divider from "@/components/common/Divider.vue";
-import CodeSnippet from "@/components/CodeSnippet.vue";
-import { useGlobalSearchStore } from "@/store/global-search";
-import { FunnelIcon } from "@heroicons/vue/24/outline";
-import { FunnelIcon as FunnelSolidIcon } from "@heroicons/vue/24/solid";
-import { generateLink } from "@/utils/ideHandler";
+import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import { usePauseJobsStore } from '@/store/pause-jobs';
+import IconPause from '@/components/Icons/IconPause.vue';
+import Divider from '@/components/common/Divider.vue';
+import CodeSnippet from '@/components/CodeSnippet.vue';
+import { useGlobalSearchStore } from '@/store/global-search';
+import { FunnelIcon } from '@heroicons/vue/24/outline';
+import { FunnelIcon as FunnelSolidIcon } from '@heroicons/vue/24/solid';
+import { generateLink } from '@/utils/ideHandler';
 
 const jobStore = useJobStore();
 const pauseJobsStore = usePauseJobsStore();
@@ -22,8 +22,8 @@ const globalSearchStore = useGlobalSearchStore();
 const forceUpdate = ref(0);
 const selected = ref();
 const statusFilter = ref<string | null>(null);
-const sortBy = ref<"display_name" | "duration" | "pushed_time">("pushed_time");
-const sortDirection = ref<"asc" | "desc">("desc");
+const sortBy = ref<'display_name' | 'duration' | 'pushed_time'>('pushed_time');
+const sortDirection = ref<'asc' | 'desc'>('desc');
 const collapsedGroups = ref<Record<string, boolean>>({});
 
 const props = defineProps<{
@@ -53,7 +53,10 @@ const jobs = computed(() => {
     return Object.values(items)
         .filter((job) => {
             const searchTerm = globalSearchStore.search.toLowerCase();
-            const matchesSearch = job.display_name.toLowerCase().includes(searchTerm) || job.job_id.includes(searchTerm) || job.job[0].includes(searchTerm);
+            const matchesSearch =
+                job.display_name.toLowerCase().includes(searchTerm) ||
+                job.job_id.includes(searchTerm) ||
+                job.job[0].includes(searchTerm);
 
             const matchesStatus = !statusFilter.value || job.status === statusFilter.value;
 
@@ -61,12 +64,12 @@ const jobs = computed(() => {
         })
         .sort((a, b) => {
             const getValue = (job: Job) => {
-                if (sortBy.value === "duration") {
+                if (sortBy.value === 'duration') {
                     const start = new Date(job.start_time ?? 0).getTime();
                     const end = new Date(job.end_time ?? 0).getTime();
                     return end - start;
                 }
-                if (sortBy.value === "display_name") {
+                if (sortBy.value === 'display_name') {
                     return job.display_name.toLowerCase();
                 }
                 return new Date(job.pushed_time ?? 0).getTime();
@@ -75,8 +78,8 @@ const jobs = computed(() => {
             const aVal = getValue(a);
             const bVal = getValue(b);
 
-            if (aVal < bVal) return sortDirection.value === "asc" ? -1 : 1;
-            if (aVal > bVal) return sortDirection.value === "asc" ? 1 : -1;
+            if (aVal < bVal) return sortDirection.value === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortDirection.value === 'asc' ? 1 : -1;
             return 0;
         });
 });
@@ -97,13 +100,13 @@ const groupedJobsByRelativeTime = computed(() => {
 
 const toggleSort = (field: typeof sortBy.value) => {
     if (sortBy.value === field) {
-        sortDirection.value = sortDirection.value === "asc" ? "desc" : "asc";
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
 
         return;
     }
 
     sortBy.value = field;
-    sortDirection.value = "asc";
+    sortDirection.value = 'asc';
 };
 
 const statusCounts = computed(() => {
@@ -120,8 +123,8 @@ const statusCounts = computed(() => {
 const isFiltering = computed(() => !!statusFilter.value);
 
 const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-        const drawerToggle = document.getElementById("job-drawer") as HTMLInputElement;
+    if (e.key === 'Escape') {
+        const drawerToggle = document.getElementById('job-drawer') as HTMLInputElement;
         if (drawerToggle) {
             drawerToggle.checked = false;
         }
@@ -150,12 +153,12 @@ const openModal = (id: string) => {
 
     nextTick(() => {
         const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
-        if (sfDump && !sfDump.hasAttribute("has-dump-js")) {
-            sfDump.setAttribute("has-dump-js", "true");
+        if (sfDump && !sfDump.hasAttribute('has-dump-js')) {
+            sfDump.setAttribute('has-dump-js', 'true');
             window.Sfdump(`sf-dump-${sfDumpId}`);
         }
 
-        const toggle = document.getElementById("job-drawer") as HTMLInputElement;
+        const toggle = document.getElementById('job-drawer') as HTMLInputElement;
         if (toggle) {
             toggle.checked = true;
         }
@@ -167,12 +170,12 @@ const clear = () => {
         pauseJobsStore.toggle();
     }
 
-    selected.value = "";
+    selected.value = '';
     jobStore.jobs = {};
 };
 
 const duration = (startTime: any, endTime: any) => {
-    if (!startTime || !endTime) return "-";
+    if (!startTime || !endTime) return '-';
 
     const durationMs = new Date(endTime).getTime() - new Date(startTime).getTime();
     if (durationMs < 1000) return `${durationMs} ms`;
@@ -183,12 +186,12 @@ const duration = (startTime: any, endTime: any) => {
 onMounted(() => {
     setInterval(() => {
         forceUpdate.value++;
-        window.addEventListener("keydown", handleEscape);
+        window.addEventListener('keydown', handleEscape);
     }, 60_000);
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener("keydown", handleEscape);
+    window.removeEventListener('keydown', handleEscape);
 });
 
 const toggleMessageLimit = () => {
@@ -284,8 +287,20 @@ const toggleMessageLimit = () => {
                                     <tbody>
                                         <tr>
                                             <td>{{ selected.id }}</td>
-                                            <td class="whitespace-nowrap">{{ selected.start_time ? moment(selected.start_time).format("hh:mm:ss a") : "-" }}</td>
-                                            <td class="whitespace-nowrap">{{ selected.end_time ? moment(selected.end_time).format("hh:mm:ss a") : "-" }}</td>
+                                            <td class="whitespace-nowrap">
+                                                {{
+                                                    selected.start_time
+                                                        ? moment(selected.start_time).format('hh:mm:ss a')
+                                                        : '-'
+                                                }}
+                                            </td>
+                                            <td class="whitespace-nowrap">
+                                                {{
+                                                    selected.end_time
+                                                        ? moment(selected.end_time).format('hh:mm:ss a')
+                                                        : '-'
+                                                }}
+                                            </td>
                                             <td>{{ duration(selected.start_time, selected.end_time) }}</td>
                                         </tr>
                                     </tbody>
@@ -396,14 +411,14 @@ const toggleMessageLimit = () => {
                                 class="space-x-1.5 cursor-pointer"
                             >
                                 <span>Job</span>
-                                <span v-if="sortBy === 'display_name'">{{ sortDirection === "asc" ? "▲" : "▼" }}</span>
+                                <span v-if="sortBy === 'display_name'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             </th>
                             <th
                                 @click="toggleSort('duration')"
                                 class="space-x-1.5 cursor-pointer text-right"
                             >
                                 <span>Duration</span>
-                                <span v-if="sortBy === 'duration'">{{ sortDirection === "asc" ? "▲" : "▼" }}</span>
+                                <span v-if="sortBy === 'duration'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             </th>
                         </tr>
                     </thead>
@@ -422,7 +437,7 @@ const toggleMessageLimit = () => {
                                         @click="toggleGroup(timeKey)"
                                     >
                                         {{ timeKey }}
-                                        <span class="ml-1">{{ collapsedGroups[timeKey] ? "▼" : "▲" }}</span>
+                                        <span class="ml-1">{{ collapsedGroups[timeKey] ? '▼' : '▲' }}</span>
                                     </span>
                                 </td>
                             </tr>
@@ -470,7 +485,9 @@ const toggleMessageLimit = () => {
                                         {{ job.ide_handle.class_name }}:{{ job.ide_handle.line }}
                                     </a>
                                 </td>
-                                <td class="whitespace-nowrap text-right">{{ duration(job.start_time, job.end_time) }}</td>
+                                <td class="whitespace-nowrap text-right">
+                                    {{ duration(job.start_time, job.end_time) }}
+                                </td>
                             </tr>
                         </template>
                     </tbody>

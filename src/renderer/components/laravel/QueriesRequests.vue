@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { Payload } from "@/types/Payload";
-import { useTimeStore } from "@/store/time";
-import { useQueriesPayloadStore } from "@/store/queries";
-import { BoltIcon, ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
-import { useQueryDuplicated } from "@/store/query-duplicated";
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { Payload } from '@/types/Payload';
+import { useTimeStore } from '@/store/time';
+import { useQueriesPayloadStore } from '@/store/queries';
+import { BoltIcon, ExclamationTriangleIcon } from '@heroicons/vue/20/solid';
+import { useQueryDuplicated } from '@/store/query-duplicated';
 
 const timeStore = useTimeStore();
 const queriesStore = useQueriesPayloadStore();
@@ -21,7 +21,7 @@ const allRequests = computed(() => {
         method: timeStore.getMethod(requestId),
         origin: timeStore.getOrigin(requestId),
         count: queriesStore.payload.filter((payload: Payload) => payload.request_id == requestId).length,
-        date: timeStore.getDate(requestId).format("HH:mm:ss")
+        date: timeStore.getDate(requestId).format('HH:mm:ss')
     }));
 
     if (timeStore.search?.trim()) {
@@ -46,19 +46,22 @@ const display = (id: string) => {
 };
 
 const handleShortcut = (event: KeyboardEvent) => {
-    const isMac = navigator.platform.toUpperCase().includes("MAC");
-    if ((isMac && event.metaKey && event.key.toLowerCase() === "k") || (!isMac && event.ctrlKey && event.key.toLowerCase() === "k")) {
+    const isMac = navigator.platform.toUpperCase().includes('MAC');
+    if (
+        (isMac && event.metaKey && event.key.toLowerCase() === 'k') ||
+        (!isMac && event.ctrlKey && event.key.toLowerCase() === 'k')
+    ) {
         event.preventDefault();
         searchInput.value?.focus();
     }
 };
 
 onMounted(() => {
-    window.addEventListener("keydown", handleShortcut);
+    window.addEventListener('keydown', handleShortcut);
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener("keydown", handleShortcut);
+    window.removeEventListener('keydown', handleShortcut);
 });
 </script>
 

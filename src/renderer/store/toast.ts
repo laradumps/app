@@ -1,8 +1,8 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
 let counter = 0;
 
-type ToastType = "info" | "success" | "error" | "warning";
+type ToastType = 'info' | 'success' | 'error' | 'warning';
 
 interface Toast {
     id: number;
@@ -11,7 +11,7 @@ interface Toast {
     timeout: number;
 }
 
-export const useToastStore = defineStore("toast", {
+export const useToastStore = defineStore('toast', {
     state: (): { toasts: Toast[] } => ({
         toasts: []
     }),
@@ -19,7 +19,7 @@ export const useToastStore = defineStore("toast", {
         all: (state) => state.toasts
     },
     actions: {
-        show(message: string, type: ToastType = "info", timeout = 2000): number {
+        show(message: string, type: ToastType = 'info', timeout = 2000): number {
             const id = ++counter;
             this.toasts.push({ id, message, type, timeout });
             if (timeout > 0) {

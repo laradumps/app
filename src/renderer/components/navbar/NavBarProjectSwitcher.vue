@@ -1,58 +1,58 @@
 <script setup lang="ts">
-import { SignalSlashIcon, ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
-import { SignalIcon } from "@heroicons/vue/24/solid";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import JSConfetti from "js-confetti";
-import { useCurrentProject } from "@/store/current-project";
-import { useXDebug } from "@/store/xdebug";
-import { XDebugYml } from "@/types/XDebug";
-import { IpcRendererEvent } from "electron";
-import { Environment } from "../../main/storage";
-import SvgEmpty from "@/components/svg/SvgEmpty.vue";
-import ProjectsList from "@/components/navbar/ProjectsList.vue";
-import ProjectHeader from "@/components/navbar/ProjectHeader.vue";
-import EnvironmentsList from "@/components/navbar/EnvironmentsList.vue";
+import { SignalSlashIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
+import { SignalIcon } from '@heroicons/vue/24/solid';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import JSConfetti from 'js-confetti';
+import { useCurrentProject } from '@/store/current-project';
+import { useXDebug } from '@/store/xdebug';
+import { XDebugYml } from '@/types/XDebug';
+import { IpcRendererEvent } from 'electron';
+import { Environment } from '../../main/storage';
+import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import ProjectsList from '@/components/navbar/ProjectsList.vue';
+import ProjectHeader from '@/components/navbar/ProjectHeader.vue';
+import EnvironmentsList from '@/components/navbar/EnvironmentsList.vue';
 
-const emit = defineEmits(["modalOpen", "modalClose"]);
+const emit = defineEmits(['modalOpen', 'modalClose']);
 const xDebugStore = useXDebug();
 const currentProjectStore = useCurrentProject();
 
 const IPC_EVENTS = {
-    STORAGE_GET: "storage.get",
-    STORAGE_GET_REPLY: "storage.get.reply",
-    STORAGE_SET_ACTIVE_REPLY: "storage.set-active.reply",
-    STORAGE_GET_ENVIRONMENTS: "storage.get-environments",
-    STORAGE_GET_ENVIRONMENTS_REPLY: "storage.get-environments.reply",
-    STORAGE_SET_ENVIRONMENTS_ORDER: "storage.set-environments-order",
-    STORAGE_GET_YAML: "storage.get-yaml",
-    STORAGE_GET_YAML_REPLY: "storage.get-yaml.reply",
-    STORAGE_UPDATE: "storage.update",
-    STORAGE_REMOVE: "storage.remove",
-    STORAGE_UPDATE_SECTION: "storage.update-section",
-    STORAGE_GET_STARRED: "storage.get-starred",
-    STORAGE_GET_STARRED_REPLY: "storage.get-starred.reply",
-    STORAGE_TOGGLE_STARRED: "storage.toggle-starred",
-    STORAGE_SET_PROJECTS_ORDER: "storage.set-projects-order",
-    STORAGE_GET_PROJECTS_ORDER: "storage.get-projects-order",
+    STORAGE_GET: 'storage.get',
+    STORAGE_GET_REPLY: 'storage.get.reply',
+    STORAGE_SET_ACTIVE_REPLY: 'storage.set-active.reply',
+    STORAGE_GET_ENVIRONMENTS: 'storage.get-environments',
+    STORAGE_GET_ENVIRONMENTS_REPLY: 'storage.get-environments.reply',
+    STORAGE_SET_ENVIRONMENTS_ORDER: 'storage.set-environments-order',
+    STORAGE_GET_YAML: 'storage.get-yaml',
+    STORAGE_GET_YAML_REPLY: 'storage.get-yaml.reply',
+    STORAGE_UPDATE: 'storage.update',
+    STORAGE_REMOVE: 'storage.remove',
+    STORAGE_UPDATE_SECTION: 'storage.update-section',
+    STORAGE_GET_STARRED: 'storage.get-starred',
+    STORAGE_GET_STARRED_REPLY: 'storage.get-starred.reply',
+    STORAGE_TOGGLE_STARRED: 'storage.toggle-starred',
+    STORAGE_SET_PROJECTS_ORDER: 'storage.set-projects-order',
+    STORAGE_GET_PROJECTS_ORDER: 'storage.get-projects-order',
 
-    APP_SETTING_PROJECT_ADDED: "app-setting:project-added",
+    APP_SETTING_PROJECT_ADDED: 'app-setting:project-added',
 
-    MAIN_DIALOG: "main:dialog",
-    MAIN_DIALOG_CHOICE: "main:dialog-choice",
+    MAIN_DIALOG: 'main:dialog',
+    MAIN_DIALOG_CHOICE: 'main:dialog-choice',
 
-    PROJECT_DIRECTORY_SELECTED: "project-directory-selected",
-    COMPOSER_AUTO_INSTALL: "composer-auto-install",
+    PROJECT_DIRECTORY_SELECTED: 'project-directory-selected',
+    COMPOSER_AUTO_INSTALL: 'composer-auto-install',
 
-    XDEBUG_ERROR: "xdebug-error",
-    XDEBUG_CONNECTOR_DISCONNECT: "xdebug-connector::disconnect",
-    XDEBUG_CONNECT_CLOSED: "xdebug-connect-closed",
-    SETTINGS_ENV_XDEBUG_FILE_CONTENTS: "settings:env-xdebug-file-contents",
-    CONNECT_XDEBUG: "connect-xdebug",
-    DISCONNECT_XDEBUG: "disconnect-xdebug",
-    MAIN_SETTING_GET_XDEBUG_ENVS: "main:setting-get-xdebug-environments",
+    XDEBUG_ERROR: 'xdebug-error',
+    XDEBUG_CONNECTOR_DISCONNECT: 'xdebug-connector::disconnect',
+    XDEBUG_CONNECT_CLOSED: 'xdebug-connect-closed',
+    SETTINGS_ENV_XDEBUG_FILE_CONTENTS: 'settings:env-xdebug-file-contents',
+    CONNECT_XDEBUG: 'connect-xdebug',
+    DISCONNECT_XDEBUG: 'disconnect-xdebug',
+    MAIN_SETTING_GET_XDEBUG_ENVS: 'main:setting-get-xdebug-environments',
 
-    ADD_SCREEN_CUSTOM_EVENT: "add-screen",
-    MAIN_PROJECT_SETUP: "main:project-setup"
+    ADD_SCREEN_CUSTOM_EVENT: 'add-screen',
+    MAIN_PROJECT_SETUP: 'main:project-setup'
 } as const;
 
 interface Project {
@@ -71,7 +71,7 @@ const yamlConfig = ref<Record<string, any>>({});
 const activeEnvKey = ref<string | null>(null);
 
 const installActive = ref(false);
-const installErrorMessage = ref("");
+const installErrorMessage = ref('');
 
 let errorDismissTimer: number | null = null;
 
@@ -82,7 +82,7 @@ watch(installErrorMessage, (msg) => {
     }
     if (msg) {
         errorDismissTimer = window.setTimeout(() => {
-            installErrorMessage.value = "";
+            installErrorMessage.value = '';
         }, 3000);
     }
 });
@@ -90,7 +90,9 @@ watch(installErrorMessage, (msg) => {
 const starredProjects = ref<string[]>([]);
 const projectsOrder = ref<{ starred: string[]; all: string[] }>({ starred: [], all: [] });
 let handleStarredReplyRef: ((event: IpcRendererEvent, list: string[]) => void) | null = null;
-let handleProjectsOrderReply: ((event: IpcRendererEvent, payload: { starred: string[]; all: string[] }) => void) | null = null;
+let handleProjectsOrderReply:
+    | ((event: IpcRendererEvent, payload: { starred: string[]; all: string[] }) => void)
+    | null = null;
 
 let handleYamlReplyRef: ((event: IpcRendererEvent, data: any) => void) | null = null;
 let handleComposerRef: ((event: IpcRendererEvent, payload: any) => void) | null = null;
@@ -101,12 +103,12 @@ let handleProjectDirSelectedRef: ((_: any, args: any) => void) | null = null;
 onMounted(() => {
     initializeProjectData();
     setupEventListeners();
-    window.addEventListener("resize", updateHeight);
+    window.addEventListener('resize', updateHeight);
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER);
 });
 
 onUnmounted(() => {
-    window.removeEventListener("resize", updateHeight);
+    window.removeEventListener('resize', updateHeight);
 
     if (errorDismissTimer) {
         clearTimeout(errorDismissTimer);
@@ -122,8 +124,10 @@ onUnmounted(() => {
     window.ipcRenderer.off(IPC_EVENTS.XDEBUG_ERROR, onXdebugError);
     window.ipcRenderer.off(IPC_EVENTS.XDEBUG_CONNECTOR_DISCONNECT, disconnectFromXdebug);
     if (handleXdebugClosedRef) window.ipcRenderer.off(IPC_EVENTS.XDEBUG_CONNECT_CLOSED, handleXdebugClosedRef);
-    if (handleXdebugFileContentsRef) window.ipcRenderer.off(IPC_EVENTS.SETTINGS_ENV_XDEBUG_FILE_CONTENTS, handleXdebugFileContentsRef);
-    if (handleProjectDirSelectedRef) window.ipcRenderer.off(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
+    if (handleXdebugFileContentsRef)
+        window.ipcRenderer.off(IPC_EVENTS.SETTINGS_ENV_XDEBUG_FILE_CONTENTS, handleXdebugFileContentsRef);
+    if (handleProjectDirSelectedRef)
+        window.ipcRenderer.off(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
     if (handleStarredReplyRef) window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_STARRED_REPLY, handleStarredReplyRef);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
 });
@@ -132,7 +136,7 @@ const updateHeight = () => {
     windowHeight.value = window.innerHeight;
 };
 
-const formattedName = (name: string): string => name?.replace(/[-_.]/g, " ") || "";
+const formattedName = (name: string): string => name?.replace(/[-_.]/g, ' ') || '';
 
 const handleProjectAdded = (_: IpcRendererEvent, project: Project) => {
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
@@ -178,7 +182,8 @@ const setActiveProject = (project: Project) => {
     activeEnvKey.value = null;
 };
 
-const ignoredEnvironment = (value: string): boolean => ["dump", "enabled_in_testing", "original_dump", "auto_invoke_app"].includes(value);
+const ignoredEnvironment = (value: string): boolean =>
+    ['dump', 'enabled_in_testing', 'original_dump', 'auto_invoke_app'].includes(value);
 
 const initializeProjectData = () => {
     isXdebugActive.value = Boolean(xDebugStore.current.project_path);
@@ -191,7 +196,7 @@ const initializeProjectData = () => {
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_STARRED);
 };
 
-const onXdebugError = (_: IpcRendererEvent, error: Error) => console.error("Xdebug error:", error);
+const onXdebugError = (_: IpcRendererEvent, error: Error) => console.error('Xdebug error:', error);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -225,18 +230,18 @@ const setupEventListeners = async () => {
     handleComposerRef = async (_: IpcRendererEvent, payload: any) => {
         if (!payload) return;
 
-        if (payload.status === "start") {
+        if (payload.status === 'start') {
             installActive.value = true;
-            installErrorMessage.value = "";
+            installErrorMessage.value = '';
         }
 
         if (payload.error) {
-            installErrorMessage.value = "An error occurred while installing.";
+            installErrorMessage.value = 'An error occurred while installing.';
             installActive.value = false;
             return;
         }
 
-        if (payload.step === "finish" && payload.done) {
+        if (payload.step === 'finish' && payload.done) {
             await sleep(500);
             installActive.value = false;
 
@@ -264,8 +269,8 @@ const setupEventListeners = async () => {
 };
 
 handleProjectDirSelectedRef = (_: any, args: any) => {
-    if (args && typeof args === "string") {
-        window.ipcRenderer.send("storage.check", { applicationPath: args });
+    if (args && typeof args === 'string') {
+        window.ipcRenderer.send('storage.check', { applicationPath: args });
     }
 };
 
@@ -288,9 +293,9 @@ const saveEnvironment = async (env: Environment | null): Promise<void> => {
 
 const confirmProjectRemoval = (projectPath: string) => {
     window.ipcRenderer.send(IPC_EVENTS.MAIN_DIALOG, {
-        buttons: ["Yes", "No"],
-        title: "Remove Project",
-        message: "Are you sure you want to remove the configuration from this Project?"
+        buttons: ['Yes', 'No'],
+        title: 'Remove Project',
+        message: 'Are you sure you want to remove the configuration from this Project?'
     });
 
     const removeHandler = (_: Event, choice: number) => {
@@ -311,14 +316,15 @@ const confirmProjectRemoval = (projectPath: string) => {
 
 // --- Xdebug connection management
 
-const connectToXdebug = () => window.ipcRenderer.send(IPC_EVENTS.MAIN_SETTING_GET_XDEBUG_ENVS, selectedProject.value.path);
+const connectToXdebug = () =>
+    window.ipcRenderer.send(IPC_EVENTS.MAIN_SETTING_GET_XDEBUG_ENVS, selectedProject.value.path);
 const disconnectFromXdebug = () => window.ipcRenderer.send(IPC_EVENTS.DISCONNECT_XDEBUG);
 
 watch(isXdebugActive, (active) => (active ? connectToXdebug() : disconnectFromXdebug()));
 watch(xDebugStore, (store) => (isXdebugActive.value = Boolean(store.current.project_path)));
 
 const baseSortedProjects = computed(() => {
-    return [...projects.value].sort((a, b) => a.project.localeCompare(b.project, undefined, { sensitivity: "base" }));
+    return [...projects.value].sort((a, b) => a.project.localeCompare(b.project, undefined, { sensitivity: 'base' }));
 });
 // --- End Xdebug connection management
 
@@ -332,7 +338,7 @@ const applyOrder = (list: Project[], order: string[]): Project[] => {
     return [...list].sort((a, b) => {
         const ai = idx.has(a.project) ? (idx.get(a.project) as number) : Number.MAX_SAFE_INTEGER;
         const bi = idx.has(b.project) ? (idx.get(b.project) as number) : Number.MAX_SAFE_INTEGER;
-        if (ai === bi) return a.project.localeCompare(b.project, undefined, { sensitivity: "base" });
+        if (ai === bi) return a.project.localeCompare(b.project, undefined, { sensitivity: 'base' });
         return ai - bi;
     });
 };
@@ -353,22 +359,30 @@ const toggleStar = (projectName: string) => {
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_TOGGLE_STARRED, { project: projectName });
 
     const wasStarred = isStarred(projectName);
-    starredProjects.value = wasStarred ? starredProjects.value.filter((n) => n !== projectName) : [...starredProjects.value, projectName];
+    starredProjects.value = wasStarred
+        ? starredProjects.value.filter((n) => n !== projectName)
+        : [...starredProjects.value, projectName];
 
     if (wasStarred) {
         projectsOrder.value.starred = projectsOrder.value.starred.filter((n) => n !== projectName);
         if (!projectsOrder.value.all.includes(projectName)) {
             projectsOrder.value.all = [...projectsOrder.value.all, projectName];
         }
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: "starred", order: projectsOrder.value.starred });
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: "all", order: projectsOrder.value.all });
+        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, {
+            list: 'starred',
+            order: projectsOrder.value.starred
+        });
+        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: 'all', order: projectsOrder.value.all });
     } else {
         projectsOrder.value.all = projectsOrder.value.all.filter((n) => n !== projectName);
         if (!projectsOrder.value.starred.includes(projectName)) {
             projectsOrder.value.starred = [...projectsOrder.value.starred, projectName];
         }
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: "all", order: projectsOrder.value.all });
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: "starred", order: projectsOrder.value.starred });
+        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: 'all', order: projectsOrder.value.all });
+        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, {
+            list: 'starred',
+            order: projectsOrder.value.starred
+        });
     }
 };
 // --- End starred projects logic
@@ -376,7 +390,7 @@ const toggleStar = (projectName: string) => {
 const activeOptions = computed(() => {
     if (!activeEnvKey.value || !yamlConfig.value) return null;
     const section = (yamlConfig.value as any)[activeEnvKey.value];
-    if (!section || typeof section !== "object") return null;
+    if (!section || typeof section !== 'object') return null;
     return section;
 });
 
@@ -414,7 +428,7 @@ const onEnvDrop = (dropIndex: number) => {
             order
         });
     } catch (e) {
-        console.error("Failed to persist environments order", e);
+        console.error('Failed to persist environments order', e);
     }
 };
 
@@ -423,20 +437,22 @@ const onEnvDragOver = (e: DragEvent) => {
 };
 
 // --- Drag & Drop to reorder projects (starred and all)
-const projDrag = ref<{ list: "starred" | "all" | null; index: number | null }>({ list: null, index: null });
+const projDrag = ref<{ list: 'starred' | 'all' | null; index: number | null }>({ list: null, index: null });
 
-const onProjectDragStart = (list: "starred" | "all", index: number) => {
+const onProjectDragStart = (list: 'starred' | 'all', index: number) => {
     projDrag.value = { list, index };
 };
 
-const onProjectDrop = (list: "starred" | "all", dropIndex: number) => {
+const onProjectDrop = (list: 'starred' | 'all', dropIndex: number) => {
     const { list: fromList, index } = projDrag.value;
     if (!fromList || index === null || fromList !== list) return; // only allow reorder within same list
 
-    const working = list === "starred" ? [...projectsOrder.value.starred] : [...projectsOrder.value.all];
+    const working = list === 'starred' ? [...projectsOrder.value.starred] : [...projectsOrder.value.all];
 
     // Build current names list from visible computed lists to ensure we reorder by names
-    const visible = (list === "starred" ? starredSortedProjects.value : regularSortedProjects.value).map((p) => p.project);
+    const visible = (list === 'starred' ? starredSortedProjects.value : regularSortedProjects.value).map(
+        (p) => p.project
+    );
 
     // Ensure working contains all visible in order; if not, initialize with visible
     const currentOrder = working.length ? working.filter((n) => visible.includes(n)) : visible.slice();
@@ -444,7 +460,7 @@ const onProjectDrop = (list: "starred" | "all", dropIndex: number) => {
     const [moved] = currentOrder.splice(index, 1);
     currentOrder.splice(dropIndex, 0, moved);
 
-    if (list === "starred") {
+    if (list === 'starred') {
         projectsOrder.value.starred = currentOrder;
     } else {
         projectsOrder.value.all = currentOrder;
@@ -482,10 +498,10 @@ const toggleXdebug = () => {
 
 const showModal = () => {
     modal_navbar_listening.showModal();
-    emit("modalOpen");
+    emit('modalOpen');
 };
 const closeModal = () => {
-    emit("modalClose");
+    emit('modalClose');
 };
 </script>
 
@@ -499,7 +515,7 @@ const closeModal = () => {
                 v-if="selectedProject.project"
                 v-text="formattedName(selectedProject.project)"
             />
-            <span v-else>{{ $t("no_project_selected") }}</span>
+            <span v-else>{{ $t('no_project_selected') }}</span>
             <SignalSlashIcon
                 v-if="!selectedProject.project"
                 class="size-4 text-error"
@@ -553,8 +569,8 @@ const closeModal = () => {
                                 class="absolute top-0 left-0 w-full h-full bg-base-200/90 z-10 flex flex-col items-center justify-center"
                             >
                                 <div class="text-center space-y-2">
-                                    <h2 class="text-lg font-semibold text-base-content/70">{{ $t("installing") }}</h2>
-                                    <p class="text-base-content/70 mt-6">{{ $t("installing_wait_message") }}</p>
+                                    <h2 class="text-lg font-semibold text-base-content/70">{{ $t('installing') }}</h2>
+                                    <p class="text-base-content/70 mt-6">{{ $t('installing_wait_message') }}</p>
                                     <progress class="progress w-56 progress-info"></progress>
                                 </div>
                             </div>
@@ -593,28 +609,46 @@ const closeModal = () => {
                                                         :checked="val"
                                                         @change="updateSectionValue(key as string, !(val as boolean))"
                                                     />
-                                                    <span class="text-base-content truncate">{{ formattedName(String(key)) }}</span>
+                                                    <span class="text-base-content truncate">{{
+                                                        formattedName(String(key))
+                                                    }}</span>
                                                 </label>
                                             </template>
                                             <template v-else-if="typeof val === 'number'">
                                                 <div class="flex items-start gap-1 flex-col w-full">
-                                                    <span class="capitalize text-base-content text-sm">{{ formattedName(String(key)) }}</span>
+                                                    <span class="capitalize text-base-content text-sm">{{
+                                                        formattedName(String(key))
+                                                    }}</span>
                                                     <input
                                                         type="number"
                                                         class="input input-bordered input-xs w-24"
                                                         :value="val"
-                                                        @change="(e: any) => updateSectionValue(key as string, Number(e.target.value))"
+                                                        @change="
+                                                            (e: any) =>
+                                                                updateSectionValue(
+                                                                    key as string,
+                                                                    Number(e.target.value)
+                                                                )
+                                                        "
                                                     />
                                                 </div>
                                             </template>
                                             <template v-else>
                                                 <div class="flex items-start gap-1 flex-col w-full">
-                                                    <span class="capitalize text-base-content text-sm">{{ formattedName(String(key)) }}</span>
+                                                    <span class="capitalize text-base-content text-sm">{{
+                                                        formattedName(String(key))
+                                                    }}</span>
                                                     <input
                                                         type="text"
                                                         class="input input-bordered input-xs w-full"
                                                         :value="String(val)"
-                                                        @change="(e: any) => updateSectionValue(key as string, String(e.target.value))"
+                                                        @change="
+                                                            (e: any) =>
+                                                                updateSectionValue(
+                                                                    key as string,
+                                                                    String(e.target.value)
+                                                                )
+                                                        "
                                                     />
                                                 </div>
                                             </template>

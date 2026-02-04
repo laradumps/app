@@ -1,49 +1,49 @@
 <script lang="ts" setup>
-import { computed, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
-import { useScreenStore } from "@/store/screen";
-import { useI18nStore } from "@/store/i18n";
-import { useTimeStore } from "@/store/time";
-import { useGlobalSearchStore } from "@/store/global-search";
-import { useI18n } from "vue-i18n";
-import { useColorStore } from "@/store/colors";
-import { Payload, ScreenPayload } from "@/types/Payload";
-import DumpItem from "@/components/dumps/DumpItem.vue";
-import WelcomePage from "@/components/app/WelcomePage.vue";
-import Screens from "@/components/screen/Screens.vue";
-import DumpLivewire from "@/components/laravel/DumpLivewire.vue";
-import ScreenWindow from "@/components/screen/ScreenWindow.vue";
-import { usePayloadStore } from "@/store/payload";
-import { useSettingsStore } from "@/store/settings";
-import XDebugMode from "@/components/xdebug/XDebugMode.vue";
-import { useXDebug } from "@/store/xdebug";
-import JobView from "@/components/laravel/JobView.vue";
-import { useJobStore } from "@/store/jobs";
-import { useMailStore } from "@/store/mail";
-import MailView from "@/components/laravel/MailView.vue";
-import { useLogStore } from "@/store/logs";
-import LogView from "@/components/laravel/LogView.vue";
-import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
-import { useQueriesPayloadStore } from "@/store/queries";
-import QueriesView from "@/components/laravel/QueriesView.vue";
-import { deepClone } from "@/lib/deep_clone";
-import { useSavedDumpsStore } from "@/store/saved-dumps";
-import { usePausePayloadStore } from "@/store/pause";
-import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { usePendingRequestsStore } from "@/store/pending-requests";
-import { usePauseQueriesStore } from "@/store/pause-queries";
-import { useCurrentProject } from "@/store/current-project";
-import SvgEmpty from "@/components/svg/SvgEmpty.vue";
-import { useLivewireStore } from "@/store/livewire";
-import { Environment } from "../../main/storage";
-import { usePauseJobsStore } from "@/store/pause-jobs";
-import { usePauseLogsStore } from "@/store/pause-logs";
-import moment from "moment/moment";
-import HeaderColorsFilter from "@/components/app/HeaderColorsFilter.vue";
-import DropZones from "@/components/split/DropZones.vue";
-import SplitPanes from "@/components/split/SplitPanes.vue";
-import { useSplitPanesStore } from "@/store/split-panes";
-import { useBrainStore } from "@/store/brains";
-import BrainView from "@/components/laravel/BrainView.vue"; // added import
+import { computed, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useScreenStore } from '@/store/screen';
+import { useI18nStore } from '@/store/i18n';
+import { useTimeStore } from '@/store/time';
+import { useGlobalSearchStore } from '@/store/global-search';
+import { useI18n } from 'vue-i18n';
+import { useColorStore } from '@/store/colors';
+import { Payload, ScreenPayload } from '@/types/Payload';
+import DumpItem from '@/components/dumps/DumpItem.vue';
+import WelcomePage from '@/components/app/WelcomePage.vue';
+import Screens from '@/components/screen/Screens.vue';
+import DumpLivewire from '@/components/laravel/DumpLivewire.vue';
+import ScreenWindow from '@/components/screen/ScreenWindow.vue';
+import { usePayloadStore } from '@/store/payload';
+import { useSettingsStore } from '@/store/settings';
+import XDebugMode from '@/components/xdebug/XDebugMode.vue';
+import { useXDebug } from '@/store/xdebug';
+import JobView from '@/components/laravel/JobView.vue';
+import { useJobStore } from '@/store/jobs';
+import { useMailStore } from '@/store/mail';
+import MailView from '@/components/laravel/MailView.vue';
+import { useLogStore } from '@/store/logs';
+import LogView from '@/components/laravel/LogView.vue';
+import IconExternalLink from '@/components/Icons/IconExternalLink.vue';
+import { useQueriesPayloadStore } from '@/store/queries';
+import QueriesView from '@/components/laravel/QueriesView.vue';
+import { deepClone } from '@/lib/deep_clone';
+import { useSavedDumpsStore } from '@/store/saved-dumps';
+import { usePausePayloadStore } from '@/store/pause';
+import { useQueriesBlockedStore } from '@/store/queries-blocked';
+import { usePendingRequestsStore } from '@/store/pending-requests';
+import { usePauseQueriesStore } from '@/store/pause-queries';
+import { useCurrentProject } from '@/store/current-project';
+import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import { useLivewireStore } from '@/store/livewire';
+import { Environment } from '../../main/storage';
+import { usePauseJobsStore } from '@/store/pause-jobs';
+import { usePauseLogsStore } from '@/store/pause-logs';
+import moment from 'moment/moment';
+import HeaderColorsFilter from '@/components/app/HeaderColorsFilter.vue';
+import DropZones from '@/components/split/DropZones.vue';
+import SplitPanes from '@/components/split/SplitPanes.vue';
+import { useSplitPanesStore } from '@/store/split-panes';
+import { useBrainStore } from '@/store/brains';
+import BrainView from '@/components/laravel/BrainView.vue'; // added import
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -60,7 +60,7 @@ const livewireStore = useLivewireStore();
 const splitPanesStore = useSplitPanesStore();
 const brainStore = useBrainStore();
 
-const { locale } = useI18n({ useScope: "global" });
+const { locale } = useI18n({ useScope: 'global' });
 const localeStore = useI18nStore();
 const jobStore = useJobStore();
 const mailStore = useMailStore();
@@ -72,25 +72,25 @@ const pauseJobsStore = usePauseJobsStore();
 const savedStore = useSavedDumpsStore();
 
 const defaultScreen = ref({
-    screen_name: "home",
+    screen_name: 'home',
     raise_in: 0,
     visible: true,
     pinned: false,
     new_window: false
 });
 
-const inScreenWindow = ref("");
+const inScreenWindow = ref('');
 const payloadScreen = ref([]);
 const jobScreen = ref({});
 const mailScreen = ref([]);
 const logScreen = ref({});
 const queriesScreen = ref([]);
 const brainScreen = ref({}); // added
-const applicationPath = ref("");
+const applicationPath = ref('');
 
 const xdebugMode = ref(false);
 const isDraggingScreen = ref(false);
-const draggedScreenName = ref("");
+const draggedScreenName = ref('');
 const sfDump = ref(false);
 onBeforeMount(() => {
     locale.value = localeStore.value;
@@ -105,7 +105,7 @@ const handleDump = (_: any, { content }: any) => {
 };
 
 const handleAppVersionReply = (_: any, arg: any) => {
-    document.title = "LaraDumps - " + `v${arg.version}`;
+    document.title = 'LaraDumps - ' + `v${arg.version}`;
 };
 
 const handleAppScreenWindowEnable = async (_: any, args: any) => {
@@ -117,7 +117,7 @@ const handleAppScreenWindowEnable = async (_: any, args: any) => {
     queriesScreen.value = args.queries;
     brainScreen.value = args.brains; // added
 
-    setTimeout(() => (document.title = "LaraDumps - " + args.screen), 200);
+    setTimeout(() => (document.title = 'LaraDumps - ' + args.screen), 200);
 };
 
 const handleAppScreenWindowUpdate = async (_: any, args: any) => {
@@ -135,7 +135,7 @@ const handleXdebugConnected = (_: any, arg: any) => {
 
 const handleXdebugDisconnected = (_: any, arg: any) => {
     if (xDebugStore.current) {
-        xDebugStore.current.project_path = "";
+        xDebugStore.current.project_path = '';
     }
     xdebugMode.value = false;
 };
@@ -145,7 +145,7 @@ const handleXdebug = (_: any, { content }: any) => dispatch(content);
 const handleAddScreen = (event: Event) => {
     const detail: Environment = (event as CustomEvent).detail;
 
-    const screenName = detail.value.replace("_", " ");
+    const screenName = detail.value.replace('_', ' ');
 
     if (detail.selected) {
         addScreen({
@@ -172,8 +172,8 @@ const handleSavedDumpsRemove = (_: any, args: any) => {
 
     const updated = deepClone(savedStore.all);
 
-    window.ipcRenderer.send("send-screen-window-update", {
-        screen: "saved",
+    window.ipcRenderer.send('send-screen-window-update', {
+        screen: 'saved',
         payload: updated
     });
 };
@@ -184,7 +184,7 @@ const handleLivewire = (_: any, { content }: any) => {
     }
 
     if (content.application_path && applicationPath.value != content.application_path) {
-        window.ipcRenderer.send("storage.check", {
+        window.ipcRenderer.send('storage.check', {
             applicationPath: content.application_path
         });
         applicationPath.value = content.application_path;
@@ -200,7 +200,7 @@ const handleJobs = (_: any, { content }: any) => {
     }
 
     if (content.application_path && applicationPath.value != content.application_path) {
-        window.ipcRenderer.send("storage.check", {
+        window.ipcRenderer.send('storage.check', {
             applicationPath: content.application_path
         });
         applicationPath.value = content.application_path;
@@ -213,7 +213,7 @@ const handleJobs = (_: any, { content }: any) => {
     if (content.to_screen.new_window) {
         screenStore.hidden(content.to_screen.screen_name);
 
-        window.ipcRenderer.send("screen-window:show", {
+        window.ipcRenderer.send('screen-window:show', {
             screen: content.to_screen.screen_name,
             payload: {},
             jobs: serializableJobs,
@@ -222,7 +222,7 @@ const handleJobs = (_: any, { content }: any) => {
     }
 
     if (content.to_screen && !content.to_screen.new_window) {
-        window.ipcRenderer.send("send-screen-window-update", {
+        window.ipcRenderer.send('send-screen-window-update', {
             screen: content.to_screen.screen_name,
             payload: {},
             jobs: serializableJobs
@@ -291,7 +291,7 @@ const handleMail = (_: any, { content }: any) => {
     }
 
     if (content.application_path && applicationPath.value != content.application_path) {
-        window.ipcRenderer.send("storage.check", {
+        window.ipcRenderer.send('storage.check', {
             applicationPath: content.application_path
         });
         applicationPath.value = content.application_path;
@@ -313,7 +313,7 @@ const handleContext = (_: any, { content }: any) => {
         return;
     }
 
-    payloadStore.updatePayload(content, "context");
+    payloadStore.updatePayload(content, 'context');
 };
 
 const handleLogApplication = (_: any, { content }: any) => {
@@ -322,7 +322,7 @@ const handleLogApplication = (_: any, { content }: any) => {
     }
 
     if (content.application_path && applicationPath.value != content.application_path) {
-        window.ipcRenderer.send("storage.check", {
+        window.ipcRenderer.send('storage.check', {
             applicationPath: content.application_path
         });
         applicationPath.value = content.application_path;
@@ -335,7 +335,7 @@ const handleLogApplication = (_: any, { content }: any) => {
     if (content.to_screen.new_window) {
         screenStore.hidden(content.to_screen.screen_name);
 
-        window.ipcRenderer.send("screen-window:show", {
+        window.ipcRenderer.send('screen-window:show', {
             screen: content.to_screen.screen_name,
             payload: {},
             logs: serializable,
@@ -344,7 +344,7 @@ const handleLogApplication = (_: any, { content }: any) => {
     }
 
     if (content.to_screen && !content.to_screen.new_window) {
-        window.ipcRenderer.send("send-screen-window-update", {
+        window.ipcRenderer.send('send-screen-window-update', {
             screen: content.to_screen.screen_name,
             payload: {},
             logs: serializable
@@ -405,7 +405,7 @@ const handleDumpBatches = (_, args) => {
         return;
     }
 
-    if (args.type === "batch") {
+    if (args.type === 'batch') {
         lastPayloadReceivedTime = Date.now();
 
         if (lastPayloadTimeout) {
@@ -417,9 +417,9 @@ const handleDumpBatches = (_, args) => {
             const requestId = content.request_id;
             const sqlQuery = content.queries.query?.sql;
 
-            pendingRequestsStore.add(requestId, "queries", sqlQuery);
+            pendingRequestsStore.add(requestId, 'queries', sqlQuery);
 
-            const storedQuery = pendingRequestsStore.get(requestId, "queries");
+            const storedQuery = pendingRequestsStore.get(requestId, 'queries');
 
             if (blockedStore.blocked.includes(storedQuery)) {
                 console.log(`all sql queries are blocked for request id ${requestId}`);
@@ -429,7 +429,7 @@ const handleDumpBatches = (_, args) => {
             content.queries && timeStore.increment(content.request_id, content.id, content.queries);
 
             if (content.application_path && applicationPath.value != content.application_path) {
-                window.ipcRenderer.send("storage.check", {
+                window.ipcRenderer.send('storage.check', {
                     applicationPath: content.application_path
                 });
                 applicationPath.value = content.application_path;
@@ -456,7 +456,9 @@ const handleTimeTrack = (_: any, { content }: any) => {
         return;
     }
 
-    const exist = payloadStore.payload.filter((globalPayload: Payload) => globalPayload.with_label.label === content.with_label.label);
+    const exist = payloadStore.payload.filter(
+        (globalPayload: Payload) => globalPayload.with_label.label === content.with_label.label
+    );
 
     if (exist.length === 0) {
         dispatch(content);
@@ -473,7 +475,7 @@ const handleBrain = (_: any, { content }: any) => {
     }
 
     if (content.application_path && applicationPath.value != content.application_path) {
-        window.ipcRenderer.send("storage.check", {
+        window.ipcRenderer.send('storage.check', {
             applicationPath: content.application_path
         });
         applicationPath.value = content.application_path;
@@ -486,7 +488,7 @@ const handleBrain = (_: any, { content }: any) => {
     if (content.to_screen?.new_window) {
         screenStore.hidden(content.to_screen.screen_name);
 
-        window.ipcRenderer.send("screen-window:show", {
+        window.ipcRenderer.send('screen-window:show', {
             screen: content.to_screen.screen_name,
             payload: {},
             brains: serializableBrains,
@@ -495,7 +497,7 @@ const handleBrain = (_: any, { content }: any) => {
     }
 
     if (content.to_screen && !content.to_screen.new_window) {
-        window.ipcRenderer.send("send-screen-window-update", {
+        window.ipcRenderer.send('send-screen-window-update', {
             screen: content.to_screen.screen_name,
             payload: {},
             brains: serializableBrains
@@ -504,106 +506,107 @@ const handleBrain = (_: any, { content }: any) => {
 };
 
 const clearListeners = () => {
-    window.ipcRenderer.off("dump", handleDump);
-    window.ipcRenderer.off("main:app-version.reply", handleAppVersionReply);
-    window.ipcRenderer.off("app:screen-window-enable", handleAppScreenWindowEnable);
-    window.ipcRenderer.off("app:screen-window-update", handleAppScreenWindowUpdate);
-    window.ipcRenderer.off("xdebug-connected", handleXdebugConnected);
-    window.ipcRenderer.off("xdebug-disconnected", handleXdebugDisconnected);
-    window.ipcRenderer.off("xdebug", handleXdebug);
-    window.ipcRenderer.off("saved-dumps:remove", handleSavedDumpsRemove);
+    window.ipcRenderer.off('dump', handleDump);
+    window.ipcRenderer.off('main:app-version.reply', handleAppVersionReply);
+    window.ipcRenderer.off('app:screen-window-enable', handleAppScreenWindowEnable);
+    window.ipcRenderer.off('app:screen-window-update', handleAppScreenWindowUpdate);
+    window.ipcRenderer.off('xdebug-connected', handleXdebugConnected);
+    window.ipcRenderer.off('xdebug-disconnected', handleXdebugDisconnected);
+    window.ipcRenderer.off('xdebug', handleXdebug);
+    window.ipcRenderer.off('saved-dumps:remove', handleSavedDumpsRemove);
 
     clearDumpListeners();
 };
 
 onMounted(() => {
     if (xDebugStore.current) {
-        xdebugMode.value = typeof xDebugStore.current.project_path !== "undefined";
+        xdebugMode.value = typeof xDebugStore.current.project_path !== 'undefined';
     }
 
     addScreen(defaultScreen.value);
 
-    window.ipcRenderer.on("dump", handleDump);
+    window.ipcRenderer.on('dump', handleDump);
 
-    window.ipcRenderer.send("main:app-version");
+    window.ipcRenderer.send('main:app-version');
 
-    window.ipcRenderer.on("main:app-version.reply", handleAppVersionReply);
-    window.ipcRenderer.on("app:screen-window-enable", handleAppScreenWindowEnable);
-    window.ipcRenderer.on("app:screen-window-update", handleAppScreenWindowUpdate);
+    window.ipcRenderer.on('main:app-version.reply', handleAppVersionReply);
+    window.ipcRenderer.on('app:screen-window-enable', handleAppScreenWindowEnable);
+    window.ipcRenderer.on('app:screen-window-update', handleAppScreenWindowUpdate);
 
-    window.ipcRenderer.send("local-shortcut:get");
+    window.ipcRenderer.send('local-shortcut:get');
 
-    window.ipcRenderer.on("xdebug-connected", handleXdebugConnected);
-    window.ipcRenderer.on("xdebug-disconnected", handleXdebugDisconnected);
-    window.ipcRenderer.on("xdebug", handleXdebug);
+    window.ipcRenderer.on('xdebug-connected', handleXdebugConnected);
+    window.ipcRenderer.on('xdebug-disconnected', handleXdebugDisconnected);
+    window.ipcRenderer.on('xdebug', handleXdebug);
 
     dumpListeners();
 
-    window.ipcRenderer.send("storage.get");
+    window.ipcRenderer.send('storage.get');
 
-    toggleScreen("home");
+    toggleScreen('home');
 
     if (settingsStore.settings.split_pane_screen) {
-        splitPanesStore.setSplit(settingsStore.settings.split_pane_screen, "vertical");
+        splitPanesStore.setSplit(settingsStore.settings.split_pane_screen, 'vertical');
     }
 
-    window.addEventListener("add-screen", handleAddScreen);
-    window.ipcRenderer.on("saved-dumps:remove", handleSavedDumpsRemove);
+    window.addEventListener('add-screen', handleAddScreen);
+    window.ipcRenderer.on('saved-dumps:remove', handleSavedDumpsRemove);
 });
 
 const dumpListeners = () => {
-    window.ipcRenderer.on("livewire", handleLivewire);
-    window.ipcRenderer.on("jobs", handleJobs);
-    window.ipcRenderer.on("html", handleHtml);
-    window.ipcRenderer.on("mailable", handleMailable);
-    window.ipcRenderer.on("table_v2", handleTableV2);
-    window.ipcRenderer.on("table", handleTable);
-    window.ipcRenderer.on("http-client", handleHttpClient);
-    window.ipcRenderer.on("model", handleModel);
-    window.ipcRenderer.on("json", handleJson);
-    window.ipcRenderer.on("query", handleQuery);
-    window.ipcRenderer.on("mail", handleMail);
-    window.ipcRenderer.on("label", handleLabel);
-    window.ipcRenderer.on("context", handleContext);
-    window.ipcRenderer.on("log_application", handleLogApplication);
-    window.ipcRenderer.on("color", handleColor);
-    window.ipcRenderer.on("screen", handleScreen);
-    window.ipcRenderer.on("json_validate", handleJsonValidate);
-    window.ipcRenderer.on("validate", handleValidate);
-    window.ipcRenderer.on("dump.batches", handleDumpBatches);
-    window.ipcRenderer.on("time_track", handleTimeTrack);
-    window.ipcRenderer.on("brain", handleBrain);
+    window.ipcRenderer.on('livewire', handleLivewire);
+    window.ipcRenderer.on('jobs', handleJobs);
+    window.ipcRenderer.on('html', handleHtml);
+    window.ipcRenderer.on('mailable', handleMailable);
+    window.ipcRenderer.on('table_v2', handleTableV2);
+    window.ipcRenderer.on('table', handleTable);
+    window.ipcRenderer.on('http-client', handleHttpClient);
+    window.ipcRenderer.on('model', handleModel);
+    window.ipcRenderer.on('json', handleJson);
+    window.ipcRenderer.on('query', handleQuery);
+    window.ipcRenderer.on('mail', handleMail);
+    window.ipcRenderer.on('label', handleLabel);
+    window.ipcRenderer.on('context', handleContext);
+    window.ipcRenderer.on('log_application', handleLogApplication);
+    window.ipcRenderer.on('color', handleColor);
+    window.ipcRenderer.on('screen', handleScreen);
+    window.ipcRenderer.on('json_validate', handleJsonValidate);
+    window.ipcRenderer.on('validate', handleValidate);
+    window.ipcRenderer.on('dump.batches', handleDumpBatches);
+    window.ipcRenderer.on('time_track', handleTimeTrack);
+    window.ipcRenderer.on('brain', handleBrain);
 };
 
 const clearDumpListeners = () => {
-    window.ipcRenderer.off("livewire", handleLivewire);
-    window.ipcRenderer.off("jobs", handleJobs);
-    window.ipcRenderer.off("html", handleHtml);
-    window.ipcRenderer.off("mailable", handleMailable);
-    window.ipcRenderer.off("table_v2", handleTableV2);
-    window.ipcRenderer.off("table", handleTable);
-    window.ipcRenderer.off("http-client", handleHttpClient);
-    window.ipcRenderer.off("model", handleModel);
-    window.ipcRenderer.off("json", handleJson);
-    window.ipcRenderer.off("query", handleQuery);
-    window.ipcRenderer.off("mail", handleMail);
-    window.ipcRenderer.off("label", handleLabel);
-    window.ipcRenderer.off("context", handleContext);
-    window.ipcRenderer.off("log_application", handleLogApplication);
-    window.ipcRenderer.off("color", handleColor);
-    window.ipcRenderer.off("screen", handleScreen);
-    window.ipcRenderer.off("json_validate", handleJsonValidate);
-    window.ipcRenderer.off("validate", handleValidate);
-    window.ipcRenderer.off("dump.batches", handleDumpBatches);
-    window.ipcRenderer.off("time_track", handleTimeTrack);
-    window.ipcRenderer.off("brain", handleBrain);
+    window.ipcRenderer.off('livewire', handleLivewire);
+    window.ipcRenderer.off('jobs', handleJobs);
+    window.ipcRenderer.off('html', handleHtml);
+    window.ipcRenderer.off('mailable', handleMailable);
+    window.ipcRenderer.off('table_v2', handleTableV2);
+    window.ipcRenderer.off('table', handleTable);
+    window.ipcRenderer.off('http-client', handleHttpClient);
+    window.ipcRenderer.off('model', handleModel);
+    window.ipcRenderer.off('json', handleJson);
+    window.ipcRenderer.off('query', handleQuery);
+    window.ipcRenderer.off('mail', handleMail);
+    window.ipcRenderer.off('label', handleLabel);
+    window.ipcRenderer.off('context', handleContext);
+    window.ipcRenderer.off('log_application', handleLogApplication);
+    window.ipcRenderer.off('color', handleColor);
+    window.ipcRenderer.off('screen', handleScreen);
+    window.ipcRenderer.off('json_validate', handleJsonValidate);
+    window.ipcRenderer.off('validate', handleValidate);
+    window.ipcRenderer.off('dump.batches', handleDumpBatches);
+    window.ipcRenderer.off('time_track', handleTimeTrack);
+    window.ipcRenderer.off('brain', handleBrain);
 };
 
 const dumpsBagFiltered = computed((): Payload[] => {
     return payloadStore.filteredPayload
         .filter(
             (dump: Payload) =>
-                dump.content?.toLowerCase().includes(globalSearchStore.search.toLowerCase()) || JSON.stringify(dump.with_label)?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
+                dump.content?.toLowerCase().includes(globalSearchStore.search.toLowerCase()) ||
+                JSON.stringify(dump.with_label)?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
         )
         .filter((dump: Payload) => {
             if (colorStore.colors.length > 0 && dump.color) {
@@ -620,7 +623,7 @@ const addScreen = (param: ScreenPayload) => {
 };
 
 const maximizeApp = (autoInvokeApp: string | boolean): void => {
-    autoInvokeApp && window.ipcRenderer.send("main:show");
+    autoInvokeApp && window.ipcRenderer.send('main:show');
 };
 
 const toggleScreen = async (value: string, shouldActivate = false): Promise<void> => {
@@ -634,12 +637,14 @@ const toggleScreen = async (value: string, shouldActivate = false): Promise<void
     }
 
     if (screenStore.screen === value) {
-        payloadStore.filteredPayload = payloadStore.payload.filter((payload) => payload.type !== "screen" && payload.to_screen.screen_name === value);
+        payloadStore.filteredPayload = payloadStore.payload.filter(
+            (payload) => payload.type !== 'screen' && payload.to_screen.screen_name === value
+        );
     }
 
     await nextTick(() => {
-        if (!["jobs", "mail", "logs", "queries"].includes(screenStore.screen)) {
-            document.getElementById(settingsStore.settings.scroll_direction)?.scrollIntoView({ behavior: "smooth" });
+        if (!['jobs', 'mail', 'logs', 'queries'].includes(screenStore.screen)) {
+            document.getElementById(settingsStore.settings.scroll_direction)?.scrollIntoView({ behavior: 'smooth' });
         }
     });
 };
@@ -652,18 +657,18 @@ const dispatch = (content: any): void => {
     content.rendered = false;
 
     if (content.application_path && applicationPath.value != content.application_path) {
-        window.ipcRenderer.send("storage.check", {
+        window.ipcRenderer.send('storage.check', {
             applicationPath: content.application_path
         });
         applicationPath.value = content.application_path;
     }
 
-    if (!content.hasOwnProperty("to_screen")) {
-        alert("An error occurred, please update the app and laradumps-core and try again.");
+    if (!content.hasOwnProperty('to_screen')) {
+        alert('An error occurred, please update the app and laradumps-core and try again.');
         window.location.reload();
     }
 
-    if (content.to_screen && typeof content.to_screen.screen_name == "string") {
+    if (content.to_screen && typeof content.to_screen.screen_name == 'string') {
         addScreen(content.to_screen);
     }
 
@@ -675,25 +680,29 @@ const dispatch = (content: any): void => {
         content.show_badge_count = true;
     }
 
-    content.color = content.color || "gray";
+    content.color = content.color || 'gray';
     content.projectInfo = currentProjectStore.projectInfo;
 
     payloadStore.add(content);
 
     maximizeApp(content.auto_invoke_app);
 
-    const serializablePayload = deepClone(payloadStore.payload.filter((payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name));
+    const serializablePayload = deepClone(
+        payloadStore.payload.filter(
+            (payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name
+        )
+    );
 
     if (content.to_screen.new_window) {
         screenStore.hidden(content.to_screen.screen_name);
 
-        window.ipcRenderer.send("screen-window:show", {
+        window.ipcRenderer.send('screen-window:show', {
             screen: content.to_screen.screen_name,
             payload: serializablePayload,
             position: {}
         });
     } else {
-        window.ipcRenderer.send("send-screen-window-update", {
+        window.ipcRenderer.send('send-screen-window-update', {
             screen: content.to_screen.screen_name,
             payload: serializablePayload
         });
@@ -724,7 +733,7 @@ const openScreenWindow = () => {
     const serializableQueriesPayload = deepClone(queriesStore.payload);
     const serializableBrainsPayload = deepClone(brainStore.brains); // added
 
-    window.ipcRenderer.send("screen-window:show", {
+    window.ipcRenderer.send('screen-window:show', {
         screen: screenStore.screen,
         payload: serializablePayload,
         jobs: serializableJobPayload,
@@ -736,7 +745,7 @@ const openScreenWindow = () => {
     });
 
     setTimeout(() => {
-        const screenName = screenStore.screen === "home" ? screenStore.getNext("home").screen_name : "home";
+        const screenName = screenStore.screen === 'home' ? screenStore.getNext('home').screen_name : 'home';
         toggleScreen(screenName);
     }, 200);
 };
@@ -748,7 +757,7 @@ const groupedDumps = computed(() => {
 
     return dumpsBagFiltered.value.reduce(
         (groups, payload) => {
-            const groupKey = moment(payload.date_time).format("YYYY-MM-DD HH:mm:ss");
+            const groupKey = moment(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
             if (!groups[groupKey]) {
                 groups[groupKey] = [];
             }
@@ -772,7 +781,7 @@ const groupedSplitDumps = computed(() => {
 
     return screenPayloads.reduce(
         (groups, payload) => {
-            const groupKey = moment(payload.date_time).format("YYYY-MM-DD HH:mm:ss");
+            const groupKey = moment(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
             if (!groups[groupKey]) {
                 groups[groupKey] = [];
             }
@@ -784,7 +793,7 @@ const groupedSplitDumps = computed(() => {
 });
 
 const hasColorsInPayload = computed((): boolean => {
-    return payloadStore.payload.some((payload: Payload) => payload.color && payload.color !== "gray");
+    return payloadStore.payload.some((payload: Payload) => payload.color && payload.color !== 'gray');
 });
 
 const deleteDump = (id: string): void => {
@@ -796,12 +805,12 @@ const handleDragScreen = ({ screen, _ }) => {
     isDraggingScreen.value = true;
 };
 
-const handleDropZone = (zone: "right" | "bottom") => {
+const handleDropZone = (zone: 'right' | 'bottom') => {
     if (!draggedScreenName.value) {
         return;
     }
 
-    const orientation = zone === "right" ? "vertical" : "horizontal";
+    const orientation = zone === 'right' ? 'vertical' : 'horizontal';
 
     splitPanesStore.setSplit(draggedScreenName.value, orientation);
     settingsStore.setSplitPaneScreen(draggedScreenName.value);
@@ -814,7 +823,7 @@ const handleDropZone = (zone: "right" | "bottom") => {
     }
 
     isDraggingScreen.value = false;
-    draggedScreenName.value = "";
+    draggedScreenName.value = '';
 };
 
 const handleCloseSplit = () => {
@@ -826,7 +835,7 @@ const handleDragEnd = () => {
     setTimeout(() => {
         if (isDraggingScreen.value) {
             isDraggingScreen.value = false;
-            draggedScreenName.value = "";
+            draggedScreenName.value = '';
         }
     }, 100);
 };
@@ -892,7 +901,9 @@ const handleDragEnd = () => {
                         <template #pane-a>
                             <div class="flex flex-col h-full">
                                 <div class="flex-shrink-0 z-[380]">
-                                    <div class="flex h-[48px] p-1.5 items-center justify-between w-full overflow-x-auto">
+                                    <div
+                                        class="flex h-[48px] p-1.5 items-center justify-between w-full overflow-x-auto"
+                                    >
                                         <Screens
                                             @toggleScreen="toggleScreen"
                                             @dragScreen="handleDragScreen"
@@ -945,7 +956,8 @@ const handleDragEnd = () => {
                                                 class="w-full mb-[40px]"
                                                 v-if="payloadStore.payload.length > 0"
                                                 :class="{
-                                                    'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal'
+                                                    'flex flex-col-reverse':
+                                                        settingsStore.settings.dump_order === 'normal'
                                                 }"
                                             >
                                                 <div
@@ -954,19 +966,24 @@ const handleDragEnd = () => {
                                                     class="w-full px-3"
                                                 >
                                                     <div
-                                                        v-if="!['livewire'].includes(screenStore.screen) && settingsStore.settings.grouped_by_time"
+                                                        v-if="
+                                                            !['livewire'].includes(screenStore.screen) &&
+                                                            settingsStore.settings.grouped_by_time
+                                                        "
                                                         class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                                     >
                                                         <span
                                                             class="opacity-70 px-1"
                                                             :title="groupKey"
                                                         >
-                                                            {{ moment(groupKey).format("HH:mm:ss") }}
+                                                            {{ moment(groupKey).format('HH:mm:ss') }}
                                                         </span>
                                                     </div>
 
                                                     <div
-                                                        v-for="payload in settingsStore.settings.dump_order === 'normal' ? group.slice().reverse() : group"
+                                                        v-for="payload in settingsStore.settings.dump_order === 'normal'
+                                                            ? group.slice().reverse()
+                                                            : group"
                                                         :key="payload.sf_dump_id"
                                                         :id="payload.id"
                                                         class="w-full"
@@ -985,7 +1002,12 @@ const handleDragEnd = () => {
                                             </div>
 
                                             <div
-                                                v-if="dumpsBagFiltered.length === 0 && !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)"
+                                                v-if="
+                                                    dumpsBagFiltered.length === 0 &&
+                                                    !['jobs', 'mail', 'logs', 'queries', 'home'].includes(
+                                                        screenStore.screen
+                                                    )
+                                                "
                                                 class="flex items-center justify-center w-full h-full py-20"
                                             >
                                                 <div class="text-center">
@@ -1011,7 +1033,9 @@ const handleDragEnd = () => {
                         <template #pane-b>
                             <div class="flex flex-col h-full overflow-hidden">
                                 <div class="flex-shrink-0 h-[48px] px-3 py-1.5 items-center justify-between flex">
-                                    <h2 class="text-sm font-semibold capitalize">{{ splitPanesStore.splitConfig.screenName }}</h2>
+                                    <h2 class="text-sm font-semibold capitalize">
+                                        {{ splitPanesStore.splitConfig.screenName }}
+                                    </h2>
                                     <button
                                         @click="handleCloseSplit"
                                         class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft z-[9999]"
@@ -1083,19 +1107,25 @@ const handleDragEnd = () => {
                                                 class="w-full"
                                             >
                                                 <div
-                                                    v-if="!['livewire'].includes(splitPanesStore.splitConfig.screenName) && settingsStore.settings.grouped_by_time"
+                                                    v-if="
+                                                        !['livewire'].includes(
+                                                            splitPanesStore.splitConfig.screenName
+                                                        ) && settingsStore.settings.grouped_by_time
+                                                    "
                                                     class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                                 >
                                                     <span
                                                         class="opacity-70 px-1"
                                                         :title="groupKey"
                                                     >
-                                                        {{ moment(groupKey).format("HH:mm:ss") }}
+                                                        {{ moment(groupKey).format('HH:mm:ss') }}
                                                     </span>
                                                 </div>
 
                                                 <div
-                                                    v-for="payload in settingsStore.settings.dump_order === 'normal' ? group.slice().reverse() : group"
+                                                    v-for="payload in settingsStore.settings.dump_order === 'normal'
+                                                        ? group.slice().reverse()
+                                                        : group"
                                                     :key="payload.sf_dump_id"
                                                     class="w-full mb-3"
                                                 >
@@ -1187,19 +1217,24 @@ const handleDragEnd = () => {
                                             class="w-full px-3"
                                         >
                                             <div
-                                                v-if="!['livewire'].includes(screenStore.screen) && settingsStore.settings.grouped_by_time"
+                                                v-if="
+                                                    !['livewire'].includes(screenStore.screen) &&
+                                                    settingsStore.settings.grouped_by_time
+                                                "
                                                 class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                             >
                                                 <span
                                                     class="opacity-70 px-1"
                                                     :title="groupKey"
                                                 >
-                                                    {{ moment(groupKey).format("HH:mm:ss") }}
+                                                    {{ moment(groupKey).format('HH:mm:ss') }}
                                                 </span>
                                             </div>
 
                                             <div
-                                                v-for="payload in settingsStore.settings.dump_order === 'normal' ? group.slice().reverse() : group"
+                                                v-for="payload in settingsStore.settings.dump_order === 'normal'
+                                                    ? group.slice().reverse()
+                                                    : group"
                                                 :key="payload.sf_dump_id"
                                                 :id="payload.id"
                                                 class="w-full"
@@ -1218,7 +1253,10 @@ const handleDragEnd = () => {
                                     </div>
 
                                     <div
-                                        v-if="dumpsBagFiltered.length === 0 && !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)"
+                                        v-if="
+                                            dumpsBagFiltered.length === 0 &&
+                                            !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)
+                                        "
                                         class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
                                         style="height: -webkit-fill-available"
                                     >

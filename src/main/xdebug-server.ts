@@ -1,11 +1,11 @@
-import net from "net";
-import { EventEmitter } from "events";
-import { BrowserWindow } from "electron";
-import { XDebugYml } from "@/types/XDebug";
-import { Socket } from "node:net";
-import { watcherPath } from "./watcher";
+import net from 'net';
+import { EventEmitter } from 'events';
+import { BrowserWindow } from 'electron';
+import { XDebugYml } from '@/types/XDebug';
+import { Socket } from 'node:net';
+import { watcherPath } from './watcher';
 
-const isDev: boolean = process.env.NODE_ENV === "development";
+const isDev: boolean = process.env.NODE_ENV === 'development';
 
 class XDebugServer extends EventEmitter {
     private static instance: XDebugServer;
@@ -32,31 +32,31 @@ class XDebugServer extends EventEmitter {
             this.clientSocket = socket;
             this.mainWindow = mainWindow;
 
-            console.log("Connected to XDebug server");
+            console.log('Connected to XDebug server');
 
-            this.emit("connection");
+            this.emit('connection');
 
-            socket.on("data", (data): void => {
+            socket.on('data', (data): void => {
                 const xmlData = processIncomingData(data.toString());
 
                 if (isDev) {
-                    console.log("Receive XML data:", xmlData);
+                    console.log('Receive XML data:', xmlData);
                 }
 
                 if (xmlData) {
-                    mainWindow.webContents.send("xdebug-response", xmlData.toString());
+                    mainWindow.webContents.send('xdebug-response', xmlData.toString());
                 }
             });
 
             const processIncomingData = (data) => {
-                const xmlStartIndex = data.indexOf("<?xml");
+                const xmlStartIndex = data.indexOf('<?xml');
                 if (xmlStartIndex !== -1) {
                     return data.slice(xmlStartIndex);
                 }
                 return null;
             };
 
-            socket.on("error", (err) => {
+            socket.on('error', (err) => {
                 this.closeClient();
             });
         });
@@ -65,7 +65,7 @@ class XDebugServer extends EventEmitter {
             console.table(args);
         });
 
-        this.serverSocket.on("error", (err): void => {
+        this.serverSocket.on('error', (err): void => {
             this.closeClient();
             // mainWindow.webContents.send("xdebug-connection-status", {
             //     connected: false,
@@ -73,13 +73,13 @@ class XDebugServer extends EventEmitter {
             // });
         });
 
-        this.serverSocket.on("listening", (): void => {
+        this.serverSocket.on('listening', (): void => {
             // mainWindow.webContents.send("xdebug-connection-status", {
             //     connected: true
             // });
         });
 
-        this.serverSocket.on("close", (): void => {
+        this.serverSocket.on('close', (): void => {
             // mainWindow.webContents.send("xdebug-connection-status", {
             //     connected: false,
             //     err: "closed",
@@ -102,13 +102,13 @@ class XDebugServer extends EventEmitter {
 
     sendCommand(command: string) {
         if (!this.clientSocket) {
-            throw new Error("No client connected");
+            throw new Error('No client connected');
         }
 
         const message = `${command}\0`;
         this.clientSocket.write(message, (err) => {
             if (err) {
-                this.mainWindow.webContents.send("send-command-error", {
+                this.mainWindow.webContents.send('send-command-error', {
                     error: err.message
                 });
             }
@@ -117,25 +117,25 @@ class XDebugServer extends EventEmitter {
 
     async getResponse(): Promise<string> {
         if (!this.clientSocket) {
-            throw new Error("No client connected");
+            throw new Error('No client connected');
         }
 
         return new Promise((resolve, reject) => {
-            let message = "";
+            let message = '';
 
             const onData = (data: Buffer) => {
                 message += data.toString();
-                if (message.endsWith("\0")) {
-                    this.clientSocket?.removeListener("data", onData);
+                if (message.endsWith('\0')) {
+                    this.clientSocket?.removeListener('data', onData);
                     resolve(message.slice(0, -1));
                 }
             };
 
-            this.clientSocket && this.clientSocket.on("data", onData);
+            this.clientSocket && this.clientSocket.on('data', onData);
 
             this.clientSocket &&
-                this.clientSocket.on("error", (err) => {
-                    reject(new Error("Client socket error: " + err.message));
+                this.clientSocket.on('error', (err) => {
+                    reject(new Error('Client socket error: ' + err.message));
                 });
         });
     }

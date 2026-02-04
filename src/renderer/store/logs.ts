@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
-import { CodeSnippet, Payload } from "@/types/Payload";
-import { IdeHandle } from "@/types/IdeHandle";
-import { useSettingsStore } from "@/store/settings";
+import { defineStore } from 'pinia';
+import { CodeSnippet, Payload } from '@/types/Payload';
+import { IdeHandle } from '@/types/IdeHandle';
+import { useSettingsStore } from '@/store/settings';
 
 export type Log = {
     log_id: string;
@@ -9,6 +9,7 @@ export type Log = {
     context: string | string[];
     message: any;
     created_at: Date;
+    original_content: string;
     ide_handle: IdeHandle;
     code_snippet: CodeSnippet[];
     color: string;
@@ -25,9 +26,9 @@ type State = {
     logs: Record<string, Log>;
 };
 
-export const useLogStore = defineStore("logStore", {
+export const useLogStore = defineStore('logStore', {
     state: (): State => ({
-        logs: JSON.parse(localStorage.getItem("logs") || "{}")
+        logs: JSON.parse(localStorage.getItem('logs') || '{}')
     }),
     actions: {
         add(content: Payload) {
@@ -45,11 +46,11 @@ export const useLogStore = defineStore("logStore", {
             }
         },
         store() {
-            localStorage.setItem("logs", JSON.stringify(this.logs));
+            localStorage.setItem('logs', JSON.stringify(this.logs));
         },
         clear() {
             this.logs = {};
-            localStorage.removeItem("logs");
+            localStorage.removeItem('logs');
             this.store();
         },
         _initialize(payload: Payload) {
@@ -67,6 +68,7 @@ export const useLogStore = defineStore("logStore", {
                 log_id,
                 level: log_application.level,
                 context: log_application.context,
+                original_content: log_application.original_content,
                 message: log_application.message,
                 created_at: date,
                 code_snippet,
@@ -79,19 +81,19 @@ export const useLogStore = defineStore("logStore", {
         },
         _parseColor(level: string) {
             switch (level) {
-                case "error":
-                case "critical":
-                case "alert":
-                case "emergency":
-                    return "red";
-                case "warning":
-                    return "orange";
-                case "info":
-                    return "blue";
-                case "notice":
-                    return "green";
+                case 'error':
+                case 'critical':
+                case 'alert':
+                case 'emergency':
+                    return 'red';
+                case 'warning':
+                    return 'orange';
+                case 'info':
+                    return 'blue';
+                case 'notice':
+                    return 'green';
                 default:
-                    return "gray";
+                    return 'gray';
             }
         },
         _removeOldestIfExceedsLimit() {

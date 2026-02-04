@@ -1,75 +1,85 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted, ref, watch } from "vue";
-import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
+import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
+import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 
-import { Payload } from "@/types/Payload";
+import { Payload } from '@/types/Payload';
 
 const props = defineProps<{
     payload: Payload;
 }>();
 
-const search = ref("");
-const table = ref("");
+const search = ref('');
+const table = ref('');
 
 watch(search, (value) => {
     searchableTable(value, props.payload.id);
 });
 
 onMounted(() => {
-    table.value = createTable(props.payload.table?.values, props.payload.table?.fields, props.payload.table?.header, props.payload.id);
+    table.value = createTable(
+        props.payload.table?.values,
+        props.payload.table?.fields,
+        props.payload.table?.header,
+        props.payload.id
+    );
 });
 
-const createTable = (objectArray: string[] | undefined, fields: string[] | undefined, fieldTitles: string[] | undefined, payloadId: string) => {
-    const div = document.createElement("div");
-    const table = document.createElement("table");
-    const thead = document.createElement("thead");
-    const thr = document.createElement("tr");
+const createTable = (
+    objectArray: string[] | undefined,
+    fields: string[] | undefined,
+    fieldTitles: string[] | undefined,
+    payloadId: string
+) => {
+    const div = document.createElement('div');
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    const thr = document.createElement('tr');
 
-    thr.setAttribute("class", "text-xs");
-    table.setAttribute("id", `table-${payloadId}`);
-    table.setAttribute("class", "table w-full overflow-auto text-base-content !mt-0");
+    thr.setAttribute('class', 'text-xs');
+    table.setAttribute('id', `table-${payloadId}`);
+    table.setAttribute('class', 'table w-full overflow-auto text-base-content !mt-0');
 
     fieldTitles.forEach((fieldTitle) => {
-        const th = document.createElement("th");
+        const th = document.createElement('th');
         th.appendChild(document.createTextNode(fieldTitle));
-        th.setAttribute("class", "!lowercase");
+        th.setAttribute('class', '!lowercase');
         thr.appendChild(th);
     });
     thead.appendChild(thr);
-    thead.setAttribute("class", "top-0 sticky z-10 bg-base-200 text-base-content/70");
+    thead.setAttribute('class', 'top-0 sticky z-10 bg-base-200 text-base-content/70');
     table.appendChild(thead);
 
-    const tbody = document.createElement("tbody");
-    let tr = document.createElement("tr");
+    const tbody = document.createElement('tbody');
+    let tr = document.createElement('tr');
 
     objectArray.forEach((object) => {
-        tr = document.createElement("tr");
+        tr = document.createElement('tr');
 
         fields.forEach((field) => {
-            const td = document.createElement("td");
+            const td = document.createElement('td');
             td.appendChild(document.createTextNode(object[field]));
-            td.setAttribute("class", "whitespace-nowrap");
+            td.setAttribute('class', 'whitespace-nowrap');
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
     });
 
-    const footer = document.createElement("tfoot");
-    const footerRow = document.createElement("tr");
-    const footerCell = document.createElement("td");
-    footerCell.setAttribute("colspan", "999");
+    const footer = document.createElement('tfoot');
+    const footerRow = document.createElement('tr');
+    const footerCell = document.createElement('td');
+    footerCell.setAttribute('colspan', '999');
     footerCell.appendChild(document.createTextNode(`Total Records: ${objectArray.length}`));
-    footerCell.setAttribute("class", "p-2 text-xs");
+    footerCell.setAttribute('class', 'p-2 text-xs');
     footerRow.appendChild(footerCell);
     footer.appendChild(footerRow);
 
-    footer.setAttribute("class", "sticky bottom-0 z-10 bg-base-200 text-base-content/70");
+    footer.setAttribute('class', 'sticky bottom-0 z-10 bg-base-200 text-base-content/70');
 
     table.appendChild(tbody);
     table.appendChild(footer);
 
     div.appendChild(table);
-    div.setAttribute("class", "relative");
+    div.setAttribute('class', 'relative');
 
     return div.innerHTML;
 };
@@ -83,13 +93,13 @@ const searchableTable = (search, id) => {
     }
 
     const filter = search.trim().toUpperCase();
-    const rows = Array.from(table.getElementsByTagName("tr")).slice(1);
+    const rows = Array.from(table.getElementsByTagName('tr')).slice(1);
 
     rows.forEach((row) => {
-        const cells = Array.from(row.getElementsByTagName("td"));
+        const cells = Array.from(row.getElementsByTagName('td'));
         const matchesSearch = cells.some((cell) => cell.innerHTML.toUpperCase().includes(filter));
 
-        row.style.display = matchesSearch ? "" : "none";
+        row.style.display = matchesSearch ? '' : 'none';
     });
 };
 </script>

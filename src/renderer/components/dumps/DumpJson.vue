@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import VueJsonPretty from "vue-json-pretty";
-import { computed, defineProps } from "vue";
-import { Payload } from "@/types/Payload";
+import VueJsonPretty from 'vue-json-pretty';
+import { computed, defineProps } from 'vue';
+import { Payload } from '@/types/Payload';
 
 const props = defineProps<{
     payload: Payload;
 }>();
 
 const value = computed(() => {
-    if (typeof props.payload.json?.string == "object") {
+    if (typeof props.payload.json?.string == 'object') {
         return props.payload.json?.string;
     }
 
-    return JSON.parse(props.payload.json?.string ?? "");
+    return JSON.parse(props.payload.json?.string ?? '');
 });
 
 function countNodes(obj: any): number {
-    if (typeof obj !== "object" || obj === null) return 0;
+    if (typeof obj !== 'object' || obj === null) return 0;
 
     let count = 0;
     const stack = [obj];
 
     while (stack.length) {
         const node = stack.pop();
-        if (typeof node === "object" && node !== null) {
+        if (typeof node === 'object' && node !== null) {
             count++;
             for (const key in node) {
                 if (Object.prototype.hasOwnProperty.call(node, key)) {

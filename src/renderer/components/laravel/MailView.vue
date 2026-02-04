@@ -1,33 +1,39 @@
 <script setup lang="ts">
-import SplitPanes from "@/components/split/SplitPanes.vue";
-import { Attachment, Mail, mimeTypeMap, useMailStore } from "@/store/mail";
-import moment from "moment";
-import { computed, defineProps, nextTick, ref } from "vue";
-import { CloudArrowDownIcon, TrashIcon, DevicePhoneMobileIcon, DeviceTabletIcon, ComputerDesktopIcon } from "@heroicons/vue/24/outline";
-import IconExternalLink from "@/components/Icons/IconExternalLink.vue";
-import DumpLink from "@/components/dumps/DumpLink.vue";
-import { modifyHtml } from "./../utils";
-import SvgEmpty from "@/components/svg/SvgEmpty.vue";
-import { useCurrentProject } from "@/store/current-project";
-import VueJsonPretty from "vue-json-pretty";
-import { useGlobalSearchStore } from "@/store/global-search";
+import SplitPanes from '@/components/split/SplitPanes.vue';
+import { Attachment, Mail, mimeTypeMap, useMailStore } from '@/store/mail';
+import moment from 'moment';
+import { computed, defineProps, nextTick, ref } from 'vue';
+import {
+    CloudArrowDownIcon,
+    TrashIcon,
+    DevicePhoneMobileIcon,
+    DeviceTabletIcon,
+    ComputerDesktopIcon
+} from '@heroicons/vue/24/outline';
+import IconExternalLink from '@/components/Icons/IconExternalLink.vue';
+import DumpLink from '@/components/dumps/DumpLink.vue';
+import { modifyHtml } from './../utils';
+import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import { useCurrentProject } from '@/store/current-project';
+import VueJsonPretty from 'vue-json-pretty';
+import { useGlobalSearchStore } from '@/store/global-search';
 
 const mailStore = useMailStore();
 const currentProjectStore = useCurrentProject();
 const globalSearchStore = useGlobalSearchStore();
 
 const visited = ref<Mail>();
-const previewUrl = ref<string>("");
-const previewMode = ref<string>("mobile");
+const previewUrl = ref<string>('');
+const previewMode = ref<string>('mobile');
 
 const props = defineProps<{
     items: any;
     inScreenWindow: boolean;
 }>();
 
-window.addEventListener("message", (event) => {
-    if (event.data && event.data.type === "open-external-link-" + previewUrl.value) {
-        window.ipcRenderer.send("main:openLink", event.data.url);
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'open-external-link-' + previewUrl.value) {
+        window.ipcRenderer.send('main:openLink', event.data.url);
         event.preventDefault();
     }
 });
@@ -40,7 +46,7 @@ const display = (mail: Mail) => {
 
     const modifiedHtml = modifyHtml(visited.value.html, previewUrl.value);
 
-    window.ipcRenderer.send("main:create-static-tmp-file", {
+    window.ipcRenderer.send('main:create-static-tmp-file', {
         name: previewUrl.value,
         content: modifiedHtml
     });
@@ -74,8 +80,8 @@ const openDumps = () => {
 
             const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
 
-            if (!sfDump?.hasAttribute("has-dump-js")) {
-                sfDump?.setAttribute("has-dump-js", "true");
+            if (!sfDump?.hasAttribute('has-dump-js')) {
+                sfDump?.setAttribute('has-dump-js', 'true');
                 if (visited.value.details[1]) {
                     window.Sfdump(`sf-dump-${visited.value.details[1]}`);
                 }
@@ -91,21 +97,21 @@ const openHeaders = () => {
 };
 
 const getMimeTypeFromFilename = (filename: string | null): string => {
-    if (!filename) return "application/octet-stream";
+    if (!filename) return 'application/octet-stream';
 
-    const extension = filename.split(".").pop()?.toLowerCase() || "";
-    return mimeTypeMap[extension] || "application/octet-stream";
+    const extension = filename.split('.').pop()?.toLowerCase() || '';
+    return mimeTypeMap[extension] || 'application/octet-stream';
 };
 
 const openInBrowser = (attachment: Attachment) => {
     if (attachment.path) {
         const currentProject = currentProjectStore.value;
 
-        if (attachment.path.startsWith("/var/www/html")) {
-            attachment.path = attachment.path.replace("/var/www/html", currentProject);
+        if (attachment.path.startsWith('/var/www/html')) {
+            attachment.path = attachment.path.replace('/var/www/html', currentProject);
         }
 
-        window.ipcRenderer.send("main:openLink", "file:///" + attachment.path);
+        window.ipcRenderer.send('main:openLink', 'file:///' + attachment.path);
 
         return;
     }
@@ -124,23 +130,23 @@ const openInBrowser = (attachment: Attachment) => {
 
         const url = URL.createObjectURL(blob);
 
-        window.open(url, "_blank");
+        window.open(url, '_blank');
 
         setTimeout(() => URL.revokeObjectURL(url), 100);
     }
 };
 
 const openTmpBrowserPreview = () => {
-    window.ipcRenderer.send("main:openLink", `http://localhost:9191/${previewUrl.value}.html`);
+    window.ipcRenderer.send('main:openLink', `http://localhost:9191/${previewUrl.value}.html`);
 };
 
 const previewSize = computed(() => {
-    return previewMode.value === "mobile" ? "415px" : previewMode.value === "tablet" ? "768px" : "1024px";
+    return previewMode.value === 'mobile' ? '415px' : previewMode.value === 'tablet' ? '768px' : '1024px';
 });
 
 const previewStyle = computed(() => {
     return `
-        width: ${previewMode.value === "mobile" ? "415px" : previewMode.value === "tablet" ? "768px" : "1024px"};
+        width: ${previewMode.value === 'mobile' ? '415px' : previewMode.value === 'tablet' ? '768px' : '1024px'};
         height: 100%;
         transform: scale(1);
         transform-origin: top left;
@@ -260,14 +266,15 @@ const setPreviewMode = (mode: string) => {
                             :class="{
                                 'hover:bg-base-300 hover:rounded-md': visited?.message_id !== mail.message_id,
                                 'opacity-40 !font-normal': mail.is_read && visited?.message_id !== mail.message_id,
-                                'border-primary text-primary rounded-xs bg-base-300': visited?.message_id === mail.message_id
+                                'border-primary text-primary rounded-xs bg-base-300':
+                                    visited?.message_id === mail.message_id
                             }"
                             class="p-2 space-y-2 cursor-pointer focus:bg-primary"
                             @click="display(mail)"
                         >
                             <div class="flex justify-between items-center cursor-pointer">
                                 <div class="truncate">{{ mail.from_mail }}</div>
-                                <span class="px-1 text-xs">{{ moment(mail.date).format("HH:mm") }}</span>
+                                <span class="px-1 text-xs">{{ moment(mail.date).format('HH:mm') }}</span>
                             </div>
                             <div
                                 :class="{
@@ -372,7 +379,12 @@ const setPreviewMode = (mode: string) => {
                             >
                                 <!-- email content iframe -->
                                 <div class="w-full flex-1 flex justify-center mb-4">
-                                    <div :class="{ smartphone: previewMode == 'mobile', tablet: previewMode == 'tablet' }">
+                                    <div
+                                        :class="{
+                                            smartphone: previewMode == 'mobile',
+                                            tablet: previewMode == 'tablet'
+                                        }"
+                                    >
                                         <iframe
                                             class="iframe-content"
                                             :style="previewStyle"
@@ -451,7 +463,7 @@ iframe {
 }
 
 .smartphone:before {
-    content: "";
+    content: '';
     display: block;
     width: 40px;
     height: 5px;
@@ -465,7 +477,7 @@ iframe {
 
 /* The circle on the bottom of the device */
 .smartphone:after {
-    content: "";
+    content: '';
     display: block;
     width: 25px;
     height: 25px;
@@ -495,7 +507,7 @@ iframe {
 }
 
 .tablet:before {
-    content: "";
+    content: '';
     display: block;
     width: 60px;
     height: 5px;
@@ -508,7 +520,7 @@ iframe {
 }
 
 .tablet:after {
-    content: "";
+    content: '';
     display: block;
     width: 35px;
     height: 35px;

@@ -1,10 +1,10 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
 type State = {
     is_paused: boolean;
 };
 
-export const usePauseQueriesStore = defineStore("pauseQueries", {
+export const usePauseQueriesStore = defineStore('pauseQueries', {
     state: (): State => ({
         is_paused: false
     }),

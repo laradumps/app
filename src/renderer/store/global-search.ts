@@ -1,12 +1,12 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
-export const useGlobalSearchStore = defineStore("globalSearch", {
+export const useGlobalSearchStore = defineStore('globalSearch', {
     state: () => {
-        return { search: "" };
+        return { search: '' };
     },
     actions: {
         clear() {
-            this.search = "";
+            this.search = '';
         }
     }
 });

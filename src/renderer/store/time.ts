@@ -1,6 +1,6 @@
-import { defineStore } from "pinia";
-import moment, { Moment } from "moment";
-import { QueriesPayload } from "@/types/Payload";
+import { defineStore } from 'pinia';
+import moment, { Moment } from 'moment';
+import { QueriesPayload } from '@/types/Payload';
 
 export type Request = {
     time: string;
@@ -10,6 +10,7 @@ export type Request = {
     method: string;
     origin: string;
     date: Moment;
+    original_content?: string;
 };
 
 type RequestsMap = Record<string, Request>;
@@ -20,17 +21,17 @@ type State = {
     groups: string[];
     dump_ids: string[];
     selected: string | null;
-    order: "default" | "asc" | "desc";
+    order: 'default' | 'asc' | 'desc';
 };
 
-export const useTimeStore = defineStore("timeStore", {
+export const useTimeStore = defineStore('timeStore', {
     state: (): State => ({
-        search: "",
+        search: '',
         requests: {},
         groups: [],
         dump_ids: [],
         selected: null,
-        order: "default"
+        order: 'default'
     }),
 
     actions: {
@@ -51,17 +52,17 @@ export const useTimeStore = defineStore("timeStore", {
         },
 
         toggleOrder(): void {
-            if (this.order === "default") {
-                this.order = "desc";
+            if (this.order === 'default') {
+                this.order = 'desc';
                 return;
             }
 
-            if (this.order === "desc") {
-                this.order = "asc";
+            if (this.order === 'desc') {
+                this.order = 'asc';
                 return;
             }
 
-            this.order = "default";
+            this.order = 'default';
         },
 
         getSelectedRequest(): Request | null {
@@ -102,11 +103,12 @@ export const useTimeStore = defineStore("timeStore", {
             this.requests[requestId] = {
                 request_id: requestId,
                 total,
-                time: moment().format("HH:mm:ss a"),
+                time: moment().format('HH:mm:ss a'),
                 uri: queriesPayload.uri,
                 method: queriesPayload.method,
                 origin: queriesPayload.origin,
-                date: moment()
+                date: moment(),
+                original_content: queriesPayload.original_content
             };
 
             if (!this.groups.includes(requestId)) {
@@ -121,7 +123,7 @@ export const useTimeStore = defineStore("timeStore", {
             this.dump_ids = [];
             this.groups = [];
             this.selected = null;
-            this.order = "default";
+            this.order = 'default';
         },
 
         getRequestCount(): number {

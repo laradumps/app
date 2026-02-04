@@ -1,9 +1,9 @@
-import { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from "electron";
-import { join, resolve } from "path";
-import { format } from "url";
+import { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from 'electron';
+import { join, resolve } from 'path';
+import { format } from 'url';
 
-const isDev = process.env.NODE_ENV === "development";
-const isMac: boolean = process.platform === "darwin";
+const isDev = process.env.NODE_ENV === 'development';
+const isMac: boolean = process.platform === 'darwin';
 
 let screenWindowOptions: BrowserWindowConstructorOptions;
 
@@ -14,17 +14,17 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
         show: false,
         resizable: true,
         alwaysOnTop: true,
-        titleBarStyle: "hiddenInset",
+        titleBarStyle: 'hiddenInset',
         webPreferences: {
             spellcheck: true,
             nodeIntegration: true,
-            preload: resolve(__dirname, "global-ipc-renderer.cjs"),
+            preload: resolve(__dirname, 'global-ipc-renderer.cjs'),
             contextIsolation: false
         }
     };
 
-    if ((process.platform === "linux" && !isDev) || isDev) {
-        screenWindowOptions.icon = resolve(__dirname, "icon.png");
+    if ((process.platform === 'linux' && !isDev) || isDev) {
+        screenWindowOptions.icon = resolve(__dirname, 'icon.png');
     }
 
     if (isMac) {
@@ -39,27 +39,27 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
         isDev
             ? `http://localhost:4999?screen=${screen}`
             : format({
-                  pathname: join(__dirname, "app", "index.html"),
-                  protocol: "file:",
+                  pathname: join(__dirname, 'app', 'index.html'),
+                  protocol: 'file:',
                   slashes: true
               }) + `?screen=${screen}`
     );
 
-    window.on("closed", () => {
+    window.on('closed', () => {
         if (!mainEvent.isDestroyed()) {
-            mainEvent.webContents.send("screen-window:closed", { screen });
+            mainEvent.webContents.send('screen-window:closed', { screen });
         }
     });
 
-    ipcMain.on("screen-window:toggle-always-on-top", (event, arg) => {
+    ipcMain.on('screen-window:toggle-always-on-top', (event, arg) => {
         if (!window.isDestroyed()) {
             setTimeout(() => window.setAlwaysOnTop(arg), 200);
         }
     });
 
-    ipcMain.on("screen-window:is-always-on-top", (): void => {
+    ipcMain.on('screen-window:is-always-on-top', (): void => {
         if (!window.isDestroyed()) {
-            window.webContents.send("screen-window:is-always-on-top", { is_always_on_top: window.isAlwaysOnTop() });
+            window.webContents.send('screen-window:is-always-on-top', { is_always_on_top: window.isAlwaysOnTop() });
         }
     });
 

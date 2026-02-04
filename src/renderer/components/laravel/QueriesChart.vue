@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, defineEmits, watch, computed } from "vue";
-import { Chart, LineController, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from "chart.js";
-import { useTimeStore } from "@/store/time";
-import { useQueriesChart } from "@/store/queries-chart";
-import { useQueriesPayloadStore } from "@/store/queries";
+import { ref, onMounted, defineEmits, watch, computed } from 'vue';
+import { Chart, LineController, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js';
+import { useTimeStore } from '@/store/time';
+import { useQueriesChart } from '@/store/queries-chart';
+import { useQueriesPayloadStore } from '@/store/queries';
 
 Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
@@ -29,18 +29,18 @@ const queriesChart = useQueriesChart();
 const queriesStore = useQueriesPayloadStore();
 
 const emit = defineEmits<{
-    (event: "pointClick", payload: ChartPoint): void;
+    (event: 'pointClick', payload: ChartPoint): void;
 }>();
 
 const chartCanvas = ref<HTMLCanvasElement | null>(null);
-let chartInstance: Chart<"line"> | null = null;
+let chartInstance: Chart<'line'> | null = null;
 
 const chartDataPoints = computed<ChartPoint[]>(() => {
     const payloads = queriesStore.payload as QueryPayload[];
 
     if (!payloads || payloads.length === 0) return [];
 
-    if (queriesChart.type === "by-request" && timeStore.selected) {
+    if (queriesChart.type === 'by-request' && timeStore.selected) {
         return payloads
             .filter((item) => item.request_id === timeStore.selected)
             .map((item) => ({
@@ -50,7 +50,7 @@ const chartDataPoints = computed<ChartPoint[]>(() => {
             }));
     }
 
-    if (queriesChart.type === "all") {
+    if (queriesChart.type === 'all') {
         return payloads.map((item) => ({
             id: item.id,
             time: item.date_time,
@@ -77,19 +77,19 @@ onMounted(() => {
     if (!chartCanvas.value) return;
 
     chartInstance = new Chart(chartCanvas.value, {
-        type: "line",
+        type: 'line',
         data: {
             labels: [],
             datasets: [
                 {
-                    label: "Duration (ms)",
+                    label: 'Duration (ms)',
                     data: [],
-                    borderColor: "orange",
+                    borderColor: 'orange',
                     borderWidth: 1.5,
                     pointRadius: 4,
                     pointHoverRadius: 8,
-                    pointBackgroundColor: "red",
-                    pointHoverBorderColor: "rgba(255, 165, 0, 0.8)",
+                    pointBackgroundColor: 'red',
+                    pointHoverBorderColor: 'rgba(255, 165, 0, 0.8)',
                     tension: 0
                 }
             ]
@@ -98,7 +98,7 @@ onMounted(() => {
             responsive: true,
             scales: {
                 x: { display: false },
-                y: { title: { display: true, text: "Duration (ms)" } }
+                y: { title: { display: true, text: 'Duration (ms)' } }
             },
             plugins: {
                 tooltip: { enabled: true }
@@ -108,7 +108,7 @@ onMounted(() => {
                 const index = elements[0].index;
                 const selected = chartDataPoints.value[index];
                 if (selected) {
-                    emit("pointClick", selected);
+                    emit('pointClick', selected);
                 }
             }
         }

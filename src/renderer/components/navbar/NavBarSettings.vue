@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from "vue";
-import { CogIcon, HomeIcon } from "@heroicons/vue/24/outline";
+import { ref } from 'vue';
+import { CogIcon, HomeIcon } from '@heroicons/vue/24/outline';
 
 const inSettingPage = ref(false);
 

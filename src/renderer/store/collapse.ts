@@ -1,6 +1,6 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
-export const useCollapse = defineStore("collapse", {
+export const useCollapse = defineStore('collapse', {
     state: () => {
         return {
             open: true

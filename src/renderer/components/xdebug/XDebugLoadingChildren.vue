@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, getCurrentInstance, onBeforeUnmount } from "vue";
+import { defineProps, onMounted, getCurrentInstance, onBeforeUnmount } from 'vue';
 
 const props = defineProps({
     variableName: String,
@@ -24,43 +24,43 @@ const propertyGet = (variableName) => {
 };
 
 const sendCommand = (cmd) => {
-    window.ipcRenderer.send("send-xdebug-command", cmd);
+    window.ipcRenderer.send('send-xdebug-command', cmd);
 };
 
 const parseResponse = (xml) => {
     const parser = new DOMParser();
-    const doc = parser.parseFromString(xml, "text/xml");
-    const responseElement = doc.getElementsByTagName("response")[0];
+    const doc = parser.parseFromString(xml, 'text/xml');
+    const responseElement = doc.getElementsByTagName('response')[0];
 
     if (responseElement) {
-        const command = responseElement.getAttribute("command");
+        const command = responseElement.getAttribute('command');
 
-        if (command === "property_get") {
-            const properties = responseElement.getElementsByTagName("property");
+        if (command === 'property_get') {
+            const properties = responseElement.getElementsByTagName('property');
             const childrenArray = [];
 
             Array.from(properties).forEach((property) => {
-                const name = property.getAttribute("name");
+                const name = property.getAttribute('name');
 
-                const fullname = property.getAttribute("fullname");
-                const type = property.getAttribute("type");
-                const facet = property.getAttribute("facet");
-                const classname = property.getAttribute("classname");
+                const fullname = property.getAttribute('fullname');
+                const type = property.getAttribute('type');
+                const facet = property.getAttribute('facet');
+                const classname = property.getAttribute('classname');
 
-                let valueElement = property.querySelector("cdata") || property;
+                let valueElement = property.querySelector('cdata') || property;
                 let value = valueElement.textContent;
 
-                if (type === "string" && value) {
+                if (type === 'string' && value) {
                     try {
                         value = atob(value);
                     } catch (e) {
-                        console.error("Error decoding Base64:", e);
+                        console.error('Error decoding Base64:', e);
                     }
                 }
 
                 function formatValue(type, value) {
-                    if (type === "bool") {
-                        return value === "1" ? "true" : "false";
+                    if (type === 'bool') {
+                        return value === '1' ? 'true' : 'false';
                     }
 
                     return value;
@@ -93,14 +93,14 @@ const parseResponse = (xml) => {
 
 const handleResponse = (event, response) => {
     const newChildren = parseResponse(response);
-    emit("loaded", newChildren);
+    emit('loaded', newChildren);
 };
 
 onMounted(() => {
-    window.ipcRenderer.on("xdebug-response", handleResponse);
+    window.ipcRenderer.on('xdebug-response', handleResponse);
 });
 
 onBeforeUnmount(() => {
-    window.ipcRenderer.removeListener("xdebug-response", handleResponse);
+    window.ipcRenderer.removeListener('xdebug-response', handleResponse);
 });
 </script>

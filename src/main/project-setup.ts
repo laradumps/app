@@ -1,14 +1,14 @@
-import { BrowserWindow, dialog, IpcMainEvent, Notification } from "electron";
-import path from "path";
-import fs from "fs";
-import { exec } from "child_process";
-import isWsl from "is-wsl";
+import { BrowserWindow, dialog, IpcMainEvent, Notification } from 'electron';
+import path from 'path';
+import fs from 'fs';
+import { exec } from 'child_process';
+import isWsl from 'is-wsl';
 
-const isWindows = process.platform === "win32";
+const isWindows = process.platform === 'win32';
 
 const CHANNELS = {
-    COMPOSER_AUTO_INSTALL: "composer-auto-install",
-    PROJECT_DIRECTORY_SELECTED: "project-directory-selected"
+    COMPOSER_AUTO_INSTALL: 'composer-auto-install',
+    PROJECT_DIRECTORY_SELECTED: 'project-directory-selected'
 };
 
 let notifyLock = false;
@@ -23,10 +23,14 @@ const notifyOnce = (title: string, body: string) => {
 // Run a command and return stdout as string (throws on non-zero exit)
 const runCommand = (command: string, cwd: string): Promise<string> => {
     return new Promise((resolve, reject) => {
-        const isDarwin = process.platform === "darwin";
-        const isLinux = process.platform === "linux";
-        const extraPaths = isDarwin ? "/opt/homebrew/bin:/usr/local/bin:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" : isLinux ? "/usr/local/bin:/usr/bin:/bin" : "";
-        const PATH = extraPaths ? `${extraPaths}:${process.env.PATH ?? ""}` : process.env.PATH;
+        const isDarwin = process.platform === 'darwin';
+        const isLinux = process.platform === 'linux';
+        const extraPaths = isDarwin
+            ? '/opt/homebrew/bin:/usr/local/bin:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
+            : isLinux
+              ? '/usr/local/bin:/usr/bin:/bin'
+              : '';
+        const PATH = extraPaths ? `${extraPaths}:${process.env.PATH ?? ''}` : process.env.PATH;
 
         exec(command, { cwd, env: { ...process.env, PATH } }, (error, stdout, stderr) => {
             if (error) {
@@ -46,7 +50,7 @@ const isWSL = (): boolean => {
 
 // Check whether the current project uses DDEV and the web service is running
 const isDdevRunning = async (projectPath: string): Promise<boolean> => {
-    const ddevDir = path.join(projectPath, ".ddev");
+    const ddevDir = path.join(projectPath, '.ddev');
     if (!fs.existsSync(ddevDir)) return false;
     try {
         // Ensure ddev command is available
@@ -56,7 +60,7 @@ const isDdevRunning = async (projectPath: string): Promise<boolean> => {
         const data = JSON.parse(desc);
         const raw = (data && data.raw) || undefined;
         const status: string | undefined = raw?.services?.web?.status;
-        return status === "running";
+        return status === 'running';
     } catch (_e) {
         return false;
     }
@@ -67,26 +71,26 @@ const getComposerCandidates = async (projectPath: string): Promise<string[]> => 
 
     // 0) If DDEV is running, prefer running composer inside DDEV first
     if (await isDdevRunning(projectPath)) {
-        candidates.push("ddev composer");
+        candidates.push('ddev composer');
     }
 
     // 1) Prefer local composer.phar executed via PHP
-    const composerPhar = path.join(projectPath, "composer.phar");
+    const composerPhar = path.join(projectPath, 'composer.phar');
     if (fs.existsSync(composerPhar)) {
         candidates.push(`php "${composerPhar}"`);
     }
 
     if (isWindows && !isWSL()) {
-        candidates.push("composer.bat"); // Windows
+        candidates.push('composer.bat'); // Windows
     } else {
-        candidates.push("composer"); // Linux/macOS/WSL
+        candidates.push('composer'); // Linux/macOS/WSL
     }
 
     return candidates;
 };
 
 const installLaraDumps = async (projectPath: string) => {
-    const artisanPath = path.join(projectPath, "artisan");
+    const artisanPath = path.join(projectPath, 'artisan');
     const errors: string[] = [];
 
     if (fs.existsSync(artisanPath)) {
@@ -104,7 +108,7 @@ const installLaraDumps = async (projectPath: string) => {
         }
 
         // 2) Try with Sail (if artisan and sail are present)
-        const sailPath = path.join(projectPath, "vendor", "bin", isWindows ? "sail.bat" : "sail");
+        const sailPath = path.join(projectPath, 'vendor', 'bin', isWindows ? 'sail.bat' : 'sail');
         if (fs.existsSync(sailPath)) {
             try {
                 console.log(`Using Sail to run artisan commands.`, sailPath);
@@ -130,12 +134,14 @@ const installLaraDumps = async (projectPath: string) => {
     }
 
     // 4) Try with LaraDumps binary
-    const bin = isWindows ? path.join(projectPath, "vendor", "bin", "laradumps.bat") : path.join(projectPath, "vendor", "bin", "laradumps");
+    const bin = isWindows
+        ? path.join(projectPath, 'vendor', 'bin', 'laradumps.bat')
+        : path.join(projectPath, 'vendor', 'bin', 'laradumps');
 
     console.log(`Using binary commands.`, bin);
 
     if (!fs.existsSync(bin)) {
-        throw new Error("LaraDumps binary not found. Did you run composer require?");
+        throw new Error('LaraDumps binary not found. Did you run composer require?');
     }
 
     try {
@@ -144,35 +150,35 @@ const installLaraDumps = async (projectPath: string) => {
     } catch (e) {
         const msg = (e as Error)?.message || String(e);
         errors.push(`Binary: ${msg}`);
-        throw new Error(`Failed to initialize via Sail, PHP, and binary. Details: ${errors.join(" | ")}`);
+        throw new Error(`Failed to initialize via Sail, PHP, and binary. Details: ${errors.join(' | ')}`);
     }
 };
 
 const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: string): Promise<void> => {
     try {
-        const composerJsonPath = path.join(selectedDir, "composer.json");
+        const composerJsonPath = path.join(selectedDir, 'composer.json');
 
         // Start signal
-        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { status: "start", path: selectedDir });
+        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { status: 'start', path: selectedDir });
 
         if (!fs.existsSync(composerJsonPath)) {
             mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, {
-                error: "composer.json not found in the selected directory. Please select a Composer project root."
+                error: 'composer.json not found in the selected directory. Please select a Composer project root.'
             });
-            notifyOnce("LaraDumps", "composer.json not found in the selected directory.");
+            notifyOnce('LaraDumps', 'composer.json not found in the selected directory.');
             return;
         }
 
-        const artisanPath = path.join(selectedDir, "artisan");
+        const artisanPath = path.join(selectedDir, 'artisan');
 
         // Step: composer requires start
-        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "composer-require", running: true });
+        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'composer-require', running: true });
         {
             const errors: string[] = [];
             const candidates = await getComposerCandidates(selectedDir);
             const requireCmd = fs.existsSync(artisanPath)
-                ? "require laradumps/laradumps laradumps/laradumps-core --dev --ignore-platform-reqs"
-                : "require laradumps/laradumps-core --dev --ignore-platform-reqs";
+                ? 'require laradumps/laradumps laradumps/laradumps-core --dev --ignore-platform-reqs'
+                : 'require laradumps/laradumps-core --dev --ignore-platform-reqs';
 
             let success = false;
             for (const cmd of candidates) {
@@ -181,7 +187,7 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
                     console.log(`Running composer require via: ${command}`);
                     await runCommand(command, selectedDir);
                     success = true;
-                    console.log("composer require successful");
+                    console.log('composer require successful');
                     break;
                 } catch (e) {
                     const msg = (e as Error)?.message || String(e);
@@ -191,74 +197,79 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
             }
             if (!success) {
                 throw new Error(
-                    `composer require failed via all strategies. Details: ${errors.join(" | ")}. ` + `Tip: Install Composer (https://getcomposer.org/) or ensure PHP can run a local composer.phar.`
+                    `composer require failed via all strategies. Details: ${errors.join(' | ')}. ` +
+                        `Tip: Install Composer (https://getcomposer.org/) or ensure PHP can run a local composer.phar.`
                 );
             }
         }
 
         // Step: composer requires to be done
-        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "composer-require", done: true });
+        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'composer-require', done: true });
 
         // Step: remove laradumps.yaml
-        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "remove-config", running: true });
+        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'remove-config', running: true });
         {
-            const configPath = path.join(selectedDir, "laradumps.yaml");
+            const configPath = path.join(selectedDir, 'laradumps.yaml');
             if (fs.existsSync(configPath)) {
                 fs.unlinkSync(configPath);
-                console.log("Removed existing laradumps.yaml");
+                console.log('Removed existing laradumps.yaml');
             } else {
-                console.log("No existing laradumps.yaml to remove");
+                console.log('No existing laradumps.yaml to remove');
             }
         }
 
         // Step: remove laradumps.yaml done
-        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "remove-config", done: true });
+        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'remove-config', done: true });
 
         // Step: ds:init start
-        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "ds-init", running: true });
+        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'ds-init', running: true });
         if (fs.existsSync(artisanPath)) {
             await installLaraDumps(selectedDir);
         } else {
-            console.log("artisan not found. Running LaraDumps binary init.");
+            console.log('artisan not found. Running LaraDumps binary init.');
             await installLaraDumps(selectedDir);
         }
 
         // Step: ds:init done
-        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: "ds-init", done: true });
+        mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'ds-init', done: true });
 
         // Finish
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, {
-            step: "finish",
+            step: 'finish',
             done: true,
             success: true,
             path: selectedDir,
-            message: "LaraDumps installed successfully."
+            message: 'LaraDumps installed successfully.'
         });
-        notifyOnce("LaraDumps", "LaraDumps installed successfully.");
+        notifyOnce('LaraDumps', 'LaraDumps installed successfully.');
 
         // Notify that the project directory is ready/selected post install
         mainWindow.webContents.send(CHANNELS.PROJECT_DIRECTORY_SELECTED, selectedDir);
     } catch (error) {
         console.log(error);
-        const message = "Failed to install LaraDumps. " + (error as Error).message;
+        const message = 'Failed to install LaraDumps. ' + (error as Error).message;
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, {
             error: message
         });
-        notifyOnce("LaraDumps", message);
+        notifyOnce('LaraDumps', message);
     }
 };
 
-const selectProjectDirectory = async (mainWindow: BrowserWindow, _event: IpcMainEvent, _args?: unknown): Promise<void> => {
+const selectProjectDirectory = async (
+    mainWindow: BrowserWindow,
+    _event: IpcMainEvent,
+    _args?: unknown
+): Promise<void> => {
     try {
         const result = await dialog.showOpenDialog(mainWindow, {
-            properties: ["openDirectory"]
+            properties: ['openDirectory']
         });
 
         if (result.canceled || result.filePaths.length === 0) {
             mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, {
-                error: "Operation cancelled by user."
+                error: 'Operation cancelled by user.'
             });
-            notifyOnce("LaraDumps", "Operation cancelled by user.");
+            notifyOnce('LaraDumps', 'Operation cancelled by user.');
             return;
         }
 
@@ -269,7 +280,7 @@ const selectProjectDirectory = async (mainWindow: BrowserWindow, _event: IpcMain
         const errorMessage = err instanceof Error ? err.message : String(err);
         console.error(err);
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { error: errorMessage });
-        notifyOnce("LaraDumps", errorMessage);
+        notifyOnce('LaraDumps', errorMessage);
     }
 };
 

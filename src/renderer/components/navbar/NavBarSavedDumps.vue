@@ -1,8 +1,8 @@
 <script setup>
-import { computed, watch } from "vue";
-import { useSavedDumpsStore } from "@/store/saved-dumps";
-import { deepClone } from "@/lib/deep_clone";
-import { BookmarkIcon } from "@heroicons/vue/24/outline";
+import { computed, watch } from 'vue';
+import { useSavedDumpsStore } from '@/store/saved-dumps';
+import { deepClone } from '@/lib/deep_clone';
+import { BookmarkIcon } from '@heroicons/vue/24/outline';
 
 const savedStore = useSavedDumpsStore();
 
@@ -13,8 +13,8 @@ const openSavedWindow = () => {
 
     const payload = deepClone(savedStore.all);
 
-    window.ipcRenderer.send("screen-window:show", {
-        screen: "saved",
+    window.ipcRenderer.send('screen-window:show', {
+        screen: 'saved',
         payload,
         position: {}
     });
@@ -24,8 +24,8 @@ watch(
     () => savedStore.count,
     () => {
         const payload = deepClone(savedStore.all);
-        window.ipcRenderer.send("send-screen-window-update", {
-            screen: "saved",
+        window.ipcRenderer.send('send-screen-window-update', {
+            screen: 'saved',
             payload
         });
     }

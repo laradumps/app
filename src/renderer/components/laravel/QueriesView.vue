@@ -1,27 +1,34 @@
 <script setup lang="ts">
-import { Payload } from "@/types/Payload";
-import { computed, defineProps, nextTick, onMounted, ref, watch } from "vue";
-import { useQueriesPayloadStore } from "@/store/queries";
-import { useTimeStore } from "@/store/time";
-import DumpItem from "@/components/dumps/DumpItem.vue";
-import { useQueryDuplicated } from "@/store/query-duplicated";
-import { useQueriesBlockedStore } from "@/store/queries-blocked";
-import { ArrowsRightLeftIcon, FunnelIcon, PlayIcon, AdjustmentsHorizontalIcon, TrashIcon, ArrowDownTrayIcon } from "@heroicons/vue/24/outline";
-import tippy from "tippy.js";
-import { usePendingRequestsStore } from "@/store/pending-requests";
-import QueriesRequests from "@/components/laravel/QueriesRequests.vue";
-import IconPause from "@/components/Icons/IconPause.vue";
-import { usePauseQueriesStore } from "@/store/pause-queries";
-import SvgEmpty from "@/components/svg/SvgEmpty.vue";
-import { useGlobalSearchStore } from "@/store/global-search";
-import { useQueriesChart } from "@/store/queries-chart";
-import QueriesChart from "@/components/laravel/QueriesChart.vue";
-import DumpLink from "@/components/dumps/DumpLink.vue";
-import DumpQueries from "@/components/laravel/DumpQueries.vue";
-import moment from "moment";
-import { useFormattedQueriesStore } from "@/store/formatted-queries";
-import { convertMsToHumanReadable, exportQueriesToSQL } from "@/utils/queriesUtils";
-import { useSettingsStore } from "@/store/settings";
+import { Payload } from '@/types/Payload';
+import { computed, defineProps, nextTick, onMounted, ref, watch } from 'vue';
+import { useQueriesPayloadStore } from '@/store/queries';
+import { useTimeStore } from '@/store/time';
+import DumpItem from '@/components/dumps/DumpItem.vue';
+import { useQueryDuplicated } from '@/store/query-duplicated';
+import { useQueriesBlockedStore } from '@/store/queries-blocked';
+import {
+    ArrowsRightLeftIcon,
+    FunnelIcon,
+    PlayIcon,
+    AdjustmentsHorizontalIcon,
+    TrashIcon,
+    ArrowDownTrayIcon
+} from '@heroicons/vue/24/outline';
+import tippy from 'tippy.js';
+import { usePendingRequestsStore } from '@/store/pending-requests';
+import QueriesRequests from '@/components/laravel/QueriesRequests.vue';
+import IconPause from '@/components/Icons/IconPause.vue';
+import { usePauseQueriesStore } from '@/store/pause-queries';
+import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import { useGlobalSearchStore } from '@/store/global-search';
+import { useQueriesChart } from '@/store/queries-chart';
+import QueriesChart from '@/components/laravel/QueriesChart.vue';
+import DumpLink from '@/components/dumps/DumpLink.vue';
+import DumpQueries from '@/components/laravel/DumpQueries.vue';
+import moment from 'moment';
+import { useFormattedQueriesStore } from '@/store/formatted-queries';
+import { convertMsToHumanReadable, exportQueriesToSQL } from '@/utils/queriesUtils';
+import { useSettingsStore } from '@/store/settings';
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
@@ -95,7 +102,7 @@ const queries = computed<Payload[]>(() => {
     const isSearchActive = search.length > 0;
 
     const result = items.filter((dump) => {
-        const sql = dump.queries?.query?.sql || "";
+        const sql = dump.queries?.query?.sql || '';
 
         if (duplicatesStore.showOnlyDuplicated && !duplicatesStore.isDuplicated(dump.request_id, sql)) {
             return false;
@@ -103,24 +110,24 @@ const queries = computed<Payload[]>(() => {
 
         if (isSearchActive) {
             const labelMatch = dump.with_label.label?.toLowerCase().includes(search) ?? false;
-            const queryMatch = (dump.queries?.query?.sql || "").toLowerCase().includes(search);
+            const queryMatch = (dump.queries?.query?.sql || '').toLowerCase().includes(search);
             if (!labelMatch && !queryMatch) {
                 return false;
             }
         }
 
-        if (filteredOrigins.value.length && !filteredOrigins.value.includes(dump.queries?.origin || "")) {
+        if (filteredOrigins.value.length && !filteredOrigins.value.includes(dump.queries?.origin || '')) {
             return false;
         }
 
-        return !(filteredClasses.value.length && !filteredClasses.value.includes(dump.ide_handle?.class_name || ""));
+        return !(filteredClasses.value.length && !filteredClasses.value.includes(dump.ide_handle?.class_name || ''));
     });
 
     const sortFn =
-        timeStore.order && timeStore.order !== "default"
+        timeStore.order && timeStore.order !== 'default'
             ? (a: Payload, b: Payload) => {
                   const diff = (a.queries?.query?.time || 0) - (b.queries?.query?.time || 0);
-                  return timeStore.order === "asc" ? diff : -diff;
+                  return timeStore.order === 'asc' ? diff : -diff;
               }
             : undefined;
 
@@ -138,15 +145,15 @@ const clear = () => {
     queryDuplicatedStore.clear();
     duplicatesStore.setCurrentRequestId(null);
 
-    pendingRequestsStore.clear("queries");
+    pendingRequestsStore.clear('queries');
 };
 
 onMounted(() => {
     nextTick(() => {
-        tippy("[data-tippy-content]", {
+        tippy('[data-tippy-content]', {
             allowHTML: true,
-            theme: "light-border",
-            placement: "bottom"
+            theme: 'light-border',
+            placement: 'bottom'
         });
     });
 });
@@ -165,7 +172,7 @@ const groupedQueries = computed(() => {
             if (!isSearchActive && payload.request_id !== timeStore.selected) {
                 return groups;
             }
-            const groupKey = moment(payload.date_time).format("YYYY-MM-DD HH:mm:ss");
+            const groupKey = moment(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
             if (!groups[groupKey]) {
                 groups[groupKey] = [];
             }
@@ -178,7 +185,7 @@ const groupedQueries = computed(() => {
 
 function toggleChartType(type: string) {
     if (queriesChart.type === type) {
-        queriesChart.setType("none");
+        queriesChart.setType('none');
     } else {
         queriesChart.setType(type);
     }
@@ -282,7 +289,9 @@ const setOrder = (order: string) => {
                     data-tippy-content="Actions"
                     :class="{
                         'border-primary text-primary':
-                            formattedQueriesStore.formatted || ['asc', 'desc'].includes(timeStore.order) || ['all', 'by-request', 'percentage-colors'].includes(queriesChart.type)
+                            formattedQueriesStore.formatted ||
+                            ['asc', 'desc'].includes(timeStore.order) ||
+                            ['all', 'by-request', 'percentage-colors'].includes(queriesChart.type)
                     }"
                 >
                     <AdjustmentsHorizontalIcon class="size-4" />
@@ -380,7 +389,10 @@ const setOrder = (order: string) => {
                     class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
                     :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
                     :class="{
-                        'border-primary text-primary': filteredClasses.length > 0 || filteredOrigins.length > 0 || duplicatesStore.showOnlyDuplicated
+                        'border-primary text-primary':
+                            filteredClasses.length > 0 ||
+                            filteredOrigins.length > 0 ||
+                            duplicatesStore.showOnlyDuplicated
                     }"
                 >
                     <FunnelIcon class="w-4" />
@@ -447,7 +459,9 @@ const setOrder = (order: string) => {
                                             @change="
                                                 () => {
                                                     if (filteredClasses.includes(className)) {
-                                                        filteredClasses = filteredClasses.filter((c) => c !== className);
+                                                        filteredClasses = filteredClasses.filter(
+                                                            (c) => c !== className
+                                                        );
                                                     } else {
                                                         filteredClasses.push(className);
                                                     }
@@ -455,7 +469,7 @@ const setOrder = (order: string) => {
                                             "
                                             class="checkbox checkbox-sm"
                                         />
-                                        <span class="whitespace-nowrap">{{ className.split("\\").pop() }}</span>
+                                        <span class="whitespace-nowrap">{{ className.split('\\').pop() }}</span>
                                     </label>
                                 </li>
                             </ul>
@@ -505,10 +519,15 @@ const setOrder = (order: string) => {
                 >
                     <ArrowsRightLeftIcon class="w-4 inline-block" />
                     <span class="opacity-80"> ({{ timeStore.getRequestCount() }}) </span>
-                    <span class="truncate">{{ timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : "Tinker" }}</span>
+                    <span class="truncate">{{
+                        timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : 'Tinker'
+                    }}</span>
                 </button>
                 <div class="flex items-center gap-2">
-                    <div class="badge badge-ghost badge-sm font-mono">{{ getQueriesCount(timeStore.selected) }} {{ getQueriesCount(timeStore.selected) === 1 ? "query" : "queries" }}</div>
+                    <div class="badge badge-ghost badge-sm font-mono">
+                        {{ getQueriesCount(timeStore.selected) }}
+                        {{ getQueriesCount(timeStore.selected) === 1 ? 'query' : 'queries' }}
+                    </div>
                     <div class="badge badge-primary badge-sm font-mono">
                         {{ getHumanReadableTime() }}
                     </div>

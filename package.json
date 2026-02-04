@@ -16,12 +16,13 @@
         "publish-win": "npm run build && electron-builder --publish always --win",
         "publish-mac": "npm run build && electron-builder --publish always --mac --universal",
         "publish-linux": "npm run build && electron-builder --publish always --linux",
-        "format": "prettier . --write --single-attribute-per-line"
+        "format": "prettier . --write"
     },
     "dependencies": {
         "@headlessui/vue": "^1.7.23",
         "@heroicons/vue": "^2.2.0",
         "@highlightjs/vue-plugin": "^2.1.0",
+        "@modelcontextprotocol/sdk": "^1.25.3",
         "@tailwindcss/postcss": "^4.1.18",
         "@tailwindcss/typography": "^0.5.19",
         "@tailwindcss/vite": "^4.1.18",
@@ -58,11 +59,13 @@
         "vue-i18n": "9.4.1",
         "vue-json-pretty": "^2.6.0",
         "vue-router": "^4.6.4",
-        "xml2js": "^0.6.2"
+        "xml2js": "^0.6.2",
+        "zod": "^4.3.6"
     },
     "devDependencies": {
         "@types/electron": "^1.6.10",
         "@types/electron-json-storage": "^4.5.4",
+        "@types/express": "^5.0.6",
         "@types/humanize-duration": "^3.27.4",
         "@types/ssh2": "^1.15.5",
         "@types/xml2js": "^0.4.14",
@@ -87,10 +90,6 @@
     },
     "bugs": {
         "url": "https://github.com/laradumps/app/issues"
-    },
-    "prettier": {
-        "trailingComma": "none",
-        "printWidth": 200
     },
     "build": {
         "appId": "com.laradumps.app",
