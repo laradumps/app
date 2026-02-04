@@ -105,9 +105,7 @@ const modalClose = () => (isListeningModalOpen.value = false);
                 @click="router.push('/settings?tab=mcp')"
             >
                 <span class="relative flex h-2 w-2">
-                    <span
-                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-                    ></span>
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
                 <span class="text-[10px] uppercase font-bold text-base-content/70">MCP</span>
