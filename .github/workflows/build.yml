@@ -33,11 +33,11 @@ jobs:
             #              run: |
             #                  sudo snap install snapcraft --classic
 
-            #            - name: 🐧 Release Linux
-            #              if: matrix.os == 'ubuntu-latest'
-            #              run: npm run publish-linux
-            #              env:
-            #                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+            - name: 🐧 Release Linux
+              if: matrix.os == 'ubuntu-latest'
+              run: npm run publish-linux
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
             #                  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
             - name: 💻 Release Windows
