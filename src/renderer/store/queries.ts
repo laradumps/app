@@ -3,8 +3,12 @@ import { Payload } from '@/types/Payload';
 import { useSettingsStore } from '@/store/settings';
 import { useQueriesBlockedStore } from '@/store/queries-blocked';
 
+export type Query = Payload & {
+    original_content?: string;
+};
+
 type State = {
-    payload: Payload[];
+    payload: Query[];
 };
 
 export const useQueriesPayloadStore = defineStore('queriesPayload', {
@@ -19,7 +23,12 @@ export const useQueriesPayloadStore = defineStore('queriesPayload', {
             }
 
             this._removeOldestIfExceedsLimit();
-            this.payload.push(payload);
+
+            const queryData: Query = {
+                ...payload,
+                original_content: payload.queries?.original_content
+            };
+            this.payload.push(queryData);
         },
         clear() {
             this.payload = [];

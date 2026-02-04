@@ -16,6 +16,7 @@ export type Mail = {
     attachments: Attachment[];
     ide_handle: IdeHandle;
     context: ContextPayload;
+    original_content?: string;
 };
 
 type State = {
@@ -96,7 +97,8 @@ export const useMailStore = defineStore('mailStore', {
                 is_read: false,
                 ...payload,
                 ide_handle,
-                context
+                context,
+                original_content: payload.original_content
             });
         },
         visited(message_id: string) {

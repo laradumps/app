@@ -6,6 +6,7 @@ export interface QueryPayload {
     time: number;
     connection: any;
     connectionName: any;
+    original_content?: string;
 }
 
 export interface QueriesPayload {
@@ -17,12 +18,14 @@ export interface QueriesPayload {
     method: string;
     explain_nodes?: undefined | string[];
     time: number;
+    original_content?: string;
 }
 
 export interface ModelPayload {
     attributes: string[];
     relations: string[];
     className: string;
+    original_content?: string;
 }
 
 export interface DumpPayload {
@@ -37,16 +40,19 @@ export interface TimeTrackPayload {
     time: string;
     elapsed_time?: string;
     label?: string;
+    original_content?: string;
 }
 
 export interface TableV2Payload {
     values: string[];
     headerStyle: string[];
     label: string;
+    original_content?: string;
 }
 
 export interface ColorPayload {
     color: string;
+    original_content?: string;
 }
 
 export interface JSONPayload {
@@ -64,22 +70,26 @@ export interface ValidatePayload {
     content: string;
     is_case_sensitive: boolean;
     is_whole_word: boolean;
+    original_content?: string;
 }
 
 export interface TablePayload {
     values: string[];
     fields: string[];
     header: string[];
+    original_content?: string;
 }
 
 export interface MailablePayload {
     html: string;
+    original_content?: string;
 }
 
 export interface LogApplicationPayload {
     message: string;
     level: string;
     context: string | string[];
+    original_content: string;
     exception: any;
     value: string;
     queries: string[];
@@ -97,10 +107,12 @@ export interface ScreenPayload {
     pinned: boolean;
     visible: boolean;
     new_window: boolean;
+    original_content?: string;
 }
 
 export interface LabelPayload {
     label: string;
+    original_content?: string;
 }
 
 export interface CodeSnippet {
@@ -113,6 +125,7 @@ export interface StrContainsPayload {
     success: boolean;
     regex_mode: string;
     search_string: string;
+    original_content?: string;
 }
 
 export interface MailPayload {
@@ -122,6 +135,7 @@ export interface MailPayload {
     headers: any;
     attachments: any;
     messageId: string;
+    original_content?: string;
 }
 
 export interface JobPayload {
@@ -131,10 +145,12 @@ export interface JobPayload {
     display_name: string;
     exception: string[];
     exception_message: string | null;
+    original_content?: string;
 }
 
 export interface ContextPayload {
     context: [];
+    original_content?: string;
 }
 
 export interface LivewirePayload {
@@ -146,6 +162,7 @@ export interface LivewirePayload {
     profile: Array<any>;
     queries: Array<any>;
     events: Array<any>;
+    original_content?: string;
 }
 
 export interface Payload {

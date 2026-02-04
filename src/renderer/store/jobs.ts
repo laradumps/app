@@ -15,6 +15,7 @@ export type Job = {
     ide_handle: IdeHandle;
     code_snippet?: CodeSnippet[];
     exception_message: string | null;
+    original_content?: string;
 };
 
 type State = {
@@ -65,7 +66,8 @@ export const useJobStore = defineStore('jobStore', {
                 start_time: null,
                 end_time: null,
                 exception_message: '',
-                ide_handle
+                ide_handle,
+                original_content: jobs.original_content
             };
         },
         _removeOldestIfExceedsLimit() {

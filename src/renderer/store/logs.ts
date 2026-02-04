@@ -9,6 +9,7 @@ export type Log = {
     context: string | string[];
     message: any;
     created_at: Date;
+    original_content: string;
     ide_handle: IdeHandle;
     code_snippet: CodeSnippet[];
     color: string;
@@ -67,6 +68,7 @@ export const useLogStore = defineStore('logStore', {
                 log_id,
                 level: log_application.level,
                 context: log_application.context,
+                original_content: log_application.original_content,
                 message: log_application.message,
                 created_at: date,
                 code_snippet,

@@ -47,6 +47,78 @@ const applyLimit = (data) => {
     return items.slice(-limit);
 };
 
+const stripDumpHtmlContent = (payload) => {
+    if (!payload || typeof payload !== 'object') return payload;
+
+    const stripped = { ...payload };
+
+    // Remove dump.dump (HTML content) but keep dump.original_content
+    if (stripped.dump && typeof stripped.dump === 'object') {
+        stripped.dump = {
+            original_content: stripped.dump.original_content,
+            variable_type: stripped.dump.variable_type
+        };
+    }
+
+    return stripped;
+};
+
+const stripLogHtmlContext = (log) => {
+    if (!log || typeof log !== 'object') return log;
+
+    const stripped = { ...log };
+
+    // Extract sf_dump_id from a context array if it exists
+    if (stripped.context && Array.isArray(stripped.context) && stripped.context.length > 1) {
+        // Keep only the ID reference, remove HTML content
+        const sfDumpId = stripped.context[1];
+        stripped.context = [null, sfDumpId]; // Preserve structure but remove HTML
+    } else if (stripped.context && typeof stripped.context === 'string') {
+        // If context is a string, remove it entirely
+        stripped.context = null;
+    }
+
+    return stripped;
+};
+
+const deepStripSfDumpContent = (data, type = 'dump') => {
+    if (!data) return data;
+
+    if (Array.isArray(data)) {
+        return data.map((item) => deepStripSfDumpContent(item, type));
+    }
+
+    if (typeof data === 'object') {
+        let stripped = { ...data };
+
+        // Handle dumps
+        if (type === 'dump') {
+            stripped = stripDumpHtmlContent(stripped);
+        }
+
+        // Handle logs
+        if (type === 'log') {
+            stripped = stripLogHtmlContext(stripped);
+        }
+
+        // Recursively process nested objects (except certain fields we want to preserve)
+        for (const key in stripped) {
+            if (stripped.hasOwnProperty(key)) {
+                const value = stripped[key];
+                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    stripped[key] = deepStripSfDumpContent(value, type);
+                } else if (Array.isArray(value)) {
+                    stripped[key] = deepStripSfDumpContent(value, type);
+                }
+            }
+        }
+
+        return stripped;
+    }
+
+    return data;
+};
+
 const sendBatch = () => {
     if (batchBuffer.length === 0) return;
 
@@ -93,7 +165,12 @@ app.get('/api/mcp/logs', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.logStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(applyLimit(window.LaraDumps.logStore.logs));
+        const logs = applyLimit(window.LaraDumps.logStore.logs);
+        const strippedLogs = deepStripSfDumpContent(logs, 'log');
+
+        console.log(strippedLogs);
+
+        res.send(strippedLogs);
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -104,7 +181,10 @@ app.get('/api/mcp/queries', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.queriesStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(applyLimit(window.LaraDumps.queriesStore.payload));
+        const queries = applyLimit(window.LaraDumps.queriesStore.payload);
+        const strippedQueries = deepStripSfDumpContent(queries, 'dump');
+
+        res.send(strippedQueries);
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -115,7 +195,9 @@ app.get('/api/mcp/jobs', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.jobStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(applyLimit(window.LaraDumps.jobStore.jobs));
+        const jobs = applyLimit(window.LaraDumps.jobStore.jobs);
+        const strippedJobs = deepStripSfDumpContent(jobs, 'dump');
+        res.send(strippedJobs);
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -126,7 +208,9 @@ app.get('/api/mcp/brains', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.brainStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(applyLimit(window.LaraDumps.brainStore.brains));
+        const brains = applyLimit(window.LaraDumps.brainStore.brains);
+        const strippedBrains = deepStripSfDumpContent(brains, 'dump');
+        res.send(strippedBrains);
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -137,7 +221,11 @@ app.get('/api/mcp/dumps', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.payloadStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(applyLimit(window.LaraDumps.payloadStore.payload));
+        console.log(window.LaraDumps.payloadStore.payload);
+        const dumps = applyLimit(window.LaraDumps.payloadStore.payload);
+        const strippedDumps = deepStripSfDumpContent(dumps, 'dump');
+
+        res.send(strippedDumps);
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }

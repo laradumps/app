@@ -10,6 +10,7 @@ export type Request = {
     method: string;
     origin: string;
     date: Moment;
+    original_content?: string;
 };
 
 type RequestsMap = Record<string, Request>;
@@ -106,7 +107,8 @@ export const useTimeStore = defineStore('timeStore', {
                 uri: queriesPayload.uri,
                 method: queriesPayload.method,
                 origin: queriesPayload.origin,
-                date: moment()
+                date: moment(),
+                original_content: queriesPayload.original_content
             };
 
             if (!this.groups.includes(requestId)) {
