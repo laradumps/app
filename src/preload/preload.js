@@ -10,6 +10,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { applyLimit, slimForMcp } from './utils.js';
 
 const port = 9191;
 const app = express();
@@ -33,91 +34,6 @@ app.use(
         limit: '50mb'
     })
 );
-
-const applyLimit = (data) => {
-    if (!data) return [];
-    const settings = window.LaraDumps?.settingsStore?.settings;
-    // Default to 10 if not set or invalid
-    const limit = settings && settings.mcp_limit_payload_objects ? parseInt(settings.mcp_limit_payload_objects) : 10;
-
-    const items = Array.isArray(data) ? data : Object.values(data);
-
-    if (items.length <= limit) return items;
-
-    return items.slice(-limit);
-};
-
-const stripDumpHtmlContent = (payload) => {
-    if (!payload || typeof payload !== 'object') return payload;
-
-    const stripped = { ...payload };
-
-    // Remove dump.dump (HTML content) but keep dump.original_content
-    if (stripped.dump && typeof stripped.dump === 'object') {
-        stripped.dump = {
-            original_content: stripped.dump.original_content,
-            variable_type: stripped.dump.variable_type
-        };
-    }
-
-    return stripped;
-};
-
-const stripLogHtmlContext = (log) => {
-    if (!log || typeof log !== 'object') return log;
-
-    const stripped = { ...log };
-
-    // Extract sf_dump_id from a context array if it exists
-    if (stripped.context && Array.isArray(stripped.context) && stripped.context.length > 1) {
-        // Keep only the ID reference, remove HTML content
-        const sfDumpId = stripped.context[1];
-        stripped.context = [null, sfDumpId]; // Preserve structure but remove HTML
-    } else if (stripped.context && typeof stripped.context === 'string') {
-        // If context is a string, remove it entirely
-        stripped.context = null;
-    }
-
-    return stripped;
-};
-
-const deepStripSfDumpContent = (data, type = 'dump') => {
-    if (!data) return data;
-
-    if (Array.isArray(data)) {
-        return data.map((item) => deepStripSfDumpContent(item, type));
-    }
-
-    if (typeof data === 'object') {
-        let stripped = { ...data };
-
-        // Handle dumps
-        if (type === 'dump') {
-            stripped = stripDumpHtmlContent(stripped);
-        }
-
-        // Handle logs
-        if (type === 'log') {
-            stripped = stripLogHtmlContext(stripped);
-        }
-
-        // Recursively process nested objects (except certain fields we want to preserve)
-        for (const key in stripped) {
-            if (stripped.hasOwnProperty(key)) {
-                const value = stripped[key];
-                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                    stripped[key] = deepStripSfDumpContent(value, type);
-                } else if (Array.isArray(value)) {
-                    stripped[key] = deepStripSfDumpContent(value, type);
-                }
-            }
-        }
-
-        return stripped;
-    }
-
-    return data;
-};
 
 const sendBatch = () => {
     if (batchBuffer.length === 0) return;
@@ -166,11 +82,7 @@ app.get('/api/mcp/logs', (req, res) => {
             return res.status(503).send({ error: 'Store not initialized' });
         }
         const logs = applyLimit(window.LaraDumps.logStore.logs);
-        const strippedLogs = deepStripSfDumpContent(logs, 'log');
-
-        console.log(strippedLogs);
-
-        res.send(strippedLogs);
+        res.send(slimForMcp(logs));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -182,9 +94,7 @@ app.get('/api/mcp/queries', (req, res) => {
             return res.status(503).send({ error: 'Store not initialized' });
         }
         const queries = applyLimit(window.LaraDumps.queriesStore.payload);
-        const strippedQueries = deepStripSfDumpContent(queries, 'dump');
-
-        res.send(strippedQueries);
+        res.send(slimForMcp(queries));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -196,8 +106,7 @@ app.get('/api/mcp/jobs', (req, res) => {
             return res.status(503).send({ error: 'Store not initialized' });
         }
         const jobs = applyLimit(window.LaraDumps.jobStore.jobs);
-        const strippedJobs = deepStripSfDumpContent(jobs, 'dump');
-        res.send(strippedJobs);
+        res.send(slimForMcp(jobs));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -209,8 +118,7 @@ app.get('/api/mcp/brains', (req, res) => {
             return res.status(503).send({ error: 'Store not initialized' });
         }
         const brains = applyLimit(window.LaraDumps.brainStore.brains);
-        const strippedBrains = deepStripSfDumpContent(brains, 'dump');
-        res.send(strippedBrains);
+        res.send(slimForMcp(brains));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -221,11 +129,8 @@ app.get('/api/mcp/dumps', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.payloadStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        console.log(window.LaraDumps.payloadStore.payload);
         const dumps = applyLimit(window.LaraDumps.payloadStore.payload);
-        const strippedDumps = deepStripSfDumpContent(dumps, 'dump');
-
-        res.send(strippedDumps);
+        res.send(slimForMcp(dumps));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -247,7 +152,8 @@ app.get('/api/mcp/mails', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.mailStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(applyLimit(window.LaraDumps.mailStore.mails));
+        const mails = applyLimit(window.LaraDumps.mailStore.mails);
+        res.send(slimForMcp(mails));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
@@ -258,7 +164,8 @@ app.get('/api/mcp/livewire', (req, res) => {
         if (!window.LaraDumps || !window.LaraDumps.livewireStore) {
             return res.status(503).send({ error: 'Store not initialized' });
         }
-        res.send(applyLimit(window.LaraDumps.livewireStore.requests));
+        const livewire = applyLimit(window.LaraDumps.livewireStore.requests);
+        res.send(slimForMcp(livewire));
     } catch (e) {
         res.status(500).send({ error: e.toString() });
     }
