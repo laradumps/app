@@ -339,7 +339,7 @@ const saveCustomTheme = async () => {
 
         <div class="mx-auto p-3 pr-5 text-sm">
             <div class="flex gap-3">
-                <ul class="menu menu-md bg-base-200 w-40 rounded-box">
+                <ul class="menu py-1 menu-md bg-base-200 w-40 rounded-box">
                     <li>
                         <span
                             @click="selected = 'settings'"
@@ -372,22 +372,22 @@ const saveCustomTheme = async () => {
                     </li>
                     <li>
                         <span
-                            @click="selected = 'shortcuts'"
-                            :class="{ 'menu-active': selected === 'shortcuts' }"
-                            class="whitespace-nowrap flex items-center gap-2"
-                        >
-                            <KeyIcon class="w-4 h-4" />
-                            <span>{{ $t('settings.shortcuts') }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span
                             @click="selected = 'mcp'"
                             :class="{ 'menu-active': selected === 'mcp' }"
                             class="whitespace-nowrap flex items-center gap-2"
                         >
                             <CommandLineIcon class="w-4 h-4" />
                             <span>MCP Server</span>
+                        </span>
+                    </li>
+                    <li>
+                        <span
+                            @click="selected = 'shortcuts'"
+                            :class="{ 'menu-active': selected === 'shortcuts' }"
+                            class="whitespace-nowrap flex items-center gap-2"
+                        >
+                            <KeyIcon class="w-4 h-4" />
+                            <span>{{ $t('settings.shortcuts') }}</span>
                         </span>
                     </li>
                 </ul>
@@ -397,6 +397,10 @@ const saveCustomTheme = async () => {
                         v-if="selected === 'settings'"
                         class="overflow-auto"
                     >
+                        <div class="flex flex-col gap-2">
+                            <h3 class="text-lg font-bold">Settings</h3>
+                        </div>
+
                         <div class="mt-2 grid grid-cols-2 items-center">
                             <div>{{ $t('settings.app_version') }}</div>
                             <div class="text-right">
@@ -493,6 +497,10 @@ const saveCustomTheme = async () => {
                         v-if="selected === 'appearance'"
                         class="overflow-auto"
                     >
+                        <div class="flex flex-col gap-2">
+                            <h3 class="text-lg font-bold">Appearance</h3>
+                        </div>
+
                         <div class="mt-2 grid grid-cols-2 items-center">
                             <div>{{ $t('settings.theme') }}</div>
                             <div class="flex items-center justify-between">
@@ -673,6 +681,10 @@ const saveCustomTheme = async () => {
                         v-if="selected === 'limited_dumps'"
                         class="overflow-auto"
                     >
+                        <div class="flex flex-col gap-2">
+                            <h3 class="text-lg font-bold">Limited Dumps</h3>
+                        </div>
+
                         <div class="mt-2 grid grid-cols-2 items-center">
                             <div>{{ $t('settings.dumps') }}</div>
                             <div class="flex items-center justify-between">
@@ -729,6 +741,10 @@ const saveCustomTheme = async () => {
                         v-if="selected === 'shortcuts'"
                         class="overflow-auto"
                     >
+                        <div class="flex flex-col gap-2">
+                            <h3 class="text-lg font-bold">Shortcuts</h3>
+                        </div>
+
                         <div
                             v-for="(shortcut, key) in settingsStore.settings.shortcuts"
                             :key="key"
