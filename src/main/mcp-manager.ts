@@ -39,7 +39,9 @@ export const startMcpServer = () => {
 
     sendLog(`Starting MCP server on port ${port}...`);
 
-    mcpProcess = spawn('node', [scriptPath, '--port', port.toString()], {
+    const nodeExecutable = process.execPath;
+
+    mcpProcess = spawn(nodeExecutable, [scriptPath, '--port', port.toString()], {
         stdio: 'pipe',
         env: process.env
     });
