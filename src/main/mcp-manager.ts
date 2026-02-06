@@ -1,27 +1,11 @@
-import { spawn, ChildProcess } from 'child_process';
-import fs from 'fs';
-import { app, ipcMain, BrowserWindow } from 'electron';
-import path from 'path';
+import { ipcMain, BrowserWindow } from 'electron';
 import * as settings from './settings';
+import { createMcpServer, McpServerInstance } from '../mcp-server';
+import os from 'os';
 
-let mcpProcess: ChildProcess | null = null;
+let mcpServerInstance: McpServerInstance | null = null;
 let consolePipeBroken = false;
-
-const getMcpServerPath = () => {
-    const appPath = app.getAppPath();
-    const isPackaged = app.isPackaged;
-
-    if (!isPackaged) {
-        return path.resolve(appPath, 'dist', 'mcp-server.js');
-    }
-
-    const unpackedPath = path.resolve(appPath.replace('app.asar', 'app.asar.unpacked'), 'dist', 'mcp-server.js');
-    if (fs.existsSync(unpackedPath)) {
-        return unpackedPath;
-    }
-
-    return path.resolve(appPath, 'dist', 'mcp-server.js');
-};
+let mcpStartTime: Date | null = null;
 
 const sendLog = (message: string, type: 'info' | 'error' = 'info') => {
     const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
@@ -44,29 +28,18 @@ const sendLog = (message: string, type: 'info' | 'error' = 'info') => {
     });
 };
 
-const resolveNodeCommand = () => {
-    const customNode = process.env.MCP_NODE_PATH;
-    if (customNode && fs.existsSync(customNode)) {
-        return { command: customNode, env: { ...process.env } };
-    }
-
+const getSystemInfo = () => {
     return {
-        command: process.execPath,
-        env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }
+        platform: process.platform,
+        nodeVersion: process.version,
+        arch: process.arch,
+        memory: `${Math.round(os.totalmem() / 1024 / 1024)}MB`,
+        uptime: process.uptime().toFixed(2)
     };
 };
 
-const ensureServerBundle = (scriptPath: string) => {
-    if (fs.existsSync(scriptPath)) {
-        return true;
-    }
-
-    sendLog(`MCP server bundle not found at ${scriptPath}. Run "npm run build" to regenerate it.`, 'error');
-    return false;
-};
-
-export const startMcpServer = () => {
-    stopMcpServer();
+export const startMcpServer = async () => {
+    await stopMcpServer();
 
     const currentSettings = settings.getSettings();
 
@@ -75,63 +48,78 @@ export const startMcpServer = () => {
         return;
     }
 
-    const scriptPath = getMcpServerPath();
     const port = currentSettings.mcp_port || 3002;
+    const systemInfo = getSystemInfo();
 
-    if (!ensureServerBundle(scriptPath)) {
-        return;
-    }
+    sendLog('===================================================================');
+    sendLog(`Starting MCP Server`);
+    sendLog(`   Platform: ${systemInfo.platform} (${systemInfo.arch})`);
+    sendLog(`   Node.js: ${systemInfo.nodeVersion}`);
+    sendLog(`   Port: ${port}`);
+    sendLog('===================================================================');
 
-    const { command, env } = resolveNodeCommand();
-
-    sendLog(`Starting MCP server on port ${port}...`);
+    mcpStartTime = new Date();
 
     try {
-        mcpProcess = spawn(command, [scriptPath, '--port', port.toString()], {
-            stdio: ['ignore', 'pipe', 'pipe'],
-            env
+        mcpServerInstance = await createMcpServer(port, (message, type) => {
+            let enhancedMessage = message;
+
+            if (mcpStartTime) {
+                const elapsedMs = Date.now() - mcpStartTime.getTime();
+                const elapsed = elapsedMs > 1000 ? `${(elapsedMs / 1000).toFixed(2)}s` : `${elapsedMs}ms`;
+                enhancedMessage = `[+${elapsed}] ${message}`;
+            }
+
+            sendLog(enhancedMessage, type);
+        });
+
+        sendLog(`MCP Server started successfully`);
+        sendLog(`   URL: http://0.0.0.0:${port}/sse`);
+        sendLog(`   Status: CONNECTED`);
+        sendLog('===================================================================');
+
+        BrowserWindow.getAllWindows().forEach((win) => {
+            win.webContents.send('mcp:status', 'connected');
         });
     } catch (error) {
-        sendLog(`Failed to spawn MCP server process: ${(error as Error).message}`, 'error');
-        return;
-    }
+        const errorMessage = (error as Error).message;
+        sendLog(`Failed to start MCP Server: ${errorMessage}`, 'error');
+        sendLog(`   Check if port ${port} is available`, 'error');
+        sendLog(`   Check logs for more details`, 'error');
+        sendLog('===================================================================', 'error');
+        mcpServerInstance = null;
 
-    if (mcpProcess.stdout) {
-        mcpProcess.stdout.on('data', (data) => {
-            sendLog(data.toString().trim());
+        BrowserWindow.getAllWindows().forEach((win) => {
+            win.webContents.send('mcp:status', 'error');
         });
     }
-
-    if (mcpProcess.stderr) {
-        mcpProcess.stderr.on('data', (data) => {
-            sendLog(data.toString().trim(), 'error');
-        });
-    }
-
-    mcpProcess.on('error', (err) => {
-        sendLog(`Failed to start MCP server: ${err.message}`, 'error');
-    });
-
-    mcpProcess.on('exit', (code, signal) => {
-        sendLog(`MCP server exited with code ${code} and signal ${signal}`);
-        if (code !== 0 && code !== null) {
-            // Optional: Restart on a crash?
-        }
-    });
 };
 
-export const stopMcpServer = () => {
-    if (mcpProcess) {
-        console.log('Stopping MCP server...');
-        mcpProcess.kill();
-        mcpProcess = null;
+export const stopMcpServer = async () => {
+    if (mcpServerInstance) {
+        sendLog('Stopping MCP Server...');
+        mcpServerInstance.stop();
+        mcpServerInstance = null;
+        mcpStartTime = null;
+        sendLog('MCP Server stopped successfully');
+
+        BrowserWindow.getAllWindows().forEach((win) => {
+            win.webContents.send('mcp:status', 'disabled');
+        });
     }
 };
 
 export const init = async () => {
-    startMcpServer();
+    await startMcpServer();
 
-    ipcMain.on('mcp:restart', () => {
-        startMcpServer();
+    ipcMain.on('mcp:restart', async () => {
+        await startMcpServer();
+    });
+
+    ipcMain.on('mcp:check-status', () => {
+        const status = mcpServerInstance ? 'connected' : 'disabled';
+        BrowserWindow.getAllWindows().forEach((win) => {
+            win.webContents.send('mcp:status', status);
+        });
     });
 };

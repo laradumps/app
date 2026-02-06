@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import IconPin from '@/components/Icons/IconPin.vue';
 

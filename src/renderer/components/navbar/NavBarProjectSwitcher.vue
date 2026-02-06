@@ -156,9 +156,11 @@ const handleProjectsRetrieved = (_: IpcRendererEvent, storedProjects: Record<str
     const projectsArray = Object.entries(storedProjects).map(([project, path]) => ({ project, path }));
     projects.value = projectsArray;
 
-    const found = projectsArray.find((p) => p.path === currentProjectStore.projectInfo.path);
-    if (found) {
-        setActiveProject(found);
+    if (currentProjectStore.projectInfo) {
+        const found = projectsArray.find((p) => p.path === currentProjectStore.projectInfo.path);
+        if (found) {
+            setActiveProject(found);
+        }
     }
 };
 
@@ -279,7 +281,7 @@ window.ipcRenderer.on(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSel
 const selectedEnvironments = computed(() => environments.value.map(({ value, selected }) => ({ value, selected })));
 
 const saveEnvironment = async (env: Environment | null): Promise<void> => {
-    if (!env) return;
+    if (!env || !currentProjectStore.projectInfo) return;
 
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_UPDATE, {
         selected: selectedEnvironments.value,
@@ -418,9 +420,11 @@ const onEnvDrop = (dropIndex: number) => {
     const [moved] = arr.splice(from, 1);
     arr.splice(to, 0, moved);
     environments.value = arr;
-    dragIndex.value = null;
+    projDrag.value = { list: null, index: null };
 
     // Persist order per project
+    if (!currentProjectStore.projectInfo) return;
+
     try {
         const order = environments.value.map((e) => e.value);
         window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_ENVIRONMENTS_ORDER, {
@@ -475,7 +479,7 @@ const onProjectDrop = (list: 'starred' | 'all', dropIndex: number) => {
 };
 
 const updateSectionValue = (key: string, value: any) => {
-    if (!activeEnvKey.value) return;
+    if (!activeEnvKey.value || !currentProjectStore.projectInfo) return;
 
     if (!yamlConfig.value[activeEnvKey.value]) yamlConfig.value[activeEnvKey.value] = {};
     yamlConfig.value[activeEnvKey.value][key] = value;
