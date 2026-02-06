@@ -1,6 +1,6 @@
 {
     "name": "laradumps",
-    "version": "4.11.1",
+    "version": "4.11.2",
     "private": false,
     "description": "LaraDumps is a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
@@ -94,6 +94,9 @@
     "build": {
         "appId": "com.laradumps.app",
         "productName": "LaraDumps",
+        "asarUnpack": [
+            "dist/mcp-server.js"
+        ],
         "files": [
             "**/*",
             "!node_modules${/*}"
