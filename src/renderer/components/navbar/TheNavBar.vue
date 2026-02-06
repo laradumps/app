@@ -8,22 +8,20 @@ import NavBarCollapse from '@/components/navbar/NavBarCollapse.vue';
 import NavBarSSH from '@/components/navbar/NavBarSSH.vue';
 import NavBarSettings from '@/components/navbar/NavBarSettings.vue';
 import NavBarSavedDumps from '@/components/navbar/NavBarSavedDumps.vue';
-import NavBarUpdateAvailable from '@/components/navbar/NavBarUpdateAvailable.vue';
-import { usePayloadStore } from '@/store/payload';
+import NavBarMCP from '@/components/navbar/NavBarMCP.vue';
 import ClearAll from '@/components/common/ClearAll.vue';
 import { useSettingsStore } from '@/store/settings';
+import { usePayloadStore } from '@/store/payload';
 import { useLogStore } from '@/store/logs.js';
 import { useJobStore } from '@/store/jobs.js';
 import { useQueriesPayloadStore } from '@/store/queries.js';
 import { useMailStore } from '@/store/mail.js';
-import { useRouter } from 'vue-router';
 
 const jobStore = useJobStore();
 const queryStore = useQueriesPayloadStore();
 const mailStore = useMailStore();
 const settingsStore = useSettingsStore();
 const logStore = useLogStore();
-const router = useRouter();
 
 const platform = ref('');
 const isListeningModalOpen = ref(false);
@@ -98,18 +96,7 @@ const modalClose = () => (isListeningModalOpen.value = false);
             <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
 
             <!-- MCP Indicator -->
-            <div
-                v-if="settingsStore.settings.mcp_enabled"
-                class="flex items-center gap-1 mx-2 select-none cursor-pointer hover:bg-base-300 rounded px-1 transition-colors"
-                title="MCP Server Active - Click to Configure"
-                @click="router.push('/settings?tab=mcp')"
-            >
-                <span class="relative flex h-2 w-2">
-                    <span class="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                <span class="text-[10px] uppercase font-bold text-base-content/70">MCP</span>
-            </div>
+            <NavBarMCP />
 
             <!-- saved dumps -->
             <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
