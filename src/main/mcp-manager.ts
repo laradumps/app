@@ -74,7 +74,7 @@ export const startMcpServer = async () => {
         });
 
         sendLog(`MCP Server started successfully`);
-        sendLog(`   URL: http://0.0.0.0:${port}/sse`);
+        sendLog(`   URL: http://127.0.0.1:${port}/sse`);
         sendLog(`   Status: CONNECTED`);
         sendLog('===================================================================');
 
