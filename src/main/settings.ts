@@ -1,17 +1,45 @@
-import path from 'path';
-import * as fs from 'node:fs';
-import { app, ipcMain } from 'electron';
-import os from 'os';
-import { Settings, Shortcut } from '@/types/settings.type';
 import { DEFAULT_SETTINGS } from '@/default-settings';
+import { Settings, Shortcut } from '@/types/settings.type';
+import { app, ipcMain } from 'electron';
+import * as fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 const homeDir = os.homedir();
 
-const settingsDir = path.join(homeDir, '.laradumps');
+/**
+ * Resolves the absolute path to the application's configuration directory
+ * based on the XDG Base Directory Specification and OS-native standards.
+ *
+ * * Logic priority:
+ *
+ * 1. $XDG_CONFIG_HOME/laradumps (if environment variable is set)
+ * 2. $HOME/.config/laradumps (Linux/macOS fallback)
+ * 3. %APPDATA%\laradumps (Windows standard)
+  */
+function getConfigDir() {
+    const operatingSystem = os.platform();
+
+    if (operatingSystem === 'linux' || operatingSystem === 'darwin') {
+        let laradumpsConfigDir = process.env.XDG_CONFIG_HOME;
+
+        // if XDG_CONFIG_HOME does not exist, default to $HOME/.config/laradumps
+        if (laradumpsConfigDir === undefined) {
+            return path.join(homeDir, '.config', 'laradumps');
+        }
+
+        return path.join(laradumpsConfigDir, 'laradumps')
+    }
+
+    const winConfig = process.env.APPDATA || path.join(homeDir, 'AppData', 'Roaming');
+
+    return path.join(winConfig, 'laradumps');
+}
+
+const settingsDir = getConfigDir()
 if (app.isPackaged && !fs.existsSync(settingsDir)) {
     fs.mkdirSync(settingsDir, { recursive: true });
 }
-
 const settingsPath = app.isPackaged ? path.join(settingsDir, 'settings.json') : path.join(__dirname, 'settings.json');
 
 const defaultSettings = DEFAULT_SETTINGS;
