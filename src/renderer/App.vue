@@ -11,6 +11,7 @@ import { useQueriesPayloadStore } from '@/store/queries';
 import { useCurrentProject } from '@/store/current-project';
 import { useMailStore } from '@/store/mail';
 import { useLivewireStore } from '@/store/livewire';
+import { useMcpStore } from '@/store/mcp';
 import { useClearAll } from '@/composables/useClearAll';
 import JSConfetti from 'js-confetti';
 
@@ -27,6 +28,7 @@ const queriesStore = useQueriesPayloadStore();
 const currentProjectStore = useCurrentProject();
 const mailStore = useMailStore();
 const livewireStore = useLivewireStore();
+const mcpStore = useMcpStore();
 
 const { clear } = useClearAll();
 const fireConfetti = () => new JSConfetti().addConfetti();
@@ -119,6 +121,18 @@ onMounted(() => {
 
     window.ipcRenderer.send('zoom-level');
     window.ipcRenderer.on('zoom-level.reply', (event, value) => getZoomLevel(value));
+
+    window.ipcRenderer.on('mcp:log', (event, log: string) => {
+        mcpStore.addLog(log);
+    });
+
+    window.ipcRenderer.invoke('mcp:get-logs-buffer').then((logs: string[]) => {
+        logs.forEach((log) => {
+            if (!mcpStore.logs.includes(log)) {
+                mcpStore.addLog(log);
+            }
+        });
+    });
 
     window.ipcRenderer.on('app:theme-dark', () => {
         settingsStore.settings.theme = 'dim';

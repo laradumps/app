@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/store/settings';
 import SelectInput from '@/components/common/SelectInput.vue';
 import { useI18n } from 'vue-i18n';
 import { useI18nStore } from '@/store/i18n';
+import { useMcpStore } from '@/store/mcp';
 import hotkeys from 'hotkeys-js';
 import { useToastStore } from '@/store/toast';
 import { Cog6ToothIcon, RectangleGroupIcon, Bars3Icon, KeyIcon, CommandLineIcon } from '@heroicons/vue/24/outline';
@@ -16,7 +17,7 @@ const customTheme = ref('');
 
 const mcpServerPath = ref('');
 const mcpClient = ref('cursor');
-const mcpLogs = ref<string[]>([]);
+const mcpStore = useMcpStore();
 const activeMcpTab = ref('setup');
 
 const mcpTools = ref([
@@ -62,14 +63,6 @@ onMounted(async () => {
     }
     customTheme.value = settingsStore.settings.custom_css;
     mcpServerPath.value = await window.ipcRenderer.invoke('get-mcp-server-path');
-
-    window.ipcRenderer.on('mcp:log', (event, log: string) => {
-        mcpLogs.value.push(log);
-        // Keep only the last 50 logs to avoid memory issues
-        if (mcpLogs.value.length > 50) {
-            mcpLogs.value.shift();
-        }
-    });
 });
 
 const copyMcpCommand = (command: string) => {
@@ -296,7 +289,7 @@ const saveCustomTheme = async () => {
 </script>
 
 <template>
-    <div class="overflow-auto text-base-content">
+    <div class="overflow-y-auto overflow-x-hidden text-base-content h-full">
         <dialog
             id="modal_custom_theme"
             class="modal modal-middle"
@@ -338,7 +331,7 @@ const saveCustomTheme = async () => {
         </dialog>
 
         <div class="mx-auto p-3 pr-5 text-sm">
-            <div class="flex gap-3">
+            <div class="flex gap-3 h-[calc(100vh-80px)]">
                 <ul class="menu py-1 menu-md bg-base-200 w-40 rounded-box">
                     <li>
                         <span
@@ -392,7 +385,7 @@ const saveCustomTheme = async () => {
                     </li>
                 </ul>
 
-                <div class="flex-1 min-h-0">
+                <div class="flex-1 flex flex-col min-h-0">
                     <div
                         v-if="selected === 'settings'"
                         class="overflow-auto"
@@ -787,7 +780,7 @@ const saveCustomTheme = async () => {
 
                     <div
                         v-if="selected === 'mcp'"
-                        class="space-y-3"
+                        class="space-y-3 flex-1 flex flex-col min-h-0"
                     >
                         <div class="flex flex-col gap-2">
                             <h3 class="text-lg font-bold">MCP Server</h3>
@@ -809,14 +802,6 @@ const saveCustomTheme = async () => {
                                 type="radio"
                                 name="mcp_tabs"
                                 class="tab"
-                                aria-label="Advanced"
-                                :checked="activeMcpTab === 'advanced'"
-                                @click="activeMcpTab = 'advanced'"
-                            />
-                            <input
-                                type="radio"
-                                name="mcp_tabs"
-                                class="tab"
                                 aria-label="Tools"
                                 :checked="activeMcpTab === 'tools'"
                                 @click="activeMcpTab = 'tools'"
@@ -827,78 +812,79 @@ const saveCustomTheme = async () => {
                             v-if="activeMcpTab === 'setup'"
                             class="flex flex-col gap-2"
                         >
-                            <fieldset class="fieldset bg-base-100 border border-base-300 p-4 rounded-box">
-                                <label class="fieldset-label justify-between cursor-pointer w-full">
-                                    <span class="text-base font-bold text-base-content">Enable MCP Server</span>
-                                    <input
-                                        type="checkbox"
-                                        class="toggle toggle-primary"
-                                        v-model="settingsStore.settings.mcp_enabled"
-                                        @change="saveMcpSettings"
-                                    />
-                                </label>
-                                <p class="text-xs opacity-70 mt-2">
-                                    Automatically start the MCP server in HTTP mode when LaraDumps launches.
-                                </p>
-                            </fieldset>
-
-                            <fieldset
-                                class="fieldset w-fit"
-                                :class="{ 'opacity-50 pointer-events-none': !settingsStore.settings.mcp_enabled }"
-                            >
-                                <legend class="fieldset-legend">Port</legend>
-                                <input
-                                    type="number"
-                                    class="input input-sm w-24"
-                                    v-model="settingsStore.settings.mcp_port"
-                                    @change="saveMcpSettings"
-                                    placeholder="3002"
-                                />
-                            </fieldset>
-
-                            <fieldset
-                                class="fieldset w-fit"
-                                :class="{ 'opacity-50 pointer-events-none': !settingsStore.settings.mcp_enabled }"
-                            >
-                                <legend class="fieldset-legend">Limit Payload objects</legend>
-                                <div
-                                    class="tooltip"
-                                    data-tip="Max number of items returned to AI (logs, queries, etc)"
-                                >
+                            <div class="grid grid-cols-2 gap-3">
+                                <fieldset class="fieldset">
+                                    <legend class="fieldset-legend">Port</legend>
                                     <input
                                         type="number"
-                                        class="input input-sm w-24"
-                                        v-model="settingsStore.settings.mcp_limit_payload_objects"
+                                        class="input input-sm w-full"
+                                        v-model="settingsStore.settings.mcp_port"
                                         @change="saveMcpSettings"
-                                        placeholder="300"
+                                        placeholder="3002"
                                     />
-                                </div>
-                            </fieldset>
+                                </fieldset>
 
-                            <fieldset class="fieldset">
-                                <legend class="fieldset-legend">Configuration</legend>
+                                <fieldset class="fieldset">
+                                    <legend class="fieldset-legend">Limit Payload objects</legend>
+                                    <div
+                                        class="tooltip w-full"
+                                        data-tip="Max number of items returned to AI (logs, queries, etc)"
+                                    >
+                                        <input
+                                            type="number"
+                                            class="input input-sm w-full"
+                                            v-model="settingsStore.settings.mcp_limit_payload_objects"
+                                            @change="saveMcpSettings"
+                                            placeholder="10"
+                                        />
+                                    </div>
+                                </fieldset>
+                            </div>
 
-                                <div class="tabs tabs-box mb-2">
-                                    <input
-                                        type="radio"
-                                        name="mcp_conf_tabs"
-                                        class="tab"
-                                        aria-label="Cursor"
-                                        :checked="mcpClient === 'cursor'"
-                                        @click="mcpClient = 'cursor'"
-                                    />
-                                    <input
-                                        type="radio"
-                                        name="mcp_conf_tabs"
-                                        class="tab"
-                                        aria-label="OpenCode"
-                                        :checked="mcpClient === 'opencode'"
-                                        @click="mcpClient = 'opencode'"
-                                    />
-                                </div>
+                            <div class="divider my-1">Modes</div>
 
-                                <div class="mockup-code w-full shadow-sm bg-base-300 text-sm">
-                                    <pre v-if="mcpClient === 'cursor'"><code>{
+                            <div class="grid grid-cols-1 gap-4">
+                                <!-- Native (SSE) Mode -->
+                                <div
+                                    class="flex flex-col gap-2 p-3 bg-base-100 border border-base-300 rounded-box relative"
+                                >
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <h4 class="font-bold text-sm">Native (HTTP/SSE)</h4>
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            class="toggle toggle-primary"
+                                            v-model="settingsStore.settings.mcp_enabled"
+                                            @change="saveMcpSettings"
+                                        />
+                                    </div>
+
+                                    <div
+                                        v-if="settingsStore.settings.mcp_enabled"
+                                        class="mt-2 space-y-3"
+                                    >
+                                        <div class="tabs tabs-box bg-base-200/50">
+                                            <input
+                                                type="radio"
+                                                name="mcp_conf_tabs"
+                                                class="tab tab-sm"
+                                                aria-label="Cursor"
+                                                :checked="mcpClient === 'cursor'"
+                                                @click="mcpClient = 'cursor'"
+                                            />
+                                            <input
+                                                type="radio"
+                                                name="mcp_conf_tabs"
+                                                class="tab tab-sm"
+                                                aria-label="OpenCode"
+                                                :checked="mcpClient === 'opencode'"
+                                                @click="mcpClient = 'opencode'"
+                                            />
+                                        </div>
+
+                                        <div class="mockup-code w-full shadow-sm bg-base-300 text-[11px]">
+                                            <pre v-if="mcpClient === 'cursor'"><code>{
       "mcpServers": {
         "LaraDumps": {
            "url": "http://127.0.0.1:{{ settingsStore.settings.mcp_port }}/sse",
@@ -906,7 +892,7 @@ const saveCustomTheme = async () => {
         }
       }
   }</code></pre>
-                                    <pre v-if="mcpClient === 'opencode'"><code>{
+                                            <pre v-if="mcpClient === 'opencode'"><code>{
       "$schema": "https://opencode.ai/config.json",
       "mcp": {
         "LaraDumps": {
@@ -915,14 +901,69 @@ const saveCustomTheme = async () => {
         }
       }
   }</code></pre>
-                                    <button
-                                        class="btn btn-xs btn-ghost absolute top-2 right-2"
-                                        @click="copyMcpConfig"
-                                    >
-                                        Copy JSON
-                                    </button>
+                                            <button
+                                                class="btn btn-xs btn-ghost absolute top-2 right-2"
+                                                @click="copyMcpConfig"
+                                            >
+                                                Copy JSON
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </fieldset>
+
+                                <!-- Stdio Mode -->
+                                <div class="flex flex-col gap-2 p-3 bg-base-100 border border-base-300 rounded-box">
+                                    <h4 class="font-bold text-sm">Stdio Command</h4>
+                                    <div class="join w-full mt-1">
+                                        <input
+                                            type="text"
+                                            class="input input-sm join-item w-full font-mono bg-base-200 text-[11px]"
+                                            :value="`node ${mcpServerPath} --port=${settingsStore.settings.mcp_port}`"
+                                            readonly
+                                        />
+                                        <button
+                                            class="btn btn-sm btn-neutral join-item"
+                                            @click="
+                                                copyMcpCommand(
+                                                    `node ${mcpServerPath} --port=${settingsStore.settings.mcp_port}`
+                                                )
+                                            "
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Server Logs -->
+                                <div class="flex flex-col gap-2 mt-2">
+                                    <div class="flex justify-between items-center px-1">
+                                        <h4 class="font-bold text-sm">Server Logs</h4>
+                                        <span
+                                            v-if="mcpStore.logs.length > 0"
+                                            class="text-[10px] opacity-50"
+                                            >Showing last {{ mcpStore.logs.length }} logs (newest first)</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="mockup-code bg-base-300 w-full text-[11px] shadow-sm max-h-80 overflow-y-auto overflow-x-hidden"
+                                    >
+                                        <pre
+                                            v-for="(log, index) in [...mcpStore.logs].reverse()"
+                                            :key="index"
+                                            :class="{
+                                                'text-error': log.includes('[error]'),
+                                                'text-success': log.includes('[success]'),
+                                                'text-info': log.includes('[info]')
+                                            }"
+                                            class="whitespace-pre-wrap break-all"
+                                        ><code>{{ log }}</code></pre>
+                                        <pre
+                                            v-if="mcpStore.logs.length === 0"
+                                            class="opacity-50"
+                                        ><code>Waiting for logs...</code></pre>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div
@@ -974,44 +1015,6 @@ const saveCustomTheme = async () => {
                                     </table>
                                 </div>
                             </div>
-                        </div>
-
-                        <div
-                            v-if="activeMcpTab === 'advanced'"
-                            class="flex flex-col gap-3"
-                        >
-                            <fieldset class="fieldset">
-                                <legend class="fieldset-legend">Stdio Command</legend>
-                                <div class="join w-full">
-                                    <input
-                                        type="text"
-                                        class="input input-sm join-item w-full font-mono bg-base-100"
-                                        :value="`node ${mcpServerPath}`"
-                                        readonly
-                                    />
-                                    <button
-                                        class="btn btn-sm btn-neutral join-item"
-                                        @click="copyMcpCommand(`node ${mcpServerPath}`)"
-                                    >
-                                        Copy
-                                    </button>
-                                </div>
-                            </fieldset>
-
-                            <fieldset class="fieldset">
-                                <legend class="fieldset-legend">Server Logs</legend>
-                                <div class="mockup-code bg-base-300 h-64 overflow-y-auto w-full text-xs shadow-sm">
-                                    <pre
-                                        v-for="(log, index) in mcpLogs"
-                                        :key="index"
-                                        :class="{ 'text-error': log.includes('[error]') }"
-                                    ><code>{{ log }}</code></pre>
-                                    <pre
-                                        v-if="mcpLogs.length === 0"
-                                        class="opacity-50"
-                                    ><code>Waiting for logs...</code></pre>
-                                </div>
-                            </fieldset>
                         </div>
                     </div>
                 </div>
