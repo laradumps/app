@@ -2,9 +2,11 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import express from 'express';
+import cors from 'cors';
 import { registerTools } from './tools';
 import { registerPrompts } from './prompts';
 import http from 'http';
+import crypto from 'crypto';
 
 process.on('exit', (code) => {
     console.error(`Process exiting with code: ${code}`);
@@ -46,12 +48,18 @@ export async function createMcpServer(
         logger(`HTTP mode - Starting Express app...`);
 
         const app = express();
-        logger('Express app created');
+        app.use(cors());
+
+        app.use(express.json({ limit: '10mb' }));
+
+        logger('Express app created, CORS and JSON middleware enabled');
 
         logger('Configuring StreamableHTTPServerTransport...');
         // @ts-ignore
-        const transport = new StreamableHTTPServerTransport();
-        logger('Transport configured');
+        const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => crypto.randomUUID()
+        });
+        logger('Transport configured with sessionIdGenerator');
 
         logger('Connecting MCP Server to transport...');
         await server.connect(transport);
@@ -59,22 +67,67 @@ export async function createMcpServer(
 
         logger('Registering endpoints...');
 
-        // Handle SSE initialization
+        app.use((req: any, res: any, next: any) => {
+            if (req.path === '/sse' || req.path === '/messages') {
+                logger(`Incoming ${req.method} request to ${req.url}`);
+            }
+            next();
+        });
+
         app.get('/sse', async (req: any, res: any) => {
-            await transport.handleRequest(req, res);
+            try {
+                logger('Handling GET /sse request');
+                logger(`  Headers: ${JSON.stringify(req.headers)}`);
+                await transport.handleRequest(req, res);
+                logger('GET /sse request handled');
+            } catch (err) {
+                logger(`CRITICAL Error in GET /sse: ${err}`, 'error');
+                if (err instanceof Error) {
+                    logger(`Stack: ${err.stack}`, 'error');
+                }
+                if (!res.headersSent) {
+                    res.status(500).send('Internal Server Error');
+                }
+            }
         });
         logger('  GET /sse');
 
-        // Handle POST messages on /messages (standard)
-        app.post('/messages', async (req: any, res: any) => {
-            await transport.handleRequest(req, res);
+        // Handlers for OAuth discovery to avoid 404s that might confuse clients
+        app.get('/.well-known/oauth-authorization-server', (req, res) => {
+            logger('Handling GET /.well-known/oauth-authorization-server (Returning 404 - Not Supported)');
+            res.status(404).json({ error: 'OAuth not supported' });
         });
+
+        app.get('/.well-known/openid-configuration', (req, res) => {
+            logger('Handling GET /.well-known/openid-configuration (Returning 404 - Not Supported)');
+            res.status(404).json({ error: 'OpenID not supported' });
+        });
+
+        // Handle POST messages
+        const handlePost = async (req: any, res: any) => {
+            try {
+                logger(`Handling POST ${req.path} request`);
+                logger(`  Headers: ${JSON.stringify(req.headers)}`);
+                // The SDK's handleRequest for Node.js expects to be able to read the body
+                // from the request object if parsedBody is not provided.
+                // Since we have express.json(), req.body is already populated.
+                await transport.handleRequest(req, res, req.body);
+                logger(`POST ${req.path} request handled`);
+            } catch (err) {
+                logger(`CRITICAL Error in POST ${req.path}: ${err}`, 'error');
+                if (err instanceof Error) {
+                    logger(`Stack: ${err.stack}`, 'error');
+                }
+                if (!res.headersSent) {
+                    res.status(500).send('Internal Server Error');
+                }
+            }
+        };
+
+        app.post('/messages', handlePost);
         logger('  POST /messages');
 
-        // Handle POST messages on /sse (fallback/compatibility)
-        app.post('/sse', async (req: any, res: any) => {
-            await transport.handleRequest(req, res);
-        });
+        app.post('/sse', handlePost);
         logger('  POST /sse');
 
         logger(`Starting HTTP server on port ${port}...`);
@@ -111,7 +164,6 @@ export async function createMcpServer(
     };
 }
 
-// Support running as a standalone script (for Claude Desktop, etc.)
 const isStandalone = process.argv[1]?.endsWith('mcp-server.js');
 
 if (isStandalone) {

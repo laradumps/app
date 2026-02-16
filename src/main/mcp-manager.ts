@@ -6,10 +6,16 @@ import os from 'os';
 let mcpServerInstance: McpServerInstance | null = null;
 let consolePipeBroken = false;
 let mcpStartTime: Date | null = null;
+const mcpLogsBuffer: string[] = [];
 
-const sendLog = (message: string, type: 'info' | 'error' = 'info') => {
+const sendLog = (message: string, type: 'info' | 'error' | 'success' = 'info') => {
     const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
     const logLine = `[${timestamp}] [${type}] ${message}`;
+
+    mcpLogsBuffer.push(logLine);
+    if (mcpLogsBuffer.length > 100) {
+        mcpLogsBuffer.shift();
+    }
 
     if (!consolePipeBroken) {
         try {
@@ -51,12 +57,12 @@ export const startMcpServer = async () => {
     const port = currentSettings.mcp_port || 3002;
     const systemInfo = getSystemInfo();
 
-    sendLog('===================================================================');
+    sendLog('===================================================');
     sendLog(`Starting MCP Server`);
     sendLog(`   Platform: ${systemInfo.platform} (${systemInfo.arch})`);
     sendLog(`   Node.js: ${systemInfo.nodeVersion}`);
     sendLog(`   Port: ${port}`);
-    sendLog('===================================================================');
+    sendLog('===================================================');
 
     mcpStartTime = new Date();
 
@@ -73,10 +79,10 @@ export const startMcpServer = async () => {
             sendLog(enhancedMessage, type);
         });
 
-        sendLog(`MCP Server started successfully`);
-        sendLog(`   URL: http://127.0.0.1:${port}/sse`);
-        sendLog(`   Status: CONNECTED`);
-        sendLog('===================================================================');
+        sendLog(`MCP Server started successfully`, 'success');
+        sendLog(`   URL: http://127.0.0.1:${port}/sse`, 'success');
+        sendLog(`   Status: CONNECTED`, 'success');
+        sendLog('===================================================', 'success');
 
         BrowserWindow.getAllWindows().forEach((win) => {
             win.webContents.send('mcp:status', 'connected');
@@ -86,7 +92,7 @@ export const startMcpServer = async () => {
         sendLog(`Failed to start MCP Server: ${errorMessage}`, 'error');
         sendLog(`   Check if port ${port} is available`, 'error');
         sendLog(`   Check logs for more details`, 'error');
-        sendLog('===================================================================', 'error');
+        sendLog('===================================================', 'error');
         mcpServerInstance = null;
 
         BrowserWindow.getAllWindows().forEach((win) => {
@@ -101,7 +107,7 @@ export const stopMcpServer = async () => {
         mcpServerInstance.stop();
         mcpServerInstance = null;
         mcpStartTime = null;
-        sendLog('MCP Server stopped successfully');
+        sendLog('MCP Server stopped successfully', 'success');
 
         BrowserWindow.getAllWindows().forEach((win) => {
             win.webContents.send('mcp:status', 'disabled');
@@ -121,5 +127,9 @@ export const init = async () => {
         BrowserWindow.getAllWindows().forEach((win) => {
             win.webContents.send('mcp:status', status);
         });
+    });
+
+    ipcMain.handle('mcp:get-logs-buffer', () => {
+        return mcpLogsBuffer;
     });
 };
