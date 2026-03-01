@@ -43,6 +43,8 @@ export async function createMcpServer(
     logger('Prompts registered');
 
     let httpServer: http.Server | null = null;
+    let currentTransport: StreamableHTTPServerTransport | null = null;
+    let isTransportValid = false;
 
     if (port > 0) {
         logger(`HTTP mode - Starting Express app...`);
@@ -53,17 +55,6 @@ export async function createMcpServer(
         app.use(express.json({ limit: '10mb' }));
 
         logger('Express app created, CORS and JSON middleware enabled');
-
-        logger('Configuring StreamableHTTPServerTransport...');
-        // @ts-ignore
-        const transport = new StreamableHTTPServerTransport({
-            sessionIdGenerator: () => crypto.randomUUID()
-        });
-        logger('Transport configured with sessionIdGenerator');
-
-        logger('Connecting MCP Server to transport...');
-        await server.connect(transport);
-        logger('MCP Server connected to transport');
 
         logger('Registering endpoints...');
 
@@ -78,10 +69,24 @@ export async function createMcpServer(
             try {
                 logger('Handling GET /sse request');
                 logger(`  Headers: ${JSON.stringify(req.headers)}`);
-                await transport.handleRequest(req, res);
+
+                if (!currentTransport || !isTransportValid) {
+                    await server.close();
+                    // @ts-ignore
+                    currentTransport = new StreamableHTTPServerTransport({
+                        sessionIdGenerator: () => crypto.randomUUID()
+                    });
+
+                    await server.connect(currentTransport);
+                    isTransportValid = true;
+                    logger('New transport created for SSE');
+                }
+
+                await currentTransport.handleRequest(req, res);
                 logger('GET /sse request handled');
             } catch (err) {
                 logger(`CRITICAL Error in GET /sse: ${err}`, 'error');
+                isTransportValid = false;
                 if (err instanceof Error) {
                     logger(`Stack: ${err.stack}`, 'error');
                 }
@@ -108,13 +113,23 @@ export async function createMcpServer(
             try {
                 logger(`Handling POST ${req.path} request`);
                 logger(`  Headers: ${JSON.stringify(req.headers)}`);
-                // The SDK's handleRequest for Node.js expects to be able to read the body
-                // from the request object if parsedBody is not provided.
-                // Since we have express.json(), req.body is already populated.
-                await transport.handleRequest(req, res, req.body);
+
+                if (!currentTransport || !isTransportValid) {
+                    await server.close();
+                    // @ts-ignore
+                    currentTransport = new StreamableHTTPServerTransport({
+                        sessionIdGenerator: () => crypto.randomUUID()
+                    });
+                    await server.connect(currentTransport);
+                    isTransportValid = true;
+                    logger('New transport created for POST');
+                }
+
+                await currentTransport.handleRequest(req, res, req.body);
                 logger(`POST ${req.path} request handled`);
             } catch (err) {
                 logger(`CRITICAL Error in POST ${req.path}: ${err}`, 'error');
+                isTransportValid = false;
                 if (err instanceof Error) {
                     logger(`Stack: ${err.stack}`, 'error');
                 }
@@ -154,7 +169,13 @@ export async function createMcpServer(
     return {
         server,
         httpServer,
-        stop: () => {
+        stop: async () => {
+            if (currentTransport) {
+                logger('Closing transport...');
+                await server.close();
+                currentTransport = null;
+                isTransportValid = false;
+            }
             if (httpServer) {
                 logger('Closing HTTP server...');
                 httpServer.close();
