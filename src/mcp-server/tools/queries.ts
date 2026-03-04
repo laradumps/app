@@ -26,4 +26,25 @@ export function registerQueryTools(server: McpServer) {
             };
         }
     );
+
+    server.registerTool(
+        'get_problematic_queries',
+        {
+            description: 'Get problematic SQL queries (duplicates or with EXPLAIN nodes)',
+            inputSchema: {
+                limit: z.number().optional().describe('Limit the number of problematic queries returned')
+            }
+        },
+        async ({ limit }) => {
+            const endpoint = limit ? `problematic-queries?limit=${limit}` : 'problematic-queries';
+            const data = await fetchData(endpoint);
+            if (data.error) return { content: [{ type: 'text', text: `Error: ${data.error}` }] };
+
+            const problematicQueries = Array.isArray(data) ? data : Object.values(data);
+
+            return {
+                content: [{ type: 'text', text: JSON.stringify(problematicQueries, null, 2) }]
+            };
+        }
+    );
 }

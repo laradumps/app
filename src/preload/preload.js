@@ -146,6 +146,95 @@ app.get('/api/mcp/queries', (req, res) => {
     }
 });
 
+app.get('/api/mcp/queries-full', (req, res) => {
+    try {
+        const queries = applyLimit(window.LaraDumps?.queriesStore?.payload);
+        res.send(queries);
+    } catch (e) {
+        console.error('[MCP Queries Full Error]', e);
+        res.status(503).send({ error: 'Store not initialized or error retrieving queries' });
+    }
+});
+
+app.get('/api/mcp/problematic-queries', (req, res) => {
+    try {
+        const queries = window.LaraDumps?.queriesStore?.payload || [];
+
+        const requestSqlCounts = new Map();
+        for (const item of queries) {
+            if (item.queries?.query?.sql) {
+                const requestId = item.request_id;
+                const sql = item.queries.query.sql;
+
+                if (!requestSqlCounts.has(requestId)) {
+                    requestSqlCounts.set(requestId, new Map());
+                }
+                const sqlMap = requestSqlCounts.get(requestId);
+                sqlMap.set(sql, (sqlMap.get(sql) || 0) + 1);
+            }
+        }
+
+        const duplicatesInfo = [];
+        for (const [requestId, sqlMap] of requestSqlCounts.entries()) {
+            for (const [sql, count] of sqlMap.entries()) {
+                if (count > 1) {
+                    duplicatesInfo.push({
+                        request_id: requestId,
+                        sql: sql,
+                        occurrences: count
+                    });
+                }
+            }
+        }
+
+        const duplicatedSqls = new Set(duplicatesInfo.map((d) => d.sql));
+
+        const problematicQueries = queries.filter((query) => {
+            const hasExplainNodes = query.queries?.explain_nodes && query.queries.explain_nodes.length > 0;
+            const isDuplicated = duplicatedSqls.has(query.queries?.query?.sql);
+            return hasExplainNodes || isDuplicated;
+        });
+
+        const enrichedQueries = problematicQueries.map((query) => {
+            const sql = query.queries?.query?.sql || '';
+            const hasExplainNodes = query.queries?.explain_nodes && query.queries.explain_nodes.length > 0;
+            const isDuplicated = duplicatedSqls.has(sql);
+            const duplicateInfo = duplicatesInfo.find((d) => d.sql === sql);
+
+            return {
+                id: query.id,
+                request_id: query.request_id,
+                date_time: query.date_time,
+                sql: sql,
+                time: query.queries?.query?.time || 0,
+                database: query.queries?.database || '',
+                bindings: query.queries?.query?.bindings || [],
+                uri: query.queries?.uri || '',
+                method: query.queries?.method || '',
+                explain_nodes: query.queries?.explain_nodes || [],
+                ide_handle: query.ide_handle
+                    ? {
+                          real_path: query.ide_handle.real_path,
+                          class_name: query.ide_handle.class_name,
+                          line: query.ide_handle.line
+                      }
+                    : null,
+                _problematic: {
+                    has_explain_nodes: hasExplainNodes,
+                    is_duplicated: isDuplicated,
+                    occurrences: duplicateInfo?.occurrences || 1
+                }
+            };
+        });
+
+        const limit = parseInt(req.query.limit) || enrichedQueries.length;
+        res.send(enrichedQueries.slice(-limit));
+    } catch (e) {
+        console.error('[MCP Problematic Queries Error]', e);
+        res.status(503).send({ error: 'Store not initialized or error retrieving queries' });
+    }
+});
+
 app.get('/api/mcp/jobs', (req, res) => {
     try {
         const jobs = applyLimit(window.LaraDumps?.jobStore?.jobs);
