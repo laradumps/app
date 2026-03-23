@@ -149,5 +149,11 @@ export default {
     installing: '正在安装',
     installing_wait_message: '这可能需要几分钟时间...',
     no_project_selected: '未选择项目',
-    no_records_found: '未找到记录。'
+    no_records_found: '未找到记录。',
+    install_success: '设置成功',
+    install_success_message: '项目已设置成功。',
+    install_failed: '设置失败',
+    install_failed_message: '项目设置过程中出现错误。',
+    retry: '重试',
+    finish: '完成'
 };

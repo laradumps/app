@@ -16,7 +16,7 @@ const homeDir = os.homedir();
  * 1. $XDG_CONFIG_HOME/laradumps (if environment variable is set)
  * 2. $HOME/.config/laradumps (Linux/macOS fallback)
  * 3. %APPDATA%\laradumps (Windows standard)
-  */
+ */
 function getConfigDir() {
     const operatingSystem = os.platform();
 
@@ -28,7 +28,7 @@ function getConfigDir() {
             return path.join(homeDir, '.config', 'laradumps');
         }
 
-        return path.join(laradumpsConfigDir, 'laradumps')
+        return path.join(laradumpsConfigDir, 'laradumps');
     }
 
     const winConfig = process.env.APPDATA || path.join(homeDir, 'AppData', 'Roaming');
@@ -36,7 +36,7 @@ function getConfigDir() {
     return path.join(winConfig, 'laradumps');
 }
 
-const settingsDir = getConfigDir()
+const settingsDir = getConfigDir();
 if (app.isPackaged && !fs.existsSync(settingsDir)) {
     fs.mkdirSync(settingsDir, { recursive: true });
 }

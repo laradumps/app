@@ -149,5 +149,11 @@ export default {
     installing: 'Installing',
     installing_wait_message: 'This may take a few moments...',
     no_project_selected: 'No Project selected',
-    no_records_found: 'No records found.'
+    no_records_found: 'No records found.',
+    install_success: 'Setup Success',
+    install_success_message: 'Project has been set up successfully.',
+    install_failed: 'Setup Failed',
+    install_failed_message: 'An error occurred during the project setup.',
+    retry: 'Retry',
+    finish: 'Finish'
 };
