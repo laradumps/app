@@ -2,7 +2,7 @@ import { IdeHandle } from '@/types/IdeHandle';
 import { defineStore } from 'pinia';
 import { useSettingsStore } from '@/store/settings';
 
-export type BrainTask = {
+export type BrainAction = {
     id: string;
     name: string;
     class: string;
@@ -15,32 +15,32 @@ export type BrainTask = {
     meta: Record<string, unknown> | null;
 };
 
-export type ProcessSummaryTask = {
+export type WorkflowSummaryAction = {
     id: string;
     name: string;
     status: string;
     duration: number | null;
 };
 
-export type BrainProcess = {
+export type BrainWorkflow = {
     id: string;
-    run_process_id: string;
+    run_workflow_id: string;
     applicationPath: string | null;
     startedAt: string | null;
     updatedAt: string | null;
     className: string;
     ide_handle?: IdeHandle | null;
 
-    process: {
+    workflow: {
         id: string;
         name: string;
         status: string;
-        tasks: BrainTask[];
+        actions: BrainAction[];
     };
 };
 
 export type BrainStoreState = {
-    brains: Record<string, BrainProcess>;
+    brains: Record<string, BrainWorkflow>;
 };
 
 export const useBrainStore = defineStore('brainStore', {
@@ -50,96 +50,106 @@ export const useBrainStore = defineStore('brainStore', {
 
     actions: {
         addOrUpdateBrain(payload: any) {
-            const runProcessId = String(payload.brain.run_process_id);
+            const runWorkflowId = String(payload.brain.run_workflow_id);
 
             const eventType = payload.brain.type;
             const className = payload.brain.className || null;
             const applicationPath = payload.application_path || null;
             const ideHandle: IdeHandle | undefined = payload.ide_handle;
 
-            const status = String(payload.brain.status || 'pending').toLowerCase();
+            const statusRaw = String(payload.brain.status || 'pending').toLowerCase();
+            const statusMap: Record<string, BrainAction['status']> = {
+                processing: 'processing',
+                processed: 'processed',
+                error: 'error',
+                cancelled: 'cancelled',
+                skipped: 'skipped',
+                pending: 'pending',
+                stale: 'stale'
+            };
+            const status = statusMap[statusRaw] ?? 'stale';
             const microtimeRaw = payload.brain.meta?.microtime;
             const microtime = typeof microtimeRaw === 'number' ? Math.round(microtimeRaw * 1000) : Date.now();
 
-            const taskPayload = payload.brain.payload ?? null;
-            const taskMeta = payload.brain.meta ?? null;
+            const actionPayload = payload.brain.payload ?? null;
+            const actionMeta = payload.brain.meta ?? null;
 
             this._removeOldestBrainsIfExceedsLimit();
 
-            if (!this.brains[runProcessId]) {
-                this._initializeBrainProcess(runProcessId, applicationPath, className, ideHandle);
+            if (!this.brains[runWorkflowId]) {
+                this.initializeBrainWorkflow(runWorkflowId, applicationPath, className, ideHandle);
             }
 
-            const brain = this.brains[runProcessId];
+            const brain = this.brains[runWorkflowId];
             brain.updatedAt = new Date().toISOString();
 
             if (!brain.startedAt && status === 'processing') {
                 brain.startedAt = brain.updatedAt;
             }
 
-            if (eventType === 'task') {
+            if (eventType === 'action') {
                 if (!className) return;
 
-                const taskClass = className;
-                const taskExecutionId = `${taskClass}-${microtime}`;
-                const tasks = brain.process.tasks;
+                const actionClass = className;
+                const actionExecutionId = `${actionClass}-${microtime}`;
+                const actions = brain.workflow.actions;
 
-                const taskIndex = tasks.findIndex((task) => task.class === taskClass);
+                const actionIndex = actions.findIndex((action) => action.class === actionClass);
 
-                if (taskIndex === -1) {
-                    tasks.push({
-                        id: taskExecutionId,
-                        name: taskClass.split('\\').pop() || taskClass,
-                        class: taskClass,
-                        status: status as BrainTask['status'],
-                        payload: taskPayload,
+                if (actionIndex === -1) {
+                    actions.push({
+                        id: actionExecutionId,
+                        name: actionClass.split('\\').pop() || actionClass,
+                        class: actionClass,
+                        status: status as BrainAction['status'],
+                        payload: actionPayload,
                         timestamp: microtime,
                         firstSeen: microtime,
                         lastSeen: microtime,
                         ide_handle: ideHandle ?? null,
-                        meta: taskMeta
+                        meta: actionMeta
                     });
                 } else {
-                    const previous = tasks[taskIndex];
+                    const previous = actions[actionIndex];
                     const nextStatus = previous.status === 'error' && status !== 'processing' ? 'error' : status;
 
-                    tasks[taskIndex] = {
+                    actions[actionIndex] = {
                         ...previous,
-                        id: taskExecutionId,
+                        id: actionExecutionId,
                         status: nextStatus,
-                        payload: taskPayload ?? previous.payload,
+                        payload: actionPayload ?? previous.payload,
                         timestamp: microtime,
                         lastSeen: microtime,
                         ide_handle: ideHandle ?? previous.ide_handle,
                         firstSeen: previous.firstSeen ?? microtime,
-                        meta: taskMeta ?? previous.meta
+                        meta: actionMeta ?? previous.meta
                     };
                 }
             }
 
-            brain.process.tasks.sort((a, b) => a.firstSeen - b.firstSeen);
+            brain.workflow.actions.sort((a, b) => a.firstSeen - b.firstSeen);
 
-            const summaryTasks = this._buildSummaryTasks(brain.process.tasks);
+            const summaryActions = this._buildSummaryActions(brain.workflow.actions);
 
-            brain.process = {
+            brain.workflow = {
                 id: brain.id,
                 name: brain.className,
-                status: this._computeSummaryStatus(summaryTasks),
-                tasks: brain.process.tasks
+                status: this._computeSummaryStatus(summaryActions),
+                actions: brain.workflow.actions
             };
         },
 
-        _buildSummaryTasks(tasks: BrainTask[]): ProcessSummaryTask[] {
-            const groups = new Map<string, BrainTask[]>();
+        _buildSummaryActions(actions: BrainAction[]): WorkflowSummaryAction[] {
+            const groups = new Map<string, BrainAction[]>();
 
-            for (const task of tasks) {
-                if (!groups.has(task.class)) {
-                    groups.set(task.class, []);
+            for (const action of actions) {
+                if (!groups.has(action.class)) {
+                    groups.set(action.class, []);
                 }
-                groups.get(task.class)!.push(task);
+                groups.get(action.class)!.push(action);
             }
 
-            const summaryList: ProcessSummaryTask[] = [];
+            const summaryList: WorkflowSummaryAction[] = [];
 
             for (const [className, occurrences] of groups.entries()) {
                 occurrences.sort((a, b) => a.firstSeen - b.firstSeen);
@@ -169,36 +179,36 @@ export const useBrainStore = defineStore('brainStore', {
             return summaryList;
         },
 
-        _computeSummaryStatus(summaryTasks: ProcessSummaryTask[]): string {
-            if (summaryTasks.some((t) => t.status === 'error')) {
+        _computeSummaryStatus(summaryActions: WorkflowSummaryAction[]): string {
+            if (summaryActions.some((t) => t.status === 'error')) {
                 return 'error';
             }
 
-            if (summaryTasks.some((t) => t.status === 'processing')) {
+            if (summaryActions.some((t) => t.status === 'processing')) {
                 return 'processing';
             }
 
-            if (summaryTasks.length > 0 && summaryTasks.every((t) => t.status === 'processed')) {
+            if (summaryActions.length > 0 && summaryActions.every((t) => t.status === 'processed')) {
                 return 'processed';
             }
 
             return 'pending';
         },
 
-        _initializeBrainProcess(id: string, applicationPath: string | null, className: string, ideHandle?: IdeHandle) {
+        initializeBrainWorkflow(id: string, applicationPath: string | null, className: string, ideHandle?: IdeHandle) {
             this.brains[id] = {
                 id,
-                run_process_id: id,
+                run_workflow_id: id,
                 applicationPath,
                 startedAt: null,
                 updatedAt: null,
                 className,
                 ide_handle: ideHandle ?? null,
-                process: {
+                workflow: {
                     id,
                     name: className,
                     status: 'pending',
-                    tasks: []
+                    actions: []
                 }
             };
         },
