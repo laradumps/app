@@ -3,7 +3,7 @@ import { computed, defineProps, nextTick, onMounted, onUnmounted, ref, toRef, wa
 import moment from 'moment';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
-import { useBrainStore, BrainProcess, BrainTask } from '@/store/brains';
+import { useBrainStore, BrainWorkflow, BrainAction } from '@/store/brains';
 import { CheckIcon, NoSymbolIcon, XMarkIcon, ArrowPathIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
 import VueJsonPretty from 'vue-json-pretty';
 import { TrashIcon } from '@heroicons/vue/24/outline';
@@ -18,25 +18,25 @@ const globalSearchStore = useGlobalSearchStore();
 
 const forceRerenderCounter = ref(0);
 
-const selectedProcess = ref<{
+const selectedWorkflow = ref<{
     id: string;
     className: string;
-    tasks: any[];
+    actions: any[];
     startedAt: string | null;
     updatedAt: string | null;
     ide_handle: any;
-    process: any;
+    workflow: any;
 } | null>(null);
 
 const selectedStatusFilter = ref<string | null>(null);
 const selectedSortDirection = ref<'asc' | 'desc'>('desc');
-const collapsedProcessGroups = ref<Record<string, boolean>>({});
-const expandedTaskMap = ref<Record<string, boolean>>({});
+const collapsedWorkflowGroups = ref<Record<string, boolean>>({});
+const expandedActionMap = ref<Record<string, boolean>>({});
 
-const localProcessItems = ref<Record<string, BrainProcess>>({});
+const localWorkflowItems = ref<Record<string, BrainWorkflow>>({});
 
 const props = defineProps<{
-    items?: Record<string, BrainProcess>;
+    items?: Record<string, BrainWorkflow>;
     inScreenWindow?: boolean;
 }>();
 
@@ -67,7 +67,7 @@ onUnmounted(() => {
 watch(
     itemsProp,
     (val) => {
-        localProcessItems.value = val ? { ...val } : {};
+        localWorkflowItems.value = val ? { ...val } : {};
     },
     { immediate: true, deep: true }
 );
@@ -80,9 +80,9 @@ watch(
     { deep: true }
 );
 
-const effectiveItems = computed<Record<string, BrainProcess>>(() => {
-    const hasLocal = Object.keys(localProcessItems.value).length > 0;
-    return hasLocal ? localProcessItems.value : brainStore.brains;
+const effectiveItems = computed<Record<string, BrainWorkflow>>(() => {
+    const hasLocal = Object.keys(localWorkflowItems.value).length > 0;
+    return hasLocal ? localWorkflowItems.value : brainStore.brains;
 });
 
 const totalProcesses = computed(() => Object.keys(effectiveItems.value).length);
@@ -93,15 +93,15 @@ const filteredAndSortedProcesses = computed(() => {
     const items = Object.values(effectiveItems.value);
 
     return items
-        .filter((processEntry) => {
+        .filter((workflowEntry) => {
             const query = globalSearchStore.search.toLowerCase();
             const matchesQuery =
-                processEntry.className.toLowerCase().includes(query) ||
-                processEntry.run_process_id.toLowerCase().includes(query);
+                workflowEntry.className.toLowerCase().includes(query) ||
+                workflowEntry.run_workflow_id.toLowerCase().includes(query);
 
             const matchesStatus =
                 !selectedStatusFilter.value ||
-                processEntry.process.tasks.some((task) => task.status === selectedStatusFilter.value);
+                workflowEntry.workflow.actions.some((action) => action.status === selectedStatusFilter.value);
 
             return matchesQuery && matchesStatus;
         })
@@ -113,52 +113,52 @@ const filteredAndSortedProcesses = computed(() => {
         });
 });
 
-const groupedProcessesByRelativeTime = computed(() => {
-    const groups: Record<string, BrainProcess[]> = {};
+const groupedWorkflowByRelativeTime = computed(() => {
+    const groups: Record<string, BrainWorkflow[]> = {};
 
-    for (const processEntry of filteredAndSortedProcesses.value) {
-        const key = moment(processEntry.updatedAt ?? processEntry.startedAt).fromNow();
+    for (const workflowEntry of filteredAndSortedProcesses.value) {
+        const key = moment(workflowEntry.updatedAt ?? workflowEntry.startedAt).fromNow();
 
         if (!groups[key]) groups[key] = [];
-        groups[key].push(processEntry);
+        groups[key].push(workflowEntry);
     }
 
     return groups;
 });
 
 const toggleGroupVisibility = (groupKey: string) => {
-    collapsedProcessGroups.value[groupKey] = !collapsedProcessGroups.value[groupKey];
+    collapsedWorkflowGroups.value[groupKey] = !collapsedWorkflowGroups.value[groupKey];
 };
 
-const openProcessModal = (runId: string) => {
-    const processEntry = filteredAndSortedProcesses.value.find((p) => p.run_process_id === runId || p.id === runId);
-    if (!processEntry) return;
+const openWorkflowModal = (runId: string) => {
+    const workflowEntry = filteredAndSortedProcesses.value.find((p) => p.run_workflow_id === runId || p.id === runId);
+    if (!workflowEntry) return;
 
-    const tasks = processEntry.process.tasks;
+    const actions = workflowEntry.workflow.actions;
 
-    const detailedTasks = tasks
-        .map((task) => ({
-            id: task.id,
-            name: task.name,
-            class: task.class,
-            status: task.status,
-            payload: task.payload,
-            timestamp: task.timestamp,
-            firstSeen: task.firstSeen,
-            lastSeen: task.lastSeen,
-            ide_handle: task.ide_handle ?? processEntry.ide_handle,
-            meta: task.meta
+    const detailedActions = actions
+        .map((action: BrainAction) => ({
+            id: action.id,
+            name: action.name,
+            class: action.class,
+            status: action.status,
+            payload: action.payload,
+            timestamp: action.timestamp,
+            firstSeen: action.firstSeen,
+            lastSeen: action.lastSeen,
+            ide_handle: action.ide_handle ?? workflowEntry.ide_handle,
+            meta: action.meta
         }))
-        .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0));
+        .sort((a: BrainAction, b: BrainAction) => (a.timestamp ?? 0) - (b.timestamp ?? 0));
 
-    selectedProcess.value = {
-        id: processEntry.run_process_id,
-        className: processEntry.className,
-        tasks: detailedTasks,
-        startedAt: processEntry.startedAt,
-        updatedAt: processEntry.updatedAt,
-        ide_handle: processEntry.ide_handle,
-        process: processEntry.process
+    selectedWorkflow.value = {
+        id: workflowEntry.run_workflow_id,
+        className: workflowEntry.className,
+        actions: detailedActions,
+        startedAt: workflowEntry.startedAt,
+        updatedAt: workflowEntry.updatedAt,
+        ide_handle: workflowEntry.ide_handle,
+        workflow: workflowEntry.workflow
     };
 
     nextTick(() => {
@@ -199,40 +199,40 @@ const trimZeroes = (value: number): string => {
 watch(
     () => effectiveItems.value,
     (newItems) => {
-        if (!selectedProcess.value) return;
+        if (!selectedWorkflow.value) return;
 
         const updatedEntry = Object.values(newItems).find(
-            (p) => p.run_process_id === selectedProcess.value?.id || p.id === selectedProcess.value?.id
+            (p) => p.run_workflow_id === selectedWorkflow.value?.id || p.id === selectedWorkflow.value?.id
         );
 
         if (!updatedEntry) return;
 
-        selectedProcess.value.tasks = updatedEntry.process.tasks
-            .map((task) => ({
-                id: task.id,
-                name: task.name,
-                class: task.class,
-                status: task.status,
-                payload: task.payload,
-                timestamp: task.timestamp,
-                firstSeen: task.firstSeen,
-                lastSeen: task.lastSeen,
-                ide_handle: task.ide_handle ?? updatedEntry.ide_handle,
-                meta: task.meta
+        selectedWorkflow.value.actions = updatedEntry.workflow.actions
+            .map((action: BrainAction) => ({
+                id: action.id,
+                name: action.name,
+                class: action.class,
+                status: action.status,
+                payload: action.payload,
+                timestamp: action.timestamp,
+                firstSeen: action.firstSeen,
+                lastSeen: action.lastSeen,
+                ide_handle: action.ide_handle ?? updatedEntry.ide_handle,
+                meta: action.meta
             }))
-            .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0));
+            .sort((a: BrainAction, b: BrainAction) => (a.timestamp ?? 0) - (b.timestamp ?? 0));
 
-        selectedProcess.value.startedAt = updatedEntry.startedAt;
-        selectedProcess.value.updatedAt = updatedEntry.updatedAt;
-        selectedProcess.value.ide_handle = updatedEntry.ide_handle;
-        selectedProcess.value.process = updatedEntry.process;
+        selectedWorkflow.value.startedAt = updatedEntry.startedAt;
+        selectedWorkflow.value.updatedAt = updatedEntry.updatedAt;
+        selectedWorkflow.value.ide_handle = updatedEntry.ide_handle;
+        selectedWorkflow.value.workflow = updatedEntry.workflow;
     },
     { deep: true }
 );
 
 const initializeSfDump = () => {
-    selectedProcess.value.tasks.forEach((task) => {
-        const sfDumpId = task.payload[1];
+    selectedWorkflow.value.actions.forEach((action) => {
+        const sfDumpId = action.payload[1];
         try {
             const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
             if (sfDump && !sfDump.hasAttribute('has-dump-js')) {
@@ -246,7 +246,7 @@ const initializeSfDump = () => {
 };
 
 const clearAll = () => {
-    selectedProcess.value = null;
+    selectedWorkflow.value = null;
     brainStore.clear();
 };
 
@@ -266,12 +266,12 @@ const splitClassName = (className: string) => {
     };
 };
 
-const computeProcessDuration = (processEntry: BrainProcess) => {
-    const tasks = processEntry.process.tasks;
-    if (!tasks.length) return '-';
+const computeWorkflowDuration = (workflowEntry: BrainWorkflow) => {
+    const actions = workflowEntry.workflow.actions;
+    if (!actions.length) return '-';
 
-    const first = Math.min(...tasks.map((task: BrainTask) => task.firstSeen ?? task.timestamp));
-    const last = Math.max(...tasks.map((task: BrainTask) => task.lastSeen ?? task.timestamp));
+    const first = Math.min(...actions.map((action: BrainAction) => action.firstSeen ?? action.timestamp));
+    const last = Math.max(...actions.map((action: BrainAction) => action.lastSeen ?? action.timestamp));
 
     if (!first || !last || last < first) return '-';
 
@@ -283,9 +283,9 @@ const computeProcessDuration = (processEntry: BrainProcess) => {
     return `${trimZeroes(ms / 1000)} s`;
 };
 
-const toggleTaskExpanded = (task: any) => {
-    const isOpen = expandedTaskMap.value[task.id];
-    expandedTaskMap.value[task.id] = !isOpen;
+const toggleActionExpanded = (action: any) => {
+    const isOpen = expandedActionMap.value[action.id];
+    expandedActionMap.value[action.id] = !isOpen;
 };
 </script>
 
@@ -306,70 +306,72 @@ const toggleTaskExpanded = (task: any) => {
 
                 <div class="menu bg-base-100 text-base-content min-h-full w-[calc(100vw-120px)] p-5 overflow-y-auto">
                     <div
-                        v-if="selectedProcess"
+                        v-if="selectedWorkflow"
                         class="space-y-6"
                     >
                         <div class="flex nav-bar justify-between">
                             <div class="flex text-left items-start flex-col gap-2">
                                 <div class="text-sm">
                                     <span class="opacity-50">{{
-                                        splitClassName(selectedProcess.className).prefix
+                                        splitClassName(selectedWorkflow.className).prefix
                                     }}</span>
                                     <span class="font-bold">{{
-                                        splitClassName(selectedProcess.className).suffix
+                                        splitClassName(selectedWorkflow.className).suffix
                                     }}</span>
                                 </div>
 
                                 <div class="text-xs opacity-75">
-                                    Started: {{ moment(selectedProcess.startedAt).format('HH:mm:ss') }} | Duration:
-                                    {{ computeProcessDuration(selectedProcess) }}
+                                    Started: {{ moment(selectedWorkflow.startedAt).format('HH:mm:ss') }} | Duration:
+                                    {{ computeWorkflowDuration(selectedWorkflow) }}
                                 </div>
                             </div>
                         </div>
 
                         <div class="relative mx-auto w-full">
                             <div
-                                v-for="(task, index) in selectedProcess.tasks"
-                                :key="task.id"
+                                v-for="(action, index) in selectedWorkflow.actions"
+                                :key="action.id"
                                 class="flex flex-col items-center"
                             >
                                 <div class="w-full rounded-lg bg-base-300 border border-base-content/10 shadow-sm mb-2">
                                     <div
                                         class="border-b border-base-content/10 flex items-center justify-between p-2 cursor-pointer select-none text-sm"
-                                        @click="toggleTaskExpanded(task)"
+                                        @click="toggleActionExpanded(action)"
                                     >
                                         <div class="flex items-center gap-2 break-all">
                                             <ChevronDownIcon
                                                 class="w-4 h-4 transition-all"
-                                                :class="expandedTaskMap[task.id] ? 'rotate-0' : '-rotate-90'"
+                                                :class="expandedActionMap[action.id] ? 'rotate-0' : '-rotate-90'"
                                             />
 
                                             <span
                                                 class="p-1 rounded-full"
                                                 :class="{
-                                                    'text-primary': task.status === 'processing',
-                                                    'text-success': task.status === 'processed',
-                                                    'text-error': task.status === 'error',
+                                                    'text-primary': action.status === 'processing',
+                                                    'text-success': action.status === 'processed',
+                                                    'text-error': action.status === 'error',
                                                     'text-warning':
-                                                        task.status === 'cancelled' || task.status === 'skipped',
-                                                    'text-info': task.status === 'pending'
+                                                        action.status === 'cancelled' || action.status === 'skipped',
+                                                    'text-info': action.status === 'pending'
                                                 }"
-                                                :data-tippy-content="task.status"
+                                                :data-tippy-content="action.status"
                                             >
                                                 <CheckIcon
-                                                    v-if="task.status === 'processed'"
+                                                    v-if="action.status === 'processed'"
                                                     class="w-4 h-4"
                                                 />
                                                 <NoSymbolIcon
-                                                    v-else-if="task.status === 'cancelled' || task.status === 'skipped'"
+                                                    v-else-if="
+                                                        action.status === 'cancelled' || action.status === 'skipped'
+                                                    "
                                                     class="w-4 h-4"
                                                 />
                                                 <XMarkIcon
-                                                    v-else-if="task.status === 'error'"
+                                                    v-else-if="action.status === 'error'"
                                                     class="w-4 h-4"
                                                 />
                                                 <ArrowPathIcon
-                                                    v-else-if="task.status === 'processing'"
+                                                    v-else-if="action.status === 'processing'"
                                                     class="w-4 h-4 animate-spin"
                                                 />
                                                 <NoSymbolIcon
@@ -379,31 +381,33 @@ const toggleTaskExpanded = (task: any) => {
                                             </span>
 
                                             <div class="text-sm tracking-wide">
-                                                <span class="opacity-60">{{ splitClassName(task.class).prefix }}</span>
+                                                <span class="opacity-60">{{
+                                                    splitClassName(action.class).prefix
+                                                }}</span>
                                                 <span class="font-semibold">{{
-                                                    splitClassName(task.class).suffix
+                                                    splitClassName(action.class).suffix
                                                 }}</span>
                                             </div>
                                         </div>
 
                                         <div class="text-xs opacity-60 whitespace-nowrap ml-2">
-                                            {{ formatDuration(task.firstSeen, task.lastSeen) }}
+                                            {{ formatDuration(action.firstSeen, action.lastSeen) }}
                                         </div>
                                     </div>
 
                                     <div
-                                        v-show="expandedTaskMap[task.id]"
+                                        v-show="expandedActionMap[action.id]"
                                         class="px-4 py-3 bg-base-200 rounded-lg space-y-3"
                                     >
-                                        <div v-if="task.payload">
+                                        <div v-if="action.payload">
                                             <pre
                                                 class="sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line"
-                                                v-html="task.payload[0]"
+                                                v-html="action.payload[0]"
                                             ></pre>
                                         </div>
 
                                         <div
-                                            v-if="task.meta"
+                                            v-if="action.meta"
                                             class="space-y-1"
                                         >
                                             <div class="border-t py-2 border-base-content/5 text-sm">Meta</div>
@@ -411,7 +415,7 @@ const toggleTaskExpanded = (task: any) => {
                                                 :show-icon="true"
                                                 :show-length="true"
                                                 :show-line="false"
-                                                :data="task.meta"
+                                                :data="action.meta"
                                                 :deep="2"
                                             />
                                         </div>
@@ -447,8 +451,8 @@ const toggleTaskExpanded = (task: any) => {
                     <thead>
                         <tr class="text-xs !bg-base-300 font-light text-base-content">
                             <th class="w-4">#</th>
-                            <th>Process</th>
-                            <th class="w-20 text-center">Tasks</th>
+                            <th>Workflow</th>
+                            <th class="w-20 text-center">Actions</th>
                             <th class="w-20 text-right">Created At</th>
                             <th class="text-right w-20">Duration</th>
                         </tr>
@@ -456,7 +460,7 @@ const toggleTaskExpanded = (task: any) => {
 
                     <tbody>
                         <template
-                            v-for="(processList, timeKey) in groupedProcessesByRelativeTime"
+                            v-for="(workflowList, timeKey) in groupedWorkflowByRelativeTime"
                             :key="timeKey"
                         >
                             <tr class="bg-base-200 text-xs font-semibold text-center">
@@ -470,31 +474,31 @@ const toggleTaskExpanded = (task: any) => {
                                     >
                                         {{ timeKey }}
                                         <span class="ml-1">
-                                            {{ collapsedProcessGroups[timeKey] ? '▼' : '▲' }}
+                                            {{ collapsedWorkflowGroups[timeKey] ? '▼' : '▲' }}
                                         </span>
                                     </span>
                                 </td>
                             </tr>
 
                             <tr
-                                v-for="processEntry in processList"
-                                v-if="!collapsedProcessGroups[timeKey]"
-                                :key="processEntry.run_process_id"
-                                @click="openProcessModal(processEntry.run_process_id)"
+                                v-for="workflowEntry in workflowList"
+                                v-if="!collapsedWorkflowGroups[timeKey]"
+                                :key="workflowEntry.run_workflow_id"
+                                @click="openWorkflowModal(workflowEntry.run_workflow_id)"
                                 class="hover:bg-base-100 cursor-pointer"
                             >
                                 <td>
                                     <div class="flex items-center justify-center">
                                         <CheckIcon
-                                            v-if="processEntry.process.status === 'processed'"
+                                            v-if="workflowEntry.workflow.status === 'processed'"
                                             class="w-4 h-4 text-success"
                                         />
                                         <XMarkIcon
-                                            v-else-if="processEntry.process.status === 'error'"
+                                            v-else-if="workflowEntry.workflow.status === 'error'"
                                             class="w-4 h-4 text-error"
                                         />
                                         <ArrowPathIcon
-                                            v-else-if="processEntry.process.status === 'processing'"
+                                            v-else-if="workflowEntry.workflow.status === 'processing'"
                                             class="w-4 h-4 text-info animate-spin"
                                         />
                                         <NoSymbolIcon
@@ -507,31 +511,33 @@ const toggleTaskExpanded = (task: any) => {
                                 <td class="break-all flex gap-2 flex-col">
                                     <p>
                                         <span class="font-normal">
-                                            {{ splitClassName(processEntry.className).suffix }}
+                                            {{ splitClassName(workflowEntry.className).suffix }}
                                         </span>
                                     </p>
 
                                     <div
-                                        v-if="processEntry.ide_handle && processEntry.ide_handle.class_name !== 'empty'"
+                                        v-if="
+                                            workflowEntry.ide_handle && workflowEntry.ide_handle.class_name !== 'empty'
+                                        "
                                         class="text-xs opacity-60"
                                     >
                                         <DumpLink
                                             class="flex font-normal h-full text-xs"
-                                            :label="`${processEntry.ide_handle.class_name}:${processEntry.ide_handle.line}`"
-                                            :ide-handler="processEntry.ide_handle"
+                                            :label="`${workflowEntry.ide_handle.class_name}:${workflowEntry.ide_handle.line}`"
+                                            :ide-handler="workflowEntry.ide_handle"
                                         />
                                     </div>
                                 </td>
 
                                 <td class="whitespace-nowrap text-center">
-                                    {{ processEntry.process.tasks.length }}
+                                    {{ workflowEntry.workflow.actions.length }}
                                 </td>
 
                                 <td class="text-right">
-                                    {{ moment(processEntry.updatedAt ?? processEntry.startedAt).format('HH:mm:ss') }}
+                                    {{ moment(workflowEntry.updatedAt ?? workflowEntry.startedAt).format('HH:mm:ss') }}
                                 </td>
                                 <td class="whitespace-nowrap text-right">
-                                    {{ computeProcessDuration(processEntry) }}
+                                    {{ computeWorkflowDuration(workflowEntry) }}
                                 </td>
                             </tr>
                         </template>
