@@ -12,6 +12,7 @@ import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import ProjectsList from '@/components/navbar/ProjectsList.vue';
 import ProjectHeader from '@/components/navbar/ProjectHeader.vue';
 import EnvironmentsList from '@/components/navbar/EnvironmentsList.vue';
+import { LogEntry } from '../../../main/logger/logger';
 
 const emit = defineEmits(['modalOpen', 'modalClose']);
 const xDebugStore = useXDebug();
@@ -42,6 +43,7 @@ const IPC_EVENTS = {
 
     PROJECT_DIRECTORY_SELECTED: 'project-directory-selected',
     COMPOSER_AUTO_INSTALL: 'composer-auto-install',
+    PROJECT_SETUP_LOGS: 'project-setup-logs',
 
     XDEBUG_ERROR: 'xdebug-error',
     XDEBUG_CONNECTOR_DISCONNECT: 'xdebug-connector::disconnect',
@@ -72,6 +74,10 @@ const activeEnvKey = ref<string | null>(null);
 
 const installActive = ref(false);
 const installErrorMessage = ref('');
+const installFinished = ref(false);
+const installFailed = ref(false);
+const projectSetupLogs = ref('');
+const setupLogsTextarea = ref<HTMLTextAreaElement | null>(null);
 
 let errorDismissTimer: number | null = null;
 
@@ -99,6 +105,7 @@ let handleComposerRef: ((event: IpcRendererEvent, payload: any) => void) | null 
 let handleXdebugClosedRef: (() => void) | null = null;
 let handleXdebugFileContentsRef: ((event: Event, config: XDebugYml) => void) | null = null;
 let handleProjectDirSelectedRef: ((_: any, args: any) => void) | null = null;
+let handleProjectSetupLogs: (_: any, payload: LogEntry) => void;
 
 onMounted(() => {
     initializeProjectData();
@@ -130,6 +137,7 @@ onUnmounted(() => {
         window.ipcRenderer.off(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
     if (handleStarredReplyRef) window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_STARRED_REPLY, handleStarredReplyRef);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
+    window.ipcRenderer.off(IPC_EVENTS.PROJECT_SETUP_LOGS, handleProjectSetupLogs);
 });
 
 const updateHeight = () => {
@@ -187,6 +195,11 @@ const setActiveProject = (project: Project) => {
 const ignoredEnvironment = (value: string): boolean =>
     ['dump', 'enabled_in_testing', 'original_dump', 'auto_invoke_app'].includes(value);
 
+const copyToClipboard = (text: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+};
+
 const initializeProjectData = () => {
     isXdebugActive.value = Boolean(xDebugStore.current.project_path);
 
@@ -235,20 +248,18 @@ const setupEventListeners = async () => {
         if (payload.status === 'start') {
             installActive.value = true;
             installErrorMessage.value = '';
+            installFailed.value = false;
         }
 
         if (payload.error) {
             installErrorMessage.value = 'An error occurred while installing.';
-            installActive.value = false;
+            installFailed.value = true;
             return;
         }
 
         if (payload.step === 'finish' && payload.done) {
             await sleep(500);
-            installActive.value = false;
-
-            await sleep(300);
-            modal_navbar_listening.close();
+            installFinished.value = true;
             await new JSConfetti().addConfetti();
             isNewProject.value = true;
         }
@@ -268,6 +279,14 @@ const setupEventListeners = async () => {
     };
 
     window.ipcRenderer.on(IPC_EVENTS.SETTINGS_ENV_XDEBUG_FILE_CONTENTS, handleXdebugFileContentsRef);
+    handleProjectSetupLogs = (_: any, payload: LogEntry) => {
+        projectSetupLogs.value = `${projectSetupLogs.value}[${new Date(payload.timestamp).toLocaleString()}].${payload.level} ${payload.message}\n`;
+
+        if (setupLogsTextarea.value) {
+            setupLogsTextarea.value.scrollTop = setupLogsTextarea.value.scrollHeight;
+        }
+    };
+    window.ipcRenderer.on(IPC_EVENTS.PROJECT_SETUP_LOGS, handleProjectSetupLogs);
 };
 
 handleProjectDirSelectedRef = (_: any, args: any) => {
@@ -500,7 +519,21 @@ const toggleXdebug = () => {
     saveEnvironment(null);
 };
 
+const resetInstallState = () => {
+    installActive.value = false;
+    installFinished.value = false;
+    installFailed.value = false;
+    projectSetupLogs.value = '';
+    installErrorMessage.value = '';
+};
+
+const finishInstallation = () => {
+    resetInstallState();
+    modal_navbar_listening.close();
+};
+
 const showModal = () => {
+    resetInstallState();
     modal_navbar_listening.showModal();
     emit('modalOpen');
 };
@@ -559,7 +592,7 @@ const closeModal = () => {
                             @on-project-drop="onProjectDrop"
                         />
 
-                        <div class="col-span-2 space-y-2">
+                        <div class="col-span-2 space-y-2 flex flex-col h-[calc(100vh-14rem)]">
                             <ProjectHeader
                                 :project="selectedProject"
                                 :is-starred="isStarred"
@@ -570,19 +603,97 @@ const closeModal = () => {
                             <!-- Installing overlay/content -->
                             <div
                                 v-if="installActive"
-                                class="absolute top-0 left-0 w-full h-full bg-base-200/90 z-10 flex flex-col items-center justify-center"
+                                class="flex-1 flex flex-col items-center justify-center p-4 bg-base-200/50 rounded-lg border border-base-content/5 overflow-hidden"
                             >
-                                <div class="text-center space-y-2">
-                                    <h2 class="text-lg font-semibold text-base-content/70">{{ $t('installing') }}</h2>
-                                    <p class="text-base-content/70 mt-6">{{ $t('installing_wait_message') }}</p>
-                                    <progress class="progress w-56 progress-info"></progress>
+                                <div class="text-center space-y-2 mb-4 w-full px-4">
+                                    <h2
+                                        class="text-lg font-semibold text-base-content/70"
+                                        :class="{ 'text-error': installFailed, 'text-success': installFinished }"
+                                    >
+                                        {{
+                                            installFinished
+                                                ? $t('install_success')
+                                                : installFailed
+                                                  ? $t('install_failed')
+                                                  : $t('installing')
+                                        }}
+                                    </h2>
+                                    <p class="text-base-content/70">
+                                        {{
+                                            installFinished
+                                                ? $t('install_success_message')
+                                                : installFailed
+                                                  ? installErrorMessage || $t('install_failed_message')
+                                                  : $t('installing_wait_message')
+                                        }}
+                                    </p>
+                                    <progress
+                                        v-if="!installFinished && !installFailed"
+                                        class="progress w-56 progress-info"
+                                    ></progress>
+                                    <div
+                                        v-else
+                                        class="flex flex-col items-center gap-4"
+                                    >
+                                        <progress
+                                            class="progress w-56"
+                                            :class="{
+                                                'progress-success': installFinished,
+                                                'progress-error': installFailed
+                                            }"
+                                            value="100"
+                                            max="100"
+                                        ></progress>
+                                        <div class="flex gap-2">
+                                            <button
+                                                v-if="installFailed"
+                                                class="btn btn-primary btn-sm"
+                                                @click="addProject"
+                                            >
+                                                {{ $t('retry') }}
+                                            </button>
+                                            <button
+                                                class="btn btn-sm"
+                                                :class="{ 'btn-primary': installFinished, 'btn-ghost': installFailed }"
+                                                @click="finishInstallation"
+                                            >
+                                                {{ installFinished ? $t('finish') : $t('settings.close') }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    id="setup-logs"
+                                    class="w-full flex-1 flex flex-col bg-base-300 rounded-lg overflow-hidden border border-base-content/10 shadow-xl min-h-0"
+                                >
+                                    <div
+                                        class="flex items-center justify-between px-4 py-2 bg-base-300 border-b border-base-content/10"
+                                    >
+                                        <span class="text-xs font-mono text-base-content/50 uppercase tracking-wider"
+                                            >Setup Logs</span
+                                        >
+                                        <button
+                                            class="btn btn-ghost btn-xs text-info hover:bg-info/10"
+                                            @click="copyToClipboard(projectSetupLogs)"
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                    <div class="flex-1 p-0 bg-black/20 overflow-hidden">
+                                        <textarea
+                                            ref="setupLogsTextarea"
+                                            readonly
+                                            v-model="projectSetupLogs"
+                                            class="w-full h-full p-4 font-mono text-xs bg-transparent border-none focus:ring-0 resize-none text-base-content/80"
+                                            placeholder="Waiting for logs..."
+                                        ></textarea>
+                                    </div>
                                 </div>
                             </div>
 
                             <div
-                                class="flex gap-2 w-full divide-x divide-base-200 h-full"
+                                class="flex-1 flex gap-2 w-full divide-x divide-base-200 overflow-hidden"
                                 v-else-if="selectedProject.project"
-                                style="height: calc(-200px + 100vh)"
                             >
                                 <!-- Col 2: Observers/Environments -->
                                 <EnvironmentsList
@@ -663,7 +774,7 @@ const closeModal = () => {
 
                             <div
                                 v-else
-                                class="flex flex-row items-center justify-center h-[calc(100vh-14rem)] gap-2 text-center text-base-content/50"
+                                class="flex-1 flex flex-row items-center justify-center gap-2 text-center text-base-content/50"
                             >
                                 <SvgEmpty class="w-22 opacity-25" />
                                 <div class="text-base-content/70">
