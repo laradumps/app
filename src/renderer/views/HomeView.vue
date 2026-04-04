@@ -79,6 +79,8 @@ const defaultScreen = ref({
     new_window: false
 });
 
+const environments = ref<Environment[]>([]);
+
 const inScreenWindow = ref('');
 const payloadScreen = ref([]);
 const jobScreen = ref({});
@@ -157,6 +159,55 @@ const handleAddScreen = (event: Event) => {
         });
     } else {
         screenStore.remove(screenName);
+    }
+};
+
+const handleEnvironmentsRetrieved = (_: any, envs: Environment[]) => {
+    if (!envs) return;
+    environments.value = envs.map((env) => ({ ...env }));
+};
+
+const handleEnvironmentSelected = async (environment: Environment) => {
+    environment.selected = true;
+
+    if (currentProjectStore.projectInfo) {
+        window.ipcRenderer.send('storage.update', {
+            selected: environments.value.map(({ value, selected }) => ({ value, selected })),
+            path: currentProjectStore.projectInfo.path
+        });
+    }
+
+    const screenName = environment.value;
+    addScreen({
+        screen_name: screenName,
+        raise_in: 0,
+        visible: true,
+        pinned: false,
+        new_window: false
+    });
+
+    await toggleScreen(screenName, true);
+};
+
+const handleRemoveEnvironmentScreen = async (screenName: string) => {
+    screenStore.remove(screenName);
+
+    const environment = environments.value.find((env) => env.value === screenName);
+    if (environment) {
+        environment.selected = false;
+
+        if (currentProjectStore.projectInfo) {
+            window.ipcRenderer.send('storage.update', {
+                selected: environments.value.map(({ value, selected }) => ({ value, selected })),
+                path: currentProjectStore.projectInfo.path
+            });
+        }
+    }
+
+    if (screenStore.screen === screenName) {
+        const nextScreens = screenStore.allVisible();
+        const nextScreen = nextScreens.length > 0 ? nextScreens[0] : { screen_name: 'home' };
+        await toggleScreen(nextScreen.screen_name, true);
     }
 };
 
@@ -514,6 +565,8 @@ const clearListeners = () => {
     window.ipcRenderer.off('xdebug-disconnected', handleXdebugDisconnected);
     window.ipcRenderer.off('xdebug', handleXdebug);
     window.ipcRenderer.off('saved-dumps:remove', handleSavedDumpsRemove);
+    window.ipcRenderer.off('storage.get-environments.reply', handleEnvironmentsRetrieved);
+    window.removeEventListener('add-screen', handleAddScreen);
 
     clearDumpListeners();
 };
@@ -551,6 +604,12 @@ onMounted(() => {
 
     window.addEventListener('add-screen', handleAddScreen);
     window.ipcRenderer.on('saved-dumps:remove', handleSavedDumpsRemove);
+
+    window.ipcRenderer.on('storage.get-environments.reply', handleEnvironmentsRetrieved);
+
+    if (currentProjectStore.projectInfo) {
+        window.ipcRenderer.send('storage.get-environments', currentProjectStore.projectInfo.path);
+    }
 });
 
 const dumpListeners = () => {
@@ -901,12 +960,13 @@ const handleDragEnd = () => {
                         <template #pane-a>
                             <div class="flex flex-col h-full">
                                 <div class="flex-shrink-0 z-[380]">
-                                    <div
-                                        class="flex h-[48px] p-1.5 items-center justify-between w-full overflow-x-auto"
-                                    >
+                                    <div class="flex h-[48px] p-1.5 items-center justify-between w-full">
                                         <Screens
+                                            :environments="environments"
                                             @toggleScreen="toggleScreen"
                                             @dragScreen="handleDragScreen"
+                                            @environmentSelected="handleEnvironmentSelected"
+                                            @removeEnvironmentScreen="handleRemoveEnvironmentScreen"
                                         />
 
                                         <div class="p-0.5 px-1 right-2">
@@ -1149,10 +1209,13 @@ const handleDragEnd = () => {
                     <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                         <main class="flex flex-col flex-1 min-h-full space-y-1">
                             <div class="flex z-[10]">
-                                <div class="flex h-[48px] p-1.5 items-center justify-between w-full overflow-x-auto">
+                                <div class="flex h-[48px] p-1.5 items-center justify-between w-full">
                                     <Screens
+                                        :environments="environments"
                                         @toggleScreen="toggleScreen"
                                         @dragScreen="handleDragScreen"
+                                        @environmentSelected="handleEnvironmentSelected"
+                                        @removeEnvironmentScreen="handleRemoveEnvironmentScreen"
                                     />
 
                                     <div class="p-0.5 px-1 right-2">
