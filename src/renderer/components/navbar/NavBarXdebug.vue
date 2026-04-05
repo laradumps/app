@@ -18,7 +18,7 @@ const IPC_EVENTS = {
     SETTINGS_ENV_XDEBUG_FILE_CONTENTS: 'settings:env-xdebug-file-contents',
     XDEBUG_ERROR: 'xdebug-error',
     XDEBUG_CONNECTOR_DISCONNECT: 'xdebug-connector::disconnect',
-    XDEBUG_CONNECT_CLOSED: 'xdebug-connect-closed',
+    XDEBUG_CONNECT_CLOSED: 'xdebug-connect-closed'
 } as const;
 
 let handleXdebugClosedRef: (() => void) | null = null;
@@ -72,18 +72,21 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <a 
+    <a
         class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
         @click.stop="isXdebugActive = !isXdebugActive"
         :title="isXdebugActive ? 'Disable Xdebug' : 'Enable Xdebug'"
     >
         <div class="flex items-center gap-3">
-            <BugAntIcon class="size-4" :class="{ 'text-success': isXdebugActive }" />
+            <BugAntIcon
+                class="size-4"
+                :class="{ 'text-success': isXdebugActive }"
+            />
             <span class="font-medium text-xs">Xdebug</span>
         </div>
-        <input 
-            type="checkbox" 
-            class="toggle toggle-success toggle-xs pointer-events-none" 
+        <input
+            type="checkbox"
+            class="toggle toggle-success toggle-xs pointer-events-none"
             :checked="isXdebugActive"
         />
     </a>

@@ -90,7 +90,10 @@ const navigate = () => {
         :title="title"
     >
         <div class="flex items-center gap-3">
-            <CpuChipIcon class="size-4" :class="{ 'text-error': mcpStatus === 'error', 'text-success': mcpStatus === 'connected' }" />
+            <CpuChipIcon
+                class="size-4"
+                :class="{ 'text-error': mcpStatus === 'error', 'text-success': mcpStatus === 'connected' }"
+            />
             <span class="font-medium text-xs">MCP Status</span>
         </div>
         <span class="relative flex h-2 w-2 mr-1">

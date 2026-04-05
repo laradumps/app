@@ -96,7 +96,7 @@ const modalClose = () => (isListeningModalOpen.value = false);
 
             <!-- saved dumps -->
             <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
-            
+
             <!-- listening -->
             <NavBarProjectSwitcher
                 v-if="!inSavedDumpsWindow"

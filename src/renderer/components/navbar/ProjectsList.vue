@@ -39,7 +39,9 @@ const hasStarred = computed(() => props.starredSortedProjects && props.starredSo
         <div class="space-y-6">
             <template v-if="hasStarred">
                 <div class="space-y-1 mt-6">
-                    <div class="px-2 text-[0.65rem] font-semibold uppercase tracking-wider text-base-content/40 mb-2 flex items-center gap-2">
+                    <div
+                        class="px-2 text-[0.65rem] font-semibold uppercase tracking-wider text-base-content/40 mb-2 flex items-center gap-2"
+                    >
                         <span>Starred</span>
                     </div>
                     <ul class="space-y-0.5">
@@ -53,8 +55,8 @@ const hasStarred = computed(() => props.starredSortedProjects && props.starredSo
                             @click="emit('setActiveProject', project)"
                             class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg cursor-pointer transition-colors duration-150 relative"
                             :class="[
-                                selectedProject && selectedProject.path === project.path 
-                                    ? 'bg-base-content/10 text-base-content font-medium' 
+                                selectedProject && selectedProject.path === project.path
+                                    ? 'bg-base-content/10 text-base-content font-medium'
                                     : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
                             ]"
                         >
@@ -68,7 +70,9 @@ const hasStarred = computed(() => props.starredSortedProjects && props.starredSo
             </template>
 
             <div class="space-y-1">
-                <div class="px-2 text-[0.65rem] font-semibold uppercase tracking-wider text-base-content/40 mb-2 flex items-center gap-2">
+                <div
+                    class="px-2 text-[0.65rem] font-semibold uppercase tracking-wider text-base-content/40 mb-2 flex items-center gap-2"
+                >
                     <span>All Projects</span>
                 </div>
                 <ul class="space-y-0.5">
@@ -82,8 +86,8 @@ const hasStarred = computed(() => props.starredSortedProjects && props.starredSo
                         @click="emit('setActiveProject', project)"
                         class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg cursor-pointer transition-colors duration-150 relative"
                         :class="[
-                            selectedProject && selectedProject.path === project.path 
-                                ? 'bg-base-content/10 text-base-content font-medium' 
+                            selectedProject && selectedProject.path === project.path
+                                ? 'bg-base-content/10 text-base-content font-medium'
                                 : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
                         ]"
                     >

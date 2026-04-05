@@ -12,7 +12,7 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const dropdownStyle = ref<{top?: string, left?: string, right?: string, zIndex: number}>({ zIndex: 9999 });
+const dropdownStyle = ref<{ top?: string; left?: string; right?: string; zIndex: number }>({ zIndex: 9999 });
 
 const selectEnvironment = (environment: Environment) => {
     emit('environment-selected', environment);
@@ -34,8 +34,8 @@ const calculatePosition = () => {
                 top = rect.top - dropdownHeight - 4;
             }
 
-            dropdownStyle.value = { 
-                top: `${top}px`, 
+            dropdownStyle.value = {
+                top: `${top}px`,
                 right: `${right}px`,
                 zIndex: 9999
             };
@@ -95,7 +95,9 @@ onUnmounted(() => {
 
         <!-- Empty state -->
         <li v-if="environments.length === 0">
-            <span class="flex items-center gap-3 px-3 py-2 text-xs text-base-content/40 cursor-default">No environments available</span>
+            <span class="flex items-center gap-3 px-3 py-2 text-xs text-base-content/40 cursor-default"
+                >No environments available</span
+            >
         </li>
     </ul>
 </template>
