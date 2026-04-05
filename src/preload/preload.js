@@ -476,17 +476,23 @@ async function startServer() {
         });
     });
 
+    const tempFiles = new Map();
+
     ipcRenderer.on('preload:create-static-tmp-file', (event, value) => {
         const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'temp-'));
         const tmpFile = path.join(tmpDir, 'temp.html');
 
         fs.writeFileSync(tmpFile, value.content);
+        tempFiles.set(value.name, tmpFile);
+    });
 
-        app.get(`/${value.name}.html`, (req, res) => {
-            res.sendFile(tmpFile);
-        });
-
-        app.use(express.static(path.dirname(tmpFile)));
+    app.get('/temp/:id.html', (req, res) => {
+        const filePath = tempFiles.get(req.params.id);
+        if (filePath && fs.existsSync(filePath)) {
+            res.sendFile(filePath);
+        } else {
+            res.status(404).send('File not found');
+        }
     });
 
     app.use((req, res) => {

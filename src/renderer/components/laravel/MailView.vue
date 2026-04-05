@@ -400,20 +400,13 @@ const setPreviewMode = (mode: string) => {
                                 >
                                     <!-- email content iframe -->
                                     <div class="w-full flex-1 flex justify-center mb-4">
-                                        <div
-                                            :class="{
-                                                'bg-accent/5 text-accent-content':
-                                                    visited?.message_id === mail.message_id
-                                            }"
-                                            class="group p-2 space-y-2 cursor-pointer focus:bg-primary"
-                                            @click="display(mail)"
-                                        >
+                                        <div class="group p-2 space-y-2 cursor-pointer focus:bg-primary">
                                             <iframe
                                                 class="iframe-content"
                                                 :style="previewStyle"
                                                 allowfullscreen
                                                 frameborder="0"
-                                                :src="`http://localhost:9191/${previewUrl}.html`"
+                                                :src="`http://localhost:9191/temp/${previewUrl}.html`"
                                             />
                                         </div>
                                     </div>
