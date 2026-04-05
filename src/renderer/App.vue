@@ -181,14 +181,6 @@ onMounted(() => {
             </div>
 
             <main class="w-full overflow-auto h-[calc(100vh-42px)]">
-                <div
-                    id="actions"
-                    :class="{
-                        '!right-2': screenStore.screen === 'queries'
-                    }"
-                    class="flex absolute right-[44px] z-[70] top-[47px] gap-1 items-center p-0.5 px-1"
-                ></div>
-
                 <RouterView :key="$route.fullPath" />
                 <Toasters />
                 <TheAppUpdateInfo />

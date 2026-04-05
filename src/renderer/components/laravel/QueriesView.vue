@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Payload } from '@/types/Payload';
-import { computed, defineProps, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useQueriesPayloadStore } from '@/store/queries';
 import { useTimeStore } from '@/store/time';
 import DumpItem from '@/components/dumps/DumpItem.vue';
@@ -12,7 +12,8 @@ import {
     PlayIcon,
     AdjustmentsHorizontalIcon,
     TrashIcon,
-    ArrowDownTrayIcon
+    ArrowDownTrayIcon,
+    CogIcon
 } from '@heroicons/vue/24/outline';
 import tippy from 'tippy.js';
 import { usePendingRequestsStore } from '@/store/pending-requests';
@@ -29,6 +30,7 @@ import moment from 'moment';
 import { useFormattedQueriesStore } from '@/store/formatted-queries';
 import { convertMsToHumanReadable, exportQueriesToSQL } from '@/utils/queriesUtils';
 import { useSettingsStore } from '@/store/settings';
+import { useCurrentProject } from '@/store/current-project';
 
 const queriesStore = useQueriesPayloadStore();
 const timeStore = useTimeStore();
@@ -41,16 +43,21 @@ const queriesChart = useQueriesChart();
 const duplicatesStore = useQueryDuplicated();
 const formattedQueriesStore = useFormattedQueriesStore();
 const settingsStore = useSettingsStore();
+const currentProjectStore = useCurrentProject();
 
 const props = defineProps<{
-    items: [];
-    inScreenWindow: boolean;
+    items?: [];
+    inScreenWindow?: boolean;
+    yamlConfig?: Record<string, any>;
 }>();
+
+defineEmits(['open-screen-window']);
 
 const selectedChartPoint = ref<Payload | null>(null);
 const filteredClasses = ref<string[]>([]);
 const filteredOrigins = ref<string[]>([]);
 const collapsedGroups = ref<Record<string, boolean>>({});
+const forceUpdate = ref(0);
 
 const availableClasses = computed(() => {
     const items = props.items || queriesStore.payload;
@@ -97,6 +104,8 @@ watch(
 );
 
 const queries = computed<Payload[]>(() => {
+    forceUpdate.value;
+
     const items: Payload[] = sourceItems.value;
     const search = globalSearchStore.search.toLowerCase();
     const isSearchActive = search.length > 0;
@@ -195,6 +204,64 @@ const openRequestsModal = () => {
     request_dialog.showModal();
 };
 
+const handleConfigChanged = (section: string, key: string, value: boolean) => {
+    if (!props.yamlConfig || !currentProjectStore.projectInfo?.path) {
+        console.warn('Cannot update YAML config: missing yamlConfig or project path');
+        return;
+    }
+
+    const projectPath = currentProjectStore.projectInfo.path;
+
+    window.ipcRenderer.send('storage.update-section', {
+        path: projectPath,
+        section: section,
+        values: { [key]: value }
+    });
+};
+
+const yamlObservers = computed(() => {
+    const observers = props.yamlConfig?.observers;
+    if (!observers) return [];
+
+    const controls = [];
+
+    if (observers.hasOwnProperty('queries')) {
+        controls.push({
+            key: 'queries',
+            label: 'Enable Queries',
+            enabled: observers.queries === true
+        });
+    }
+
+    if (observers.hasOwnProperty('slow_queries')) {
+        controls.push({
+            key: 'slow_queries',
+            label: 'Slow Queries',
+            enabled: observers.slow_queries === true
+        });
+    }
+
+    return controls;
+});
+
+const yamlQueryOptions = computed(() => {
+    const queries = props.yamlConfig?.queries;
+    if (!queries) return [];
+
+    return Object.entries(queries)
+        .filter(([_, value]) => typeof value === 'boolean')
+        .map(([key, value]) => ({
+            key: key,
+            label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+            enabled: value === true
+        }));
+});
+
+const toggleYamlControl = (section: string, key: string, currentValue: boolean) => {
+    const newValue = !currentValue;
+    handleConfigChanged(section, key, newValue);
+};
+
 const getQueriesCount = (requestId: string): number => {
     return queriesStore.payload.filter((payload: Payload) => payload.request_id === requestId).length;
 };
@@ -214,382 +281,465 @@ const setOrder = (order: string) => {
 </script>
 
 <template>
-    <div class="px-3">
-        <dialog
-            id="request_dialog"
-            ref="modalRef"
-            class="modal"
-        >
-            <div class="modal-box min-w-80 max-w-2xl p-4 py-0">
-                <div class="py-4 space-y-4 text-sm overflow-auto">
-                    <div class="font-semibold px-2">
-                        <span class="text-lg">Requests</span>
-                    </div>
+    <div>
+        <!-- Actions bar -->
+        <div class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3">
+            <!-- Left: title + YAML cog -->
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none"
+                    >Queries</span
+                >
 
-                    <div class="max-h-[calc(100vh-22rem)] overflow-auto">
-                        <QueriesRequests />
+                <!-- YAML Configuration Dropdown -->
+                <div class="dropdown dropdown-bottom dropdown-start">
+                    <button
+                        tabindex="0"
+                        role="button"
+                        class="btn btn-ghost btn-circle btn-xs"
+                        :class="{
+                            'text-primary':
+                                yamlObservers.some((control) => control.enabled) ||
+                                yamlQueryOptions.some((control) => control.enabled)
+                        }"
+                        data-tippy-content="YAML Configuration"
+                    >
+                        <CogIcon class="w-4" />
+                    </button>
+                    <div
+                        tabindex="0"
+                        class="p-2 shadow-xl dropdown-content menu bg-base-300 backdrop-blur-xl rounded-xl border-0 z-[100] w-auto min-w-35"
+                    >
+                        <div v-if="yamlQueryOptions.length > 0">
+                            <div class="menu-title mb-2">
+                                <span class="text-[9px] text-base-content/40 font-bold uppercase tracking-widest"
+                                    >Query options</span
+                                >
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <button
+                                    v-for="control in yamlQueryOptions"
+                                    :key="control.key"
+                                    @click="toggleYamlControl('queries', control.key, control.enabled)"
+                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
+                                    :class="
+                                        control.enabled
+                                            ? 'bg-base-content/10 text-base-content font-medium'
+                                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                                    "
+                                >
+                                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
+                                        <span
+                                            v-if="control.enabled"
+                                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
+                                        ></span>
+                                        <span
+                                            class="relative inline-flex rounded-full size-2 transition-all duration-200"
+                                            :class="
+                                                control.enabled
+                                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
+                                                    : 'bg-base-content/20'
+                                            "
+                                        ></span>
+                                    </div>
+                                    <span class="truncate capitalize text-xs whitespace-nowrap">{{
+                                        control.label
+                                    }}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            v-if="yamlObservers.length === 0 && yamlQueryOptions.length === 0"
+                            class="text-xs text-base-content/60 p-2"
+                        >
+                            No query configuration available
+                        </div>
                     </div>
                 </div>
             </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
 
-        <!-- Chart Modal -->
-        <dialog
-            id="chart_selected_query"
-            class="modal"
-        >
-            <div
-                v-if="selectedChartPoint"
-                class="modal-box relative w-full max-w-2xl"
-            >
-                <div class="py-4 space-y-4 text-sm">
-                    <DumpLink
-                        v-if="selectedChartPoint.ide_handle"
-                        :ide-handler="selectedChartPoint.ide_handle"
-                    />
-                    <div class="flex gap-2">
-                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.time }}ms</div>
-                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.origin }}</div>
-                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.connectionName }}</div>
-                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.database }}</div>
-                    </div>
-
-                    <!-- dump queries -->
-                    <DumpQueries
-                        v-if="selectedChartPoint"
-                        class="w-full mr-"
-                        :payload="selectedChartPoint"
-                    />
-                </div>
-            </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
-
-        <Teleport to="#actions">
-            <!-- Actions Dropdown -->
-            <div
-                v-if="queries.length > 0"
-                class="dropdown dropdown-bottom dropdown-end"
-            >
-                <button
-                    tabindex="0"
-                    role="button"
-                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                    data-tippy-content="Actions"
-                    :class="{
-                        'border-primary text-primary':
-                            formattedQueriesStore.formatted ||
-                            ['asc', 'desc'].includes(timeStore.order) ||
-                            ['all', 'by-request', 'percentage-colors'].includes(queriesChart.type)
-                    }"
-                >
-                    <AdjustmentsHorizontalIcon class="size-4" />
-                </button>
-
-                <ul
-                    tabindex="0"
-                    class="dropdown-content menu bg-base-300 rounded-box z-100 w-52 p-2 shadow-sm"
-                >
-                    <li
-                        @click="formattedQueriesStore.toggle()"
-                        :class="{
-                            '!text-primary': formattedQueriesStore.formatted
-                        }"
-                    >
-                        <a class="!text-xs flex items-center gap-2"> Prettify </a>
-                    </li>
-
-                    <li class="menu-title my-1 uppercase !pl-1">
-                        <span class="!text-xs text-base-content/60 font-light">Sort Order</span>
-                    </li>
-
-                    <li
-                        @click="setOrder('default')"
-                        :class="{
-                            '!text-primary': timeStore.order === 'default' || !timeStore.order
-                        }"
-                    >
-                        <a class="!text-xs">Default</a>
-                    </li>
-                    <li
-                        @click="setOrder('asc')"
-                        :class="{
-                            '!text-primary': timeStore.order === 'asc'
-                        }"
-                    >
-                        <a class="!text-xs">Ascending</a>
-                    </li>
-                    <li
-                        @click="setOrder('desc')"
-                        :class="{
-                            '!text-primary': timeStore.order === 'desc'
-                        }"
-                    >
-                        <a class="!text-xs">Descending</a>
-                    </li>
-
-                    <li class="menu-title my-1 uppercase !pl-1">
-                        <span class="!text-xs text-base-content/60 font-light">Appearance</span>
-                    </li>
-
-                    <li
-                        @click="toggleChartType('all')"
-                        :class="{
-                            '!text-primary': queriesChart.type === 'all'
-                        }"
-                    >
-                        <a class="!text-xs">Chart - All Requests</a>
-                    </li>
-                    <li
-                        @click="toggleChartType('by-request')"
-                        :class="{
-                            '!text-primary': queriesChart.type === 'by-request'
-                        }"
-                    >
-                        <a class="!text-xs">Chart - By Request</a>
-                    </li>
-                    <li
-                        @click="toggleChartType('percentage-colors')"
-                        :class="{
-                            '!text-primary': queriesChart.type === 'percentage-colors'
-                        }"
-                    >
-                        <a class="!text-xs">Percentage Colors</a>
-                    </li>
-
-                    <li class="menu-title my-1 uppercase !pl-1">
-                        <span class="!text-xs text-base-content/60 font-light">Tools</span>
-                    </li>
-
-                    <li @click="handleExportQueriesToSQL()">
-                        <a class="!text-xs flex items-center gap-2">
-                            <ArrowDownTrayIcon class="w-4" />
-                            Export SQL
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="dropdown dropdown-bottom dropdown-end">
-                <!-- Filter -->
-                <button
-                    tabindex="0"
-                    role="button"
-                    class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                    :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
-                    :class="{
-                        'border-primary text-primary':
-                            filteredClasses.length > 0 ||
-                            filteredOrigins.length > 0 ||
-                            duplicatesStore.showOnlyDuplicated
-                    }"
-                >
-                    <FunnelIcon class="w-4" />
-                </button>
-
+            <!-- Right: actions -->
+            <div class="flex items-center gap-1">
+                <!-- Actions Dropdown -->
                 <div
-                    tabindex="0"
-                    class="dropdown-content menu bg-base-300 rounded-box z-100 w-auto min-w-60 p-2 shadow-sm"
+                    v-if="queries.length > 0"
+                    class="dropdown dropdown-bottom dropdown-end"
                 >
-                    <ul>
+                    <button
+                        tabindex="0"
+                        role="button"
+                        class="btn btn-ghost btn-circle btn-sm"
+                        data-tippy-content="Actions"
+                        :class="{
+                            'text-primary':
+                                formattedQueriesStore.formatted ||
+                                ['asc', 'desc'].includes(timeStore.order) ||
+                                ['all', 'by-request', 'percentage-colors'].includes(queriesChart.type)
+                        }"
+                    >
+                        <AdjustmentsHorizontalIcon class="size-4" />
+                    </button>
+
+                    <ul
+                        tabindex="0"
+                        class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-52"
+                    >
                         <li
-                            v-show="duplicatesStore.hasDuplicatesInCurrentRequest"
-                            @click="duplicatesStore.toggleShowOnlyDuplicated"
+                            @click="formattedQueriesStore.toggle()"
                             :class="{
-                                '!text-primary': duplicatesStore.showOnlyDuplicated
+                                '!text-primary': formattedQueriesStore.formatted
                             }"
                         >
-                            <a class="!text-xs">Duplicated</a>
+                            <a class="!text-xs flex items-center gap-2"> Prettify </a>
                         </li>
 
-                        <li>
-                            <a
-                                href="#"
-                                class="!text-xs"
-                                >Origin</a
-                            >
-                            <ul tabindex="0">
-                                <li
-                                    v-for="option in availableOrigins"
-                                    :key="option"
-                                >
-                                    <label class="!text-xs">
-                                        <input
-                                            type="checkbox"
-                                            :value="option"
-                                            :checked="filteredOrigins.includes(option)"
-                                            @change="
-                                                () => {
-                                                    if (filteredOrigins.includes(option)) {
-                                                        filteredOrigins = filteredOrigins.filter((o) => o !== option);
-                                                    } else {
-                                                        filteredOrigins.push(option);
-                                                    }
-                                                }
-                                            "
-                                            class="checkbox checkbox-sm"
-                                        />
-                                        {{ option.charAt(0).toUpperCase() + option.slice(1) }}
-                                    </label>
-                                </li>
-                            </ul>
+                        <li class="menu-title my-1 uppercase !pl-1">
+                            <span class="!text-xs text-base-content/60 font-light">Sort Order</span>
+                        </li>
 
-                            <span class="!text-xs">Class</span>
-                            <ul tabindex="0">
-                                <li
-                                    v-for="className in availableClasses"
-                                    :key="className"
-                                >
-                                    <label class="!text-xs">
-                                        <input
-                                            type="checkbox"
-                                            :value="className"
-                                            :checked="filteredClasses.includes(className)"
-                                            @change="
-                                                () => {
-                                                    if (filteredClasses.includes(className)) {
-                                                        filteredClasses = filteredClasses.filter(
-                                                            (c) => c !== className
-                                                        );
-                                                    } else {
-                                                        filteredClasses.push(className);
-                                                    }
-                                                }
-                                            "
-                                            class="checkbox checkbox-sm"
-                                        />
-                                        <span class="whitespace-nowrap">{{ className.split('\\').pop() }}</span>
-                                    </label>
-                                </li>
-                            </ul>
+                        <li
+                            @click="setOrder('default')"
+                            :class="{
+                                '!text-primary': timeStore.order === 'default' || !timeStore.order
+                            }"
+                        >
+                            <a class="!text-xs">Default</a>
+                        </li>
+                        <li
+                            @click="setOrder('asc')"
+                            :class="{
+                                '!text-primary': timeStore.order === 'asc'
+                            }"
+                        >
+                            <a class="!text-xs">Ascending</a>
+                        </li>
+                        <li
+                            @click="setOrder('desc')"
+                            :class="{
+                                '!text-primary': timeStore.order === 'desc'
+                            }"
+                        >
+                            <a class="!text-xs">Descending</a>
+                        </li>
+
+                        <li class="menu-title my-1 uppercase !pl-1">
+                            <span class="!text-xs text-base-content/60 font-light">Appearance</span>
+                        </li>
+
+                        <li
+                            @click="toggleChartType('all')"
+                            :class="{
+                                '!text-primary': queriesChart.type === 'all'
+                            }"
+                        >
+                            <a class="!text-xs">Chart - All Requests</a>
+                        </li>
+                        <li
+                            @click="toggleChartType('by-request')"
+                            :class="{
+                                '!text-primary': queriesChart.type === 'by-request'
+                            }"
+                        >
+                            <a class="!text-xs">Chart - By Request</a>
+                        </li>
+                        <li
+                            @click="toggleChartType('percentage-colors')"
+                            :class="{
+                                '!text-primary': queriesChart.type === 'percentage-colors'
+                            }"
+                        >
+                            <a class="!text-xs">Percentage Colors</a>
+                        </li>
+
+                        <li class="menu-title my-1 uppercase !pl-1">
+                            <span class="!text-xs text-base-content/60 font-light">Tools</span>
+                        </li>
+
+                        <li @click="handleExportQueriesToSQL()">
+                            <a class="!text-xs flex items-center gap-2">
+                                <ArrowDownTrayIcon class="w-4" />
+                                Export SQL
+                            </a>
                         </li>
                     </ul>
                 </div>
-            </div>
 
-            <!-- Pause -->
-            <button
-                @click="pauseQueries.toggle()"
-                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                :class="{
-                    'border-primary text-primary': pauseQueries.is_paused
-                }"
-                :data-tippy-content="$t('pause')"
-            >
-                <PlayIcon
-                    v-if="pauseQueries.is_paused"
-                    class="w-4"
-                />
-                <IconPause
-                    v-else
-                    class="w-4"
-                />
-            </button>
+                <!-- Filter -->
+                <div class="dropdown dropdown-bottom dropdown-end">
+                    <button
+                        tabindex="0"
+                        role="button"
+                        class="btn btn-ghost btn-circle btn-sm"
+                        :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
+                        :class="{
+                            'text-primary':
+                                filteredClasses.length > 0 ||
+                                filteredOrigins.length > 0 ||
+                                duplicatesStore.showOnlyDuplicated
+                        }"
+                        data-tippy-content="Filters"
+                    >
+                        <FunnelIcon class="w-4" />
+                    </button>
 
-            <!-- Clear -->
-            <button
-                v-if="queries.length > 0"
-                @click="clear()"
-                class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                data-tippy-content="Clear"
-            >
-                <TrashIcon class="w-4" />
-            </button>
-        </Teleport>
+                    <div
+                        tabindex="0"
+                        class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-auto min-w-60"
+                    >
+                        <ul>
+                            <li
+                                v-show="duplicatesStore.hasDuplicatesInCurrentRequest"
+                                @click="duplicatesStore.toggleShowOnlyDuplicated"
+                                :class="{
+                                    '!text-primary': duplicatesStore.showOnlyDuplicated
+                                }"
+                            >
+                                <a class="!text-xs">Duplicated</a>
+                            </li>
 
-        <div
-            class="space-y-2"
-            v-if="queriesStore.payload.length > 0 && timeStore.selected"
-        >
-            <div class="flex justify-between items-center gap-3">
-                <button
-                    class="max-w-1/2 btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
-                    @click="openRequestsModal()"
-                >
-                    <ArrowsRightLeftIcon class="w-4 inline-block" />
-                    <span class="opacity-80"> ({{ timeStore.getRequestCount() }}) </span>
-                    <span class="truncate">{{
-                        timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : 'Tinker'
-                    }}</span>
-                </button>
-                <div class="flex items-center gap-2">
-                    <div class="badge badge-ghost badge-sm font-mono">
-                        {{ getQueriesCount(timeStore.selected) }}
-                        {{ getQueriesCount(timeStore.selected) === 1 ? 'query' : 'queries' }}
-                    </div>
-                    <div class="badge badge-primary badge-sm font-mono">
-                        {{ getHumanReadableTime() }}
+                            <li>
+                                <a
+                                    href="#"
+                                    class="!text-xs"
+                                    >Origin</a
+                                >
+                                <ul tabindex="0">
+                                    <li
+                                        v-for="option in availableOrigins"
+                                        :key="option"
+                                    >
+                                        <label class="!text-xs">
+                                            <input
+                                                type="checkbox"
+                                                :value="option"
+                                                :checked="filteredOrigins.includes(option)"
+                                                @change="
+                                                    () => {
+                                                        if (filteredOrigins.includes(option)) {
+                                                            filteredOrigins = filteredOrigins.filter(
+                                                                (o) => o !== option
+                                                            );
+                                                        } else {
+                                                            filteredOrigins.push(option);
+                                                        }
+                                                    }
+                                                "
+                                                class="checkbox checkbox-sm"
+                                            />
+                                            {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+                                        </label>
+                                    </li>
+                                </ul>
+
+                                <span class="!text-xs">Class</span>
+                                <ul tabindex="0">
+                                    <li
+                                        v-for="className in availableClasses"
+                                        :key="className"
+                                    >
+                                        <label class="!text-xs">
+                                            <input
+                                                type="checkbox"
+                                                :value="className"
+                                                :checked="filteredClasses.includes(className)"
+                                                @change="
+                                                    () => {
+                                                        if (filteredClasses.includes(className)) {
+                                                            filteredClasses = filteredClasses.filter(
+                                                                (c) => c !== className
+                                                            );
+                                                        } else {
+                                                            filteredClasses.push(className);
+                                                        }
+                                                    }
+                                                "
+                                                class="checkbox checkbox-sm"
+                                            />
+                                            <span class="whitespace-nowrap">{{ className.split('\\').pop() }}</span>
+                                        </label>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-            </div>
 
-            <div class="space-y-1">
-                <div id="query-chart-result"></div>
-
-                <QueriesChart
-                    v-if="!['none', 'percentage-colors'].includes(queriesChart.type)"
-                    @point-click="handlePointClick"
-                />
-
-                <div
-                    class="overflow-auto h-[calc(100vh-144px)]"
-                    v-else
+                <!-- Pause -->
+                <button
+                    @click="pauseQueries.toggle()"
+                    class="btn btn-ghost btn-circle btn-sm"
+                    :class="{
+                        'text-primary': pauseQueries.is_paused
+                    }"
+                    :data-tippy-content="$t('pause')"
                 >
-                    <div
-                        v-for="(group, groupKey) in groupedQueries"
-                        :key="groupKey"
-                        class="w-full"
-                    >
-                        <div
-                            v-if="settingsStore.settings.grouped_by_time"
-                            class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0"
-                        >
-                            <span
-                                :title="groupKey"
-                                class="opacity-80"
-                            >
-                                {{ moment(groupKey).fromNow() }}
-                            </span>
+                    <PlayIcon
+                        v-if="pauseQueries.is_paused"
+                        class="w-4 text-warning"
+                    />
+                    <IconPause
+                        v-else
+                        class="w-4"
+                    />
+                </button>
+
+                <!-- Clear -->
+                <button
+                    v-if="queries.length > 0"
+                    @click="clear()"
+                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
+                    data-tippy-content="Clear"
+                >
+                    <TrashIcon class="w-4" />
+                </button>
+            </div>
+        </div>
+
+        <div class="px-3">
+            <dialog
+                id="request_dialog"
+                ref="modalRef"
+                class="modal"
+            >
+                <div class="modal-box min-w-80 max-w-2xl p-4 py-0">
+                    <div class="py-4 space-y-4 text-sm overflow-auto">
+                        <div class="font-semibold px-2">
+                            <span class="text-lg">Requests</span>
                         </div>
 
-                        <div v-show="!collapsedGroups[groupKey]">
+                        <div class="max-h-[calc(100vh-22rem)] overflow-auto">
+                            <QueriesRequests />
+                        </div>
+                    </div>
+                </div>
+                <form
+                    method="dialog"
+                    class="modal-backdrop"
+                >
+                    <button>close</button>
+                </form>
+            </dialog>
+
+            <!-- Chart Modal -->
+            <dialog
+                id="chart_selected_query"
+                class="modal"
+            >
+                <div
+                    v-if="selectedChartPoint"
+                    class="modal-box relative w-full max-w-2xl"
+                >
+                    <div class="py-4 space-y-4 text-sm">
+                        <DumpLink
+                            v-if="selectedChartPoint.ide_handle"
+                            :ide-handler="selectedChartPoint.ide_handle"
+                        />
+                        <div class="flex gap-2">
+                            <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.time }}ms</div>
+                            <div class="badge badge-ghost">{{ selectedChartPoint.queries?.origin }}</div>
+                            <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.connectionName }}</div>
+                            <div class="badge badge-ghost">{{ selectedChartPoint.queries?.database }}</div>
+                        </div>
+
+                        <!-- dump queries -->
+                        <DumpQueries
+                            v-if="selectedChartPoint"
+                            class="w-full mr-"
+                            :payload="selectedChartPoint"
+                        />
+                    </div>
+                </div>
+                <form
+                    method="dialog"
+                    class="modal-backdrop"
+                >
+                    <button>close</button>
+                </form>
+            </dialog>
+
+            <div
+                class="space-y-2"
+                v-if="queriesStore.payload.length > 0 && timeStore.selected"
+            >
+                <div class="flex justify-between items-center gap-3">
+                    <button
+                        class="max-w-1/2 btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
+                        @click="openRequestsModal()"
+                    >
+                        <ArrowsRightLeftIcon class="w-4 inline-block" />
+                        <span class="opacity-80"> ({{ timeStore.getRequestCount() }}) </span>
+                        <span class="truncate">{{
+                            timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : 'Tinker'
+                        }}</span>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <div class="badge badge-ghost badge-sm font-mono">
+                            {{ getQueriesCount(timeStore.selected) }}
+                            {{ getQueriesCount(timeStore.selected) === 1 ? 'query' : 'queries' }}
+                        </div>
+                        <div class="badge badge-primary badge-sm font-mono">
+                            {{ getHumanReadableTime() }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <div id="query-chart-result"></div>
+
+                    <QueriesChart
+                        v-if="!['none', 'percentage-colors'].includes(queriesChart.type)"
+                        @point-click="handlePointClick"
+                    />
+
+                    <div
+                        class="overflow-auto h-[calc(100vh-184px)]"
+                        v-else
+                    >
+                        <div
+                            v-for="(group, groupKey) in groupedQueries"
+                            :key="groupKey"
+                            class="w-full"
+                        >
                             <div
-                                v-for="payload in group"
-                                :key="payload.sf_dump_id"
-                                :id="payload.id"
-                                class="w-full"
+                                v-if="settingsStore.settings.grouped_by_time"
+                                class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0"
                             >
-                                <DumpItem
-                                    class="w-full group text-sm mb-3"
-                                    :payload="payload"
-                                    :show-time="!settingsStore.settings.grouped_by_time"
-                                />
+                                <span
+                                    :title="groupKey"
+                                    class="opacity-80"
+                                >
+                                    {{ moment(groupKey).fromNow() }}
+                                </span>
+                            </div>
+
+                            <div v-show="!collapsedGroups[groupKey]">
+                                <div
+                                    v-for="payload in group"
+                                    :key="payload.sf_dump_id"
+                                    :id="payload.id"
+                                    class="w-full"
+                                >
+                                    <DumpItem
+                                        class="w-full group text-sm mb-3"
+                                        :payload="payload"
+                                        :show-time="!settingsStore.settings.grouped_by_time"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div
-            v-else
-            class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
-            style="height: -webkit-fill-available"
-        >
-            <SvgEmpty class="w-30 opacity-25" />
-            <div class="text-base-content/70">
-                <h1 class="text-lg font-semibold mb-2">Empty</h1>
+            <div
+                v-else
+                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
+                style="height: -webkit-fill-available"
+            >
+                <SvgEmpty class="w-30 opacity-25" />
+                <div class="text-base-content/70">
+                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
+                </div>
             </div>
         </div>
     </div>

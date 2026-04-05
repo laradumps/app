@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Job, useJobStore } from '@/store/jobs';
-import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import moment from 'moment';
 import { PlayIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
@@ -30,6 +30,8 @@ const props = defineProps<{
     items: Record<string, Job>;
     inScreenWindow: boolean;
 }>();
+
+defineEmits(['open-screen-window']);
 
 const toggleGroup = (timeKey: string) => {
     collapsedGroups.value[timeKey] = !collapsedGroups.value[timeKey];
@@ -202,7 +204,7 @@ const toggleMessageLimit = () => {
 </script>
 
 <template>
-    <div class="px-3">
+    <div>
         <!-- Drawer for job details -->
         <div class="drawer drawer-end">
             <input
@@ -211,7 +213,7 @@ const toggleMessageLimit = () => {
                 class="drawer-toggle hidden"
             />
 
-            <div class="drawer-side z-[400]">
+            <div class="drawer-side z-400">
                 <label
                     for="job-drawer"
                     class="drawer-overlay"
@@ -230,7 +232,7 @@ const toggleMessageLimit = () => {
                         <div class="tabs tabs-lift">
                             <input
                                 v-if="selected.code_snippet && selected.code_snippet.length > 0"
-                                checked="checked"
+                                checked
                                 type="radio"
                                 name="tab_jobs"
                                 class="tab"
@@ -312,91 +314,100 @@ const toggleMessageLimit = () => {
             </div>
         </div>
 
-        <!-- Header -->
-        <div class="h-[calc(100vh-100px)]">
-            <div class="flex items-center gap-1 justify-center">
-                <Teleport to="#actions">
-                    <div class="dropdown dropdown-bottom dropdown-end">
-                        <button
-                            tabindex="0"
-                            role="button"
-                            class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                        >
-                            <FunnelIcon
-                                v-if="!isFiltering"
-                                class="w-4"
-                            />
-                            <FunnelSolidIcon
-                                v-else
-                                class="w-4 text-primary"
-                            />
-                        </button>
+        <!-- Actions Bar -->
+        <div class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3">
+            <!-- Left: title -->
+            <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">Jobs</span>
 
-                        <ul
-                            tabindex="0"
-                            class="dropdown-content menu bg-base-300 rounded-box z-100 w-52 p-2 shadow-sm"
-                        >
-                            <li
-                                :class="{
-                                    'text-primary': statusFilter === 'Queued'
-                                }"
-                                @click="selectedStatus('Queued')"
-                            >
-                                <a
-                                    class="!text-xs"
-                                    v-text="`Queued (${statusCounts.Queued || 0})`"
-                                ></a>
-                            </li>
-                            <li
-                                :class="{
-                                    'text-primary': statusFilter == 'Processed'
-                                }"
-                                @click="selectedStatus('Processed')"
-                            >
-                                <a
-                                    class="!text-xs"
-                                    v-text="`Processed (${statusCounts.Processed || 0})`"
-                                ></a>
-                            </li>
-                            <li
-                                :class="{
-                                    'text-primary': statusFilter === 'Failed'
-                                }"
-                                @click="selectedStatus('Failed')"
-                            >
-                                <a
-                                    class="!text-xs"
-                                    v-text="`Failed (${statusCounts.Failed || 0})`"
-                                ></a>
-                            </li>
-                        </ul>
-                    </div>
-
+            <!-- Right: actions -->
+            <div class="flex items-center gap-1">
+                <div class="dropdown dropdown-bottom dropdown-end">
                     <button
-                        @click="pauseJobsStore.toggle()"
-                        class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                        :data-tippy-content="$t('pause')"
+                        tabindex="0"
+                        role="button"
+                        class="btn btn-ghost btn-circle btn-sm"
+                        data-tippy-content="Filter Status"
                     >
-                        <PlayIcon
-                            v-if="pauseJobsStore.is_paused"
-                            class="w-4 text-warning"
-                        />
-                        <IconPause
-                            v-else
+                        <FunnelIcon
+                            v-if="!isFiltering"
                             class="w-4"
                         />
+                        <FunnelSolidIcon
+                            v-else
+                            class="w-4 text-primary"
+                        />
                     </button>
-                    <button
-                        v-if="jobs.length > 0"
-                        @click="clear"
-                        class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                        data-tippy-content="Clear"
-                    >
-                        <TrashIcon class="w-4" />
-                    </button>
-                </Teleport>
-            </div>
 
+                    <ul
+                        tabindex="0"
+                        class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-52"
+                    >
+                        <li
+                            :class="{
+                                'text-primary': statusFilter === 'Queued'
+                            }"
+                            @click="selectedStatus('Queued')"
+                        >
+                            <a
+                                class="!text-xs"
+                                v-text="`Queued (${statusCounts.Queued || 0})`"
+                            ></a>
+                        </li>
+                        <li
+                            :class="{
+                                'text-primary': statusFilter == 'Processed'
+                            }"
+                            @click="selectedStatus('Processed')"
+                        >
+                            <a
+                                class="!text-xs"
+                                v-text="`Processed (${statusCounts.Processed || 0})`"
+                            ></a>
+                        </li>
+                        <li
+                            :class="{
+                                'text-primary': statusFilter === 'Failed'
+                            }"
+                            @click="selectedStatus('Failed')"
+                        >
+                            <a
+                                class="!text-xs"
+                                v-text="`Failed (${statusCounts.Failed || 0})`"
+                            ></a>
+                        </li>
+                    </ul>
+                </div>
+
+                <button
+                    @click="pauseJobsStore.toggle()"
+                    class="btn btn-ghost btn-circle btn-sm"
+                    :data-tippy-content="$t('pause')"
+                >
+                    <PlayIcon
+                        v-if="pauseJobsStore.is_paused"
+                        class="w-4 text-warning"
+                    />
+                    <IconPause
+                        v-else
+                        class="w-4"
+                    />
+                </button>
+                <button
+                    v-if="jobs.length > 0"
+                    @click="clear"
+                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
+                    data-tippy-content="Clear"
+                >
+                    <TrashIcon class="w-4" />
+                </button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div
+            class="px-3"
+            :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"
+        >
             <div
                 v-if="jobs.length > 0"
                 class="overflow-auto"
@@ -496,7 +507,7 @@ const toggleMessageLimit = () => {
 
             <div
                 v-else
-                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
+                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                 style="height: -webkit-fill-available"
             >
                 <SvgEmpty class="w-30 opacity-25" />

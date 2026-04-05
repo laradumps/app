@@ -8,7 +8,6 @@ import NavBarCollapse from '@/components/navbar/NavBarCollapse.vue';
 import NavBarSSH from '@/components/navbar/NavBarSSH.vue';
 import NavBarSettings from '@/components/navbar/NavBarSettings.vue';
 import NavBarSavedDumps from '@/components/navbar/NavBarSavedDumps.vue';
-import NavBarMCP from '@/components/navbar/NavBarMCP.vue';
 import ClearAll from '@/components/common/ClearAll.vue';
 import { useSettingsStore } from '@/store/settings';
 import { usePayloadStore } from '@/store/payload';
@@ -95,17 +94,17 @@ const modalClose = () => (isListeningModalOpen.value = false);
             <!-- ssh -->
             <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
 
-            <!-- MCP Indicator -->
-            <NavBarMCP />
-
             <!-- saved dumps -->
             <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
+            
             <!-- listening -->
             <NavBarProjectSwitcher
                 v-if="!inSavedDumpsWindow"
                 @modal-open="modalOpen"
                 @modal-close="modalClose"
+                class="border-l border-base-content/10 pl-2 ml-1"
             />
+
             <!-- settings -->
             <NavBarSettings />
         </div>

@@ -2,7 +2,7 @@
 import SplitPanes from '@/components/split/SplitPanes.vue';
 import { Attachment, Mail, mimeTypeMap, useMailStore } from '@/store/mail';
 import moment from 'moment';
-import { computed, defineProps, nextTick, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import {
     CloudArrowDownIcon,
     TrashIcon,
@@ -55,6 +55,14 @@ const display = (mail: Mail) => {
 const clear = () => {
     visited.value = undefined;
     mailStore.clear();
+};
+
+const removeMail = (messageId: string) => {
+    mailStore.remove(messageId);
+
+    if (visited.value?.message_id === messageId) {
+        visited.value = undefined;
+    }
 };
 
 const mails = computed(() => {
@@ -167,274 +175,290 @@ const setPreviewMode = (mode: string) => {
 </script>
 
 <template>
-    <div class="px-3 text-sm">
-        <dialog
-            id="modal_context"
-            class="modal"
-            v-if="visited"
-        >
-            <div class="modal-box max-w-2xl">
-                <div class="space-y-2">
-                    <div class="font-semibold">Context</div>
-                    <VueJsonPretty
-                        :show-icon="true"
-                        :show-length="true"
-                        :show-line="false"
-                        :data="visited.context"
-                        :show-double-quotes="false"
-                        class="!text-sm"
-                        :deep="2"
-                    />
-                </div>
-            </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
-        <dialog
-            id="modal"
-            class="modal"
-            v-if="visited"
-        >
-            <div class="modal-box max-w-2xl">
-                <div class="py-4 space-y-2">
-                    <div v-html="visited.details[0]"></div>
-                </div>
-            </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
+    <div>
+        <!-- Actions bar -->
+        <div class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3">
+            <!-- Left: title -->
+            <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">Mail</span>
 
-        <dialog
-            id="modal_headers"
-            class="modal"
-            v-if="visited"
-        >
-            <div class="modal-box max-w-2xl">
-                <div class="py-4 space-y-2">
-                    <div
-                        v-for="header in visited.headers"
-                        :key="header"
-                        v-text="header"
-                    ></div>
-                </div>
-            </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
-
-        <div class="space-y-3 h-[calc(100vh-140px)]">
-            <div class="absolute right-3 z-100">
-                <Teleport
-                    to="#actions"
+            <!-- Right: actions -->
+            <div class="flex items-center gap-1">
+                <button
                     v-if="mails.length > 0"
+                    @click="clear()"
+                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
+                    data-tippy-content="Clear All"
                 >
-                    <button
-                        @click="clear()"
-                        class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft"
-                        data-tippy-content="Clear All"
-                    >
-                        <TrashIcon class="w-4" />
-                    </button>
-                </Teleport>
+                    <TrashIcon class="w-4" />
+                </button>
             </div>
+        </div>
 
-            <SplitPanes
-                v-if="mails.length > 0"
-                orientation="vertical"
-                :initial-split="28"
+        <div class="px-3 text-sm">
+            <dialog
+                id="modal_context"
+                class="modal"
+                v-if="visited"
             >
-                <template #pane-a>
-                    <div
-                        class="overflow-auto flex flex-col gap-1"
-                        style="height: -webkit-fill-available"
-                    >
-                        <div
-                            v-for="mail in mails.slice().reverse()"
-                            :key="mail.message_id"
-                            :class="{
-                                'hover:bg-base-300 hover:rounded-md': visited?.message_id !== mail.message_id,
-                                'opacity-40 !font-normal': mail.is_read && visited?.message_id !== mail.message_id,
-                                'border-primary text-primary rounded-xs bg-base-300':
-                                    visited?.message_id === mail.message_id
-                            }"
-                            class="p-2 space-y-2 cursor-pointer focus:bg-primary"
-                            @click="display(mail)"
-                        >
-                            <div class="flex justify-between items-center cursor-pointer">
-                                <div class="truncate">{{ mail.from_mail }}</div>
-                                <span class="px-1 text-xs">{{ moment(mail.date).format('HH:mm') }}</span>
-                            </div>
-                            <div
-                                :class="{
-                                    '!font-normal': mail.is_read && visited?.message_id !== mail.message_id
-                                }"
-                                class="font-semibold truncate"
-                            >
-                                {{ mail.subject }}
-                            </div>
-                        </div>
+                <div class="modal-box max-w-2xl">
+                    <div class="space-y-2">
+                        <div class="font-semibold">Context</div>
+                        <VueJsonPretty
+                            :show-icon="true"
+                            :show-length="true"
+                            :show-line="false"
+                            :data="visited.context"
+                            :show-double-quotes="false"
+                            class="!text-sm"
+                            :deep="2"
+                        />
                     </div>
-                </template>
+                </div>
+                <form
+                    method="dialog"
+                    class="modal-backdrop"
+                >
+                    <button>close</button>
+                </form>
+            </dialog>
+            <dialog
+                id="modal"
+                class="modal"
+                v-if="visited"
+            >
+                <div class="modal-box max-w-2xl">
+                    <div class="py-4 space-y-2">
+                        <div v-html="visited.details[0]"></div>
+                    </div>
+                </div>
+                <form
+                    method="dialog"
+                    class="modal-backdrop"
+                >
+                    <button>close</button>
+                </form>
+            </dialog>
 
-                <template #pane-b>
-                    <div class="overflow-auto ml-2 text-sm">
+            <dialog
+                id="modal_headers"
+                class="modal"
+                v-if="visited"
+            >
+                <div class="modal-box max-w-2xl">
+                    <div class="py-4 space-y-2">
                         <div
-                            v-if="visited"
-                            class="flex flex-col w-full space-y-2 !h-[calc(100vh-150px)]"
+                            v-for="header in visited.headers"
+                            :key="header"
+                            v-text="header"
+                        ></div>
+                    </div>
+                </div>
+                <form
+                    method="dialog"
+                    class="modal-backdrop"
+                >
+                    <button>close</button>
+                </form>
+            </dialog>
+
+            <div :class="inScreenWindow ? 'space-y-3 h-[calc(100vh-140px)]' : 'space-y-3 h-[calc(100vh-180px)]'">
+                <SplitPanes
+                    v-if="mails.length > 0"
+                    orientation="vertical"
+                    :initial-split="28"
+                >
+                    <template #pane-a>
+                        <div
+                            class="overflow-auto flex flex-col gap-1"
+                            style="height: -webkit-fill-available"
                         >
-                            <!-- header -->
-                            <div class="px-2">
-                                <DumpLink
-                                    :ide-handler="visited.ide_handle"
-                                    class="text-xs my-2 opacity-80 link"
-                                />
-
-                                <div class="mt-1 flex flex-col gap-2">
-                                    <div class="flex flex-wrap gap-2 items-center w-full justify-between">
-                                        <span class="font-semibold">{{ visited.subject }}</span>
-                                    </div>
-                                    <div class="flex flex-wrap justify-between gap-3">
-                                        <div class="flex gap-3 items-center">
-                                            <span v-text="visited.headers[0]"></span>
-                                        </div>
-                                        <div class="flex flex-row gap-3 items-center">
-                                            <span v-text="visited.headers[1]"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex px-3 py-2 gap-2 flex-wrap items-center justify-between">
-                                <div class="flex gap-2 items-center justify-center text-xs">
-                                    <button
-                                        @click="setPreviewMode('mobile')"
-                                        class="btn btn-xs btn-soft"
-                                        :class="{ 'btn-primary': previewMode === 'mobile' }"
-                                    >
-                                        <DevicePhoneMobileIcon class="w-4" />
-                                    </button>
-                                    <button
-                                        @click="setPreviewMode('tablet')"
-                                        class="btn btn-xs btn-soft"
-                                        :class="{ 'btn-primary': previewMode === 'tablet' }"
-                                    >
-                                        <DeviceTabletIcon class="w-4" />
-                                    </button>
-                                    <button
-                                        @click="setPreviewMode('desktop')"
-                                        class="btn btn-xs btn-soft"
-                                        :class="{ 'btn-primary': previewMode === 'desktop' }"
-                                    >
-                                        <ComputerDesktopIcon class="w-4" />
-                                    </button>
-                                    <span class="text-xs">{{ previewSize }}</span>
-                                </div>
-
-                                <div class="flex gap-2">
-                                    <button
-                                        v-if="visited.context && Object.values(visited.context).length > 0"
-                                        @click="openContext"
-                                        class="btn btn-xs btn-outline border-base-content/10"
-                                    >
-                                        Context
-                                    </button>
-                                    <button
-                                        @click="openDumps"
-                                        class="btn btn-xs btn-outline border-base-content/10"
-                                    >
-                                        Dumps
-                                    </button>
-                                    <button
-                                        @click="openHeaders"
-                                        class="btn btn-xs btn-outline border-base-content/10"
-                                    >
-                                        Headers
-                                    </button>
-                                    <button
-                                        @click="openTmpBrowserPreview"
-                                        class="btn btn-xs btn-outline border-base-content/10"
-                                    >
-                                        Browser
-                                        <IconExternalLink class="w-4" />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- body -->
                             <div
-                                v-if="visited"
-                                class="w-full flex-1 flex flex-col"
+                                v-for="mail in mails.slice().reverse()"
+                                :key="mail.message_id"
+                                :class="{
+                                    'hover:bg-base-300 hover:rounded-md': visited?.message_id !== mail.message_id,
+                                    'opacity-40 !font-normal': mail.is_read && visited?.message_id !== mail.message_id,
+                                    'border-primary text-primary rounded-xs bg-base-300':
+                                        visited?.message_id === mail.message_id
+                                }"
+                                class="p-2 space-y-2 cursor-pointer focus:bg-primary"
+                                @click="display(mail)"
                             >
-                                <!-- email content iframe -->
-                                <div class="w-full flex-1 flex justify-center mb-4">
-                                    <div
-                                        :class="{
-                                            smartphone: previewMode == 'mobile',
-                                            tablet: previewMode == 'tablet'
-                                        }"
-                                    >
-                                        <iframe
-                                            class="iframe-content"
-                                            :style="previewStyle"
-                                            allowfullscreen
-                                            frameborder="0"
-                                            :src="`http://localhost:9191/${previewUrl}.html`"
-                                        />
-                                    </div>
-                                </div>
-
-                                <!-- attachments -->
-                                <div
-                                    v-if="visited.attachments.length > 0"
-                                    class="w-full px-4 py-2 border-t border-base-300"
-                                >
-                                    <div class="font-semibold mb-2">Attachments:</div>
-                                    <div class="flex flex-wrap gap-2">
+                                <div class="flex justify-between items-center cursor-pointer">
+                                    <div class="truncate">{{ mail.from_mail }}</div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-1 text-xs">{{ moment(mail.date).format('HH:mm') }}</span>
                                         <button
-                                            v-for="(attachment, index) in visited.attachments"
-                                            :key="`attachment-${index}`"
-                                            class="btn btn-neutral flex gap-2 items-center"
-                                            @click.prevent="openInBrowser(attachment)"
+                                            @click.stop="removeMail(mail.message_id)"
+                                            class="text-base-content/50 hover:text-error text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                            title="Remove mail"
                                         >
-                                            <CloudArrowDownIcon class="w-4 h-4" />
-                                            {{ attachment.filename }}
+                                            ✕
                                         </button>
                                     </div>
                                 </div>
+                                <div
+                                    :class="{
+                                        '!font-normal': mail.is_read && visited?.message_id !== mail.message_id
+                                    }"
+                                    class="font-semibold truncate"
+                                >
+                                    {{ mail.subject }}
+                                </div>
                             </div>
                         </div>
+                    </template>
 
-                        <div
-                            v-else
-                            class="flex items-center justify-center w-full h-full"
-                            style="height: -webkit-fill-available"
-                        >
-                            <span class="text-sm uppercase">No mail selected</span>
+                    <template #pane-b>
+                        <div class="overflow-auto ml-2 text-sm">
+                            <div
+                                v-if="visited"
+                                class="flex flex-col w-full space-y-2 !h-[calc(100vh-150px)]"
+                            >
+                                <!-- header -->
+                                <div class="px-2">
+                                    <DumpLink
+                                        :ide-handler="visited.ide_handle"
+                                        class="text-xs my-2 opacity-80 link"
+                                    />
+
+                                    <div class="mt-1 flex flex-col gap-2">
+                                        <div class="flex flex-wrap gap-2 items-center w-full justify-between">
+                                            <span class="font-semibold">{{ visited.subject }}</span>
+                                        </div>
+                                        <div class="flex flex-wrap justify-between gap-3">
+                                            <div class="flex gap-3 items-center">
+                                                <span v-text="visited.headers[0]"></span>
+                                            </div>
+                                            <div class="flex flex-row gap-3 items-center">
+                                                <span v-text="visited.headers[1]"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex px-3 py-2 gap-2 flex-wrap items-center justify-between">
+                                    <div class="flex gap-2 items-center justify-center text-xs">
+                                        <button
+                                            @click="setPreviewMode('mobile')"
+                                            class="btn btn-xs btn-soft"
+                                            :class="{ 'btn-primary': previewMode === 'mobile' }"
+                                        >
+                                            <DevicePhoneMobileIcon class="w-4" />
+                                        </button>
+                                        <button
+                                            @click="setPreviewMode('tablet')"
+                                            class="btn btn-xs btn-soft"
+                                            :class="{ 'btn-primary': previewMode === 'tablet' }"
+                                        >
+                                            <DeviceTabletIcon class="w-4" />
+                                        </button>
+                                        <button
+                                            @click="setPreviewMode('desktop')"
+                                            class="btn btn-xs btn-soft"
+                                            :class="{ 'btn-primary': previewMode === 'desktop' }"
+                                        >
+                                            <ComputerDesktopIcon class="w-4" />
+                                        </button>
+                                        <span class="text-xs">{{ previewSize }}</span>
+                                    </div>
+
+                                    <div class="flex gap-2">
+                                        <button
+                                            v-if="visited.context && Object.values(visited.context).length > 0"
+                                            @click="openContext"
+                                            class="btn btn-xs btn-outline border-base-content/10"
+                                        >
+                                            Context
+                                        </button>
+                                        <button
+                                            @click="openDumps"
+                                            class="btn btn-xs btn-outline border-base-content/10"
+                                        >
+                                            Dumps
+                                        </button>
+                                        <button
+                                            @click="openHeaders"
+                                            class="btn btn-xs btn-outline border-base-content/10"
+                                        >
+                                            Headers
+                                        </button>
+                                        <button
+                                            @click="openTmpBrowserPreview"
+                                            class="btn btn-xs btn-outline border-base-content/10"
+                                        >
+                                            Browser
+                                            <IconExternalLink class="w-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- body -->
+                                <div
+                                    v-if="visited"
+                                    class="w-full flex-1 flex flex-col"
+                                >
+                                    <!-- email content iframe -->
+                                    <div class="w-full flex-1 flex justify-center mb-4">
+                                        <div
+                                            :class="{
+                                                'bg-accent/5 text-accent-content':
+                                                    visited?.message_id === mail.message_id
+                                            }"
+                                            class="group p-2 space-y-2 cursor-pointer focus:bg-primary"
+                                            @click="display(mail)"
+                                        >
+                                            <iframe
+                                                class="iframe-content"
+                                                :style="previewStyle"
+                                                allowfullscreen
+                                                frameborder="0"
+                                                :src="`http://localhost:9191/${previewUrl}.html`"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <!-- attachments -->
+                                    <div
+                                        v-if="visited.attachments.length > 0"
+                                        class="w-full px-4 py-2 border-t border-base-300"
+                                    >
+                                        <div class="font-semibold mb-2">Attachments:</div>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button
+                                                v-for="(attachment, index) in visited.attachments"
+                                                :key="`attachment-${index}`"
+                                                class="btn btn-neutral flex gap-2 items-center"
+                                                @click.prevent="openInBrowser(attachment)"
+                                            >
+                                                <CloudArrowDownIcon class="w-4 h-4" />
+                                                {{ attachment.filename }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                v-else
+                                class="flex items-center justify-center w-full h-full"
+                                style="height: -webkit-fill-available"
+                            >
+                                <span class="text-sm uppercase">No mail selected</span>
+                            </div>
                         </div>
-                    </div>
-                </template>
-            </SplitPanes>
+                    </template>
+                </SplitPanes>
 
-            <div
-                v-else
-                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
-                style="height: -webkit-fill-available"
-            >
-                <SvgEmpty class="w-30 opacity-25" />
-                <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
+                <div
+                    v-else
+                    class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
+                    style="height: -webkit-fill-available"
+                >
+                    <SvgEmpty class="w-30 opacity-25" />
+                    <div class="text-base-content/70">
+                        <h1 class="text-lg font-semibold mb-2">Empty</h1>
+                    </div>
                 </div>
             </div>
         </div>

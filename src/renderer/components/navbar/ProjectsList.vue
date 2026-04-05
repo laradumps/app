@@ -26,68 +26,74 @@ const hasStarred = computed(() => props.starredSortedProjects && props.starredSo
 </script>
 
 <template>
-    <div class="overflow-hidden space-y-2">
-        <ul class="h-full overflow-x-hidden border-r border-base-200 pr-1.5">
-            <li
-                @click="emit('addProject')"
-                class="w-full flex !flex-nowrap flex-row text-left items-center justify-between mb-4"
-            >
-                <div class="w-full">
-                    <PlusIcon class="size-4 text-primary" />
-                    <span>New</span>
-                </div>
-            </li>
+    <div class="space-y-4 px-3 w-full pb-4">
+        <!-- New Project Button -->
+        <button
+            @click="emit('addProject')"
+            class="w-full btn btn-primary btn-sm flex items-center justify-center gap-2 rounded-lg font-medium shadow-sm hover:shadow"
+        >
+            <PlusIcon class="size-4" />
+            <span>New</span>
+        </button>
 
+        <div class="space-y-6">
             <template v-if="hasStarred">
-                <li class="px-2 py-1 text-[0.65rem] uppercase tracking-wider text-base-content/50 text-left">
-                    Starred
-                </li>
-                <li
-                    v-for="(project, sIdx) in starredSortedProjects"
-                    :key="project.path + '-starred'"
-                    draggable="true"
-                    @dragstart="emit('onProjectDragStart', 'starred', sIdx)"
-                    @dragover.prevent
-                    @drop="emit('onProjectDrop', 'starred', sIdx)"
-                    @click="emit('setActiveProject', project)"
-                    class="w-full flex !flex-nowrap flex-row text-left items-center justify-between"
-                    :class="{ 'rounded-sm !bg-neutral': selectedProject && selectedProject.path === project.path }"
-                >
-                    <div class="w-full">
-                        <span
-                            class="font-normal capitalize text-sm truncate"
-                            :class="{
-                                'text-neutral-content': selectedProject && selectedProject.path === project.path
-                            }"
-                            v-text="formattedName(project.project)"
-                        />
+                <div class="space-y-1 mt-6">
+                    <div class="px-2 text-[0.65rem] font-semibold uppercase tracking-wider text-base-content/40 mb-2 flex items-center gap-2">
+                        <span>Starred</span>
                     </div>
-                </li>
-                <li class="my-1"><div class="divider m-0"></div></li>
+                    <ul class="space-y-0.5">
+                        <li
+                            v-for="(project, sIdx) in starredSortedProjects"
+                            :key="project.path + '-starred'"
+                            draggable="true"
+                            @dragstart="emit('onProjectDragStart', 'starred', sIdx)"
+                            @dragover.prevent
+                            @drop="emit('onProjectDrop', 'starred', sIdx)"
+                            @click="emit('setActiveProject', project)"
+                            class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg cursor-pointer transition-colors duration-150 relative"
+                            :class="[
+                                selectedProject && selectedProject.path === project.path 
+                                    ? 'bg-base-content/10 text-base-content font-medium' 
+                                    : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                            ]"
+                        >
+                            <span
+                                class="capitalize text-sm truncate"
+                                v-text="formattedName(project.project)"
+                            />
+                        </li>
+                    </ul>
+                </div>
             </template>
 
-            <li class="px-2 py-1 text-[0.65rem] uppercase tracking-wider text-base-content/50 text-left">
-                All Projects
-            </li>
-            <li
-                v-for="(project, aIdx) in regularSortedProjects"
-                :key="project.path + '-regular'"
-                draggable="true"
-                @dragstart="emit('onProjectDragStart', 'all', aIdx)"
-                @dragover.prevent
-                @drop="emit('onProjectDrop', 'all', aIdx)"
-                @click="emit('setActiveProject', project)"
-                class="w-full flex !flex-nowrap flex-row text-left items-center justify-between"
-                :class="{ 'rounded-sm !bg-neutral': selectedProject && selectedProject.path === project.path }"
-            >
-                <div class="w-full">
-                    <span
-                        class="font-normal capitalize text-sm truncate"
-                        :class="{ 'text-neutral-content': selectedProject && selectedProject.path === project.path }"
-                        v-text="formattedName(project.project)"
-                    />
+            <div class="space-y-1">
+                <div class="px-2 text-[0.65rem] font-semibold uppercase tracking-wider text-base-content/40 mb-2 flex items-center gap-2">
+                    <span>All Projects</span>
                 </div>
-            </li>
-        </ul>
+                <ul class="space-y-0.5">
+                    <li
+                        v-for="(project, aIdx) in regularSortedProjects"
+                        :key="project.path + '-regular'"
+                        draggable="true"
+                        @dragstart="emit('onProjectDragStart', 'all', aIdx)"
+                        @dragover.prevent
+                        @drop="emit('onProjectDrop', 'all', aIdx)"
+                        @click="emit('setActiveProject', project)"
+                        class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg cursor-pointer transition-colors duration-150 relative"
+                        :class="[
+                            selectedProject && selectedProject.path === project.path 
+                                ? 'bg-base-content/10 text-base-content font-medium' 
+                                : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                        ]"
+                    >
+                        <span
+                            class="capitalize text-sm truncate"
+                            v-text="formattedName(project.project)"
+                        />
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </template>

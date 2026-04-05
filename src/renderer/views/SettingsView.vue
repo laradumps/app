@@ -12,7 +12,7 @@ import { Cog6ToothIcon, RectangleGroupIcon, Bars3Icon, KeyIcon, CommandLineIcon 
 import { useRoute } from 'vue-router';
 
 const editMode = ref(false);
-const selected = ref<string | null>('settings');
+const selected = ref<string | null>('appearance');
 const customTheme = ref('');
 
 const mcpServerPath = ref('');
@@ -335,22 +335,22 @@ const saveCustomTheme = async () => {
                 <ul class="menu py-1 menu-md bg-base-200 w-40 rounded-box">
                     <li>
                         <span
-                            @click="selected = 'settings'"
-                            :class="{ 'menu-active': selected === 'settings' }"
-                            class="whitespace-nowrap flex items-center gap-2"
-                        >
-                            <Cog6ToothIcon class="w-4 h-4" />
-                            <span>{{ $t('settings.settings') }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span
                             @click="selected = 'appearance'"
                             :class="{ 'menu-active': selected === 'appearance' }"
                             class="whitespace-nowrap flex items-center gap-2"
                         >
                             <RectangleGroupIcon class="w-4 h-4" />
                             <span>{{ $t('settings.appearance') }}</span>
+                        </span>
+                    </li>
+                    <li>
+                        <span
+                            @click="selected = 'settings'"
+                            :class="{ 'menu-active': selected === 'settings' }"
+                            class="whitespace-nowrap flex items-center gap-2"
+                        >
+                            <Cog6ToothIcon class="w-4 h-4" />
+                            <span>{{ $t('settings.settings') }}</span>
                         </span>
                     </li>
                     <li>

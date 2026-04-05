@@ -12,13 +12,7 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const dropdownPosition = ref({ top: 0, left: 0 });
-
-const dropdownStyle = computed(() => ({
-    top: `${dropdownPosition.value.top}px`,
-    left: `${dropdownPosition.value.left}px`,
-    zIndex: 9999
-}));
+const dropdownStyle = ref<{top?: string, left?: string, right?: string, zIndex: number}>({ zIndex: 9999 });
 
 const selectEnvironment = (environment: Environment) => {
     emit('environment-selected', environment);
@@ -31,25 +25,20 @@ const calculatePosition = () => {
         const addButton = document.querySelector('[data-add-env-button]') as HTMLElement;
         if (addButton) {
             const rect = addButton.getBoundingClientRect();
-            const dropdownWidth = 224;
             const dropdownHeight = props.environments.length * 40 + 16;
 
-            let left = rect.right - dropdownWidth;
             let top = rect.bottom + 4;
-
-            if (left < 8) {
-                left = rect.left;
-            }
-
-            if (left + dropdownWidth > window.innerWidth - 8) {
-                left = window.innerWidth - dropdownWidth - 8;
-            }
+            const right = window.innerWidth - rect.right;
 
             if (top + dropdownHeight > window.innerHeight - 8) {
                 top = rect.top - dropdownHeight - 4;
             }
 
-            dropdownPosition.value = { top, left };
+            dropdownStyle.value = { 
+                top: `${top}px`, 
+                right: `${right}px`,
+                zIndex: 9999
+            };
         }
     });
 };
@@ -89,8 +78,8 @@ onUnmounted(() => {
 <template>
     <ul
         v-if="visible"
-        class="environment-dropdown menu menu-sm bg-base-200 rounded-box w-56 shadow-lg border border-base-300 fixed mt-1"
-        :style="dropdownStyle"
+        class="environment-dropdown menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-max min-w-[140px] fixed mt-1"
+        :style="{ ...dropdownStyle, zIndex: 99999 }"
     >
         <li
             v-for="env in environments"
@@ -98,15 +87,15 @@ onUnmounted(() => {
         >
             <a
                 @click="selectEnvironment(env)"
-                class="capitalize"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
             >
-                {{ formattedName(env.value) }}
+                <span class="truncate capitalize text-xs">{{ formattedName(env.value) }}</span>
             </a>
         </li>
 
         <!-- Empty state -->
         <li v-if="environments.length === 0">
-            <span class="text-base-content/50 cursor-default">No environments available</span>
+            <span class="flex items-center gap-3 px-3 py-2 text-xs text-base-content/40 cursor-default">No environments available</span>
         </li>
     </ul>
 </template>
