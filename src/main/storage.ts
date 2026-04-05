@@ -43,6 +43,7 @@ const CHANNELS = {
     STORAGE_GET_ENVIRONMENTS_REPLY: 'storage.get-environments.reply',
     STORAGE_REMOVE: 'storage.remove',
     STORAGE_UPDATE: 'storage.update',
+    STORAGE_UPDATE_REPLY: 'storage.update.reply',
     STORAGE_GET_YAML: 'storage.get-yaml',
     STORAGE_GET_YAML_REPLY: 'storage.get-yaml.reply',
     STORAGE_UPDATE_SECTION: 'storage.update-section',
@@ -247,13 +248,10 @@ const updateEnvironment = (
 
         const yamlData = yamlLib.dump(data);
 
-        fsLib.writeFile(filePath, yamlData, (err: NodeJS.ErrnoException | null): void => {
-            if (err) {
-                console.error('Error writing to file:', err);
-                return;
-            }
-            console.log('laradumps.yaml has been updated successfully.');
-        });
+        fsLib.writeFileSync(filePath, yamlData);
+        console.log('laradumps.yaml has been updated successfully.');
+
+        _event.reply(CHANNELS.STORAGE_UPDATE_REPLY);
     } catch (err) {
         console.error(err);
     }
