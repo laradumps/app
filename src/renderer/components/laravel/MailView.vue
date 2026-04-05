@@ -434,11 +434,9 @@ const setPreviewMode = (mode: string) => {
 
                             <div
                                 v-else
-                                class="flex items-center justify-center w-full h-full"
+                                class="w-full h-full"
                                 style="height: -webkit-fill-available"
-                            >
-                                <span class="text-sm uppercase">No mail selected</span>
-                            </div>
+                            ></div>
                         </div>
                     </template>
                 </SplitPanes>
