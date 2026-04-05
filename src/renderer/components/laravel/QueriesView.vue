@@ -382,12 +382,14 @@ const setOrder = (order: string) => {
 
                     <ul
                         tabindex="0"
-                        class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-52"
+                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-64"
                     >
                         <li
                             @click="formattedQueriesStore.toggle()"
                             :class="{
-                                '!text-primary': formattedQueriesStore.formatted
+                                'bg-base-content/10 text-base-content font-medium': formattedQueriesStore.formatted,
+                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
+                                    !formattedQueriesStore.formatted
                             }"
                         >
                             <a class="!text-xs flex items-center gap-2"> Prettify </a>
@@ -400,7 +402,10 @@ const setOrder = (order: string) => {
                         <li
                             @click="setOrder('default')"
                             :class="{
-                                '!text-primary': timeStore.order === 'default' || !timeStore.order
+                                'bg-base-content/10 text-base-content font-medium':
+                                    timeStore.order === 'default' || !timeStore.order,
+                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
+                                    timeStore.order !== 'default' && timeStore.order
                             }"
                         >
                             <a class="!text-xs">Default</a>
@@ -408,7 +413,9 @@ const setOrder = (order: string) => {
                         <li
                             @click="setOrder('asc')"
                             :class="{
-                                '!text-primary': timeStore.order === 'asc'
+                                'bg-base-content/10 text-base-content font-medium': timeStore.order === 'asc',
+                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
+                                    timeStore.order !== 'asc'
                             }"
                         >
                             <a class="!text-xs">Ascending</a>
@@ -416,7 +423,9 @@ const setOrder = (order: string) => {
                         <li
                             @click="setOrder('desc')"
                             :class="{
-                                '!text-primary': timeStore.order === 'desc'
+                                'bg-base-content/10 text-base-content font-medium': timeStore.order === 'desc',
+                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
+                                    timeStore.order !== 'desc'
                             }"
                         >
                             <a class="!text-xs">Descending</a>
@@ -429,7 +438,9 @@ const setOrder = (order: string) => {
                         <li
                             @click="toggleChartType('all')"
                             :class="{
-                                '!text-primary': queriesChart.type === 'all'
+                                'bg-base-content/10 text-base-content font-medium': queriesChart.type === 'all',
+                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
+                                    queriesChart.type !== 'all'
                             }"
                         >
                             <a class="!text-xs">Chart - All Requests</a>
@@ -437,7 +448,9 @@ const setOrder = (order: string) => {
                         <li
                             @click="toggleChartType('by-request')"
                             :class="{
-                                '!text-primary': queriesChart.type === 'by-request'
+                                'bg-base-content/10 text-base-content font-medium': queriesChart.type === 'by-request',
+                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
+                                    queriesChart.type !== 'by-request'
                             }"
                         >
                             <a class="!text-xs">Chart - By Request</a>
@@ -445,7 +458,10 @@ const setOrder = (order: string) => {
                         <li
                             @click="toggleChartType('percentage-colors')"
                             :class="{
-                                '!text-primary': queriesChart.type === 'percentage-colors'
+                                'bg-base-content/10 text-base-content font-medium':
+                                    queriesChart.type === 'percentage-colors',
+                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
+                                    queriesChart.type !== 'percentage-colors'
                             }"
                         >
                             <a class="!text-xs">Percentage Colors</a>
@@ -456,7 +472,9 @@ const setOrder = (order: string) => {
                         </li>
 
                         <li @click="handleExportQueriesToSQL()">
-                            <a class="!text-xs flex items-center gap-2">
+                            <a
+                                class="!text-xs flex items-center gap-2 text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
+                            >
                                 <ArrowDownTrayIcon class="w-4" />
                                 Export SQL
                             </a>
@@ -484,14 +502,17 @@ const setOrder = (order: string) => {
 
                     <div
                         tabindex="0"
-                        class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-auto min-w-60"
+                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-64"
                     >
                         <ul>
                             <li
                                 v-show="duplicatesStore.hasDuplicatesInCurrentRequest"
                                 @click="duplicatesStore.toggleShowOnlyDuplicated"
                                 :class="{
-                                    '!text-primary': duplicatesStore.showOnlyDuplicated
+                                    'bg-base-content/10 text-base-content font-medium':
+                                        duplicatesStore.showOnlyDuplicated,
+                                    'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
+                                        !duplicatesStore.showOnlyDuplicated
                                 }"
                             >
                                 <a class="!text-xs">Duplicated</a>
@@ -500,7 +521,7 @@ const setOrder = (order: string) => {
                             <li>
                                 <a
                                     href="#"
-                                    class="!text-xs"
+                                    class="!text-xs text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
                                     >Origin</a
                                 >
                                 <ul tabindex="0">
@@ -658,7 +679,7 @@ const setOrder = (order: string) => {
             </dialog>
 
             <div
-                class="space-y-2"
+                class="space-y-2 mt-2"
                 v-if="queriesStore.payload.length > 0 && timeStore.selected"
             >
                 <div class="flex justify-between items-center gap-3">
