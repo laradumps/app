@@ -423,8 +423,12 @@ const closeModal = () => {
         >
             <template v-if="starredSortedProjects.length > 0">
                 <li
-                    v-for="project in starredSortedProjects"
+                    v-for="(project, sIdx) in starredSortedProjects"
                     :key="project.path + '-dropdown'"
+                    draggable="true"
+                    @dragstart="onProjectDragStart('starred', sIdx)"
+                    @dragover.prevent
+                    @drop="onProjectDrop('starred', sIdx)"
                     @click="setActiveProject(project)"
                 >
                     <a
@@ -456,8 +460,12 @@ const closeModal = () => {
 
             <template v-if="regularSortedProjects.length > 0">
                 <li
-                    v-for="project in regularSortedProjects"
+                    v-for="(project, aIdx) in regularSortedProjects"
                     :key="project.path + '-dropdown'"
+                    draggable="true"
+                    @dragstart="onProjectDragStart('all', aIdx)"
+                    @dragover.prevent
+                    @drop="onProjectDrop('all', aIdx)"
                     @click="setActiveProject(project)"
                 >
                     <a
