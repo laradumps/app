@@ -404,18 +404,15 @@ const toggleMessageLimit = () => {
         </div>
 
         <!-- Content -->
-        <div
-            class="px-3"
-            :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"
-        >
+        <div :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'">
             <div
                 v-if="jobs.length > 0"
-                class="overflow-auto"
+                class="overflow-auto px-3"
                 style="height: -webkit-fill-available"
             >
                 <table class="table table-pin-rows table-zebra">
                     <thead>
-                        <tr class="text-xs !bg-base-300 font-light text-base-content">
+                        <tr class="text-xs bg-base-300! font-light text-base-content">
                             <th class="w-4">#</th>
                             <th
                                 @click="toggleSort('display_name')"

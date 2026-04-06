@@ -194,7 +194,7 @@ const setPreviewMode = (mode: string) => {
             </div>
         </div>
 
-        <div class="px-3 text-sm">
+        <div class="text-sm">
             <dialog
                 id="modal_context"
                 class="modal"
@@ -266,6 +266,7 @@ const setPreviewMode = (mode: string) => {
                     v-if="mails.length > 0"
                     orientation="vertical"
                     :initial-split="28"
+                    class="px-3"
                 >
                     <template #pane-a>
                         <div

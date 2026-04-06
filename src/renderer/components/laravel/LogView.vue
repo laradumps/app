@@ -383,7 +383,7 @@ const displayLastLog = computed<boolean>({
                         </button>
                         <ul
                             tabindex="0"
-                            class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-52"
+                            class="p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] dropdown-content bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-52"
                         >
                             <li
                                 v-for="level in [
@@ -397,12 +397,14 @@ const displayLastLog = computed<boolean>({
                                     'emergency'
                                 ]"
                                 :key="level"
-                                :class="{ 'text-primary': levelFilter.includes(level) }"
                                 @click="selectedLevel(level)"
                             >
-                                <a class="!text-xs">
-                                    {{ level.charAt(0).toUpperCase() + level.slice(1) }}
-                                    ({{ levelCounts[level] || 0 }})
+                                <a
+                                    class="flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-base-content/70 hover:bg-base-content/5 hover:text-base-content !text-xs"
+                                    :class="{ 'text-primary': levelFilter.includes(level) }"
+                                >
+                                    <span class="capitalize">{{ level }}</span>
+                                    <span class="text-base-content/40 text-[10px]">{{ levelCounts[level] || 0 }}</span>
                                 </a>
                             </li>
                         </ul>
