@@ -28,4 +28,3 @@ pnpm-debug.log*
 *.sw?
 .env
 yarn.lock
-package-lock.json

@@ -191,7 +191,7 @@ const formattedScreenName = (name: string) => {
                     v-show="!isScreenInSplit(screen.screen_name)"
                     role="tab"
                     draggable="true"
-                    class="tab flex! flex-row! items-center! gap-2 select-none transition-all duration-200 whitespace-nowrap! group h-full"
+                    class="tab cursor-default! flex! flex-row! items-center! gap-2 select-none transition-all duration-200 whitespace-nowrap! group h-full"
                     :class="{
                         'tab-active font-semibold': screen.screen_name === screenStore.screen,
                         dragging: isDraggingIndex === index

@@ -294,7 +294,7 @@ const toggleActionExpanded = (action: any) => {
 <template>
     <div>
         <!-- Actions bar -->
-        <div class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3">
+        <div class="-mt-3 flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3">
             <!-- Left: title -->
             <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">Brain</span>
 
