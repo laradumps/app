@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { ExclamationTriangleIcon, ChevronDownIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
+import {
+    ExclamationTriangleIcon,
+    ChevronDownIcon,
+    PlusIcon,
+    EllipsisVerticalIcon,
+    TrashIcon
+} from '@heroicons/vue/24/outline';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import JSConfetti from 'js-confetti';
 import { useCurrentProject } from '@/store/current-project';
 import { IpcRendererEvent } from 'electron';
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
-import ProjectsList from '@/components/navbar/ProjectsList.vue';
-import ProjectHeader from '@/components/navbar/ProjectHeader.vue';
+import ProjectInstall from '@/components/navbar/ProjectInstall.vue';
 import { LogEntry } from '../../../main/logger/logger';
 import NavBarMCP from '@/components/navbar/NavBarMCP.vue';
 import NavBarXdebug from '@/components/navbar/NavBarXdebug.vue';
@@ -46,6 +50,9 @@ const selectedProject = ref<Project>({} as Project);
 const isNewProject = ref(false);
 const projects = ref<Project[]>([]);
 const windowHeight = ref(window.innerHeight);
+const contextMenuProject = ref<Project | null>(null);
+const contextMenuPosition = ref({ x: 0, y: 0 });
+const dropdownRef = ref<HTMLElement | null>(null);
 
 const installActive = ref(false);
 const installErrorMessage = ref('');
@@ -83,11 +90,13 @@ onMounted(() => {
     initializeProjectData();
     setupEventListeners();
     window.addEventListener('resize', updateHeight);
+    window.addEventListener('click', closeContextMenu);
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER);
 });
 
 onUnmounted(() => {
     window.removeEventListener('resize', updateHeight);
+    window.removeEventListener('click', closeContextMenu);
 
     if (errorDismissTimer) {
         clearTimeout(errorDismissTimer);
@@ -203,6 +212,9 @@ const setupEventListeners = async () => {
             installActive.value = true;
             installErrorMessage.value = '';
             installFailed.value = false;
+            document.activeElement?.blur();
+            modal_navbar_listening.showModal();
+            emit('modalOpen');
         }
 
         if (payload.error) {
@@ -368,6 +380,21 @@ const addProject = () => {
     window.ipcRenderer.send(IPC_EVENTS.MAIN_PROJECT_SETUP);
 };
 
+const openContextMenu = (event: MouseEvent, project: Project) => {
+    event.preventDefault();
+    contextMenuProject.value = project;
+    contextMenuPosition.value = { x: event.clientX, y: event.clientY };
+};
+
+const closeContextMenu = () => {
+    contextMenuProject.value = null;
+};
+
+const removeProject = (project: Project) => {
+    confirmProjectRemoval(project.path);
+    closeContextMenu();
+};
+
 const resetInstallState = () => {
     installActive.value = false;
     installFinished.value = false;
@@ -387,6 +414,10 @@ const showModal = () => {
     emit('modalOpen');
 };
 const closeModal = () => {
+    if (installActive.value && !installFinished.value && !installFailed.value) {
+        return;
+    }
+    modal_navbar_listening.close();
     emit('modalClose');
 };
 </script>
@@ -421,6 +452,16 @@ const closeModal = () => {
             tabindex="0"
             class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-64"
         >
+            <li class="mb-1">
+                <a
+                    @click="addProject()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-primary hover:bg-primary/10"
+                >
+                    <PlusIcon class="size-4" />
+                    <span class="font-medium text-xs">New</span>
+                </a>
+            </li>
+
             <template v-if="starredSortedProjects.length > 0">
                 <li
                     v-for="(project, sIdx) in starredSortedProjects"
@@ -430,6 +471,8 @@ const closeModal = () => {
                     @dragover.prevent
                     @drop="onProjectDrop('starred', sIdx)"
                     @click="setActiveProject(project)"
+                    @contextmenu="openContextMenu($event, project)"
+                    class="relative group"
                 >
                     <a
                         class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
@@ -455,6 +498,12 @@ const closeModal = () => {
                         </div>
                         <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>
                     </a>
+                    <button
+                        @click.stop="openContextMenu($event, project)"
+                        class="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-base-content/10 transition-opacity"
+                    >
+                        <EllipsisVerticalIcon class="size-4 text-base-content/50" />
+                    </button>
                 </li>
             </template>
 
@@ -467,6 +516,8 @@ const closeModal = () => {
                     @dragover.prevent
                     @drop="onProjectDrop('all', aIdx)"
                     @click="setActiveProject(project)"
+                    @contextmenu="openContextMenu($event, project)"
+                    class="relative group"
                 >
                     <a
                         class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
@@ -492,6 +543,12 @@ const closeModal = () => {
                         </div>
                         <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>
                     </a>
+                    <button
+                        @click.stop="openContextMenu($event, project)"
+                        class="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-base-content/10 transition-opacity"
+                    >
+                        <EllipsisVerticalIcon class="size-4 text-base-content/50" />
+                    </button>
                 </li>
             </template>
 
@@ -504,21 +561,9 @@ const closeModal = () => {
             <li>
                 <NavBarXdebug />
             </li>
-
-            <div class="divider my-1 opacity-20 h-px"></div>
-
-            <li>
-                <a
-                    @click="showModal()"
-                    class="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg transition-colors text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
-                >
-                    <Cog6ToothIcon class="size-4" />
-                    <span class="font-medium text-xs">Manage Projects</span>
-                </a>
-            </li>
         </ul>
         <dialog
-            @close="closeModal"
+            @close.prevent="closeModal"
             id="modal_navbar_listening"
             class="modal z-[200]"
         >
@@ -536,160 +581,38 @@ const closeModal = () => {
                 </div>
 
                 <div class="flex h-144">
-                    <!-- Col 1: Projects -->
-                    <div
-                        class="w-1/3 min-w-60 max-w-70 bg-base-200/50 border-r border-base-content/10 overflow-y-auto pt-4 pb-4"
-                    >
-                        <ProjectsList
-                            :starred-sorted-projects="starredSortedProjects"
-                            :regular-sorted-projects="regularSortedProjects"
-                            :selected-project="selectedProject"
-                            @add-project="addProject"
-                            @set-active-project="setActiveProject"
-                            @on-project-drag-start="onProjectDragStart"
-                            @on-project-drop="onProjectDrop"
-                        />
-                    </div>
-
-                    <!-- Col 2: Project Details -->
-                    <div class="flex-1 flex flex-col relative bg-base-100 overflow-y-auto w-2/3">
+                    <div class="flex-1 flex flex-col relative bg-base-100 overflow-y-auto w-full">
                         <div class="p-8 flex flex-col h-full gap-4">
-                            <ProjectHeader
-                                :project="selectedProject"
-                                :is-starred="isStarred"
-                                @toggle-star="toggleStar"
-                                @confirm-project-removal="confirmProjectRemoval"
+                            <ProjectInstall
+                                :install-active="installActive"
+                                :install-finished="installFinished"
+                                :install-failed="installFailed"
+                                :install-error-message="installErrorMessage"
+                                :project-setup-logs="projectSetupLogs"
+                                @retry="addProject"
+                                @finish="finishInstallation"
+                                @copy-logs="copyToClipboard"
                             />
-
-                            <!-- Installing overlay/content -->
-                            <div
-                                v-if="installActive"
-                                class="flex-1 flex flex-col items-center justify-center p-4 bg-base-200/50 rounded-lg border border-base-content/5 overflow-hidden"
-                            >
-                                <div class="text-center space-y-2 mb-4 w-full px-4">
-                                    <h2
-                                        class="text-lg font-semibold text-base-content/70"
-                                        :class="{ 'text-error': installFailed, 'text-success': installFinished }"
-                                    >
-                                        {{
-                                            installFinished
-                                                ? $t('install_success')
-                                                : installFailed
-                                                  ? $t('install_failed')
-                                                  : $t('installing')
-                                        }}
-                                    </h2>
-                                    <p class="text-base-content/70">
-                                        {{
-                                            installFinished
-                                                ? $t('install_success_message')
-                                                : installFailed
-                                                  ? installErrorMessage || $t('install_failed_message')
-                                                  : $t('installing_wait_message')
-                                        }}
-                                    </p>
-                                    <progress
-                                        v-if="!installFinished && !installFailed"
-                                        class="progress w-56 progress-info"
-                                    ></progress>
-                                    <div
-                                        v-else
-                                        class="flex flex-col items-center gap-4"
-                                    >
-                                        <progress
-                                            class="progress w-56"
-                                            :class="{
-                                                'progress-success': installFinished,
-                                                'progress-error': installFailed
-                                            }"
-                                            value="100"
-                                            max="100"
-                                        ></progress>
-                                        <div class="flex gap-2">
-                                            <button
-                                                v-if="installFailed"
-                                                class="btn btn-primary btn-sm"
-                                                @click="addProject"
-                                            >
-                                                {{ $t('retry') }}
-                                            </button>
-                                            <button
-                                                class="btn btn-sm"
-                                                :class="{ 'btn-primary': installFinished, 'btn-ghost': installFailed }"
-                                                @click="finishInstallation"
-                                            >
-                                                {{ installFinished ? $t('finish') : $t('settings.close') }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div
-                                    id="setup-logs"
-                                    class="w-full flex-1 flex flex-col bg-base-300 rounded-lg overflow-hidden border border-base-content/10 shadow-xl min-h-0"
-                                >
-                                    <div
-                                        class="flex items-center justify-between px-4 py-2 bg-base-300 border-b border-base-content/10"
-                                    >
-                                        <span class="text-xs font-mono text-base-content/50 uppercase tracking-wider"
-                                            >Setup Logs</span
-                                        >
-                                        <button
-                                            class="btn btn-ghost btn-xs text-info hover:bg-info/10"
-                                            @click="copyToClipboard(projectSetupLogs)"
-                                        >
-                                            Copy
-                                        </button>
-                                    </div>
-                                    <div class="flex-1 p-0 bg-black/20 overflow-hidden">
-                                        <textarea
-                                            ref="setupLogsTextarea"
-                                            readonly
-                                            v-model="projectSetupLogs"
-                                            class="w-full h-full p-4 font-mono text-xs bg-transparent border-none focus:ring-0 resize-none text-base-content/80"
-                                            placeholder="Waiting for logs..."
-                                        ></textarea>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Project Information Display -->
-                            <div
-                                v-else-if="selectedProject.project"
-                                class="flex-1 flex flex-col items-center justify-center gap-3 text-center text-success/60 p-4"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="size-16 opacity-30"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                                    />
-                                </svg>
-                                <div>
-                                    <h1 class="text-lg font-semibold mb-1 text-base-content/60">Project Selected</h1>
-                                </div>
-                            </div>
-
-                            <div
-                                v-else
-                                class="flex-1 flex flex-col items-center justify-center gap-3 text-center text-base-content/40 p-4"
-                            >
-                                <SvgEmpty class="w-24 opacity-20" />
-                                <div>
-                                    <h1 class="text-lg font-semibold mb-1 text-base-content/60">No Project Selected</h1>
-                                    <p class="text-sm">Choose a project from the sidebar to view details.</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Context Menu -->
+            <div
+                v-if="contextMenuProject"
+                class="fixed z-[300] bg-base-200 rounded-lg shadow-xl border border-base-content/10 py-1 min-w-[140px]"
+                :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }"
+            >
+                <button
+                    @click="removeProject(contextMenuProject)"
+                    class="w-full flex items-center gap-2 px-3 py-2 text-xs text-error hover:bg-error/10 transition-colors"
+                >
+                    <TrashIcon class="size-4" />
+                    <span>Remove</span>
+                </button>
+            </div>
+
             <form
                 method="dialog"
                 class="modal-backdrop"
