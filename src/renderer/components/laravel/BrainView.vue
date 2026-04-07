@@ -311,7 +311,7 @@ const toggleActionExpanded = (action: any) => {
             </div>
         </div>
 
-        <div class="px-3">
+        <div>
             <div class="drawer drawer-end">
                 <input
                     id="brain-drawer"

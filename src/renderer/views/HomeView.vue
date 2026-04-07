@@ -23,16 +23,19 @@ import MailView from '@/components/laravel/MailView.vue';
 import { useLogStore } from '@/store/logs';
 import LogView from '@/components/laravel/LogView.vue';
 import { useQueriesPayloadStore } from '@/store/queries';
+import { useBrainStore } from '@/store/brains';
+import { useLivewireStore } from '@/store/livewire';
+import { useQueriesBlockedStore } from '@/store/queries-blocked';
+import { useQueryDuplicated } from '@/store/query-duplicated';
+import { usePauseQueriesStore } from '@/store/pause-queries';
+import { useFormattedQueriesStore } from '@/store/formatted-queries';
 import QueriesView from '@/components/laravel/QueriesView.vue';
 import { deepClone } from '@/lib/deep_clone';
 import { useSavedDumpsStore } from '@/store/saved-dumps';
 import { usePausePayloadStore } from '@/store/pause';
-import { useQueriesBlockedStore } from '@/store/queries-blocked';
 import { usePendingRequestsStore } from '@/store/pending-requests';
-import { usePauseQueriesStore } from '@/store/pause-queries';
 import { useCurrentProject } from '@/store/current-project';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
-import { useLivewireStore } from '@/store/livewire';
 import { Environment } from '../../main/storage';
 import { usePauseJobsStore } from '@/store/pause-jobs';
 import { usePauseLogsStore } from '@/store/pause-logs';
@@ -41,8 +44,8 @@ import HeaderColorsFilter from '@/components/app/HeaderColorsFilter.vue';
 import DropZones from '@/components/split/DropZones.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
 import { useSplitPanesStore } from '@/store/split-panes';
-import { useBrainStore } from '@/store/brains';
 import BrainView from '@/components/laravel/BrainView.vue';
+import { ClockIcon } from '@heroicons/vue/24/outline';
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -223,6 +226,30 @@ const handleEnvironmentSelected = async (environment: Environment) => {
 
 const handleRemoveEnvironmentScreen = async (screenName: string) => {
     screenStore.remove(screenName);
+    payloadStore.clear(screenName);
+
+    switch (screenName) {
+        case 'queries':
+            queriesStore.clear();
+            timeStore.clear();
+            blockedStore.clear();
+            break;
+        case 'jobs':
+            jobStore.clear();
+            break;
+        case 'log':
+            logStore.clear();
+            break;
+        case 'mail':
+            mailStore.clear();
+            break;
+        case 'livewire':
+            livewireStore.clear();
+            break;
+        case 'brain':
+            brainStore.clear();
+            break;
+    }
 
     const environment = environments.value.find((env) => env.value === screenName);
     if (environment) {
@@ -1037,7 +1064,7 @@ const handleDragEnd = () => {
                                         v-else
                                         class="flex flex-col rounded-sm text-base w-full h-full"
                                     >
-                                        <HeaderColorsFilter v-if="hasColorsInPayload" />
+                                        <!--                                        <HeaderColorsFilter v-if="hasColorsInPayload" />-->
 
                                         <div id="top"></div>
 
@@ -1054,7 +1081,7 @@ const handleDragEnd = () => {
                                                 <div
                                                     v-for="(group, groupKey) in groupedDumps"
                                                     :key="groupKey"
-                                                    class="w-full px-3"
+                                                    class="w-full"
                                                 >
                                                     <div
                                                         v-if="
@@ -1064,15 +1091,17 @@ const handleDragEnd = () => {
                                                         class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                                     >
                                                         <span
-                                                            class="opacity-70 px-1"
+                                                            class="flex items-center gap-1 opacity-70"
                                                             :title="groupKey"
                                                         >
+                                                            <ClockIcon class="w-3 h-3" />
                                                             {{ moment(groupKey).format('HH:mm:ss') }}
                                                         </span>
                                                     </div>
 
                                                     <div
-                                                        v-for="payload in settingsStore.settings.dump_order === 'normal'
+                                                        v-for="(payload, index) in settingsStore.settings.dump_order ===
+                                                        'normal'
                                                             ? group.slice().reverse()
                                                             : group"
                                                         :key="payload.sf_dump_id"
@@ -1080,10 +1109,11 @@ const handleDragEnd = () => {
                                                         class="w-full"
                                                     >
                                                         <DumpItem
-                                                            class="w-full group text-sm mb-3"
+                                                            class="w-full group text-sm"
                                                             v-show="screenStore.screen !== 'livewire'"
                                                             :payload="payload"
                                                             :show-time="!settingsStore.settings.grouped_by_time"
+                                                            :is-first="index === 0"
                                                             @delete-dump="deleteDump"
                                                         />
                                                     </div>
@@ -1212,15 +1242,17 @@ const handleDragEnd = () => {
                                                     class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                                 >
                                                     <span
-                                                        class="opacity-70 px-1"
+                                                        class="flex items-center gap-1 opacity-70"
                                                         :title="groupKey"
                                                     >
+                                                        <ClockIcon class="w-3 h-3" />
                                                         {{ moment(groupKey).format('HH:mm:ss') }}
                                                     </span>
                                                 </div>
 
                                                 <div
-                                                    v-for="payload in settingsStore.settings.dump_order === 'normal'
+                                                    v-for="(payload, index) in settingsStore.settings.dump_order ===
+                                                    'normal'
                                                         ? group.slice().reverse()
                                                         : group"
                                                     :key="payload.sf_dump_id"
@@ -1230,6 +1262,7 @@ const handleDragEnd = () => {
                                                         class="w-full group text-sm"
                                                         :payload="payload"
                                                         :show-time="!settingsStore.settings.grouped_by_time"
+                                                        :is-first="index === 0"
                                                         @delete-dump="deleteDump"
                                                     />
                                                 </div>
@@ -1304,7 +1337,7 @@ const handleDragEnd = () => {
                                 }"
                                 class="flex flex-col rounded-sm text-base w-screen overflow-auto"
                             >
-                                <HeaderColorsFilter v-if="hasColorsInPayload" />
+                                <!--  <HeaderColorsFilter v-if="hasColorsInPayload" />-->
 
                                 <div id="top"></div>
 
@@ -1322,38 +1355,47 @@ const handleDragEnd = () => {
                                         }"
                                     >
                                         <div
-                                            v-for="(group, groupKey) in groupedDumps"
+                                            v-for="(group, groupKey, index) in groupedDumps"
                                             :key="groupKey"
-                                            class="w-full px-3"
+                                            class="w-full"
+                                            :class="{
+                                                '-mt-2': index === 0
+                                            }"
                                         >
                                             <div
                                                 v-if="
                                                     !['livewire'].includes(screenStore.screen) &&
                                                     settingsStore.settings.grouped_by_time
                                                 "
-                                                class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
+                                                class="bg-base-200 flex-1 text-left p-3 z-300 text-xs sticky -top-2"
                                             >
                                                 <span
-                                                    class="opacity-70 px-1"
+                                                    class="flex items-center gap-1 opacity-70"
                                                     :title="groupKey"
                                                 >
+                                                    <ClockIcon class="w-3 h-3" />
                                                     {{ moment(groupKey).format('HH:mm:ss') }}
                                                 </span>
                                             </div>
 
                                             <div
-                                                v-for="payload in settingsStore.settings.dump_order === 'normal'
+                                                v-for="(payload, index) in settingsStore.settings.dump_order ===
+                                                'normal'
                                                     ? group.slice().reverse()
                                                     : group"
                                                 :key="payload.sf_dump_id"
                                                 :id="payload.id"
                                                 class="w-full"
+                                                :class="{
+                                                    '-mt-3': settingsStore.settings.grouped_by_time && index === 0
+                                                }"
                                             >
                                                 <DumpItem
-                                                    class="w-full group text-sm mb-3"
+                                                    class="w-full group text-sm"
                                                     v-show="screenStore.screen !== 'livewire'"
                                                     :payload="payload"
                                                     :show-time="!settingsStore.settings.grouped_by_time"
+                                                    :is-first="index === 0"
                                                     @delete-dump="deleteDump"
                                                 />
                                             </div>

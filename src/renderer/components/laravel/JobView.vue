@@ -407,7 +407,7 @@ const toggleMessageLimit = () => {
         <div :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'">
             <div
                 v-if="jobs.length > 0"
-                class="overflow-auto px-3"
+                class="overflow-auto"
                 style="height: -webkit-fill-available"
             >
                 <table class="table table-pin-rows table-zebra">

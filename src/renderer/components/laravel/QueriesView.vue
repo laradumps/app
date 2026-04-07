@@ -370,6 +370,7 @@ const setOrder = (order: string) => {
                         role="button"
                         class="btn btn-ghost btn-circle btn-sm"
                         data-tippy-content="Actions"
+                        @click.stop
                         :class="{
                             'text-primary':
                                 formattedQueriesStore.formatted ||
@@ -489,6 +490,7 @@ const setOrder = (order: string) => {
                         role="button"
                         class="btn btn-ghost btn-circle btn-sm"
                         :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
+                        @click.stop
                         :class="{
                             'text-primary':
                                 filteredClasses.length > 0 ||
@@ -551,8 +553,14 @@ const setOrder = (order: string) => {
                                         </label>
                                     </li>
                                 </ul>
+                            </li>
 
-                                <span class="!text-xs">Class</span>
+                            <li>
+                                <a
+                                    href="#"
+                                    class="!text-xs text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
+                                    >Class</a
+                                >
                                 <ul tabindex="0">
                                     <li
                                         v-for="className in availableClasses"
@@ -616,7 +624,7 @@ const setOrder = (order: string) => {
             </div>
         </div>
 
-        <div class="px-3">
+        <div>
             <dialog
                 id="request_dialog"
                 ref="modalRef"
@@ -682,7 +690,7 @@ const setOrder = (order: string) => {
                 class="space-y-2 mt-2"
                 v-if="queriesStore.payload.length > 0 && timeStore.selected"
             >
-                <div class="flex justify-between items-center gap-3">
+                <div class="flex justify-between items-center gap-3 px-3">
                     <button
                         class="max-w-1/2 btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
                         @click="openRequestsModal()"
@@ -723,7 +731,7 @@ const setOrder = (order: string) => {
                         >
                             <div
                                 v-if="settingsStore.settings.grouped_by_time"
-                                class="bg-base-200 flex items-center justify-between py-1.5 px-2 text-xs sticky top-0"
+                                class="bg-base-200 flex items-center justify-between px-3 text-xs sticky top-0"
                             >
                                 <span
                                     :title="groupKey"
@@ -741,8 +749,9 @@ const setOrder = (order: string) => {
                                     class="w-full"
                                 >
                                     <DumpItem
-                                        class="w-full group text-sm mb-3"
+                                        class="w-full group text-sm"
                                         :payload="payload"
+                                        :is-prettified="formattedQueriesStore.formatted"
                                         :show-time="!settingsStore.settings.grouped_by_time"
                                     />
                                 </div>

@@ -441,7 +441,7 @@ const displayLastLog = computed<boolean>({
             <div class="h-[calc(100vh-140px)]">
                 <div
                     v-if="logs.length > 0"
-                    class="overflow-auto px-3"
+                    class="overflow-auto"
                     style="height: -webkit-fill-available"
                 >
                     <!-- Header -->

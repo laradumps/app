@@ -266,7 +266,6 @@ const setPreviewMode = (mode: string) => {
                     v-if="mails.length > 0"
                     orientation="vertical"
                     :initial-split="28"
-                    class="px-3"
                 >
                     <template #pane-a>
                         <div
@@ -282,7 +281,7 @@ const setPreviewMode = (mode: string) => {
                                     'border-primary text-primary rounded-xs bg-base-300':
                                         visited?.message_id === mail.message_id
                                 }"
-                                class="p-2 space-y-2 cursor-pointer focus:bg-primary"
+                                class="p-2 px-3 space-y-2 cursor-pointer focus:bg-primary"
                                 @click="display(mail)"
                             >
                                 <div class="flex justify-between items-center cursor-pointer">
