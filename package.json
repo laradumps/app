@@ -1,6 +1,6 @@
 {
     "name": "laradumps",
-    "version": "4.12.0",
+    "version": "4.13.0",
     "private": false,
     "description": "LaraDumps is a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
@@ -72,14 +72,14 @@
         "@vitejs/plugin-vue": "6.0.3",
         "concurrently": "^9.2.1",
         "daisyui": "5.3.10",
-        "electron": "38.1.0",
-        "electron-builder": "^26.0.12",
+        "electron": "^41.1.1",
+        "electron-builder": "^26.8.1",
         "esbuild": "^0.27.2",
         "eslint-plugin-prettier": "5.5.5",
         "postcss": "8.5.6",
         "prettier": "3.8.1",
         "tailwindcss": "^4.1.18",
-        "vite": "^7.3.1"
+        "vite": "^8.0.3"
     },
     "ts-standard": {
         "project": "./tsconfig.json"
@@ -139,13 +139,36 @@
             "description": "LaraDumps a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
             "icon": "./build/icon.icns",
             "target": [
-                "AppImage"
+                "AppImage",
+                "snap"
             ],
             "desktop": {
                 "entry": "build/linux/laradumps.desktop"
             },
             "maintainer": "Luan Freitas",
             "category": "Development"
+        },
+        "snap": {
+            "base": "core22",
+            "confinement": "strict",
+            "summary": "LaraDumps - PHP debugging app",
+            "plugs": [
+                "default",
+                "network",
+                "network-bind",
+                "home",
+                "opengl",
+                "audio-playback",
+                "browser-support",
+                "desktop",
+                "desktop-legacy",
+                "wayland",
+                "x11",
+                "unity7",
+                "pulseaudio",
+                "gsettings",
+                "cups-control"
+            ]
         },
         "deb": {
             "packageCategory": "Development",
