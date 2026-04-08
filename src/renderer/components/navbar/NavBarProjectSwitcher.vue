@@ -1,17 +1,10 @@
 <script setup lang="ts">
-import {
-    ExclamationTriangleIcon,
-    ChevronDownIcon,
-    PlusIcon,
-    EllipsisVerticalIcon,
-    TrashIcon
-} from '@heroicons/vue/24/outline';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { ChevronDownIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import JSConfetti from 'js-confetti';
 import { useCurrentProject } from '@/store/current-project';
 import { IpcRendererEvent } from 'electron';
 import ProjectInstall from '@/components/navbar/ProjectInstall.vue';
-import { LogEntry } from '../../../main/logger/logger';
 import NavBarMCP from '@/components/navbar/NavBarMCP.vue';
 import NavBarXdebug from '@/components/navbar/NavBarXdebug.vue';
 import { isSpecialEnvironment } from '@/constants';
@@ -31,10 +24,6 @@ const IPC_EVENTS = {
     MAIN_DIALOG: 'main:dialog',
     MAIN_DIALOG_CHOICE: 'main:dialog-choice',
 
-    PROJECT_DIRECTORY_SELECTED: 'project-directory-selected',
-    COMPOSER_AUTO_INSTALL: 'composer-auto-install',
-    PROJECT_SETUP_LOGS: 'project-setup-logs',
-
     STORAGE_REMOVE: 'storage.remove',
     MAIN_PROJECT_SETUP: 'main:project-setup'
 } as const;
@@ -50,34 +39,11 @@ const projects = ref<Project[]>([]);
 const windowHeight = ref(window.innerHeight);
 const contextMenuProject = ref<Project | null>(null);
 const contextMenuPosition = ref({ x: 0, y: 0 });
-const dropdownRef = ref<HTMLElement | null>(null);
-
-const installActive = ref(false);
-const installErrorMessage = ref('');
-const installFinished = ref(false);
-const installFailed = ref(false);
-const projectSetupLogs = ref('');
-const setupLogsTextarea = ref<HTMLTextAreaElement | null>(null);
-
-let errorDismissTimer: number | null = null;
-
-watch(installErrorMessage, (msg) => {
-    if (errorDismissTimer) {
-        clearTimeout(errorDismissTimer);
-        errorDismissTimer = null;
-    }
-    if (msg) {
-        errorDismissTimer = window.setTimeout(() => {
-            installErrorMessage.value = '';
-        }, 3000);
-    }
-});
+const projectInstallRef = ref<InstanceType<typeof ProjectInstall> | null>(null);
 
 const projectsOrder = ref<string[]>([]);
 
-let handleComposerRef: ((event: IpcRendererEvent, payload: any) => void) | null = null;
-let handleProjectDirSelectedRef: ((_: any, args: any) => void) | null = null;
-let handleProjectSetupLogs: (_: any, payload: LogEntry) => void;
+let handleProjectsOrderReply: ((_: IpcRendererEvent, payload: any) => void) | null = null;
 
 onMounted(() => {
     initializeProjectData();
@@ -91,20 +57,12 @@ onUnmounted(() => {
     window.removeEventListener('resize', updateHeight);
     window.removeEventListener('click', closeContextMenu);
 
-    if (errorDismissTimer) {
-        clearTimeout(errorDismissTimer);
-        errorDismissTimer = null;
-    }
-
     window.ipcRenderer.off(IPC_EVENTS.APP_SETTING_PROJECT_ADDED, handleProjectAdded);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_SET_ACTIVE_REPLY, handleActiveProjectSet);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_REPLY, handleProjectsRetrieved);
     window.ipcRenderer.off('storage.get-environments.reply', handleEnvironmentsRetrieved);
-    if (handleComposerRef) window.ipcRenderer.off(IPC_EVENTS.COMPOSER_AUTO_INSTALL, handleComposerRef);
-    if (handleProjectDirSelectedRef)
-        window.ipcRenderer.off(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
-    window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
-    window.ipcRenderer.off(IPC_EVENTS.PROJECT_SETUP_LOGS, handleProjectSetupLogs);
+    if (handleProjectsOrderReply)
+        window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
 });
 
 const updateHeight = () => {
@@ -153,16 +111,11 @@ const setActiveProject = (project: Project) => {
     window.ipcRenderer.send('storage.get-environments', project.path);
     window.ipcRenderer.send('storage.get-yaml', project.path);
 
-    closeModal();
+    projectInstallRef.value?.closeModal();
 
     if (document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
     }
-};
-
-const copyToClipboard = (text: string) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
 };
 
 const initializeProjectData = () => {
@@ -172,15 +125,13 @@ const initializeProjectData = () => {
 
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
 };
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const setupEventListeners = async () => {
+const setupEventListeners = () => {
     window.ipcRenderer.on(IPC_EVENTS.APP_SETTING_PROJECT_ADDED, handleProjectAdded);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_SET_ACTIVE_REPLY, handleActiveProjectSet);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_REPLY, handleProjectsRetrieved);
     window.ipcRenderer.on('storage.get-environments.reply', handleEnvironmentsRetrieved);
 
-    let handleProjectsOrderReply;
     handleProjectsOrderReply = (_: IpcRendererEvent, payload: any) => {
         if (Array.isArray(payload)) {
             projectsOrder.value = payload;
@@ -189,53 +140,7 @@ const setupEventListeners = async () => {
         }
     };
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
-
-    // --- Composer auto-install progress
-    handleComposerRef = async (_: IpcRendererEvent, payload: any) => {
-        if (!payload) return;
-
-        if (payload.status === 'start') {
-            installActive.value = true;
-            installErrorMessage.value = '';
-            installFailed.value = false;
-            document.activeElement?.blur();
-            modal_navbar_listening.showModal();
-            emit('modalOpen');
-        }
-
-        if (payload.error) {
-            installErrorMessage.value = 'An error occurred while installing.';
-            installFailed.value = true;
-            return;
-        }
-
-        if (payload.step === 'finish' && payload.done) {
-            await sleep(500);
-            installFinished.value = true;
-            await new JSConfetti().addConfetti();
-            isNewProject.value = true;
-        }
-    };
-
-    window.ipcRenderer.on(IPC_EVENTS.COMPOSER_AUTO_INSTALL, handleComposerRef);
-
-    handleProjectSetupLogs = (_: any, payload: LogEntry) => {
-        projectSetupLogs.value = `${projectSetupLogs.value}[${new Date(payload.timestamp).toLocaleString()}].${payload.level} ${payload.message}\n`;
-
-        if (setupLogsTextarea.value) {
-            setupLogsTextarea.value.scrollTop = setupLogsTextarea.value.scrollHeight;
-        }
-    };
-    window.ipcRenderer.on(IPC_EVENTS.PROJECT_SETUP_LOGS, handleProjectSetupLogs);
 };
-
-handleProjectDirSelectedRef = (_: any, args: any) => {
-    if (args && typeof args === 'string') {
-        window.ipcRenderer.send('storage.check', { applicationPath: args });
-    }
-};
-
-window.ipcRenderer.on(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
 
 const sortedProjects = computed(() => {
     return [...projects.value].sort((a, b) => a.project.localeCompare(b.project, undefined, { sensitivity: 'base' }));
@@ -257,7 +162,6 @@ const orderedProjects = computed(() => {
     return applyOrder(sortedProjects.value, projectsOrder.value);
 });
 
-// --- Drag & Drop to reorder projects
 const projDrag = ref<{ index: number | null }>({ index: null });
 
 const onProjectDragStart = (index: number) => {
@@ -276,9 +180,7 @@ const onProjectDrop = (dropIndex: number) => {
     currentOrder.splice(dropIndex, 0, moved);
 
     projectsOrder.value = currentOrder;
-
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, currentOrder);
-
     projDrag.value = { index: null };
 };
 
@@ -310,6 +212,11 @@ const handleContextMenuClick = (event: MouseEvent) => {
     }
 };
 
+const onProjectAdded = () => {
+    isNewProject.value = true;
+    setTimeout(() => (isNewProject.value = false), 5000);
+};
+
 const removeProject = (project: Project) => {
     const projectPath = project.path;
 
@@ -336,32 +243,6 @@ const removeProject = (project: Project) => {
     };
 
     window.ipcRenderer.on(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
-};
-
-const resetInstallState = () => {
-    installActive.value = false;
-    installFinished.value = false;
-    installFailed.value = false;
-    projectSetupLogs.value = '';
-    installErrorMessage.value = '';
-};
-
-const finishInstallation = () => {
-    resetInstallState();
-    modal_navbar_listening.close();
-};
-
-const showModal = () => {
-    resetInstallState();
-    modal_navbar_listening.showModal();
-    emit('modalOpen');
-};
-const closeModal = () => {
-    if (installActive.value && !installFinished.value && !installFailed.value) {
-        return;
-    }
-    modal_navbar_listening.close();
-    emit('modalClose');
 };
 </script>
 
@@ -452,66 +333,30 @@ const closeModal = () => {
                 <NavBarXdebug />
             </li>
         </ul>
-        <dialog
-            @close.prevent="closeModal"
-            id="modal_navbar_listening"
-            class="modal z-[200]"
-        >
+
+        <!-- Context Menu -->
+        <Teleport to="body">
             <div
-                class="modal-box max-w-4xl p-0! bg-base-100 shadow-2xl border border-base-content/10 rounded-2xl overflow-hidden"
+                v-if="contextMenuProject"
+                class="fixed z-[300] bg-base-200 rounded-lg shadow-xl border border-base-content/10 py-1 min-w-[140px]"
+                :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }"
+                @click="handleContextMenuClick"
             >
-                <!-- Error banner -->
-                <div
-                    v-if="installErrorMessage"
-                    role="alert"
-                    class="alert alert-error rounded-none border-x-0 border-t-0 border-b border-base-content/10 shadow-none z-10"
+                <button
+                    type="button"
+                    class="w-full flex items-center gap-2 px-3 py-2 text-xs text-error hover:bg-error/10 transition-colors"
                 >
-                    <ExclamationTriangleIcon class="size-6 shrink-0" />
-                    <span>{{ installErrorMessage }}</span>
-                </div>
-
-                <div class="flex h-144">
-                    <div class="flex-1 flex flex-col relative bg-base-100 overflow-y-auto w-full">
-                        <div class="p-8 flex flex-col h-full gap-4">
-                            <ProjectInstall
-                                :install-active="installActive"
-                                :install-finished="installFinished"
-                                :install-failed="installFailed"
-                                :install-error-message="installErrorMessage"
-                                :project-setup-logs="projectSetupLogs"
-                                @retry="addProject"
-                                @finish="finishInstallation"
-                                @copy-logs="copyToClipboard"
-                            />
-                        </div>
-                    </div>
-                </div>
+                    <TrashIcon class="size-4" />
+                    <span>Remove</span>
+                </button>
             </div>
-
-            <!-- Context Menu -->
-            <Teleport to="body">
-                <div
-                    v-if="contextMenuProject"
-                    class="fixed z-[300] bg-base-200 rounded-lg shadow-xl border border-base-content/10 py-1 min-w-[140px]"
-                    :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }"
-                    @click="handleContextMenuClick"
-                >
-                    <button
-                        type="button"
-                        class="w-full flex items-center gap-2 px-3 py-2 text-xs text-error hover:bg-error/10 transition-colors"
-                    >
-                        <TrashIcon class="size-4" />
-                        <span>Remove</span>
-                    </button>
-                </div>
-            </Teleport>
-
-            <form
-                method="dialog"
-                class="modal-backdrop"
-            >
-                <button>close</button>
-            </form>
-        </dialog>
+        </Teleport>
     </div>
+
+    <ProjectInstall
+        ref="projectInstallRef"
+        @modal-open="emit('modalOpen')"
+        @modal-close="emit('modalClose')"
+        @project-added="onProjectAdded"
+    />
 </template>
