@@ -186,33 +186,23 @@ const removeEnvironment = (_event: IpcMainEvent, projectPath: string) => {
         delete environments[project];
 
         store.set('environments', environments);
-        // Also remove from starred list if present
-        const starredCurrent = store.get('starred_projects', [] as any) as any;
-        const starredList: string[] = Array.isArray(starredCurrent) ? starredCurrent : [];
-        const filtered = starredList.filter((name) => name !== project);
 
-        store.set('starred_projects', filtered);
-
-        // Also remove from projects order arrays
         try {
-            const starredOrder = store.get('proj_order.starred', [] as any) as any[];
             const allOrder = store.get('proj_order.all', [] as any) as any[];
-            const newStarredOrder = Array.isArray(starredOrder) ? starredOrder.filter((n) => n !== project) : [];
             const newAllOrder = Array.isArray(allOrder) ? allOrder.filter((n) => n !== project) : [];
-            store.set('proj_order.starred', newStarredOrder);
             store.set('proj_order.all', newAllOrder);
         } catch (e) {
-            console.error('Error cleaning project from order arrays', e);
+            console.error('Error cleaning project from order array', e);
         }
 
         ipcMain.emit(CHANNELS.STORAGE_GET);
 
         const win = BrowserWindow.getAllWindows()[0];
         if (win) {
-            win.webContents.send(CHANNELS.STORAGE_GET_PROJECTS_ORDER, {
-                starred: (store.get('proj_order.starred', [] as any) as any[]) || [],
-                all: (store.get('proj_order.all', [] as any) as any[]) || []
-            });
+            win.webContents.send(
+                CHANNELS.STORAGE_GET_PROJECTS_ORDER,
+                (store.get('proj_order.all', [] as any) as any[]) || []
+            );
         }
     } catch (error) {
         console.error('Error updating storage:', error);
@@ -320,7 +310,3 @@ const getProjectsOrder = (event: IpcMainEvent) => {
         event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, []);
     }
 };
-
-// Deprecated functions - kept for backwards compatibility but do nothing
-const getStarred = (_event: IpcMainEvent) => {};
-const toggleStarred = (_event: IpcMainEvent, _payload: { project: string }) => {};
