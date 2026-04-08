@@ -48,9 +48,6 @@ const CHANNELS = {
     STORAGE_GET_YAML_REPLY: 'storage.get-yaml.reply',
     STORAGE_UPDATE_SECTION: 'storage.update-section',
     STORAGE_UPDATE_SECTION_REPLY: 'storage.update-section.reply',
-    STORAGE_GET_STARRED: 'storage.get-starred',
-    STORAGE_GET_STARRED_REPLY: 'storage.get-starred.reply',
-    STORAGE_TOGGLE_STARRED: 'storage.toggle-starred',
     STORAGE_SET_ENVIRONMENTS_ORDER: 'storage.set-environments-order',
     STORAGE_SET_PROJECTS_ORDER: 'storage.set-projects-order',
     STORAGE_GET_PROJECTS_ORDER: 'storage.get-projects-order',
@@ -67,8 +64,6 @@ export const init = async () => {
     ipcMain.on(CHANNELS.STORAGE_UPDATE, updateEnvironment);
     ipcMain.on(CHANNELS.STORAGE_GET_YAML, getFullYaml);
     ipcMain.on(CHANNELS.STORAGE_UPDATE_SECTION, updateYamlSection);
-    ipcMain.on(CHANNELS.STORAGE_GET_STARRED, getStarred);
-    ipcMain.on(CHANNELS.STORAGE_TOGGLE_STARRED, toggleStarred);
     ipcMain.on(CHANNELS.STORAGE_SET_ENVIRONMENTS_ORDER, setEnvironmentsOrder);
     ipcMain.on(CHANNELS.STORAGE_SET_PROJECTS_ORDER, setProjectsOrder);
     ipcMain.on(CHANNELS.STORAGE_GET_PROJECTS_ORDER, getProjectsOrder);
@@ -214,7 +209,6 @@ const removeEnvironment = (_event: IpcMainEvent, projectPath: string) => {
 
         const win = BrowserWindow.getAllWindows()[0];
         if (win) {
-            win.webContents.send(CHANNELS.STORAGE_GET_STARRED_REPLY, filtered);
             win.webContents.send(CHANNELS.STORAGE_GET_PROJECTS_ORDER, {
                 starred: (store.get('proj_order.starred', [] as any) as any[]) || [],
                 all: (store.get('proj_order.all', [] as any) as any[]) || []
@@ -308,11 +302,10 @@ const setEnvironmentsOrder = (_event: IpcMainEvent, payload: { path: string; ord
     }
 };
 
-const setProjectsOrder = (_event: IpcMainEvent, payload: { list: 'starred' | 'all'; order: string[] }) => {
+const setProjectsOrder = (_event: IpcMainEvent, payload: string[]) => {
     try {
-        const key = payload.list === 'starred' ? 'proj_order.starred' : 'proj_order.all';
-        const arr = Array.isArray(payload.order) ? payload.order : [];
-        store.set(key, arr);
+        const arr = Array.isArray(payload) ? payload : [];
+        store.set('proj_order.all', arr);
     } catch (err) {
         console.error('Error setting projects order:', err);
     }
@@ -320,53 +313,14 @@ const setProjectsOrder = (_event: IpcMainEvent, payload: { list: 'starred' | 'al
 
 const getProjectsOrder = (event: IpcMainEvent) => {
     try {
-        const starred = store.get('proj_order.starred', [] as any) as any;
         const all = store.get('proj_order.all', [] as any) as any;
-        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, {
-            starred: Array.isArray(starred) ? starred : [],
-            all: Array.isArray(all) ? all : []
-        });
+        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, Array.isArray(all) ? all : []);
     } catch (err) {
         console.error('Error getting projects order:', err);
-        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, { starred: [], all: [] });
+        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, []);
     }
 };
 
-const getStarred = (event: IpcMainEvent) => {
-    try {
-        const starred: string[] = store.get('starred_projects', [] as any) as any;
-        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, Array.isArray(starred) ? starred : []);
-    } catch (err) {
-        console.error('Error getting starred projects:', err);
-        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, []);
-    }
-};
-
-const toggleStarredArray = (arr: string[], name: string): string[] => {
-    const set = new Set(arr);
-    if (set.has(name)) {
-        set.delete(name);
-    } else {
-        set.add(name);
-    }
-    return Array.from(set);
-};
-
-const toggleStarredPersist = (projectName: string): string[] => {
-    const current = store.get('starred_projects', [] as any) as any;
-    const list: string[] = Array.isArray(current) ? current : [];
-    const updated = toggleStarredArray(list, projectName);
-    store.set('starred_projects', updated);
-    return updated;
-};
-
-const toggleStarred = (event: IpcMainEvent, payload: { project: string }) => {
-    try {
-        const updated = toggleStarredPersist(payload.project);
-        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, updated);
-    } catch (err) {
-        console.error('Error toggling starred project:', err);
-        const starred: string[] = store.get('starred_projects', [] as any) as any;
-        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, Array.isArray(starred) ? starred : []);
-    }
-};
+// Deprecated functions - kept for backwards compatibility but do nothing
+const getStarred = (_event: IpcMainEvent) => {};
+const toggleStarred = (_event: IpcMainEvent, _payload: { project: string }) => {};

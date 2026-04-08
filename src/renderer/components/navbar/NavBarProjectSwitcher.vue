@@ -22,9 +22,6 @@ const IPC_EVENTS = {
     STORAGE_GET: 'storage.get',
     STORAGE_GET_REPLY: 'storage.get.reply',
     STORAGE_SET_ACTIVE_REPLY: 'storage.set-active.reply',
-    STORAGE_GET_STARRED: 'storage.get-starred',
-    STORAGE_GET_STARRED_REPLY: 'storage.get-starred.reply',
-    STORAGE_TOGGLE_STARRED: 'storage.toggle-starred',
     STORAGE_SET_PROJECTS_ORDER: 'storage.set-projects-order',
     STORAGE_GET_PROJECTS_ORDER: 'storage.get-projects-order',
 
@@ -75,12 +72,7 @@ watch(installErrorMessage, (msg) => {
     }
 });
 
-const starredProjects = ref<string[]>([]);
-const projectsOrder = ref<{ starred: string[]; all: string[] }>({ starred: [], all: [] });
-let handleStarredReplyRef: ((event: IpcRendererEvent, list: string[]) => void) | null = null;
-let handleProjectsOrderReply:
-    | ((event: IpcRendererEvent, payload: { starred: string[]; all: string[] }) => void)
-    | null = null;
+const projectsOrder = ref<string[]>([]);
 
 let handleComposerRef: ((event: IpcRendererEvent, payload: any) => void) | null = null;
 let handleProjectDirSelectedRef: ((_: any, args: any) => void) | null = null;
@@ -110,7 +102,6 @@ onUnmounted(() => {
     if (handleComposerRef) window.ipcRenderer.off(IPC_EVENTS.COMPOSER_AUTO_INSTALL, handleComposerRef);
     if (handleProjectDirSelectedRef)
         window.ipcRenderer.off(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
-    if (handleStarredReplyRef) window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_STARRED_REPLY, handleStarredReplyRef);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
     window.ipcRenderer.off(IPC_EVENTS.PROJECT_SETUP_LOGS, handleProjectSetupLogs);
 });
@@ -179,7 +170,6 @@ const initializeProjectData = () => {
     }
 
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_STARRED);
 };
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -189,20 +179,15 @@ const setupEventListeners = async () => {
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_REPLY, handleProjectsRetrieved);
     window.ipcRenderer.on('storage.get-environments.reply', handleEnvironmentsRetrieved);
 
-    handleProjectsOrderReply = (_: IpcRendererEvent, payload: { starred: string[]; all: string[] }) => {
-        if (payload && payload.starred && payload.all) {
-            projectsOrder.value = {
-                starred: Array.isArray(payload.starred) ? payload.starred : [],
-                all: Array.isArray(payload.all) ? payload.all : []
-            };
+    let handleProjectsOrderReply;
+    handleProjectsOrderReply = (_: IpcRendererEvent, payload: any) => {
+        if (Array.isArray(payload)) {
+            projectsOrder.value = payload;
+        } else if (payload && typeof payload === 'object' && Array.isArray(payload.all)) {
+            projectsOrder.value = payload.all;
         }
     };
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
-
-    handleStarredReplyRef = (_: IpcRendererEvent, list: string[]) => {
-        if (Array.isArray(list)) starredProjects.value = list;
-    };
-    window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_STARRED_REPLY, handleStarredReplyRef);
 
     // --- Composer auto-install progress
     handleComposerRef = async (_: IpcRendererEvent, payload: any) => {
@@ -251,36 +236,9 @@ handleProjectDirSelectedRef = (_: any, args: any) => {
 
 window.ipcRenderer.on(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
 
-const confirmProjectRemoval = (projectPath: string) => {
-    window.ipcRenderer.send(IPC_EVENTS.MAIN_DIALOG, {
-        buttons: ['Yes', 'No'],
-        title: 'Remove Project',
-        message: 'Are you sure you want to remove the configuration from this Project?'
-    });
-
-    const removeHandler = (_: Event, choice: number) => {
-        if (choice === 0) {
-            window.ipcRenderer.send(IPC_EVENTS.STORAGE_REMOVE, projectPath);
-            window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
-
-            const [firstProject] = projects.value;
-            if (firstProject) {
-                setActiveProject(firstProject);
-            }
-        }
-        window.ipcRenderer.off(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
-    };
-
-    window.ipcRenderer.on(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
-};
-
-const baseSortedProjects = computed(() => {
+const sortedProjects = computed(() => {
     return [...projects.value].sort((a, b) => a.project.localeCompare(b.project, undefined, { sensitivity: 'base' }));
 });
-// --- End projects sort
-
-// --- Starred projects logic
-const starredSet = computed(() => new Set(starredProjects.value));
 
 const applyOrder = (list: Project[], order: string[]): Project[] => {
     if (!order || order.length === 0) return list;
@@ -294,86 +252,33 @@ const applyOrder = (list: Project[], order: string[]): Project[] => {
     });
 };
 
-const starredSortedProjects = computed(() => {
-    const list = baseSortedProjects.value.filter((p) => p.project && starredSet.value.has(p.project));
-    return applyOrder(list, projectsOrder.value.starred);
+const orderedProjects = computed(() => {
+    return applyOrder(sortedProjects.value, projectsOrder.value);
 });
 
-const regularSortedProjects = computed(() => {
-    const list = baseSortedProjects.value.filter((p) => p.project && !starredSet.value.has(p.project));
-    return applyOrder(list, projectsOrder.value.all);
-});
+// --- Drag & Drop to reorder projects
+const projDrag = ref<{ index: number | null }>({ index: null });
 
-// --- Starred projects actions
-const isStarred = (projectName: string): boolean => starredSet.value.has(projectName);
-const toggleStar = (projectName: string) => {
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_TOGGLE_STARRED, { project: projectName });
-
-    const wasStarred = isStarred(projectName);
-    starredProjects.value = wasStarred
-        ? starredProjects.value.filter((n) => n !== projectName)
-        : [...starredProjects.value, projectName];
-
-    if (wasStarred) {
-        projectsOrder.value.starred = projectsOrder.value.starred.filter((n) => n !== projectName);
-        if (!projectsOrder.value.all.includes(projectName)) {
-            projectsOrder.value.all = [...projectsOrder.value.all, projectName];
-        }
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, {
-            list: 'starred',
-            order: projectsOrder.value.starred
-        });
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: 'all', order: projectsOrder.value.all });
-    } else {
-        projectsOrder.value.all = projectsOrder.value.all.filter((n) => n !== projectName);
-        if (!projectsOrder.value.starred.includes(projectName)) {
-            projectsOrder.value.starred = [...projectsOrder.value.starred, projectName];
-        }
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: 'all', order: projectsOrder.value.all });
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, {
-            list: 'starred',
-            order: projectsOrder.value.starred
-        });
-    }
-};
-// --- End starred projects logic
-
-// --- Drag & Drop to reorder projects (starred and all)
-const projDrag = ref<{ list: 'starred' | 'all' | null; index: number | null }>({ list: null, index: null });
-
-const onProjectDragStart = (list: 'starred' | 'all', index: number) => {
-    projDrag.value = { list, index };
+const onProjectDragStart = (index: number) => {
+    projDrag.value = { index };
 };
 
-const onProjectDrop = (list: 'starred' | 'all', dropIndex: number) => {
-    const { list: fromList, index } = projDrag.value;
-    if (!fromList || index === null || fromList !== list) return; // only allow reorder within same list
+const onProjectDrop = (dropIndex: number) => {
+    const index = projDrag.value.index;
+    if (index === null) return;
 
-    const working = list === 'starred' ? [...projectsOrder.value.starred] : [...projectsOrder.value.all];
-
-    // Build current names list from visible computed lists to ensure we reorder by names
-    const visible = (list === 'starred' ? starredSortedProjects.value : regularSortedProjects.value).map(
-        (p) => p.project
-    );
-
-    // Ensure working contains all visible in order; if not, initialize with visible
+    const working = [...projectsOrder.value];
+    const visible = orderedProjects.value.map((p) => p.project);
     const currentOrder = working.length ? working.filter((n) => visible.includes(n)) : visible.slice();
 
     const [moved] = currentOrder.splice(index, 1);
     currentOrder.splice(dropIndex, 0, moved);
 
-    if (list === 'starred') {
-        projectsOrder.value.starred = currentOrder;
-    } else {
-        projectsOrder.value.all = currentOrder;
-    }
+    projectsOrder.value = currentOrder;
 
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, {
-        list,
-        order: currentOrder
-    });
+    window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, currentOrder);
 
-    projDrag.value = { list: null, index: null };
+    projDrag.value = { index: null };
 };
 
 const addProject = () => {
@@ -382,17 +287,54 @@ const addProject = () => {
 
 const openContextMenu = (event: MouseEvent, project: Project) => {
     event.preventDefault();
+    event.stopPropagation();
+
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
     contextMenuProject.value = project;
-    contextMenuPosition.value = { x: event.clientX, y: event.clientY };
+    contextMenuPosition.value = {
+        x: rect.left,
+        y: rect.bottom + 4
+    };
 };
 
 const closeContextMenu = () => {
     contextMenuProject.value = null;
 };
 
+const handleContextMenuClick = (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (contextMenuProject.value) {
+        removeProject(contextMenuProject.value);
+    }
+};
+
 const removeProject = (project: Project) => {
-    confirmProjectRemoval(project.path);
-    closeContextMenu();
+    const projectPath = project.path;
+
+    window.ipcRenderer.send(IPC_EVENTS.MAIN_DIALOG, {
+        buttons: ['Yes', 'No'],
+        title: 'Remove Project',
+        message: 'Are you sure you want to remove the configuration from this Project?'
+    });
+
+    const removeHandler = (_: Event, choice: number) => {
+        window.ipcRenderer.off(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
+
+        if (choice === 0) {
+            window.ipcRenderer.send(IPC_EVENTS.STORAGE_REMOVE, projectPath);
+            window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
+
+            const [firstProject] = projects.value;
+            if (firstProject) {
+                setActiveProject(firstProject);
+            }
+        }
+
+        closeContextMenu();
+    };
+
+    window.ipcRenderer.on(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
 };
 
 const resetInstallState = () => {
@@ -462,95 +404,42 @@ const closeModal = () => {
                 </a>
             </li>
 
-            <template v-if="starredSortedProjects.length > 0">
-                <li
-                    v-for="(project, sIdx) in starredSortedProjects"
-                    :key="project.path + '-dropdown'"
-                    draggable="true"
-                    @dragstart="onProjectDragStart('starred', sIdx)"
-                    @dragover.prevent
-                    @drop="onProjectDrop('starred', sIdx)"
-                    @click="setActiveProject(project)"
-                    @contextmenu="openContextMenu($event, project)"
-                    class="relative group"
+            <li
+                v-for="(project, index) in orderedProjects"
+                :key="project.path + '-dropdown'"
+                draggable="true"
+                @dragstart="onProjectDragStart(index)"
+                @dragover.prevent
+                @drop="onProjectDrop(index)"
+                @click="setActiveProject(project)"
+                @contextmenu="openContextMenu($event, project)"
+                class="relative group"
+            >
+                <a
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
+                    :class="
+                        selectedProject.path === project.path
+                            ? 'bg-base-content/10 text-base-content font-medium'
+                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                    "
                 >
-                    <a
-                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
-                        :class="
-                            selectedProject.path === project.path
-                                ? 'bg-base-content/10 text-base-content font-medium'
-                                : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                        "
-                    >
-                        <div class="size-2.5 rounded-full relative flex items-center justify-center">
-                            <span
-                                v-if="selectedProject.path === project.path"
-                                class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                            ></span>
-                            <span
-                                class="relative inline-flex rounded-full size-2"
-                                :class="
-                                    selectedProject.path === project.path
-                                        ? 'bg-success shadow-[0_0_6px_rgba(0,255,0,0.8)]'
-                                        : 'bg-transparent'
-                                "
-                            ></span>
-                        </div>
-                        <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>
-                    </a>
-                    <button
-                        @click.stop="openContextMenu($event, project)"
-                        class="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-base-content/10 transition-opacity"
-                    >
-                        <EllipsisVerticalIcon class="size-4 text-base-content/50" />
-                    </button>
-                </li>
-            </template>
-
-            <template v-if="regularSortedProjects.length > 0">
-                <li
-                    v-for="(project, aIdx) in regularSortedProjects"
-                    :key="project.path + '-dropdown'"
-                    draggable="true"
-                    @dragstart="onProjectDragStart('all', aIdx)"
-                    @dragover.prevent
-                    @drop="onProjectDrop('all', aIdx)"
-                    @click="setActiveProject(project)"
-                    @contextmenu="openContextMenu($event, project)"
-                    class="relative group"
-                >
-                    <a
-                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
-                        :class="
-                            selectedProject.path === project.path
-                                ? 'bg-base-content/10 text-base-content font-medium'
-                                : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                        "
-                    >
-                        <div class="size-2.5 rounded-full relative flex items-center justify-center">
-                            <span
-                                v-if="selectedProject.path === project.path"
-                                class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                            ></span>
-                            <span
-                                class="relative inline-flex rounded-full size-2"
-                                :class="
-                                    selectedProject.path === project.path
-                                        ? 'bg-success shadow-[0_0_6px_rgba(0,255,0,0.8)]'
-                                        : 'bg-transparent'
-                                "
-                            ></span>
-                        </div>
-                        <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>
-                    </a>
-                    <button
-                        @click.stop="openContextMenu($event, project)"
-                        class="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-base-content/10 transition-opacity"
-                    >
-                        <EllipsisVerticalIcon class="size-4 text-base-content/50" />
-                    </button>
-                </li>
-            </template>
+                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
+                        <span
+                            v-if="selectedProject.path === project.path"
+                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
+                        ></span>
+                        <span
+                            class="relative inline-flex rounded-full size-2"
+                            :class="
+                                selectedProject.path === project.path
+                                    ? 'bg-success shadow-[0_0_6px_rgba(0,255,0,0.8)]'
+                                    : 'bg-transparent'
+                            "
+                        ></span>
+                    </div>
+                    <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>
+                </a>
+            </li>
 
             <div class="px-3 pb-1 pt-3 font-semibold text-[10px] text-base-content/40 uppercase tracking-widest">
                 Servers & Connections
@@ -599,19 +488,22 @@ const closeModal = () => {
             </div>
 
             <!-- Context Menu -->
-            <div
-                v-if="contextMenuProject"
-                class="fixed z-[300] bg-base-200 rounded-lg shadow-xl border border-base-content/10 py-1 min-w-[140px]"
-                :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }"
-            >
-                <button
-                    @click="removeProject(contextMenuProject)"
-                    class="w-full flex items-center gap-2 px-3 py-2 text-xs text-error hover:bg-error/10 transition-colors"
+            <Teleport to="body">
+                <div
+                    v-if="contextMenuProject"
+                    class="fixed z-[300] bg-base-200 rounded-lg shadow-xl border border-base-content/10 py-1 min-w-[140px]"
+                    :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }"
+                    @click="handleContextMenuClick"
                 >
-                    <TrashIcon class="size-4" />
-                    <span>Remove</span>
-                </button>
-            </div>
+                    <button
+                        type="button"
+                        class="w-full flex items-center gap-2 px-3 py-2 text-xs text-error hover:bg-error/10 transition-colors"
+                    >
+                        <TrashIcon class="size-4" />
+                        <span>Remove</span>
+                    </button>
+                </div>
+            </Teleport>
 
             <form
                 method="dialog"
