@@ -46,6 +46,7 @@ import SplitPanes from '@/components/split/SplitPanes.vue';
 import { useSplitPanesStore } from '@/store/split-panes';
 import BrainView from '@/components/laravel/BrainView.vue';
 import { ClockIcon } from '@heroicons/vue/24/outline';
+import { isSpecialEnvironment } from '@/constants';
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -102,6 +103,14 @@ watch(
     () => currentProjectStore.projectInfo,
     (newProject, oldProject) => {
         if (newProject && newProject.path !== oldProject?.path) {
+            environments.value.forEach((env) => {
+                if (!isSpecialEnvironment(env.value)) {
+                    screenStore.remove(env.value);
+                    payloadStore.clear(env.value);
+                }
+            });
+            environments.value = [];
+
             window.ipcRenderer.send('storage.get-yaml', newProject.path);
         }
     }

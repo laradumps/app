@@ -225,7 +225,10 @@ const formattedScreenName = (name: string) => {
                 </a>
             </template>
 
-            <div class="sticky -right-2 flex items-center shrink-0 bg-base-200">
+            <div
+                v-if="availableEnvironments.length > 0"
+                class="sticky -right-2 flex items-center shrink-0 bg-base-200"
+            >
                 <button
                     @click="toggleEnvironmentDropdown"
                     class="tab px-3 text-base-content/70 hover:text-base-content flex items-center justify-center transition-all duration-200"
