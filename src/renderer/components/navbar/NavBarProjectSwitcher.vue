@@ -24,6 +24,7 @@ const IPC_EVENTS = {
     MAIN_DIALOG: 'main:dialog',
     MAIN_DIALOG_CHOICE: 'main:dialog-choice',
 
+    STORAGE_GET_ENVIRONMENTS_REPLY: 'storage.get-environments.reply',
     STORAGE_REMOVE: 'storage.remove',
     MAIN_PROJECT_SETUP: 'main:project-setup'
 } as const;
@@ -60,7 +61,7 @@ onUnmounted(() => {
     window.ipcRenderer.off(IPC_EVENTS.APP_SETTING_PROJECT_ADDED, handleProjectAdded);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_SET_ACTIVE_REPLY, handleActiveProjectSet);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_REPLY, handleProjectsRetrieved);
-    window.ipcRenderer.off('storage.get-environments.reply', handleEnvironmentsRetrieved);
+    window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_ENVIRONMENTS_REPLY, handleEnvironmentsRetrieved);
     if (handleProjectsOrderReply)
         window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
 });
@@ -130,7 +131,7 @@ const setupEventListeners = () => {
     window.ipcRenderer.on(IPC_EVENTS.APP_SETTING_PROJECT_ADDED, handleProjectAdded);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_SET_ACTIVE_REPLY, handleActiveProjectSet);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_REPLY, handleProjectsRetrieved);
-    window.ipcRenderer.on('storage.get-environments.reply', handleEnvironmentsRetrieved);
+    window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_ENVIRONMENTS_REPLY, handleEnvironmentsRetrieved);
 
     handleProjectsOrderReply = (_: IpcRendererEvent, payload: any) => {
         if (Array.isArray(payload)) {
