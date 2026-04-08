@@ -89,14 +89,12 @@ const modalClose = () => (isListeningModalOpen.value = false);
             <NavBarGlobalSearch v-if="hasPayload" />
             <!-- collapse -->
             <NavBarCollapse v-if="settingsStore.settings.show_collapse_button" />
-            <!-- always on top -->
-            <NavBarAlwaysOnTop />
             <!-- ssh -->
             <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
-
             <!-- saved dumps -->
             <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
-
+            <!-- always on top -->
+            <NavBarAlwaysOnTop />
             <!-- listening -->
             <NavBarProjectSwitcher
                 v-if="!inSavedDumpsWindow"
@@ -104,7 +102,6 @@ const modalClose = () => (isListeningModalOpen.value = false);
                 @modal-close="modalClose"
                 class="border-l border-base-content/10 pl-2 ml-1"
             />
-
             <!-- settings -->
             <NavBarSettings />
         </div>

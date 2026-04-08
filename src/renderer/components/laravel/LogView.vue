@@ -2,7 +2,6 @@
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import moment from 'moment';
 import { FunnelIcon, PlayIcon, TrashIcon, ClipboardDocumentIcon, CheckIcon, CogIcon } from '@heroicons/vue/24/outline';
-import { ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 
 import { Log, useLogStore } from '@/store/logs';
 import CodeSnippet from '@/components/CodeSnippet.vue';
@@ -242,9 +241,37 @@ const getBorderColor = (level: string) => {
         warning: 'border-warning',
         notice: 'border-success',
         info: 'border-info',
-        debug: 'border-gray-500'
+        debug: 'border-base-content/40'
     };
     return colors[level] || 'border-primary';
+};
+
+const getBgColor = (level: string) => {
+    const colors: Record<string, string> = {
+        error: 'bg-error/10',
+        critical: 'bg-error/10',
+        alert: 'bg-error/10',
+        emergency: 'bg-error/10',
+        warning: 'bg-warning/10',
+        notice: 'bg-success/10',
+        info: 'bg-info/10',
+        debug: 'bg-base-content/5'
+    };
+    return colors[level] || '';
+};
+
+const getDotColor = (level: string) => {
+    const colors: Record<string, string> = {
+        error: 'bg-error',
+        critical: 'bg-error',
+        alert: 'bg-error',
+        emergency: 'bg-error',
+        warning: 'bg-warning',
+        notice: 'bg-success',
+        info: 'bg-info',
+        debug: 'bg-base-content/40'
+    };
+    return colors[level] || 'bg-primary';
 };
 
 const canCopyToMarkdown = computed(() => {
@@ -444,16 +471,8 @@ const displayLastLog = computed<boolean>({
                     class="overflow-auto"
                     style="height: -webkit-fill-available"
                 >
-                    <!-- Header -->
-                    <div
-                        class="sticky top-0 z-10 bg-base-300 text-xs text-base-content grid grid-cols-[90px_1fr] gap-2 p-2"
-                    >
-                        <div>Level</div>
-                        <div>Message</div>
-                    </div>
-
                     <!-- Body -->
-                    <div class="space-y-1">
+                    <div class="space-y-1 p-2">
                         <template
                             v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
                             :key="timeKey"
@@ -482,72 +501,29 @@ const displayLastLog = computed<boolean>({
                                     v-for="(log, index) in logsOnTime"
                                     :key="`log-group-${log.log_id}`"
                                     :data-log-id="log.log_id"
-                                    class="rounded-md overflow-hidden"
-                                    :class="{
-                                        'border-l-2': expandedLogId === log.log_id,
-                                        [getBorderColor(log.level)]: expandedLogId === log.log_id,
-                                        'blur-xs opacity-40': expandedLogId !== null && expandedLogId !== log.log_id
-                                    }"
+                                    class="rounded-md overflow-hidden border-l-4 border-b-0"
+                                    :class="[
+                                        getBorderColor(log.level),
+                                        getBgColor(log.level),
+                                        {
+                                            'blur-xs opacity-40': expandedLogId !== null && expandedLogId !== log.log_id
+                                        }
+                                    ]"
                                 >
                                     <!-- Log Row -->
                                     <div
-                                        class="grid grid-cols-[90px_1fr] border-l-2 border-base-100 gap-2 p-2 cursor-pointer hover:bg-base-100 transition-colors text-sm"
-                                        :class="{
-                                            'bg-base-100': expandedLogId === log.log_id
-                                        }"
+                                        class="flex items-start gap-3 p-3 cursor-pointer hover:bg-base-100/50 transition-colors text-sm"
                                         @click="toggleLogExpand(log.log_id)"
                                     >
-                                        <!-- Level Column -->
-                                        <div class="flex items-center">
-                                            <span
-                                                class="badge text-xs !text-semibold badge-info p-1.5"
-                                                v-if="log.level === 'info'"
-                                                ><InformationCircleIcon class="w-5" /> Info</span
-                                            >
-                                            <span
-                                                class="text-xs badge badge-success"
-                                                v-else-if="log.level === 'notice'"
-                                                ><InformationCircleIcon class="w-5" /> Notice</span
-                                            >
-                                            <span
-                                                class="badge text-xs !text-semibold badge-warning p-1.5"
-                                                v-else-if="log.level === 'warning'"
-                                            >
-                                                <ExclamationTriangleIcon class="w-5" />
-                                                Warning
-                                            </span>
-                                            <span
-                                                class="badge text-xs !text-semibold badge-error p-1.5"
-                                                v-else-if="log.level === 'error'"
-                                            >
-                                                <ExclamationCircleIcon class="w-5" />Error</span
-                                            >
-                                            <span
-                                                class="badge text-xs !text-semibold badge-error p-1.5"
-                                                v-else-if="log.level === 'alert'"
-                                            >
-                                                <ExclamationCircleIcon class="w-5" />Alert</span
-                                            >
-                                            <span
-                                                class="badge text-xs !text-semibold badge-error p-1.5"
-                                                v-else-if="log.level === 'critical'"
-                                            >
-                                                <ExclamationTriangleIcon class="w-5" />Critical</span
-                                            >
-                                            <span
-                                                class="badge text-xs !text-semibold badge-error p-1.5"
-                                                v-else-if="log.level === 'emergency'"
-                                                ><ExclamationCircleIcon class="w-5" />Emergency</span
-                                            >
-                                            <span
-                                                class="badge text-xs !text-semibold bg-gray-500 text-primary-content p-1.5"
-                                                v-else-if="log.level === 'debug'"
-                                                ><InformationCircleIcon class="w-5" />Debug</span
-                                            >
-                                        </div>
+                                        <!-- Dot -->
+                                        <div
+                                            class="w-2 h-2 rounded-full shrink-0 mt-1.5"
+                                            :class="getDotColor(log.level)"
+                                        ></div>
 
-                                        <!-- Message Column -->
-                                        <div class="break-words space-y-1 min-w-0">
+                                        <!-- Content -->
+                                        <div class="flex-1 flex flex-col gap-1 overflow-hidden min-w-0">
+                                            <!-- Message -->
                                             <div class="line-clamp-2 overflow-hidden">{{ log.message }}</div>
                                             <div
                                                 v-if="log.ide_handle.class_name !== 'empty'"
@@ -566,7 +542,7 @@ const displayLastLog = computed<boolean>({
                                     <!-- Expanded Content -->
                                     <div
                                         v-if="expandedLogId === log.log_id"
-                                        class="bg-base-100 px-4 py-2"
+                                        class="px-4 py-2"
                                     >
                                         <!-- Copy to Markdown Button -->
                                         <div
