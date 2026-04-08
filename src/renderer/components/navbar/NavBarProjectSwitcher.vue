@@ -14,6 +14,7 @@ import ProjectInstall from '@/components/navbar/ProjectInstall.vue';
 import { LogEntry } from '../../../main/logger/logger';
 import NavBarMCP from '@/components/navbar/NavBarMCP.vue';
 import NavBarXdebug from '@/components/navbar/NavBarXdebug.vue';
+import { isSpecialEnvironment } from '@/constants';
 
 const emit = defineEmits(['modalOpen', 'modalClose']);
 const currentProjectStore = useCurrentProject();
@@ -139,7 +140,7 @@ const handleProjectsRetrieved = (_: IpcRendererEvent, storedProjects: Record<str
 const handleEnvironmentsRetrieved = (_: IpcRendererEvent, envs: any[]) => {
     if (!envs) return;
     envs.forEach((env) => {
-        if (!['dump', 'enabled_in_testing', 'original_dump', 'auto_invoke_app'].includes(env.value)) {
+        if (!isSpecialEnvironment(env.value)) {
             window.dispatchEvent(new CustomEvent('add-screen', { detail: env }));
         }
     });

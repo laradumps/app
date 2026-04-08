@@ -11,6 +11,7 @@ import { useBrainStore } from '@/store/brains.ts';
 import EnvironmentDropdown from './EnvironmentDropdown.vue';
 import type { Environment } from '../../../main/storage';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
+import { isSpecialEnvironment } from '@/constants';
 
 const props = defineProps<{
     environments?: Environment[];
@@ -81,9 +82,7 @@ const onWheelScroll = (e: WheelEvent) => {
 const availableEnvironments = computed(() => {
     if (!props.environments) return [];
 
-    const ignoredEnvironment = (value: string): boolean =>
-        ['dump', 'enabled_in_testing', 'original_dump', 'auto_invoke_app'].includes(value);
-
+    const ignoredEnvironment = isSpecialEnvironment;
     return props.environments.filter(
         (env) => !env.selected && !ignoredEnvironment(env.value) && !screenStore.get(env.value)
     );

@@ -7,6 +7,7 @@ import NavBarPause from '@/components/navbar/NavBarPause.vue';
 import NavBarCollapse from '@/components/navbar/NavBarCollapse.vue';
 import NavBarSSH from '@/components/navbar/NavBarSSH.vue';
 import NavBarSettings from '@/components/navbar/NavBarSettings.vue';
+import NavBarEnvironments from '@/components/navbar/NavBarEnvironments.vue';
 import NavBarSavedDumps from '@/components/navbar/NavBarSavedDumps.vue';
 import ClearAll from '@/components/common/ClearAll.vue';
 import { useSettingsStore } from '@/store/settings';
@@ -100,6 +101,11 @@ const modalClose = () => (isListeningModalOpen.value = false);
                 v-if="!inSavedDumpsWindow"
                 @modal-open="modalOpen"
                 @modal-close="modalClose"
+                class="border-l border-base-content/10 pl-2 ml-1"
+            />
+            <!-- environments -->
+            <NavBarEnvironments
+                v-if="!inSavedDumpsWindow"
                 class="border-l border-base-content/10 pl-2 ml-1"
             />
             <!-- settings -->

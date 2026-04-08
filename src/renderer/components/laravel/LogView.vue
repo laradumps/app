@@ -327,7 +327,7 @@ const displayLastLog = computed<boolean>({
                         </button>
                         <div
                             tabindex="0"
-                            class="dropdown-content menu bg-base-300 rounded-xl border-0 z-[100] w-auto min-w-35 p-2 shadow-xl"
+                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
                         >
                             <div v-if="yamlLogLevels.length > 0">
                                 <div class="menu-title mb-2">
@@ -340,11 +340,11 @@ const displayLastLog = computed<boolean>({
                                         v-for="control in yamlLogLevels"
                                         :key="control.key"
                                         @click="toggleYamlControl('logs', control.key, control.enabled)"
-                                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
+                                        class="flex items-center gap-3 px-3 hover:bg-base-content/5 py-2 rounded-lg transition-colors text-left"
                                         :class="
                                             control.enabled
-                                                ? 'bg-base-content/10 text-base-content font-medium'
-                                                : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                                                ? 'text-base-content font-medium'
+                                                : 'text-base-content/70 hover:text-base-content'
                                         "
                                     >
                                         <div class="size-2.5 rounded-full relative flex items-center justify-center">
@@ -408,33 +408,52 @@ const displayLastLog = computed<boolean>({
                                 class="w-5 text-primary"
                             />
                         </button>
-                        <ul
+                        <div
                             tabindex="0"
-                            class="p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] dropdown-content bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-52"
+                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
                         >
-                            <li
-                                v-for="level in [
-                                    'debug',
-                                    'info',
-                                    'notice',
-                                    'warning',
-                                    'error',
-                                    'critical',
-                                    'alert',
-                                    'emergency'
-                                ]"
-                                :key="level"
-                                @click="selectedLevel(level)"
-                            >
-                                <a
-                                    class="flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-base-content/70 hover:bg-base-content/5 hover:text-base-content !text-xs"
-                                    :class="{ 'text-primary': levelFilter.includes(level) }"
+                            <div class="flex flex-col gap-1.5">
+                                <button
+                                    v-for="level in [
+                                        'debug',
+                                        'info',
+                                        'notice',
+                                        'warning',
+                                        'error',
+                                        'critical',
+                                        'alert',
+                                        'emergency'
+                                    ]"
+                                    :key="level"
+                                    @click="selectedLevel(level)"
+                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
+                                    :class="
+                                        levelFilter.includes(level)
+                                            ? 'bg-base-content/10 text-base-content font-medium'
+                                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                                    "
                                 >
-                                    <span class="capitalize">{{ level }}</span>
-                                    <span class="text-base-content/40 text-[10px]">{{ levelCounts[level] || 0 }}</span>
-                                </a>
-                            </li>
-                        </ul>
+                                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
+                                        <span
+                                            v-if="levelFilter.includes(level)"
+                                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
+                                        ></span>
+                                        <span
+                                            class="relative inline-flex rounded-full size-2 transition-all duration-200"
+                                            :class="
+                                                levelFilter.includes(level)
+                                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
+                                                    : 'bg-base-content/20'
+                                            "
+                                        ></span>
+                                    </div>
+                                    <span class="truncate capitalize text-xs whitespace-nowrap">{{ level }}</span>
+                                    <span class="ml-auto text-base-content/40 text-[10px]">{{
+                                        levelCounts[level] || 0
+                                    }}</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Pause -->
