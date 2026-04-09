@@ -4,25 +4,6 @@ on:
     workflow_dispatch:
 
 jobs:
-    linux:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Check out Git repository
-              uses: actions/checkout@v4
-
-            - name: Install Node.js and npm
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '22.x'
-
-            - name: Install dependencies
-              run: npm install --force
-
-            - name: Updater
-              run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
-              env:
-                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
     windows:
         runs-on: windows-latest
         steps:
@@ -71,7 +52,7 @@ jobs:
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-    snap:
+    linux:
         runs-on: ubuntu-latest
         steps:
             - name: Check out Git repository
@@ -89,8 +70,14 @@ jobs:
               run: |
                   sudo snap install snapcraft --classic
 
-            - name: 🐧 Release Linux
-              run: npm run publish-linux
+            - name: 🐧 Release Linux (GitHub AppImage)
+              run: npm run build && npx electron-builder --publish always --linux AppImage
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: 📦 Publish Snap (non-blocking)
+              continue-on-error: true
+              run: npx electron-builder --publish always --linux snap
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
                   SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
