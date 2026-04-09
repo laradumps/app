@@ -85,6 +85,7 @@ const onContextMenu = (e: MouseEvent) => {
     }
 
     e.preventDefault();
+    e.stopPropagation();
 
     window.dispatchEvent(new CustomEvent('ld-context-open', { detail: selfId }));
 
@@ -409,7 +410,7 @@ onUnmounted(() => {
         v-if="
             (payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'
         "
-        :class="{ '-mt-3': isFirst }"
+        :class="{ '-mt-2': isFirst }"
     >
         <div
             @mouseenter="decrementBadgeCount"
@@ -632,7 +633,7 @@ onUnmounted(() => {
                                     <button
                                         class="hover:bg-base-300 rounded flex justify-between items-center"
                                         @click.stop="
-                                            copyDump();
+                                            deleteDump(payload.id);
                                             openOptions = false;
                                         "
                                     >
