@@ -43,13 +43,11 @@ const CHANNELS = {
     STORAGE_GET_ENVIRONMENTS_REPLY: 'storage.get-environments.reply',
     STORAGE_REMOVE: 'storage.remove',
     STORAGE_UPDATE: 'storage.update',
+    STORAGE_UPDATE_REPLY: 'storage.update.reply',
     STORAGE_GET_YAML: 'storage.get-yaml',
     STORAGE_GET_YAML_REPLY: 'storage.get-yaml.reply',
     STORAGE_UPDATE_SECTION: 'storage.update-section',
     STORAGE_UPDATE_SECTION_REPLY: 'storage.update-section.reply',
-    STORAGE_GET_STARRED: 'storage.get-starred',
-    STORAGE_GET_STARRED_REPLY: 'storage.get-starred.reply',
-    STORAGE_TOGGLE_STARRED: 'storage.toggle-starred',
     STORAGE_SET_ENVIRONMENTS_ORDER: 'storage.set-environments-order',
     STORAGE_SET_PROJECTS_ORDER: 'storage.set-projects-order',
     STORAGE_GET_PROJECTS_ORDER: 'storage.get-projects-order',
@@ -66,8 +64,6 @@ export const init = async () => {
     ipcMain.on(CHANNELS.STORAGE_UPDATE, updateEnvironment);
     ipcMain.on(CHANNELS.STORAGE_GET_YAML, getFullYaml);
     ipcMain.on(CHANNELS.STORAGE_UPDATE_SECTION, updateYamlSection);
-    ipcMain.on(CHANNELS.STORAGE_GET_STARRED, getStarred);
-    ipcMain.on(CHANNELS.STORAGE_TOGGLE_STARRED, toggleStarred);
     ipcMain.on(CHANNELS.STORAGE_SET_ENVIRONMENTS_ORDER, setEnvironmentsOrder);
     ipcMain.on(CHANNELS.STORAGE_SET_PROJECTS_ORDER, setProjectsOrder);
     ipcMain.on(CHANNELS.STORAGE_GET_PROJECTS_ORDER, getProjectsOrder);
@@ -190,34 +186,23 @@ const removeEnvironment = (_event: IpcMainEvent, projectPath: string) => {
         delete environments[project];
 
         store.set('environments', environments);
-        // Also remove from starred list if present
-        const starredCurrent = store.get('starred_projects', [] as any) as any;
-        const starredList: string[] = Array.isArray(starredCurrent) ? starredCurrent : [];
-        const filtered = starredList.filter((name) => name !== project);
 
-        store.set('starred_projects', filtered);
-
-        // Also remove from projects order arrays
         try {
-            const starredOrder = store.get('proj_order.starred', [] as any) as any[];
             const allOrder = store.get('proj_order.all', [] as any) as any[];
-            const newStarredOrder = Array.isArray(starredOrder) ? starredOrder.filter((n) => n !== project) : [];
             const newAllOrder = Array.isArray(allOrder) ? allOrder.filter((n) => n !== project) : [];
-            store.set('proj_order.starred', newStarredOrder);
             store.set('proj_order.all', newAllOrder);
         } catch (e) {
-            console.error('Error cleaning project from order arrays', e);
+            console.error('Error cleaning project from order array', e);
         }
 
         ipcMain.emit(CHANNELS.STORAGE_GET);
 
         const win = BrowserWindow.getAllWindows()[0];
         if (win) {
-            win.webContents.send(CHANNELS.STORAGE_GET_STARRED_REPLY, filtered);
-            win.webContents.send(CHANNELS.STORAGE_GET_PROJECTS_ORDER, {
-                starred: (store.get('proj_order.starred', [] as any) as any[]) || [],
-                all: (store.get('proj_order.all', [] as any) as any[]) || []
-            });
+            win.webContents.send(
+                CHANNELS.STORAGE_GET_PROJECTS_ORDER,
+                (store.get('proj_order.all', [] as any) as any[]) || []
+            );
         }
     } catch (error) {
         console.error('Error updating storage:', error);
@@ -247,13 +232,10 @@ const updateEnvironment = (
 
         const yamlData = yamlLib.dump(data);
 
-        fsLib.writeFile(filePath, yamlData, (err: NodeJS.ErrnoException | null): void => {
-            if (err) {
-                console.error('Error writing to file:', err);
-                return;
-            }
-            console.log('laradumps.yaml has been updated successfully.');
-        });
+        fsLib.writeFileSync(filePath, yamlData);
+        console.log('laradumps.yaml has been updated successfully.');
+
+        _event.reply(CHANNELS.STORAGE_UPDATE_REPLY);
     } catch (err) {
         console.error(err);
     }
@@ -310,11 +292,10 @@ const setEnvironmentsOrder = (_event: IpcMainEvent, payload: { path: string; ord
     }
 };
 
-const setProjectsOrder = (_event: IpcMainEvent, payload: { list: 'starred' | 'all'; order: string[] }) => {
+const setProjectsOrder = (_event: IpcMainEvent, payload: string[]) => {
     try {
-        const key = payload.list === 'starred' ? 'proj_order.starred' : 'proj_order.all';
-        const arr = Array.isArray(payload.order) ? payload.order : [];
-        store.set(key, arr);
+        const arr = Array.isArray(payload) ? payload : [];
+        store.set('proj_order.all', arr);
     } catch (err) {
         console.error('Error setting projects order:', err);
     }
@@ -322,53 +303,10 @@ const setProjectsOrder = (_event: IpcMainEvent, payload: { list: 'starred' | 'al
 
 const getProjectsOrder = (event: IpcMainEvent) => {
     try {
-        const starred = store.get('proj_order.starred', [] as any) as any;
         const all = store.get('proj_order.all', [] as any) as any;
-        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, {
-            starred: Array.isArray(starred) ? starred : [],
-            all: Array.isArray(all) ? all : []
-        });
+        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, Array.isArray(all) ? all : []);
     } catch (err) {
         console.error('Error getting projects order:', err);
-        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, { starred: [], all: [] });
-    }
-};
-
-const getStarred = (event: IpcMainEvent) => {
-    try {
-        const starred: string[] = store.get('starred_projects', [] as any) as any;
-        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, Array.isArray(starred) ? starred : []);
-    } catch (err) {
-        console.error('Error getting starred projects:', err);
-        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, []);
-    }
-};
-
-const toggleStarredArray = (arr: string[], name: string): string[] => {
-    const set = new Set(arr);
-    if (set.has(name)) {
-        set.delete(name);
-    } else {
-        set.add(name);
-    }
-    return Array.from(set);
-};
-
-const toggleStarredPersist = (projectName: string): string[] => {
-    const current = store.get('starred_projects', [] as any) as any;
-    const list: string[] = Array.isArray(current) ? current : [];
-    const updated = toggleStarredArray(list, projectName);
-    store.set('starred_projects', updated);
-    return updated;
-};
-
-const toggleStarred = (event: IpcMainEvent, payload: { project: string }) => {
-    try {
-        const updated = toggleStarredPersist(payload.project);
-        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, updated);
-    } catch (err) {
-        console.error('Error toggling starred project:', err);
-        const starred: string[] = store.get('starred_projects', [] as any) as any;
-        event.reply(CHANNELS.STORAGE_GET_STARRED_REPLY, Array.isArray(starred) ? starred : []);
+        event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, []);
     }
 };

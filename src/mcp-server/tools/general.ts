@@ -73,21 +73,7 @@ async function fetchBrainsTool(): Promise<McpToolResponse> {
         return errorResponse(data.error);
     }
 
-    let context = '';
-
-    try {
-        const response = await fetch('https://raw.githubusercontent.com/r2luna/brain/main/README.md');
-
-        if (response.ok) {
-            const text = await response.text();
-            context =
-                `\n\n--- Context (Brain Documentation) ---\n` + `${text}\n` + `-------------------------------------\n`;
-        }
-    } catch {
-        // intentionally ignored
-    }
-
-    return textResponse(`${JSON.stringify(data, null, 2)}${context}`);
+    return textResponse(JSON.stringify(data, null, 2));
 }
 
 export function registerGeneralTools(server: McpServer) {

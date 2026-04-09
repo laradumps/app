@@ -62,17 +62,26 @@ export const useMailStore = defineStore('mailStore', {
             this.mails = [];
             this.store();
         },
+        remove(messageId: string) {
+            const index = this.mails.findIndex((mail) => mail.message_id === messageId);
+            if (index !== -1) {
+                this.mails.splice(index, 1);
+                this.store();
+            }
+        },
         _initialize(payload: MailPayload, ide_handle: IdeHandle, context: ContextPayload) {
             const date = new Date();
-            const fromHeader = payload.headers.find((header) => header.startsWith('From:')) ?? '';
-            const subjectHeader = payload.headers.find((header) => header.startsWith('Subject:')) ?? '';
-            const toHeader = payload.headers.find((header) => header.startsWith('To:')) ?? '';
+            const fromHeader = payload.headers.find((header: any) => header.startsWith('From:')) ?? '';
+            const subjectHeader = payload.headers.find((header: any) => header.startsWith('Subject:')) ?? '';
+            const toHeader = payload.headers.find((header: any) => header.startsWith('To:')) ?? '';
 
             const decodeMimeEncodedWord = (encodedText: string) => {
-                return encodedText.replace(/=\?utf-8\?Q\?(.*?)\?=/gi, (match, content) => {
+                return encodedText.replace(/=\?utf-8\?Q\?(.*?)\?=/gi, (match: any, content: any) => {
                     const decoded = content
                         .replace(/_/g, ' ')
-                        .replace(/=([A-Fa-f0-9]{2})/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+                        .replace(/=([A-Fa-f0-9]{2})/g, (match: any, hex: any) =>
+                            String.fromCharCode(parseInt(hex, 16))
+                        );
 
                     return decodeURIComponent(escape(decoded));
                 });

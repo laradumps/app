@@ -12,7 +12,7 @@ import { Cog6ToothIcon, RectangleGroupIcon, Bars3Icon, KeyIcon, CommandLineIcon 
 import { useRoute } from 'vue-router';
 
 const editMode = ref(false);
-const selected = ref<string | null>('settings');
+const selected = ref<string | null>('appearance');
 const customTheme = ref('');
 
 const mcpServerPath = ref('');
@@ -335,22 +335,22 @@ const saveCustomTheme = async () => {
                 <ul class="menu py-1 menu-md bg-base-200 w-40 rounded-box">
                     <li>
                         <span
-                            @click="selected = 'settings'"
-                            :class="{ 'menu-active': selected === 'settings' }"
-                            class="whitespace-nowrap flex items-center gap-2"
-                        >
-                            <Cog6ToothIcon class="w-4 h-4" />
-                            <span>{{ $t('settings.settings') }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span
                             @click="selected = 'appearance'"
                             :class="{ 'menu-active': selected === 'appearance' }"
                             class="whitespace-nowrap flex items-center gap-2"
                         >
                             <RectangleGroupIcon class="w-4 h-4" />
                             <span>{{ $t('settings.appearance') }}</span>
+                        </span>
+                    </li>
+                    <li>
+                        <span
+                            @click="selected = 'settings'"
+                            :class="{ 'menu-active': selected === 'settings' }"
+                            class="whitespace-nowrap flex items-center gap-2"
+                        >
+                            <Cog6ToothIcon class="w-4 h-4" />
+                            <span>{{ $t('settings.settings') }}</span>
                         </span>
                     </li>
                     <li>
@@ -594,20 +594,6 @@ const saveCustomTheme = async () => {
                                         type="checkbox"
                                         class="toggle toggle-sm toggle-accent"
                                         v-model="settingsStore.settings.show_badge_count"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <Divider class="mt-2" />
-                        <div class="mt-2 grid grid-cols-2 items-center">
-                            <div>{{ $t('settings.show_collapse_button') }}</div>
-                            <div class="flex items-center justify-end">
-                                <div class="p-1.5">
-                                    <input
-                                        type="checkbox"
-                                        class="toggle toggle-sm toggle-accent"
-                                        v-model="settingsStore.settings.show_collapse_button"
                                     />
                                 </div>
                             </div>

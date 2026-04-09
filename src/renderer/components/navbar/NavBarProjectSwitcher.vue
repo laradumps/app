@@ -1,38 +1,21 @@
 <script setup lang="ts">
-import { SignalSlashIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
-import { SignalIcon } from '@heroicons/vue/24/solid';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { ChevronDownIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import JSConfetti from 'js-confetti';
 import { useCurrentProject } from '@/store/current-project';
-import { useXDebug } from '@/store/xdebug';
-import { XDebugYml } from '@/types/XDebug';
 import { IpcRendererEvent } from 'electron';
-import { Environment } from '../../main/storage';
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
-import ProjectsList from '@/components/navbar/ProjectsList.vue';
-import ProjectHeader from '@/components/navbar/ProjectHeader.vue';
-import EnvironmentsList from '@/components/navbar/EnvironmentsList.vue';
-import { LogEntry } from '../../../main/logger/logger';
+import ProjectInstall from '@/components/navbar/ProjectInstall.vue';
+import NavBarMCP from '@/components/navbar/NavBarMCP.vue';
+import NavBarXdebug from '@/components/navbar/NavBarXdebug.vue';
+import { isSpecialEnvironment } from '@/constants';
 
 const emit = defineEmits(['modalOpen', 'modalClose']);
-const xDebugStore = useXDebug();
 const currentProjectStore = useCurrentProject();
 
 const IPC_EVENTS = {
     STORAGE_GET: 'storage.get',
     STORAGE_GET_REPLY: 'storage.get.reply',
     STORAGE_SET_ACTIVE_REPLY: 'storage.set-active.reply',
-    STORAGE_GET_ENVIRONMENTS: 'storage.get-environments',
-    STORAGE_GET_ENVIRONMENTS_REPLY: 'storage.get-environments.reply',
-    STORAGE_SET_ENVIRONMENTS_ORDER: 'storage.set-environments-order',
-    STORAGE_GET_YAML: 'storage.get-yaml',
-    STORAGE_GET_YAML_REPLY: 'storage.get-yaml.reply',
-    STORAGE_UPDATE: 'storage.update',
-    STORAGE_REMOVE: 'storage.remove',
-    STORAGE_UPDATE_SECTION: 'storage.update-section',
-    STORAGE_GET_STARRED: 'storage.get-starred',
-    STORAGE_GET_STARRED_REPLY: 'storage.get-starred.reply',
-    STORAGE_TOGGLE_STARRED: 'storage.toggle-starred',
     STORAGE_SET_PROJECTS_ORDER: 'storage.set-projects-order',
     STORAGE_GET_PROJECTS_ORDER: 'storage.get-projects-order',
 
@@ -41,19 +24,8 @@ const IPC_EVENTS = {
     MAIN_DIALOG: 'main:dialog',
     MAIN_DIALOG_CHOICE: 'main:dialog-choice',
 
-    PROJECT_DIRECTORY_SELECTED: 'project-directory-selected',
-    COMPOSER_AUTO_INSTALL: 'composer-auto-install',
-    PROJECT_SETUP_LOGS: 'project-setup-logs',
-
-    XDEBUG_ERROR: 'xdebug-error',
-    XDEBUG_CONNECTOR_DISCONNECT: 'xdebug-connector::disconnect',
-    XDEBUG_CONNECT_CLOSED: 'xdebug-connect-closed',
-    SETTINGS_ENV_XDEBUG_FILE_CONTENTS: 'settings:env-xdebug-file-contents',
-    CONNECT_XDEBUG: 'connect-xdebug',
-    DISCONNECT_XDEBUG: 'disconnect-xdebug',
-    MAIN_SETTING_GET_XDEBUG_ENVS: 'main:setting-get-xdebug-environments',
-
-    ADD_SCREEN_CUSTOM_EVENT: 'add-screen',
+    STORAGE_GET_ENVIRONMENTS_REPLY: 'storage.get-environments.reply',
+    STORAGE_REMOVE: 'storage.remove',
     MAIN_PROJECT_SETUP: 'main:project-setup'
 } as const;
 
@@ -62,82 +34,36 @@ interface Project {
     project: string;
 }
 
-const isXdebugActive = ref(false);
 const selectedProject = ref<Project>({} as Project);
 const isNewProject = ref(false);
 const projects = ref<Project[]>([]);
-const environments = ref<Environment[]>([]);
 const windowHeight = ref(window.innerHeight);
+const contextMenuProject = ref<Project | null>(null);
+const contextMenuPosition = ref({ x: 0, y: 0 });
+const projectInstallRef = ref<InstanceType<typeof ProjectInstall> | null>(null);
 
-const yamlConfig = ref<Record<string, any>>({});
-const activeEnvKey = ref<string | null>(null);
+const projectsOrder = ref<string[]>([]);
 
-const installActive = ref(false);
-const installErrorMessage = ref('');
-const installFinished = ref(false);
-const installFailed = ref(false);
-const projectSetupLogs = ref('');
-const setupLogsTextarea = ref<HTMLTextAreaElement | null>(null);
-
-let errorDismissTimer: number | null = null;
-
-watch(installErrorMessage, (msg) => {
-    if (errorDismissTimer) {
-        clearTimeout(errorDismissTimer);
-        errorDismissTimer = null;
-    }
-    if (msg) {
-        errorDismissTimer = window.setTimeout(() => {
-            installErrorMessage.value = '';
-        }, 3000);
-    }
-});
-
-const starredProjects = ref<string[]>([]);
-const projectsOrder = ref<{ starred: string[]; all: string[] }>({ starred: [], all: [] });
-let handleStarredReplyRef: ((event: IpcRendererEvent, list: string[]) => void) | null = null;
-let handleProjectsOrderReply:
-    | ((event: IpcRendererEvent, payload: { starred: string[]; all: string[] }) => void)
-    | null = null;
-
-let handleYamlReplyRef: ((event: IpcRendererEvent, data: any) => void) | null = null;
-let handleComposerRef: ((event: IpcRendererEvent, payload: any) => void) | null = null;
-let handleXdebugClosedRef: (() => void) | null = null;
-let handleXdebugFileContentsRef: ((event: Event, config: XDebugYml) => void) | null = null;
-let handleProjectDirSelectedRef: ((_: any, args: any) => void) | null = null;
-let handleProjectSetupLogs: (_: any, payload: LogEntry) => void;
+let handleProjectsOrderReply: ((_: IpcRendererEvent, payload: any) => void) | null = null;
 
 onMounted(() => {
     initializeProjectData();
     setupEventListeners();
     window.addEventListener('resize', updateHeight);
+    window.addEventListener('click', closeContextMenu);
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER);
 });
 
 onUnmounted(() => {
     window.removeEventListener('resize', updateHeight);
-
-    if (errorDismissTimer) {
-        clearTimeout(errorDismissTimer);
-        errorDismissTimer = null;
-    }
+    window.removeEventListener('click', closeContextMenu);
 
     window.ipcRenderer.off(IPC_EVENTS.APP_SETTING_PROJECT_ADDED, handleProjectAdded);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_SET_ACTIVE_REPLY, handleActiveProjectSet);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_REPLY, handleProjectsRetrieved);
     window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_ENVIRONMENTS_REPLY, handleEnvironmentsRetrieved);
-    if (handleYamlReplyRef) window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_YAML_REPLY, handleYamlReplyRef);
-    if (handleComposerRef) window.ipcRenderer.off(IPC_EVENTS.COMPOSER_AUTO_INSTALL, handleComposerRef);
-    window.ipcRenderer.off(IPC_EVENTS.XDEBUG_ERROR, onXdebugError);
-    window.ipcRenderer.off(IPC_EVENTS.XDEBUG_CONNECTOR_DISCONNECT, disconnectFromXdebug);
-    if (handleXdebugClosedRef) window.ipcRenderer.off(IPC_EVENTS.XDEBUG_CONNECT_CLOSED, handleXdebugClosedRef);
-    if (handleXdebugFileContentsRef)
-        window.ipcRenderer.off(IPC_EVENTS.SETTINGS_ENV_XDEBUG_FILE_CONTENTS, handleXdebugFileContentsRef);
-    if (handleProjectDirSelectedRef)
-        window.ipcRenderer.off(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
-    if (handleStarredReplyRef) window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_STARRED_REPLY, handleStarredReplyRef);
-    window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
-    window.ipcRenderer.off(IPC_EVENTS.PROJECT_SETUP_LOGS, handleProjectSetupLogs);
+    if (handleProjectsOrderReply)
+        window.ipcRenderer.off(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
 });
 
 const updateHeight = () => {
@@ -156,8 +82,6 @@ const handleProjectAdded = (_: IpcRendererEvent, project: Project) => {
 
 const handleActiveProjectSet = (_: IpcRendererEvent, project: Project) => {
     setActiveProject(project);
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_ENVIRONMENTS, project.path);
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_YAML, project.path);
 };
 
 const handleProjectsRetrieved = (_: IpcRendererEvent, storedProjects: Record<string, string>) => {
@@ -172,14 +96,11 @@ const handleProjectsRetrieved = (_: IpcRendererEvent, storedProjects: Record<str
     }
 };
 
-const handleEnvironmentsRetrieved = (_: IpcRendererEvent, envs: Environment[]) => {
+const handleEnvironmentsRetrieved = (_: IpcRendererEvent, envs: any[]) => {
     if (!envs) return;
-
-    environments.value = envs.map((env) => ({ ...env }));
-
-    environments.value.forEach((env) => {
-        if (!ignoredEnvironment(env.value)) {
-            window.dispatchEvent(new CustomEvent(IPC_EVENTS.ADD_SCREEN_CUSTOM_EVENT, { detail: env }));
+    envs.forEach((env) => {
+        if (!isSpecialEnvironment(env.value)) {
+            window.dispatchEvent(new CustomEvent('add-screen', { detail: env }));
         }
     });
 };
@@ -187,170 +108,44 @@ const handleEnvironmentsRetrieved = (_: IpcRendererEvent, envs: Environment[]) =
 const setActiveProject = (project: Project) => {
     currentProjectStore.set(project);
     selectedProject.value = project;
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_ENVIRONMENTS, project.path);
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_YAML, project.path);
-    activeEnvKey.value = null;
-};
+    window.ipcRenderer.send('storage.set-active', project.project);
+    window.ipcRenderer.send('storage.get-environments', project.path);
+    window.ipcRenderer.send('storage.get-yaml', project.path);
 
-const ignoredEnvironment = (value: string): boolean =>
-    ['dump', 'enabled_in_testing', 'original_dump', 'auto_invoke_app'].includes(value);
+    projectInstallRef.value?.closeModal();
 
-const copyToClipboard = (text: string) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
+    if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+    }
 };
 
 const initializeProjectData = () => {
-    isXdebugActive.value = Boolean(xDebugStore.current.project_path);
-
     if (currentProjectStore.projectInfo) {
         setActiveProject(currentProjectStore.projectInfo);
     }
 
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET_STARRED);
 };
 
-const onXdebugError = (_: IpcRendererEvent, error: Error) => console.error('Xdebug error:', error);
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const setupEventListeners = async () => {
+const setupEventListeners = () => {
     window.ipcRenderer.on(IPC_EVENTS.APP_SETTING_PROJECT_ADDED, handleProjectAdded);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_SET_ACTIVE_REPLY, handleActiveProjectSet);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_REPLY, handleProjectsRetrieved);
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_ENVIRONMENTS_REPLY, handleEnvironmentsRetrieved);
 
-    handleProjectsOrderReply = (_: IpcRendererEvent, payload: { starred: string[]; all: string[] }) => {
-        if (payload && payload.starred && payload.all) {
-            projectsOrder.value = {
-                starred: Array.isArray(payload.starred) ? payload.starred : [],
-                all: Array.isArray(payload.all) ? payload.all : []
-            };
+    handleProjectsOrderReply = (_: IpcRendererEvent, payload: any) => {
+        if (Array.isArray(payload)) {
+            projectsOrder.value = payload;
+        } else if (payload && typeof payload === 'object' && Array.isArray(payload.all)) {
+            projectsOrder.value = payload.all;
         }
     };
     window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_PROJECTS_ORDER, handleProjectsOrderReply);
-
-    handleStarredReplyRef = (_: IpcRendererEvent, list: string[]) => {
-        if (Array.isArray(list)) starredProjects.value = list;
-    };
-    window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_STARRED_REPLY, handleStarredReplyRef);
-
-    handleYamlReplyRef = (_: IpcRendererEvent, data: any) => {
-        yamlConfig.value = data || {};
-    };
-    window.ipcRenderer.on(IPC_EVENTS.STORAGE_GET_YAML_REPLY, handleYamlReplyRef);
-
-    // --- Composer auto-install progress
-    handleComposerRef = async (_: IpcRendererEvent, payload: any) => {
-        if (!payload) return;
-
-        if (payload.status === 'start') {
-            installActive.value = true;
-            installErrorMessage.value = '';
-            installFailed.value = false;
-        }
-
-        if (payload.error) {
-            installErrorMessage.value = 'An error occurred while installing.';
-            installFailed.value = true;
-            return;
-        }
-
-        if (payload.step === 'finish' && payload.done) {
-            await sleep(500);
-            installFinished.value = true;
-            await new JSConfetti().addConfetti();
-            isNewProject.value = true;
-        }
-    };
-
-    window.ipcRenderer.on(IPC_EVENTS.COMPOSER_AUTO_INSTALL, handleComposerRef);
-    window.ipcRenderer.on(IPC_EVENTS.XDEBUG_ERROR, onXdebugError);
-    window.ipcRenderer.on(IPC_EVENTS.XDEBUG_CONNECTOR_DISCONNECT, disconnectFromXdebug);
-
-    handleXdebugClosedRef = () => setTimeout(() => (isXdebugActive.value = false), 800);
-
-    window.ipcRenderer.on(IPC_EVENTS.XDEBUG_CONNECT_CLOSED, handleXdebugClosedRef);
-
-    handleXdebugFileContentsRef = (_: Event, config: XDebugYml) => {
-        xDebugStore.setCurrent(config);
-        window.ipcRenderer.send(IPC_EVENTS.CONNECT_XDEBUG, config);
-    };
-
-    window.ipcRenderer.on(IPC_EVENTS.SETTINGS_ENV_XDEBUG_FILE_CONTENTS, handleXdebugFileContentsRef);
-    handleProjectSetupLogs = (_: any, payload: LogEntry) => {
-        projectSetupLogs.value = `${projectSetupLogs.value}[${new Date(payload.timestamp).toLocaleString()}].${payload.level} ${payload.message}\n`;
-
-        if (setupLogsTextarea.value) {
-            setupLogsTextarea.value.scrollTop = setupLogsTextarea.value.scrollHeight;
-        }
-    };
-    window.ipcRenderer.on(IPC_EVENTS.PROJECT_SETUP_LOGS, handleProjectSetupLogs);
 };
 
-handleProjectDirSelectedRef = (_: any, args: any) => {
-    if (args && typeof args === 'string') {
-        window.ipcRenderer.send('storage.check', { applicationPath: args });
-    }
-};
-
-window.ipcRenderer.on(IPC_EVENTS.PROJECT_DIRECTORY_SELECTED, handleProjectDirSelectedRef);
-
-const selectedEnvironments = computed(() => environments.value.map(({ value, selected }) => ({ value, selected })));
-
-const saveEnvironment = async (env: Environment | null): Promise<void> => {
-    if (!env || !currentProjectStore.projectInfo) return;
-
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_UPDATE, {
-        selected: selectedEnvironments.value,
-        path: currentProjectStore.projectInfo.path
-    });
-
-    if (!ignoredEnvironment(env.value)) {
-        window.dispatchEvent(new CustomEvent(IPC_EVENTS.ADD_SCREEN_CUSTOM_EVENT, { detail: env }));
-    }
-};
-
-const confirmProjectRemoval = (projectPath: string) => {
-    window.ipcRenderer.send(IPC_EVENTS.MAIN_DIALOG, {
-        buttons: ['Yes', 'No'],
-        title: 'Remove Project',
-        message: 'Are you sure you want to remove the configuration from this Project?'
-    });
-
-    const removeHandler = (_: Event, choice: number) => {
-        if (choice === 0) {
-            window.ipcRenderer.send(IPC_EVENTS.STORAGE_REMOVE, projectPath);
-            window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
-
-            const [firstProject] = projects.value;
-            if (firstProject) {
-                setActiveProject(firstProject);
-            }
-        }
-        window.ipcRenderer.off(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
-    };
-
-    window.ipcRenderer.on(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
-};
-
-// --- Xdebug connection management
-
-const connectToXdebug = () =>
-    window.ipcRenderer.send(IPC_EVENTS.MAIN_SETTING_GET_XDEBUG_ENVS, selectedProject.value.path);
-const disconnectFromXdebug = () => window.ipcRenderer.send(IPC_EVENTS.DISCONNECT_XDEBUG);
-
-watch(isXdebugActive, (active) => (active ? connectToXdebug() : disconnectFromXdebug()));
-watch(xDebugStore, (store) => (isXdebugActive.value = Boolean(store.current.project_path)));
-
-const baseSortedProjects = computed(() => {
+const sortedProjects = computed(() => {
     return [...projects.value].sort((a, b) => a.project.localeCompare(b.project, undefined, { sensitivity: 'base' }));
 });
-// --- End Xdebug connection management
-
-// --- Starred projects logic
-const starredSet = computed(() => new Set(starredProjects.value));
 
 const applyOrder = (list: Project[], order: string[]): Project[] => {
     if (!order || order.length === 0) return list;
@@ -364,433 +159,205 @@ const applyOrder = (list: Project[], order: string[]): Project[] => {
     });
 };
 
-const starredSortedProjects = computed(() => {
-    const list = baseSortedProjects.value.filter((p) => p.project && starredSet.value.has(p.project));
-    return applyOrder(list, projectsOrder.value.starred);
+const orderedProjects = computed(() => {
+    return applyOrder(sortedProjects.value, projectsOrder.value);
 });
 
-const regularSortedProjects = computed(() => {
-    const list = baseSortedProjects.value.filter((p) => p.project && !starredSet.value.has(p.project));
-    return applyOrder(list, projectsOrder.value.all);
-});
+const projDrag = ref<{ index: number | null }>({ index: null });
 
-// --- Starred projects actions
-const isStarred = (projectName: string): boolean => starredSet.value.has(projectName);
-const toggleStar = (projectName: string) => {
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_TOGGLE_STARRED, { project: projectName });
-
-    const wasStarred = isStarred(projectName);
-    starredProjects.value = wasStarred
-        ? starredProjects.value.filter((n) => n !== projectName)
-        : [...starredProjects.value, projectName];
-
-    if (wasStarred) {
-        projectsOrder.value.starred = projectsOrder.value.starred.filter((n) => n !== projectName);
-        if (!projectsOrder.value.all.includes(projectName)) {
-            projectsOrder.value.all = [...projectsOrder.value.all, projectName];
-        }
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, {
-            list: 'starred',
-            order: projectsOrder.value.starred
-        });
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: 'all', order: projectsOrder.value.all });
-    } else {
-        projectsOrder.value.all = projectsOrder.value.all.filter((n) => n !== projectName);
-        if (!projectsOrder.value.starred.includes(projectName)) {
-            projectsOrder.value.starred = [...projectsOrder.value.starred, projectName];
-        }
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, { list: 'all', order: projectsOrder.value.all });
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, {
-            list: 'starred',
-            order: projectsOrder.value.starred
-        });
-    }
-};
-// --- End starred projects logic
-
-const activeOptions = computed(() => {
-    if (!activeEnvKey.value || !yamlConfig.value) return null;
-    const section = (yamlConfig.value as any)[activeEnvKey.value];
-    if (!section || typeof section !== 'object') return null;
-    return section;
-});
-
-const onEnvChange = (env: Environment) => {
-    saveEnvironment(env);
-    if (env.selected) {
-        activeEnvKey.value = env.value;
-    } else if (activeEnvKey.value === env.value) {
-        activeEnvKey.value = null;
-    }
+const onProjectDragStart = (index: number) => {
+    projDrag.value = { index };
 };
 
-// --- Drag & Drop to reorder environments
-const dragIndex = ref<number | null>(null);
+const onProjectDrop = (dropIndex: number) => {
+    const index = projDrag.value.index;
+    if (index === null) return;
 
-const onEnvDragStart = (index: number) => {
-    dragIndex.value = index;
-};
-
-const onEnvDrop = (dropIndex: number) => {
-    if (dragIndex.value === null || dragIndex.value === dropIndex) return;
-    const from = dragIndex.value;
-    const to = dropIndex;
-    const arr = [...environments.value];
-    const [moved] = arr.splice(from, 1);
-    arr.splice(to, 0, moved);
-    environments.value = arr;
-    projDrag.value = { list: null, index: null };
-
-    // Persist order per project
-    if (!currentProjectStore.projectInfo) return;
-
-    try {
-        const order = environments.value.map((e) => e.value);
-        window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_ENVIRONMENTS_ORDER, {
-            path: currentProjectStore.projectInfo.path,
-            order
-        });
-    } catch (e) {
-        console.error('Failed to persist environments order', e);
-    }
-};
-
-const onEnvDragOver = (e: DragEvent) => {
-    e.preventDefault();
-};
-
-// --- Drag & Drop to reorder projects (starred and all)
-const projDrag = ref<{ list: 'starred' | 'all' | null; index: number | null }>({ list: null, index: null });
-
-const onProjectDragStart = (list: 'starred' | 'all', index: number) => {
-    projDrag.value = { list, index };
-};
-
-const onProjectDrop = (list: 'starred' | 'all', dropIndex: number) => {
-    const { list: fromList, index } = projDrag.value;
-    if (!fromList || index === null || fromList !== list) return; // only allow reorder within same list
-
-    const working = list === 'starred' ? [...projectsOrder.value.starred] : [...projectsOrder.value.all];
-
-    // Build current names list from visible computed lists to ensure we reorder by names
-    const visible = (list === 'starred' ? starredSortedProjects.value : regularSortedProjects.value).map(
-        (p) => p.project
-    );
-
-    // Ensure working contains all visible in order; if not, initialize with visible
+    const working = [...projectsOrder.value];
+    const visible = orderedProjects.value.map((p) => p.project);
     const currentOrder = working.length ? working.filter((n) => visible.includes(n)) : visible.slice();
 
     const [moved] = currentOrder.splice(index, 1);
     currentOrder.splice(dropIndex, 0, moved);
 
-    if (list === 'starred') {
-        projectsOrder.value.starred = currentOrder;
-    } else {
-        projectsOrder.value.all = currentOrder;
-    }
-
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, {
-        list,
-        order: currentOrder
-    });
-
-    projDrag.value = { list: null, index: null };
-};
-
-const updateSectionValue = (key: string, value: any) => {
-    if (!activeEnvKey.value || !currentProjectStore.projectInfo) return;
-
-    if (!yamlConfig.value[activeEnvKey.value]) yamlConfig.value[activeEnvKey.value] = {};
-    yamlConfig.value[activeEnvKey.value][key] = value;
-
-    window.ipcRenderer.send(IPC_EVENTS.STORAGE_UPDATE_SECTION, {
-        path: currentProjectStore.projectInfo.path,
-        section: activeEnvKey.value,
-        values: { [key]: value }
-    });
+    projectsOrder.value = currentOrder;
+    window.ipcRenderer.send(IPC_EVENTS.STORAGE_SET_PROJECTS_ORDER, currentOrder);
+    projDrag.value = { index: null };
 };
 
 const addProject = () => {
     window.ipcRenderer.send(IPC_EVENTS.MAIN_PROJECT_SETUP);
 };
 
-const toggleXdebug = () => {
-    isXdebugActive.value = !isXdebugActive.value;
-    saveEnvironment(null);
+const openContextMenu = (event: MouseEvent, project: Project) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    contextMenuProject.value = project;
+    contextMenuPosition.value = {
+        x: rect.left,
+        y: rect.bottom + 4
+    };
 };
 
-const resetInstallState = () => {
-    installActive.value = false;
-    installFinished.value = false;
-    installFailed.value = false;
-    projectSetupLogs.value = '';
-    installErrorMessage.value = '';
+const closeContextMenu = () => {
+    contextMenuProject.value = null;
 };
 
-const finishInstallation = () => {
-    resetInstallState();
-    modal_navbar_listening.close();
+const handleContextMenuClick = (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (contextMenuProject.value) {
+        removeProject(contextMenuProject.value);
+    }
 };
 
-const showModal = () => {
-    resetInstallState();
-    modal_navbar_listening.showModal();
-    emit('modalOpen');
+const onProjectAdded = () => {
+    isNewProject.value = true;
+    setTimeout(() => (isNewProject.value = false), 5000);
 };
-const closeModal = () => {
-    emit('modalClose');
+
+const removeProject = (project: Project) => {
+    const projectPath = project.path;
+
+    window.ipcRenderer.send(IPC_EVENTS.MAIN_DIALOG, {
+        buttons: ['Yes', 'No'],
+        title: 'Remove Project',
+        message: 'Are you sure you want to remove the configuration from this Project?'
+    });
+
+    const removeHandler = (_: Event, choice: number) => {
+        window.ipcRenderer.off(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
+
+        if (choice === 0) {
+            window.ipcRenderer.send(IPC_EVENTS.STORAGE_REMOVE, projectPath);
+            window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
+
+            const [firstProject] = projects.value;
+            if (firstProject) {
+                setActiveProject(firstProject);
+            }
+        }
+
+        closeContextMenu();
+    };
+
+    window.ipcRenderer.on(IPC_EVENTS.MAIN_DIALOG_CHOICE, removeHandler);
 };
 </script>
 
 <template>
-    <div>
-        <button
-            class="flex font-normal capitalize truncate text-xs btn btn-soft justify-between !px-2.5 !m-0 !h-6.5 gap-2"
-            @click="showModal()"
+    <div class="dropdown dropdown-end">
+        <div
+            tabindex="0"
+            role="button"
+            class="flex items-center font-medium capitalize truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-7 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/20 rounded-lg transition-colors"
         >
-            <span
-                v-if="selectedProject.project"
-                v-text="formattedName(selectedProject.project)"
-            />
-            <span v-else>{{ $t('no_project_selected') }}</span>
-            <SignalSlashIcon
-                v-if="!selectedProject.project"
-                class="size-4 text-error"
-            />
-            <SignalIcon
-                v-else
-                :class="{ 'animate-pulse': isNewProject, 'text-primary': selectedProject.project }"
-                class="size-4"
-            />
-        </button>
-        <dialog
-            @close="closeModal"
-            id="modal_navbar_listening"
-            class="modal z-[200]"
-        >
-            <div class="modal-box max-w-2xl !p-2">
-                <!-- Error banner -->
+            <div class="flex items-center gap-2">
                 <div
-                    v-if="installErrorMessage"
-                    role="alert"
-                    class="alert alert-error"
-                >
-                    <ExclamationTriangleIcon class="size-6 shrink-0" />
-                    <span>{{ installErrorMessage }}</span>
-                </div>
-
-                <ul class="menu px-0 min-h-full w-full">
-                    <div class="grid grid-cols-3 gap-2">
-                        <!-- Col 1: Projects -->
-                        <ProjectsList
-                            :starred-sorted-projects="starredSortedProjects"
-                            :regular-sorted-projects="regularSortedProjects"
-                            :selected-project="selectedProject"
-                            @add-project="addProject"
-                            @set-active-project="setActiveProject"
-                            @on-project-drag-start="onProjectDragStart"
-                            @on-project-drop="onProjectDrop"
-                        />
-
-                        <div class="col-span-2 space-y-2 flex flex-col h-[calc(100vh-14rem)]">
-                            <ProjectHeader
-                                :project="selectedProject"
-                                :is-starred="isStarred"
-                                @toggle-star="toggleStar"
-                                @confirm-project-removal="confirmProjectRemoval"
-                            />
-
-                            <!-- Installing overlay/content -->
-                            <div
-                                v-if="installActive"
-                                class="flex-1 flex flex-col items-center justify-center p-4 bg-base-200/50 rounded-lg border border-base-content/5 overflow-hidden"
-                            >
-                                <div class="text-center space-y-2 mb-4 w-full px-4">
-                                    <h2
-                                        class="text-lg font-semibold text-base-content/70"
-                                        :class="{ 'text-error': installFailed, 'text-success': installFinished }"
-                                    >
-                                        {{
-                                            installFinished
-                                                ? $t('install_success')
-                                                : installFailed
-                                                  ? $t('install_failed')
-                                                  : $t('installing')
-                                        }}
-                                    </h2>
-                                    <p class="text-base-content/70">
-                                        {{
-                                            installFinished
-                                                ? $t('install_success_message')
-                                                : installFailed
-                                                  ? installErrorMessage || $t('install_failed_message')
-                                                  : $t('installing_wait_message')
-                                        }}
-                                    </p>
-                                    <progress
-                                        v-if="!installFinished && !installFailed"
-                                        class="progress w-56 progress-info"
-                                    ></progress>
-                                    <div
-                                        v-else
-                                        class="flex flex-col items-center gap-4"
-                                    >
-                                        <progress
-                                            class="progress w-56"
-                                            :class="{
-                                                'progress-success': installFinished,
-                                                'progress-error': installFailed
-                                            }"
-                                            value="100"
-                                            max="100"
-                                        ></progress>
-                                        <div class="flex gap-2">
-                                            <button
-                                                v-if="installFailed"
-                                                class="btn btn-primary btn-sm"
-                                                @click="addProject"
-                                            >
-                                                {{ $t('retry') }}
-                                            </button>
-                                            <button
-                                                class="btn btn-sm"
-                                                :class="{ 'btn-primary': installFinished, 'btn-ghost': installFailed }"
-                                                @click="finishInstallation"
-                                            >
-                                                {{ installFinished ? $t('finish') : $t('settings.close') }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div
-                                    id="setup-logs"
-                                    class="w-full flex-1 flex flex-col bg-base-300 rounded-lg overflow-hidden border border-base-content/10 shadow-xl min-h-0"
-                                >
-                                    <div
-                                        class="flex items-center justify-between px-4 py-2 bg-base-300 border-b border-base-content/10"
-                                    >
-                                        <span class="text-xs font-mono text-base-content/50 uppercase tracking-wider"
-                                            >Setup Logs</span
-                                        >
-                                        <button
-                                            class="btn btn-ghost btn-xs text-info hover:bg-info/10"
-                                            @click="copyToClipboard(projectSetupLogs)"
-                                        >
-                                            Copy
-                                        </button>
-                                    </div>
-                                    <div class="flex-1 p-0 bg-black/20 overflow-hidden">
-                                        <textarea
-                                            ref="setupLogsTextarea"
-                                            readonly
-                                            v-model="projectSetupLogs"
-                                            class="w-full h-full p-4 font-mono text-xs bg-transparent border-none focus:ring-0 resize-none text-base-content/80"
-                                            placeholder="Waiting for logs..."
-                                        ></textarea>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div
-                                class="flex-1 flex gap-2 w-full divide-x divide-base-200 overflow-hidden"
-                                v-else-if="selectedProject.project"
-                            >
-                                <!-- Col 2: Observers/Environments -->
-                                <EnvironmentsList
-                                    :environments="environments"
-                                    :active-env-key="activeEnvKey"
-                                    :is-xdebug-active="isXdebugActive"
-                                    @on-env-change="onEnvChange"
-                                    @on-env-drag-start="onEnvDragStart"
-                                    @on-env-drop="onEnvDrop"
-                                    @save-environment="saveEnvironment"
-                                    @toggle-xdebug="toggleXdebug"
-                                />
-
-                                <!-- Col 3: Options for selected item -->
-                                <div class="text-sm overflow-auto w-auto">
-                                    <ul v-if="activeEnvKey && activeOptions">
-                                        <li
-                                            v-for="(val, key) in activeOptions"
-                                            :key="key"
-                                            class="mb-1"
-                                        >
-                                            <template v-if="typeof val === 'boolean'">
-                                                <label class="space-x-1 capitalize">
-                                                    <input
-                                                        type="checkbox"
-                                                        class="checkbox checkbox-xs"
-                                                        :class="{ 'checkbox-accent': val }"
-                                                        :checked="val"
-                                                        @change="updateSectionValue(key as string, !(val as boolean))"
-                                                    />
-                                                    <span class="text-base-content truncate">{{
-                                                        formattedName(String(key))
-                                                    }}</span>
-                                                </label>
-                                            </template>
-                                            <template v-else-if="typeof val === 'number'">
-                                                <div class="flex items-start gap-1 flex-col w-full">
-                                                    <span class="capitalize text-base-content text-sm">{{
-                                                        formattedName(String(key))
-                                                    }}</span>
-                                                    <input
-                                                        type="number"
-                                                        class="input input-bordered input-xs w-24"
-                                                        :value="val"
-                                                        @change="
-                                                            (e: any) =>
-                                                                updateSectionValue(
-                                                                    key as string,
-                                                                    Number(e.target.value)
-                                                                )
-                                                        "
-                                                    />
-                                                </div>
-                                            </template>
-                                            <template v-else>
-                                                <div class="flex items-start gap-1 flex-col w-full">
-                                                    <span class="capitalize text-base-content text-sm">{{
-                                                        formattedName(String(key))
-                                                    }}</span>
-                                                    <input
-                                                        type="text"
-                                                        class="input input-bordered input-xs w-full"
-                                                        :value="String(val)"
-                                                        @change="
-                                                            (e: any) =>
-                                                                updateSectionValue(
-                                                                    key as string,
-                                                                    String(e.target.value)
-                                                                )
-                                                        "
-                                                    />
-                                                </div>
-                                            </template>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div
-                                v-else
-                                class="flex-1 flex flex-row items-center justify-center gap-2 text-center text-base-content/50"
-                            >
-                                <SvgEmpty class="w-22 opacity-25" />
-                                <div class="text-base-content/70">
-                                    <h1 class="text-base font-semibold mb-2">No Project Selected</h1>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </ul>
+                    v-if="selectedProject.project"
+                    class="size-2 rounded-full bg-success shadow-[0_0_8px_rgba(0,180,0,0.6)]"
+                ></div>
+                <div
+                    v-else
+                    class="size-2 rounded-full bg-error"
+                ></div>
+                <span
+                    v-if="selectedProject.project"
+                    v-text="formattedName(selectedProject.project)"
+                    class="max-w-[140px] truncate"
+                />
+                <span v-else>{{ $t('no_project_selected') }}</span>
             </div>
-            <form
-                method="dialog"
-                class="modal-backdrop"
+            <ChevronDownIcon class="size-3 opacity-50" />
+        </div>
+
+        <ul
+            tabindex="0"
+            class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-64"
+        >
+            <li class="mb-1">
+                <a
+                    @click="addProject()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-primary hover:bg-primary/10"
+                >
+                    <PlusIcon class="size-4" />
+                    <span class="font-medium text-xs">New</span>
+                </a>
+            </li>
+
+            <li
+                v-for="(project, index) in orderedProjects"
+                :key="project.path + '-dropdown'"
+                draggable="true"
+                @dragstart="onProjectDragStart(index)"
+                @dragover.prevent
+                @drop="onProjectDrop(index)"
+                @click="setActiveProject(project)"
+                @contextmenu="openContextMenu($event, project)"
+                class="relative group"
             >
-                <button>close</button>
-            </form>
-        </dialog>
+                <a
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
+                    :class="
+                        selectedProject.path === project.path
+                            ? 'bg-base-content/10 text-base-content font-medium'
+                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                    "
+                >
+                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
+                        <span
+                            v-if="selectedProject.path === project.path"
+                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
+                        ></span>
+                        <span
+                            class="relative inline-flex rounded-full size-2"
+                            :class="
+                                selectedProject.path === project.path
+                                    ? 'bg-success shadow-[0_0_6px_rgba(0,255,0,0.8)]'
+                                    : 'bg-transparent'
+                            "
+                        ></span>
+                    </div>
+                    <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>
+                </a>
+            </li>
+
+            <div class="px-3 pb-1 pt-3 font-semibold text-[10px] text-base-content/40 uppercase tracking-widest">
+                Servers & Connections
+            </div>
+            <li>
+                <NavBarMCP />
+            </li>
+            <li>
+                <NavBarXdebug />
+            </li>
+        </ul>
+
+        <!-- Context Menu -->
+        <Teleport to="body">
+            <div
+                v-if="contextMenuProject"
+                class="fixed z-[300] bg-base-200 rounded-lg shadow-xl border border-base-content/10 py-1 min-w-[140px]"
+                :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }"
+                @click="handleContextMenuClick"
+            >
+                <button
+                    type="button"
+                    class="w-full flex items-center gap-2 px-3 py-2 text-xs text-error hover:bg-error/10 transition-colors"
+                >
+                    <TrashIcon class="size-4" />
+                    <span>Remove</span>
+                </button>
+            </div>
+        </Teleport>
     </div>
+
+    <ProjectInstall
+        ref="projectInstallRef"
+        @modal-open="emit('modalOpen')"
+        @modal-close="emit('modalClose')"
+        @project-added="onProjectAdded"
+    />
 </template>

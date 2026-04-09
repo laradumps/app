@@ -28,7 +28,6 @@ export const DEFAULT_SETTINGS: Settings = {
     },
     window_width: 760,
     window_height: 620,
-    show_collapse_button: true,
     show_pause_button: true,
     show_ssh_button: true,
     show_variable_type: true,

@@ -65,6 +65,12 @@ const openModalForExplainQuery = async () => {
     modalRef.value?.showModal();
 };
 
+defineExpose({
+    openModalForExplainQuery,
+    duplicatesStore,
+    payload: props.payload
+});
+
 onMounted(() => {
     nextTick(() => {
         resizeObserver.value = new ResizeObserver(checkContainerHeight);
@@ -114,7 +120,7 @@ const formattedSql = computed(() => {
 <template>
     <div
         v-if="payload.queries"
-        class="rounded-sm space-y-3"
+        class="rounded-sm"
     >
         <dialog
             ref="modalRef"
@@ -148,64 +154,45 @@ const formattedSql = computed(() => {
             </form>
         </dialog>
 
-        <div class="flex justify-end items-center gap-2">
-            <div class="flex items-center justify-end gap-2">
-                <!-- Explain Query and Duplicated Query Icons -->
-                <button
-                    v-if="payload.queries.explain_nodes && payload.queries.explain_nodes.length > 0"
-                    @click="openModalForExplainQuery()"
-                    class="badge badge-warning hover:opacity-80 badge-sm p-2.5 font-mono"
-                    title="This query has problematic nodes in the EXPLAIN plan."
-                >
-                    <BoltIcon class="w-4" />
-                    <span>Explain</span>
-                </button>
+        <!-- SQL Code without badges (badges moved to metadata line in DumpItem) -->
+        <div>
+            <pre
+                v-if="formattedQueriesStore.formatted || isPrettified"
+                class="relative group overflow-hidden whitespace-pre-wrap break-words"
+            >
+                <code
+                    class="language-sql !leading-[1.2rem] text-base-content !text-xs"
+                    v-html="formattedSql"
+                ></code>
+            </pre>
+            <div
+                v-else
+                class="relative break-all"
+            >
+                <code
+                    ref="codeContainer"
+                    :class="{ 'line-clamp-[14]': isCollapsed }"
+                    class="text-base-content language-sql rounded !text-xs leading-5 block"
+                    v-html="formattedSql"
+                ></code>
 
-                <!-- Duplicated Query Icon -->
+                <span
+                    v-if="showToggleControls && isCollapsed"
+                    class="blur-overlay w-full"
+                ></span>
+
                 <button
-                    v-if="duplicatesStore.isDuplicated(payload.request_id, payload.queries?.query.sql)"
-                    @click="duplicatesStore.toggleSelectedSql(payload.queries.query.sql)"
-                    class="badge badge-error text-error-content hover:opacity-80 badge-sm p-2.5 font-mono"
+                    v-if="showToggleControls"
+                    class="absolute -bottom-2 z-100 w-full opacity-80 flex items-center justify-center"
+                    @click="toggleCollapse"
                 >
-                    <ExclamationTriangleIcon class="w-4" />
-                    <span>Duplicated</span>
+                    <IconChevronDown
+                        class="w-4"
+                        :class="{ 'rotate-180': !isCollapsed }"
+                        stroke-width="2.5"
+                    />
                 </button>
             </div>
-        </div>
-        <pre
-            v-if="formattedQueriesStore.formatted || isPrettified"
-            class="flex relative group w-auto overflow-hidden whitespace-pre-wrap break-words"
-        >
-            <code
-                class="language-sql !leading-[1.2rem] w-auto text-base-content !text-xs"
-                v-html="formattedSql"
-            ></code>
-        </pre>
-        <div class="relative break-all flex gap-2 flex-col">
-            <code
-                ref="codeContainer"
-                v-if="!formattedQueriesStore.formatted && !isPrettified"
-                :class="{ 'line-clamp-[14]': isCollapsed }"
-                class="text-base-content language-sql rounded !text-xs leading-5"
-                v-html="formattedSql"
-            ></code>
-
-            <span
-                v-if="showToggleControls && isCollapsed"
-                class="blur-overlay w-full"
-            ></span>
-
-            <button
-                v-if="showToggleControls"
-                class="absolute -bottom-2 z-100 w-full opacity-80 flex items-center justify-center"
-                @click="toggleCollapse"
-            >
-                <IconChevronDown
-                    class="w-4"
-                    :class="{ 'rotate-180': !isCollapsed }"
-                    stroke-width="2.5"
-                />
-            </button>
         </div>
     </div>
 </template>

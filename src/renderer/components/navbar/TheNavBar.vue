@@ -4,11 +4,10 @@ import NavBarAlwaysOnTop from '@/components/navbar/NavBarAlwaysOnTop.vue';
 import NavBarGlobalSearch from '@/components/navbar/NavBarGlobalSearch.vue';
 import NavBarProjectSwitcher from '@/components/navbar/NavBarProjectSwitcher.vue';
 import NavBarPause from '@/components/navbar/NavBarPause.vue';
-import NavBarCollapse from '@/components/navbar/NavBarCollapse.vue';
 import NavBarSSH from '@/components/navbar/NavBarSSH.vue';
 import NavBarSettings from '@/components/navbar/NavBarSettings.vue';
+import NavBarEnvironments from '@/components/navbar/NavBarEnvironments.vue';
 import NavBarSavedDumps from '@/components/navbar/NavBarSavedDumps.vue';
-import NavBarMCP from '@/components/navbar/NavBarMCP.vue';
 import ClearAll from '@/components/common/ClearAll.vue';
 import { useSettingsStore } from '@/store/settings';
 import { usePayloadStore } from '@/store/payload';
@@ -88,23 +87,23 @@ const modalClose = () => (isListeningModalOpen.value = false);
         <div class="flex gap-1 items-center m-0.5">
             <!-- global search -->
             <NavBarGlobalSearch v-if="hasPayload" />
-            <!-- collapse -->
-            <NavBarCollapse v-if="settingsStore.settings.show_collapse_button" />
-            <!-- always on top -->
-            <NavBarAlwaysOnTop />
             <!-- ssh -->
             <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
-
-            <!-- MCP Indicator -->
-            <NavBarMCP />
-
             <!-- saved dumps -->
             <NavBarSavedDumps v-if="!inSavedDumpsWindow" />
+            <!-- always on top -->
+            <NavBarAlwaysOnTop />
             <!-- listening -->
             <NavBarProjectSwitcher
                 v-if="!inSavedDumpsWindow"
                 @modal-open="modalOpen"
                 @modal-close="modalClose"
+                class="border-l border-base-content/10 pl-2 ml-1"
+            />
+            <!-- environments -->
+            <NavBarEnvironments
+                v-if="!inSavedDumpsWindow"
+                class="border-l border-base-content/10 pl-2 ml-1"
             />
             <!-- settings -->
             <NavBarSettings />

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useScreenStore } from '@/store/screen';
 import { useI18nStore } from '@/store/i18n';
 import { useTimeStore } from '@/store/time';
@@ -22,18 +22,20 @@ import { useMailStore } from '@/store/mail';
 import MailView from '@/components/laravel/MailView.vue';
 import { useLogStore } from '@/store/logs';
 import LogView from '@/components/laravel/LogView.vue';
-import IconExternalLink from '@/components/Icons/IconExternalLink.vue';
 import { useQueriesPayloadStore } from '@/store/queries';
+import { useBrainStore } from '@/store/brains';
+import { useLivewireStore } from '@/store/livewire';
+import { useQueriesBlockedStore } from '@/store/queries-blocked';
+import { useQueryDuplicated } from '@/store/query-duplicated';
+import { usePauseQueriesStore } from '@/store/pause-queries';
+import { useFormattedQueriesStore } from '@/store/formatted-queries';
 import QueriesView from '@/components/laravel/QueriesView.vue';
 import { deepClone } from '@/lib/deep_clone';
 import { useSavedDumpsStore } from '@/store/saved-dumps';
 import { usePausePayloadStore } from '@/store/pause';
-import { useQueriesBlockedStore } from '@/store/queries-blocked';
 import { usePendingRequestsStore } from '@/store/pending-requests';
-import { usePauseQueriesStore } from '@/store/pause-queries';
 import { useCurrentProject } from '@/store/current-project';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
-import { useLivewireStore } from '@/store/livewire';
 import { Environment } from '../../main/storage';
 import { usePauseJobsStore } from '@/store/pause-jobs';
 import { usePauseLogsStore } from '@/store/pause-logs';
@@ -42,8 +44,9 @@ import HeaderColorsFilter from '@/components/app/HeaderColorsFilter.vue';
 import DropZones from '@/components/split/DropZones.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
 import { useSplitPanesStore } from '@/store/split-panes';
-import { useBrainStore } from '@/store/brains';
-import BrainView from '@/components/laravel/BrainView.vue'; // added import
+import BrainView from '@/components/laravel/BrainView.vue';
+import { ClockIcon } from '@heroicons/vue/24/outline';
+import { isSpecialEnvironment } from '@/constants';
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -79,19 +82,40 @@ const defaultScreen = ref({
     new_window: false
 });
 
+const environments = ref<Environment[]>([]);
+const yamlConfig = ref<Record<string, any>>({});
+
 const inScreenWindow = ref('');
 const payloadScreen = ref([]);
 const jobScreen = ref({});
 const mailScreen = ref([]);
 const logScreen = ref({});
 const queriesScreen = ref([]);
-const brainScreen = ref({}); // added
+const brainScreen = ref({});
 const applicationPath = ref('');
 
 const xdebugMode = ref(false);
 const isDraggingScreen = ref(false);
 const draggedScreenName = ref('');
 const sfDump = ref(false);
+
+watch(
+    () => currentProjectStore.projectInfo,
+    (newProject, oldProject) => {
+        if (newProject && newProject.path !== oldProject?.path) {
+            environments.value.forEach((env) => {
+                if (!isSpecialEnvironment(env.value)) {
+                    screenStore.remove(env.value);
+                    payloadStore.clear(env.value);
+                }
+            });
+            environments.value = [];
+
+            window.ipcRenderer.send('storage.get-yaml', newProject.path);
+        }
+    }
+);
+
 onBeforeMount(() => {
     locale.value = localeStore.value;
 });
@@ -115,7 +139,7 @@ const handleAppScreenWindowEnable = async (_: any, args: any) => {
     mailScreen.value = args.mails;
     logScreen.value = args.logs;
     queriesScreen.value = args.queries;
-    brainScreen.value = args.brains; // added
+    brainScreen.value = args.brains;
 
     setTimeout(() => (document.title = 'LaraDumps - ' + args.screen), 200);
 };
@@ -126,7 +150,7 @@ const handleAppScreenWindowUpdate = async (_: any, args: any) => {
     mailScreen.value = args.mails;
     logScreen.value = args.logs;
     queriesScreen.value = args.queries;
-    brainScreen.value = args.brains; // added
+    brainScreen.value = args.brains;
 };
 
 const handleXdebugConnected = (_: any, arg: any) => {
@@ -145,7 +169,7 @@ const handleXdebug = (_: any, { content }: any) => dispatch(content);
 const handleAddScreen = (event: Event) => {
     const detail: Environment = (event as CustomEvent).detail;
 
-    const screenName = detail.value.replace('_', ' ');
+    const screenName = detail.value;
 
     if (detail.selected) {
         addScreen({
@@ -157,6 +181,101 @@ const handleAddScreen = (event: Event) => {
         });
     } else {
         screenStore.remove(screenName);
+    }
+};
+
+const handleEnvironmentsRetrieved = (_: any, envs: Environment[]) => {
+    if (!envs) return;
+    environments.value = envs.map((env) => ({ ...env }));
+};
+
+const handleYamlRetrieved = (_: any, data: any) => {
+    yamlConfig.value = data || {};
+};
+
+const handleYamlSectionUpdated = (_: any, { section, values, error }: any) => {
+    if (error) {
+        console.error('Error updating YAML section:', error);
+        return;
+    }
+
+    if (section && values) {
+        yamlConfig.value = {
+            ...yamlConfig.value,
+            [section]: values
+        };
+    }
+};
+
+const handleEnvironmentSelected = async (environment: Environment) => {
+    environment.selected = true;
+
+    if (currentProjectStore.projectInfo) {
+        window.ipcRenderer.once('storage.update.reply', () => {
+            window.ipcRenderer.send('storage.get-yaml', currentProjectStore.projectInfo.path);
+        });
+
+        window.ipcRenderer.send('storage.update', {
+            selected: environments.value.map(({ value, selected }) => ({ value, selected })),
+            path: currentProjectStore.projectInfo.path
+        });
+    }
+
+    const screenName = environment.value;
+    addScreen({
+        screen_name: screenName,
+        raise_in: 0,
+        visible: true,
+        pinned: false,
+        new_window: false
+    });
+
+    await toggleScreen(screenName, true);
+};
+
+const handleRemoveEnvironmentScreen = async (screenName: string) => {
+    screenStore.remove(screenName);
+    payloadStore.clear(screenName);
+
+    switch (screenName) {
+        case 'queries':
+            queriesStore.clear();
+            timeStore.clear();
+            blockedStore.clear();
+            break;
+        case 'jobs':
+            jobStore.clear();
+            break;
+        case 'log':
+            logStore.clear();
+            break;
+        case 'mail':
+            mailStore.clear();
+            break;
+        case 'livewire':
+            livewireStore.clear();
+            break;
+        case 'brain':
+            brainStore.clear();
+            break;
+    }
+
+    const environment = environments.value.find((env) => env.value === screenName);
+    if (environment) {
+        environment.selected = false;
+
+        if (currentProjectStore.projectInfo) {
+            window.ipcRenderer.send('storage.update', {
+                selected: environments.value.map(({ value, selected }) => ({ value, selected })),
+                path: currentProjectStore.projectInfo.path
+            });
+        }
+    }
+
+    if (screenStore.screen === screenName) {
+        const nextScreens = screenStore.allVisible();
+        const nextScreen = nextScreens.length > 0 ? nextScreens[0] : { screen_name: 'home' };
+        await toggleScreen(nextScreen.screen_name, true);
     }
 };
 
@@ -373,7 +492,6 @@ const handleScreen = (_: any, { content }: any) => {
         toggleScreen(screen.screen_name, true);
     }
 
-    // raise_in: seconds
     if (screen.raise_in > 0) {
         setTimeout(() => {
             toggleScreen(screen.screen_name, true);
@@ -514,6 +632,10 @@ const clearListeners = () => {
     window.ipcRenderer.off('xdebug-disconnected', handleXdebugDisconnected);
     window.ipcRenderer.off('xdebug', handleXdebug);
     window.ipcRenderer.off('saved-dumps:remove', handleSavedDumpsRemove);
+    window.ipcRenderer.off('storage.get-environments.reply', handleEnvironmentsRetrieved);
+    window.ipcRenderer.off('storage.get-yaml.reply', handleYamlRetrieved);
+    window.ipcRenderer.off('storage.update-section.reply', handleYamlSectionUpdated);
+    window.removeEventListener('add-screen', handleAddScreen);
 
     clearDumpListeners();
 };
@@ -551,6 +673,15 @@ onMounted(() => {
 
     window.addEventListener('add-screen', handleAddScreen);
     window.ipcRenderer.on('saved-dumps:remove', handleSavedDumpsRemove);
+
+    window.ipcRenderer.on('storage.get-environments.reply', handleEnvironmentsRetrieved);
+    window.ipcRenderer.on('storage.get-yaml.reply', handleYamlRetrieved);
+    window.ipcRenderer.on('storage.update-section.reply', handleYamlSectionUpdated);
+
+    if (currentProjectStore.projectInfo) {
+        window.ipcRenderer.send('storage.get-environments', currentProjectStore.projectInfo.path);
+        window.ipcRenderer.send('storage.get-yaml', currentProjectStore.projectInfo.path);
+    }
 });
 
 const dumpListeners = () => {
@@ -723,30 +854,32 @@ const dispatch = (content: any): void => {
     setTimeout(() => toggleScreen(content.to_screen.screen_name, false), 10);
 };
 
-const openScreenWindow = () => {
-    screenStore.toggleVisible(screenStore.screen);
+const openScreenWindow = (targetScreen?: string) => {
+    const screen = targetScreen ?? screenStore.screen;
 
-    const serializablePayload = deepClone(payloadStore.get(screenStore.screen));
+    screenStore.toggleVisible(screen);
+
+    const serializablePayload = deepClone(payloadStore.get(screen));
     const serializableJobPayload = deepClone(jobStore.jobs);
     const serializableMailPayload = deepClone(mailStore.mails);
     const serializableLogPayload = deepClone(logStore.logs);
     const serializableQueriesPayload = deepClone(queriesStore.payload);
-    const serializableBrainsPayload = deepClone(brainStore.brains); // added
+    const serializableBrainsPayload = deepClone(brainStore.brains);
 
     window.ipcRenderer.send('screen-window:show', {
-        screen: screenStore.screen,
+        screen,
         payload: serializablePayload,
         jobs: serializableJobPayload,
         mails: serializableMailPayload,
         logs: serializableLogPayload,
         queries: serializableQueriesPayload,
-        brains: serializableBrainsPayload, // added
+        brains: serializableBrainsPayload,
         position: {}
     });
 
     setTimeout(() => {
-        const screenName = screenStore.screen === 'home' ? screenStore.getNext('home').screen_name : 'home';
-        toggleScreen(screenName);
+        const next = screen === 'home' ? screenStore.getNext('home').screen_name : 'home';
+        toggleScreen(next);
     }, 200);
 };
 
@@ -853,7 +986,7 @@ const handleDragEnd = () => {
 
         <div
             v-if="inScreenWindow"
-            class="mt-3 h-[calc(100vh-50px)] w-[100vw] text-base"
+            class="mt-3 h-[calc(100vh-50px)] w-screen text-base"
         >
             <ScreenWindow
                 v-if="!['jobs', 'mail', 'logs', 'queries', 'brain'].includes(inScreenWindow)"
@@ -883,6 +1016,7 @@ const handleDragEnd = () => {
                 :in-screen-window="inScreenWindow.length > 0"
                 v-if="inScreenWindow === 'logs'"
                 :items="logScreen"
+                :yaml-config="yamlConfig"
             />
         </div>
 
@@ -892,7 +1026,7 @@ const handleDragEnd = () => {
             <div v-else>
                 <div
                     v-if="splitPanesStore.splitConfig?.active"
-                    class="fixed inset-0 top-[41px] flex flex-col"
+                    class="fixed inset-0 top-10.25 flex flex-col"
                 >
                     <SplitPanes
                         :orientation="splitPanesStore.splitConfig.orientation"
@@ -900,24 +1034,17 @@ const handleDragEnd = () => {
                     >
                         <template #pane-a>
                             <div class="flex flex-col h-full">
-                                <div class="flex-shrink-0 z-[380]">
-                                    <div
-                                        class="flex h-[48px] p-1.5 items-center justify-between w-full overflow-x-auto"
-                                    >
+                                <div class="shrink-0 z-380">
+                                    <div class="flex h-12 p-1.5 items-center justify-between w-full">
                                         <Screens
+                                            class="flex-1 min-w-0"
+                                            :environments="environments"
                                             @toggleScreen="toggleScreen"
                                             @dragScreen="handleDragScreen"
+                                            @environmentSelected="handleEnvironmentSelected"
+                                            @removeEnvironmentScreen="handleRemoveEnvironmentScreen"
+                                            @openScreenWindow="openScreenWindow"
                                         />
-
-                                        <div class="p-0.5 px-1 right-2">
-                                            <button
-                                                v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
-                                                @click="openScreenWindow"
-                                                class="btn btn-sm p-[0.5rem] btn-circle btn-soft border border-base-content/5"
-                                            >
-                                                <IconExternalLink class="w-4 text-base-content" />
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -935,25 +1062,25 @@ const handleDragEnd = () => {
                                     </div>
 
                                     <div v-else-if="screenStore.screen === 'logs'">
-                                        <LogView />
+                                        <LogView :yaml-config="yamlConfig" />
                                     </div>
 
                                     <div v-else-if="screenStore.screen === 'queries'">
-                                        <QueriesView />
+                                        <QueriesView :yaml-config="yamlConfig" />
                                     </div>
 
                                     <div
                                         v-else
                                         class="flex flex-col rounded-sm text-base w-full h-full"
                                     >
-                                        <HeaderColorsFilter v-if="hasColorsInPayload" />
+                                        <!--                                        <HeaderColorsFilter v-if="hasColorsInPayload" />-->
 
                                         <div id="top"></div>
 
                                         <div class="w-full">
                                             <div
                                                 id="dumps-base"
-                                                class="w-full mb-[40px]"
+                                                class="w-full mb-10"
                                                 v-if="payloadStore.payload.length > 0"
                                                 :class="{
                                                     'flex flex-col-reverse':
@@ -963,7 +1090,7 @@ const handleDragEnd = () => {
                                                 <div
                                                     v-for="(group, groupKey) in groupedDumps"
                                                     :key="groupKey"
-                                                    class="w-full px-3"
+                                                    class="w-full"
                                                 >
                                                     <div
                                                         v-if="
@@ -973,15 +1100,17 @@ const handleDragEnd = () => {
                                                         class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                                     >
                                                         <span
-                                                            class="opacity-70 px-1"
+                                                            class="flex items-center gap-1 opacity-70"
                                                             :title="groupKey"
                                                         >
+                                                            <ClockIcon class="w-3 h-3" />
                                                             {{ moment(groupKey).format('HH:mm:ss') }}
                                                         </span>
                                                     </div>
 
                                                     <div
-                                                        v-for="payload in settingsStore.settings.dump_order === 'normal'
+                                                        v-for="(payload, index) in settingsStore.settings.dump_order ===
+                                                        'normal'
                                                             ? group.slice().reverse()
                                                             : group"
                                                         :key="payload.sf_dump_id"
@@ -989,10 +1118,11 @@ const handleDragEnd = () => {
                                                         class="w-full"
                                                     >
                                                         <DumpItem
-                                                            class="w-full group text-sm mb-3"
+                                                            class="w-full group text-sm"
                                                             v-show="screenStore.screen !== 'livewire'"
                                                             :payload="payload"
                                                             :show-time="!settingsStore.settings.grouped_by_time"
+                                                            :is-first="index === 0"
                                                             @delete-dump="deleteDump"
                                                         />
                                                     </div>
@@ -1032,13 +1162,13 @@ const handleDragEnd = () => {
 
                         <template #pane-b>
                             <div class="flex flex-col h-full overflow-hidden">
-                                <div class="flex-shrink-0 h-[48px] px-3 py-1.5 items-center justify-between flex">
+                                <div class="shrink-0 h-12 px-3 py-1.5 items-center justify-between flex">
                                     <h2 class="text-sm font-semibold capitalize">
                                         {{ splitPanesStore.splitConfig.screenName }}
                                     </h2>
                                     <button
                                         @click="handleCloseSplit"
-                                        class="btn border border-base-content/5 btn-sm p-[0.5rem] btn-circle btn-soft z-[9999]"
+                                        class="btn border border-base-content/5 btn-sm p-2 btn-circle btn-soft z-9999"
                                         aria-label="Close split"
                                         title="Close split"
                                     >
@@ -1060,23 +1190,29 @@ const handleDragEnd = () => {
 
                                 <div class="flex-1 overflow-auto min-h-0">
                                     <div v-if="splitPanesStore.splitConfig.screenName === 'jobs'">
-                                        <JobView />
+                                        <JobView @open-screen-window="openScreenWindow" />
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'brain'">
-                                        <BrainView />
+                                        <BrainView @open-screen-window="openScreenWindow" />
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'mail'">
-                                        <MailView />
+                                        <MailView @open-screen-window="openScreenWindow" />
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'logs'">
-                                        <LogView />
+                                        <LogView
+                                            :yaml-config="yamlConfig"
+                                            @open-screen-window="openScreenWindow"
+                                        />
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'queries'">
-                                        <QueriesView />
+                                        <QueriesView
+                                            :yaml-config="yamlConfig"
+                                            @open-screen-window="openScreenWindow"
+                                        />
                                     </div>
 
                                     <div
@@ -1115,15 +1251,17 @@ const handleDragEnd = () => {
                                                     class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
                                                 >
                                                     <span
-                                                        class="opacity-70 px-1"
+                                                        class="flex items-center gap-1 opacity-70"
                                                         :title="groupKey"
                                                     >
+                                                        <ClockIcon class="w-3 h-3" />
                                                         {{ moment(groupKey).format('HH:mm:ss') }}
                                                     </span>
                                                 </div>
 
                                                 <div
-                                                    v-for="payload in settingsStore.settings.dump_order === 'normal'
+                                                    v-for="(payload, index) in settingsStore.settings.dump_order ===
+                                                    'normal'
                                                         ? group.slice().reverse()
                                                         : group"
                                                     :key="payload.sf_dump_id"
@@ -1133,6 +1271,7 @@ const handleDragEnd = () => {
                                                         class="w-full group text-sm"
                                                         :payload="payload"
                                                         :show-time="!settingsStore.settings.grouped_by_time"
+                                                        :is-first="index === 0"
                                                         @delete-dump="deleteDump"
                                                     />
                                                 </div>
@@ -1148,53 +1287,66 @@ const handleDragEnd = () => {
                 <div v-else>
                     <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                         <main class="flex flex-col flex-1 min-h-full space-y-1">
-                            <div class="flex z-[10]">
-                                <div class="flex h-[48px] p-1.5 items-center justify-between w-full overflow-x-auto">
+                            <div class="flex z-50">
+                                <div class="flex h-12 p-1.5 items-center justify-between w-full">
                                     <Screens
+                                        class="flex-1 min-w-0"
+                                        :environments="environments"
                                         @toggleScreen="toggleScreen"
                                         @dragScreen="handleDragScreen"
+                                        @environmentSelected="handleEnvironmentSelected"
+                                        @removeEnvironmentScreen="handleRemoveEnvironmentScreen"
+                                        @openScreenWindow="openScreenWindow"
                                     />
-
-                                    <div class="p-0.5 px-1 right-2">
-                                        <button
-                                            v-if="!['home', 'livewire', 'queries'].includes(screenStore.screen)"
-                                            @click="openScreenWindow"
-                                            class="btn btn-sm p-[0.5rem] btn-circle btn-soft border border-base-content/5"
-                                        >
-                                            <IconExternalLink class="w-4 text-base-content" />
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
 
                             <div v-if="screenStore.screen === 'jobs'">
-                                <JobView class="h-[calc(100vh-91px)] w-[100vw] text-base" />
+                                <JobView
+                                    class="w-screen text-base"
+                                    @open-screen-window="openScreenWindow"
+                                />
                             </div>
 
                             <div v-if="screenStore.screen === 'mail'">
-                                <MailView class="h-[calc(100vh-85px)] w-[100vw] text-base" />
+                                <MailView
+                                    class="w-screen text-base"
+                                    @open-screen-window="openScreenWindow"
+                                />
                             </div>
 
                             <div v-if="screenStore.screen === 'logs'">
-                                <LogView class="h-[calc(100vh-100px)] w-[100vw] text-base" />
+                                <LogView
+                                    class="w-screen text-base"
+                                    :yaml-config="yamlConfig"
+                                    @open-screen-window="openScreenWindow"
+                                />
                             </div>
 
                             <div v-if="screenStore.screen === 'queries'">
-                                <QueriesView class="h-[calc(100vh-85px)] text-base" />
+                                <QueriesView
+                                    class="text-base"
+                                    :yaml-config="yamlConfig"
+                                    @open-screen-window="openScreenWindow"
+                                />
                             </div>
 
                             <div v-if="screenStore.screen === 'brain'">
-                                <BrainView class="h-[calc(100vh-85px)] w-[100vw] text-base" />
+                                <BrainView
+                                    class="w-screen text-base"
+                                    @open-screen-window="openScreenWindow"
+                                />
                             </div>
 
                             <div
                                 v-else
                                 :class="{
-                                    'items-center': payloadStore.payload.length === 0
+                                    'items-center': payloadStore.payload.length === 0,
+                                    'h-[calc(100vh-90px)]': true
                                 }"
-                                class="flex flex-col rounded-sm text-base h-[calc(100vh-85px)] w-[100vw] overflow-auto"
+                                class="flex flex-col rounded-sm text-base w-screen overflow-auto"
                             >
-                                <HeaderColorsFilter v-if="hasColorsInPayload" />
+                                <!--  <HeaderColorsFilter v-if="hasColorsInPayload" />-->
 
                                 <div id="top"></div>
 
@@ -1205,45 +1357,54 @@ const handleDragEnd = () => {
                                 >
                                     <div
                                         id="dumps-base"
-                                        class="w-full mb-[40px]"
+                                        class="w-full mb-10"
                                         v-if="payloadStore.payload.length > 0"
                                         :class="{
                                             'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal'
                                         }"
                                     >
                                         <div
-                                            v-for="(group, groupKey) in groupedDumps"
+                                            v-for="(group, groupKey, index) in groupedDumps"
                                             :key="groupKey"
-                                            class="w-full px-3"
+                                            class="w-full"
+                                            :class="{
+                                                '-mt-1': index === 0
+                                            }"
                                         >
                                             <div
                                                 v-if="
                                                     !['livewire'].includes(screenStore.screen) &&
                                                     settingsStore.settings.grouped_by_time
                                                 "
-                                                class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
+                                                class="bg-base-200 flex-1 text-left p-3 z-300 text-xs sticky -top-2"
                                             >
                                                 <span
-                                                    class="opacity-70 px-1"
+                                                    class="flex items-center gap-1 opacity-70"
                                                     :title="groupKey"
                                                 >
+                                                    <ClockIcon class="w-3 h-3" />
                                                     {{ moment(groupKey).format('HH:mm:ss') }}
                                                 </span>
                                             </div>
 
                                             <div
-                                                v-for="payload in settingsStore.settings.dump_order === 'normal'
+                                                v-for="(payload, index) in settingsStore.settings.dump_order ===
+                                                'normal'
                                                     ? group.slice().reverse()
                                                     : group"
                                                 :key="payload.sf_dump_id"
                                                 :id="payload.id"
                                                 class="w-full"
+                                                :class="{
+                                                    '-mt-3': settingsStore.settings.grouped_by_time && index === 0
+                                                }"
                                             >
                                                 <DumpItem
-                                                    class="w-full group text-sm mb-3"
+                                                    class="w-full group text-sm"
                                                     v-show="screenStore.screen !== 'livewire'"
                                                     :payload="payload"
                                                     :show-time="!settingsStore.settings.grouped_by_time"
+                                                    :is-first="index === 0"
                                                     @delete-dump="deleteDump"
                                                 />
                                             </div>
@@ -1257,7 +1418,7 @@ const handleDragEnd = () => {
                                             dumpsBagFiltered.length === 0 &&
                                             !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)
                                         "
-                                        class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full"
+                                        class="-mt-22.5 -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                                         style="height: -webkit-fill-available"
                                     >
                                         <SvgEmpty class="w-30 opacity-25" />

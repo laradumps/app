@@ -22,7 +22,6 @@ export interface Settings {
     dump_order: 'normal' | 'reversed';
     window_width: number;
     window_height: number;
-    show_collapse_button: boolean;
     show_pause_button: boolean;
     show_ssh_button: boolean;
     show_variable_type: boolean;

@@ -4,13 +4,8 @@ on:
     workflow_dispatch:
 
 jobs:
-    release:
-        runs-on: ${{ matrix.os }}
-
-        strategy:
-            matrix:
-                os: [macos-latest, ubuntu-latest, windows-latest]
-
+    linux:
+        runs-on: ubuntu-latest
         steps:
             - name: Check out Git repository
               uses: actions/checkout@v4
@@ -28,26 +23,74 @@ jobs:
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-            - name: Install Snapcraft
-              if: matrix.os == 'ubuntu-latest'
-              run: |
-                  sudo snap install snapcraft --classic
+    windows:
+        runs-on: windows-latest
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v4
 
-            - name: 🐧 Release Linux
-              if: matrix.os == 'ubuntu-latest'
-              run: npm run publish-linux
+            - name: Install Node.js and npm
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22.x'
+
+            - name: Install dependencies
+              run: npm install --force
+
+            - name: Updater
+              run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
-                  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
             - name: 💻 Release Windows
-              if: matrix.os == 'windows-latest'
               run: npm run publish-win
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
+    mac:
+        runs-on: macos-latest
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v4
+
+            - name: Install Node.js and npm
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22.x'
+
+            - name: Install dependencies
+              run: npm install --force
+
+            - name: Updater
+              run: git update-index --chmod=+x ./gen-update-xml.sh && sh ./gen-update-xml.sh
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
             - name:  Release Mac
-              if: matrix.os == 'macos-latest'
               run: npm run publish-mac
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+    snap:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v4
+
+            - name: Install Node.js and npm
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22.x'
+
+            - name: Install dependencies
+              run: npm install --force
+
+            - name: Install Snapcraft
+              run: |
+                  sudo snap install snapcraft --classic
+
+            - name: 🐧 Release Linux
+              run: npm run publish-linux
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+                  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}

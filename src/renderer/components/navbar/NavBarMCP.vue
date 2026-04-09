@@ -2,6 +2,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useSettingsStore } from '@/store/settings';
+import { CpuChipIcon } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
 const settingsStore = useSettingsStore();
@@ -12,13 +13,13 @@ const mcpMessage = ref('');
 const statusIndicatorColor = computed(() => {
     switch (mcpStatus.value) {
         case 'connected':
-            return 'bg-green-500';
+            return 'bg-success shadow-[0_0_6px_rgba(0,255,0,0.8)]';
         case 'error':
-            return 'bg-red-500';
+            return 'bg-error shadow-[0_0_6px_rgba(255,0,0,0.8)]';
         case 'loading':
-            return 'bg-yellow-500';
+            return 'bg-warning shadow-[0_0_6px_rgba(255,165,0,0.8)]';
         default:
-            return 'bg-gray-400';
+            return 'bg-base-content/30';
     }
 });
 
@@ -83,13 +84,19 @@ const navigate = () => {
 </script>
 
 <template>
-    <div
+    <a
         v-if="settingsStore.settings.mcp_enabled"
-        class="flex items-center gap-1 mx-2 select-none cursor-pointer hover:bg-base-300 rounded px-1 transition-colors"
+        class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg transition-colors text-base-content/70 cursor-default"
         :title="title"
-        @click="navigate"
     >
-        <span class="relative flex h-2 w-2">
+        <div class="flex items-center gap-3">
+            <CpuChipIcon
+                class="size-4"
+                :class="{ 'text-error': mcpStatus === 'error', 'text-success': mcpStatus === 'connected' }"
+            />
+            <span class="font-medium text-xs">MCP Status</span>
+        </div>
+        <span class="relative flex h-2 w-2 mr-1">
             <span
                 v-if="statusIndicatorPulse"
                 :class="[
@@ -99,8 +106,7 @@ const navigate = () => {
             ></span>
             <span :class="[statusIndicatorColor, 'relative inline-flex rounded-full h-2 w-2']"></span>
         </span>
-        <span class="text-[10px] uppercase font-bold text-base-content/70">MCP</span>
-    </div>
+    </a>
 </template>
 
 <style scoped>
