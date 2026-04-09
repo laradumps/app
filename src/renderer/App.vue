@@ -69,20 +69,23 @@ Object.defineProperty(String.prototype, 'beautifyShortcut', {
     value() {
         if (process.platform === 'darwin') {
             return this.replace(/CommandOrControl/g, '⌘')
+                .replace(/Control/g, '⌃')
                 .replace(/Shift/g, '⇧')
-                .replace(/Option|Alt/g, '⌥');
+                .replace(/Alt/g, '⌥');
         }
         return this.replace(/CommandOrControl/g, 'Ctrl')
+            .replace(/Control/g, 'Ctrl')
             .replace(/Shift/g, '⇧')
-            .replace(/Option|Alt/g, 'Alt');
+            .replace(/Alt/g, 'Alt');
     }
 });
 
 Object.defineProperty(String.prototype, 'toElectronFormat', {
     value() {
-        return this.replace(/|⌃|⌘|Ctrl/g, 'CommandOrControl')
-            .replace(/⇧|Shift/g, 'Shift')
-            .replace(/⌥|Alt/g, 'Option');
+        return this.replace(/⌘/g, 'CommandOrControl')
+            .replace(/⌃/g, 'Control')
+            .replace(/⇧/g, 'Shift')
+            .replace(/⌥/g, 'Alt');
     }
 });
 
