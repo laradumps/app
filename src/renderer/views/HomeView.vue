@@ -1368,7 +1368,7 @@ const handleDragEnd = () => {
                                             :key="groupKey"
                                             class="w-full"
                                             :class="{
-                                                '-mt-2': index === 0
+                                                '-mt-1': index === 0
                                             }"
                                         >
                                             <div

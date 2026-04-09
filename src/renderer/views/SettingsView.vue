@@ -601,20 +601,6 @@ const saveCustomTheme = async () => {
 
                         <Divider class="mt-2" />
                         <div class="mt-2 grid grid-cols-2 items-center">
-                            <div>{{ $t('settings.show_collapse_button') }}</div>
-                            <div class="flex items-center justify-end">
-                                <div class="p-1.5">
-                                    <input
-                                        type="checkbox"
-                                        class="toggle toggle-sm toggle-accent"
-                                        v-model="settingsStore.settings.show_collapse_button"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <Divider class="mt-2" />
-                        <div class="mt-2 grid grid-cols-2 items-center">
                             <div>{{ $t('settings.show_pause_button') }}</div>
                             <div class="flex items-center justify-end">
                                 <div class="p-1.5">

@@ -73,7 +73,6 @@ export default {
         show_context: 'Mostrar contexto (Laravel)',
         laravel_docs: 'Documentação Laravel',
         show_badge_count: 'Mostrar contador no ícone (macOS, linux)',
-        show_collapse_button: 'Mostrar botão de colapsar',
         show_pause_button: 'Mostrar botão de pausar',
         show_ssh_button: 'Mostrar botão SSH',
         show_variable_type: 'Mostrar tipo da variável',

@@ -74,7 +74,6 @@ export default {
         show_context: 'Show context (Laravel)',
         laravel_docs: 'Laravel Docs',
         show_badge_count: 'Show badge count (macOS, linux)',
-        show_collapse_button: 'Show Collapse Button',
         show_pause_button: 'Show Pause Button',
         show_ssh_button: 'Show SSH Button',
         show_variable_type: 'Show variable type',

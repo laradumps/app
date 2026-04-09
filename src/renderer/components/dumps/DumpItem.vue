@@ -199,7 +199,7 @@ const indicatorColorClass = computed(() => {
     if (label === 'warning' || color === 'orange') return 'border-l-4 border-b-0 bg-warning/10 border-warning';
     if (color === 'green') return 'border-l-4 border-b-0 bg-success/10 border-success';
 
-    return '';
+    return 'hover:bg-base-300';
 });
 
 const indicatorDotClass = computed(() => {
@@ -410,7 +410,7 @@ onUnmounted(() => {
         v-if="
             (payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'
         "
-        :class="{ '-mt-2': isFirst }"
+        :class="{ '-mt-1': isFirst }"
     >
         <div
             @mouseenter="decrementBadgeCount"

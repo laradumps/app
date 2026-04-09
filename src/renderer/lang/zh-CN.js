@@ -73,7 +73,6 @@ export default {
         show_context: '显示上下文 (Laravel)',
         laravel_docs: 'Laravel 文档',
         show_badge_count: '显示徽章计数 (macOS, linux)',
-        show_collapse_button: '显示折叠按钮',
         show_pause_button: '显示暂停按钮',
         show_ssh_button: '显示 SSH 按钮',
         show_variable_type: '显示变量类型',

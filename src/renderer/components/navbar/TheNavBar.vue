@@ -4,7 +4,6 @@ import NavBarAlwaysOnTop from '@/components/navbar/NavBarAlwaysOnTop.vue';
 import NavBarGlobalSearch from '@/components/navbar/NavBarGlobalSearch.vue';
 import NavBarProjectSwitcher from '@/components/navbar/NavBarProjectSwitcher.vue';
 import NavBarPause from '@/components/navbar/NavBarPause.vue';
-import NavBarCollapse from '@/components/navbar/NavBarCollapse.vue';
 import NavBarSSH from '@/components/navbar/NavBarSSH.vue';
 import NavBarSettings from '@/components/navbar/NavBarSettings.vue';
 import NavBarEnvironments from '@/components/navbar/NavBarEnvironments.vue';
@@ -88,8 +87,6 @@ const modalClose = () => (isListeningModalOpen.value = false);
         <div class="flex gap-1 items-center m-0.5">
             <!-- global search -->
             <NavBarGlobalSearch v-if="hasPayload" />
-            <!-- collapse -->
-            <NavBarCollapse v-if="settingsStore.settings.show_collapse_button" />
             <!-- ssh -->
             <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
             <!-- saved dumps -->

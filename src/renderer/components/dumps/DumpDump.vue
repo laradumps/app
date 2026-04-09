@@ -66,6 +66,7 @@ const rawDumpContent = computed(() => {
                     <span
                         v-if="payload.dump?.variable_type === 'string'"
                         style="white-space: pre-line"
+                        class="font-semibold"
                         >{{ payload.dump?.dump }}</span
                     >
                     <span
