@@ -12,10 +12,12 @@
         "build": "vite build && node build.js --prod",
         "build-win": "npm run build && electron-builder --win",
         "build-mac": "npm run build && electron-builder --mac --universal",
-        "build-linux": "npm run build && electron-builder --linux",
+        "build-linux": "npm run build && electron-builder --linux AppImage",
+        "build-snap": "npm run build && electron-builder --linux snap",
         "publish-win": "npm run build && electron-builder --publish always --win",
         "publish-mac": "npm run build && electron-builder --publish always --mac --universal",
-        "publish-linux": "npm run build && electron-builder --publish always --linux",
+        "publish-linux": "npm run build && electron-builder --publish always --linux AppImage",
+        "publish-snap": "npm run build && electron-builder --publish always --linux snap",
         "format": "prettier . --write"
     },
     "dependencies": {
@@ -139,8 +141,7 @@
             "description": "LaraDumps a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
             "icon": "./build/icon.icns",
             "target": [
-                "AppImage",
-                "snap"
+                "AppImage"
             ],
             "desktop": {
                 "entry": "build/linux/laradumps.desktop"
@@ -153,20 +154,6 @@
             "confinement": "strict",
             "summary": "LaraDumps - PHP debugging app",
             "plugs": [
-                "default",
-                "network",
-                "network-bind",
-                "home",
-                "opengl",
-                "audio-playback",
-                "browser-support",
-                "desktop",
-                "desktop-legacy",
-                "wayland",
-                "x11",
-                "unity7",
-                "pulseaudio",
-                "gsettings",
                 "cups-control"
             ]
         },

@@ -71,13 +71,13 @@ jobs:
                   sudo snap install snapcraft --classic
 
             - name: 🐧 Release Linux (GitHub AppImage)
-              run: npm run build && npx electron-builder --publish always --linux AppImage
+              run: npm run publish-linux
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
             - name: 📦 Publish Snap (non-blocking)
               continue-on-error: true
-              run: npx electron-builder --publish always --linux snap
+              run: npm run publish-snap
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
                   SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
