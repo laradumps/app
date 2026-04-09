@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import moment, { Moment } from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
 import { QueriesPayload } from '@/types/Payload';
 
 export type Request = {
@@ -9,7 +9,7 @@ export type Request = {
     uri: string;
     method: string;
     origin: string;
-    date: Moment;
+    date: Dayjs;
     original_content?: string;
 };
 
@@ -43,7 +43,7 @@ export const useTimeStore = defineStore('timeStore', {
             return this.hasRequest(requestId) ? this.requests[requestId].time : null;
         },
 
-        getDate(requestId: string): Moment | null {
+        getDate(requestId: string): Dayjs | null {
             return this.hasRequest(requestId) ? this.requests[requestId].date : null;
         },
 
@@ -103,11 +103,11 @@ export const useTimeStore = defineStore('timeStore', {
             this.requests[requestId] = {
                 request_id: requestId,
                 total,
-                time: moment().format('HH:mm:ss a'),
+                time: dayjs().format('HH:mm:ss a'),
                 uri: queriesPayload.uri,
                 method: queriesPayload.method,
                 origin: queriesPayload.origin,
-                date: moment(),
+                date: dayjs(),
                 original_content: queriesPayload.original_content
             };
 

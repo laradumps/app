@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 import {
     FunnelIcon,
     PlayIcon,
@@ -193,7 +195,7 @@ const toggleYamlControl = (section: string, key: string, currentValue: boolean) 
 const groupedLogsByRelativeTime = computed(() => {
     const groups: Record<string, Log[]> = {};
     for (const log of logs.value) {
-        const timeKey = moment(log.created_at).fromNow();
+        const timeKey = dayjs(log.created_at).fromNow();
         if (!groups[timeKey]) {
             groups[timeKey] = [];
         }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'vue';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useBrainStore, BrainWorkflow, BrainAction } from '@/store/brains';
@@ -119,7 +121,7 @@ const groupedWorkflowByRelativeTime = computed(() => {
     const groups: Record<string, BrainWorkflow[]> = {};
 
     for (const workflowEntry of filteredAndSortedProcesses.value) {
-        const key = moment(workflowEntry.updatedAt ?? workflowEntry.startedAt).fromNow();
+        const key = dayjs(workflowEntry.updatedAt ?? workflowEntry.startedAt).fromNow();
 
         if (!groups[key]) groups[key] = [];
         groups[key].push(workflowEntry);
@@ -344,7 +346,7 @@ const toggleActionExpanded = (action: any) => {
                                     </div>
 
                                     <div class="text-xs opacity-75">
-                                        Started: {{ moment(selectedWorkflow.startedAt).format('HH:mm:ss') }} | Duration:
+                                        Started: {{ dayjs(selectedWorkflow.startedAt).format('HH:mm:ss') }} | Duration:
                                         {{ computeWorkflowDuration(selectedWorkflow) }}
                                     </div>
                                 </div>
@@ -549,9 +551,7 @@ const toggleActionExpanded = (action: any) => {
 
                                     <td class="text-right">
                                         {{
-                                            moment(workflowEntry.updatedAt ?? workflowEntry.startedAt).format(
-                                                'HH:mm:ss'
-                                            )
+                                            dayjs(workflowEntry.updatedAt ?? workflowEntry.startedAt).format('HH:mm:ss')
                                         }}
                                     </td>
                                     <td class="whitespace-nowrap text-right">

@@ -1,4 +1,4 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { Payload } from '@/types/Payload';
 import { useQueryDuplicated } from '@/store/query-duplicated';
 import { useTimeStore } from '@/store/time';
@@ -24,8 +24,8 @@ export async function exportQueriesToSQL(queries: Payload[], requestId: string):
 
         const requestName = selectedRequest?.uri || 'Tinker';
         const totalQueries = filteredQueries.length;
-        const timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-        const fileTimestamp = moment().format('YYYY-MM-DD_HH-mm-ss');
+        const timestamp = dayjs().format('YYYY-MM-DD HH:mm:ss');
+        const fileTimestamp = dayjs().format('YYYY-MM-DD_HH-mm-ss');
 
         let sqlContent = '';
 

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Job, useJobStore } from '@/store/jobs';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 import { PlayIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
 
@@ -90,7 +92,7 @@ const groupedJobsByRelativeTime = computed(() => {
     const groups: Record<string, Job[]> = {};
 
     for (const job of jobs.value) {
-        const timeKey = moment(job.pushed_time ?? job.start_time).fromNow();
+        const timeKey = dayjs(job.pushed_time ?? job.start_time).fromNow();
         if (!groups[timeKey]) {
             groups[timeKey] = [];
         }
@@ -292,14 +294,14 @@ const toggleMessageLimit = () => {
                                             <td class="whitespace-nowrap">
                                                 {{
                                                     selected.start_time
-                                                        ? moment(selected.start_time).format('hh:mm:ss a')
+                                                        ? dayjs(selected.start_time).format('hh:mm:ss a')
                                                         : '-'
                                                 }}
                                             </td>
                                             <td class="whitespace-nowrap">
                                                 {{
                                                     selected.end_time
-                                                        ? moment(selected.end_time).format('hh:mm:ss a')
+                                                        ? dayjs(selected.end_time).format('hh:mm:ss a')
                                                         : '-'
                                                 }}
                                             </td>

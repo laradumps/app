@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { Payload, ScreenPayload, TimeTrackPayload, ValidatePayload } from '@/types/Payload';
 import * as Helper from '@/helpers';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import humanizeDuration from 'humanize-duration';
 
 let payloadIds = [];
@@ -117,19 +117,17 @@ export const usePayloadStore = defineStore('payload', {
                 const indexFiltered = this.findPayloadIndex(exist.id);
 
                 if (indexPayload !== -1) {
-                    const _end = moment.unix(Number(content.time_track.end_time));
-                    const _start = moment.unix(Number(exist.time_track?.time));
-                    const duration = moment.duration(_start.diff(_end));
-                    this.payload[indexPayload].time_track.elapsed_time = humanizeDuration(duration.asMilliseconds());
+                    const _end = dayjs.unix(Number(content.time_track.end_time));
+                    const _start = dayjs.unix(Number(exist.time_track?.time));
+                    const duration = _end.diff(_start);
+                    this.payload[indexPayload].time_track.elapsed_time = humanizeDuration(Math.abs(duration));
                 }
 
                 if (indexFiltered !== -1) {
-                    const _end = moment.unix(Number(content.time_track.end_time));
-                    const _start = moment.unix(Number(exist.time_track?.time));
-                    const duration = moment.duration(_start.diff(_end));
-                    this.filteredPayload[indexFiltered].time_track.elapsed_time = humanizeDuration(
-                        duration.asMilliseconds()
-                    );
+                    const _end = dayjs.unix(Number(content.time_track.end_time));
+                    const _start = dayjs.unix(Number(exist.time_track?.time));
+                    const duration = _end.diff(_start);
+                    this.filteredPayload[indexFiltered].time_track.elapsed_time = humanizeDuration(Math.abs(duration));
                 }
             }
         },

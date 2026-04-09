@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import SplitPanes from '@/components/split/SplitPanes.vue';
 import { Attachment, Mail, mimeTypeMap, useMailStore } from '@/store/mail';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 import { computed, nextTick, ref } from 'vue';
 import {
     CloudArrowDownIcon,
@@ -287,7 +289,7 @@ const setPreviewMode = (mode: string) => {
                                 <div class="flex justify-between items-center cursor-pointer">
                                     <div class="truncate">{{ mail.from_mail }}</div>
                                     <div class="flex items-center gap-2">
-                                        <span class="px-1 text-xs">{{ moment(mail.date).format('HH:mm') }}</span>
+                                        <span class="px-1 text-xs">{{ dayjs(mail.date).format('HH:mm') }}</span>
                                         <button
                                             @click.stop="removeMail(mail.message_id)"
                                             class="text-base-content/50 hover:text-error text-sm opacity-0 group-hover:opacity-100 transition-opacity"

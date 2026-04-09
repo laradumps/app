@@ -26,7 +26,9 @@ import { useQueriesChart } from '@/store/queries-chart';
 import QueriesChart from '@/components/laravel/QueriesChart.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import DumpQueries from '@/components/laravel/DumpQueries.vue';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 import { useFormattedQueriesStore } from '@/store/formatted-queries';
 import { convertMsToHumanReadable, exportQueriesToSQL } from '@/utils/queriesUtils';
 import { useSettingsStore } from '@/store/settings';
@@ -181,7 +183,7 @@ const groupedQueries = computed(() => {
             if (!isSearchActive && payload.request_id !== timeStore.selected) {
                 return groups;
             }
-            const groupKey = moment(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
+            const groupKey = dayjs(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
             if (!groups[groupKey]) {
                 groups[groupKey] = [];
             }
@@ -737,7 +739,7 @@ const setOrder = (order: string) => {
                                     :title="groupKey"
                                     class="opacity-80"
                                 >
-                                    {{ moment(groupKey).fromNow() }}
+                                    {{ dayjs(groupKey).fromNow() }}
                                 </span>
                             </div>
 

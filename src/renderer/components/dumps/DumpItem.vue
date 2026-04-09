@@ -16,7 +16,7 @@ import { Payload } from '@/types/Payload';
 import DumpDump from '@/components/dumps/DumpDump.vue';
 import { useCollapse } from '@/store/collapse';
 import { useSettingsStore } from '@/store/settings';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useQueriesChart } from '@/store/queries-chart';
 import {
     TrashIcon,
@@ -566,7 +566,7 @@ onUnmounted(() => {
                     <span
                         class="opacity-70"
                         v-if="!settingsStore.settings.grouped_by_time"
-                        >{{ moment(payload.date_time).format('hh:mm:ss') }}</span
+                        >{{ dayjs(payload.date_time).format('hh:mm:ss') }}</span
                     >
 
                     <!-- Query badges (Explain only) -->

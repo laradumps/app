@@ -39,7 +39,7 @@ import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { Environment } from '../../main/storage';
 import { usePauseJobsStore } from '@/store/pause-jobs';
 import { usePauseLogsStore } from '@/store/pause-logs';
-import moment from 'moment/moment';
+import dayjs from 'dayjs';
 import HeaderColorsFilter from '@/components/app/HeaderColorsFilter.vue';
 import DropZones from '@/components/split/DropZones.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
@@ -890,7 +890,7 @@ const groupedDumps = computed(() => {
 
     return dumpsBagFiltered.value.reduce(
         (groups, payload) => {
-            const groupKey = moment(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
+            const groupKey = dayjs(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
             if (!groups[groupKey]) {
                 groups[groupKey] = [];
             }
@@ -914,7 +914,7 @@ const groupedSplitDumps = computed(() => {
 
     return screenPayloads.reduce(
         (groups, payload) => {
-            const groupKey = moment(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
+            const groupKey = dayjs(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
             if (!groups[groupKey]) {
                 groups[groupKey] = [];
             }
@@ -1104,7 +1104,7 @@ const handleDragEnd = () => {
                                                             :title="groupKey"
                                                         >
                                                             <ClockIcon class="w-3 h-3" />
-                                                            {{ moment(groupKey).format('HH:mm:ss') }}
+                                                            {{ dayjs(groupKey).format('HH:mm:ss') }}
                                                         </span>
                                                     </div>
 
@@ -1255,7 +1255,7 @@ const handleDragEnd = () => {
                                                         :title="groupKey"
                                                     >
                                                         <ClockIcon class="w-3 h-3" />
-                                                        {{ moment(groupKey).format('HH:mm:ss') }}
+                                                        {{ dayjs(groupKey).format('HH:mm:ss') }}
                                                     </span>
                                                 </div>
 
@@ -1383,7 +1383,7 @@ const handleDragEnd = () => {
                                                     :title="groupKey"
                                                 >
                                                     <ClockIcon class="w-3 h-3" />
-                                                    {{ moment(groupKey).format('HH:mm:ss') }}
+                                                    {{ dayjs(groupKey).format('HH:mm:ss') }}
                                                 </span>
                                             </div>
 

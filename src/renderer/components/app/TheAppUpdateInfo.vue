@@ -2,7 +2,9 @@
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue';
 import { UpdateInfo } from 'electron-updater';
 import { CompletedInfo, DownloadInfo } from '@/types/Updater';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+dayjs.extend(advancedFormat);
 import IconDownload from '@/components/Icons/IconDownload.vue';
 import { useSettingsStore } from '@/store/settings';
 
@@ -129,7 +131,7 @@ onUnmounted(() => {
                                     <p>
                                         {{
                                             updateInfo.releaseDate
-                                                ? moment(updateInfo.releaseDate as any).format('MMM Do YY')
+                                                ? dayjs(updateInfo.releaseDate as any).format('MMM Do YY')
                                                 : ''
                                         }}
                                     </p>
