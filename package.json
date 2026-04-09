@@ -29,7 +29,7 @@
         "@types/node": "25.0.10",
         "auto-launch": "^5.0.6",
         "autoprefixer": "^10.4.23",
-        "axios": "^1.13.4",
+        "axios": "^1.15.0",
         "body-parser": "^2.2.2",
         "chart.js": "^4.5.1",
         "chokidar": "^4.0.3",
