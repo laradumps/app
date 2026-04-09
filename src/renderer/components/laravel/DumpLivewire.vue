@@ -96,7 +96,7 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
 
 <template>
     <div
-        class="px-3 text-sm"
+        class="text-sm"
         v-if="livewireStore.requests.length > 0"
     >
         <div class="space-y-3 h-[calc(100vh-140px)]">
