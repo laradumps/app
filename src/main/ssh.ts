@@ -2,7 +2,6 @@ import { AcceptConnection, Client, ConnectConfig, TcpConnectionDetails } from 's
 import { readFileSync } from 'fs';
 import { ipcMain, Notification } from 'electron';
 import net from 'net';
-import axios from 'axios';
 import { Payload } from '@/types/Payload';
 import { ConnectionConfig } from '@/types/ssh.type';
 
@@ -95,7 +94,11 @@ class SSHClient {
 
                                     const fullUrl = `http://${info.destIP}:${info.destPort}/api/dumps`;
 
-                                    await axios.post(fullUrl, payload);
+                                    await fetch(fullUrl, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(payload)
+                                    });
 
                                     const screenPayload = {
                                         ...payload,
@@ -108,7 +111,11 @@ class SSHClient {
                                             visible: false
                                         }
                                     };
-                                    await axios.post(fullUrl, screenPayload);
+                                    await fetch(fullUrl, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(screenPayload)
+                                    });
 
                                     buffer = buffer.substring(jsonStartIndex + expectedLength);
                                     expectedLength = 0;
