@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, computed, nextTick, watch } from 'vue';
+import { onMounted, onUnmounted, ref, nextTick, watch } from 'vue';
 import type { Environment } from '../../../main/storage';
 
 const props = defineProps<{
@@ -20,23 +20,38 @@ const selectEnvironment = (environment: Environment) => {
 
 const formattedName = (name: string): string => name?.replace(/[-_.]/g, ' ') || '';
 
+const dropdownRef = ref<HTMLElement | null>(null);
+
 const calculatePosition = () => {
+    dropdownStyle.value = {
+        top: '-9999px',
+        left: '-9999px',
+        zIndex: 9999
+    };
+
     nextTick(() => {
         const addButton = document.querySelector('[data-add-env-button]') as HTMLElement;
-        if (addButton) {
+        const dropdown = dropdownRef.value;
+
+        if (addButton && dropdown) {
             const rect = addButton.getBoundingClientRect();
-            const dropdownHeight = props.environments.length * 40 + 16;
+            const dropdownWidth = dropdown.offsetWidth || 200;
 
-            let top = rect.bottom + 4;
-            const right = window.innerWidth - rect.right;
+            const top = rect.bottom + 4;
 
-            if (top + dropdownHeight > window.innerHeight - 8) {
-                top = rect.top - dropdownHeight - 4;
+            let left = rect.left + rect.width / 2 - dropdownWidth / 2;
+
+            if (left + dropdownWidth > window.innerWidth - 8) {
+                left = window.innerWidth - dropdownWidth - 8;
+            }
+
+            if (left < 8) {
+                left = 8;
             }
 
             dropdownStyle.value = {
                 top: `${top}px`,
-                right: `${right}px`,
+                left: `${left}px`,
                 zIndex: 9999
             };
         }
@@ -78,7 +93,8 @@ onUnmounted(() => {
 <template>
     <ul
         v-if="visible"
-        class="environment-dropdown menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-max min-w-[140px] fixed mt-1"
+        ref="dropdownRef"
+        class="environment-dropdown menu flex-col flex-nowrap p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-max min-w-[140px] max-h-[340px] overflow-y-auto fixed mt-1"
         :style="{ ...dropdownStyle, zIndex: 99999 }"
     >
         <li
