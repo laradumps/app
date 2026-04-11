@@ -58,7 +58,8 @@ const ideHandlerOptions = {
 
 const checkForUpdateOptions = {
     auto_download: 'Automatic',
-    manual_download: 'Manual Download'
+    manual_download: 'Manual Download',
+    auto_install: 'Download and Install'
 };
 
 const autoLaunchOptions = {
@@ -84,17 +85,40 @@ export const useSettingsStore = defineStore('settings', () => {
     const settings = ref<Settings>({ ...DEFAULT_SETTINGS, ...initial });
 
     const updateAvailable = ref<boolean>(false);
+    const updateDownloaded = ref<boolean>(false);
+    const updateDownloading = ref<boolean>(false);
+    const updateProgress = ref<number>(0);
     const latestVersion = ref<string>('');
 
     const setUpdateAvailable = (version) => {
         latestVersion.value = String(version || '');
-        setTimeout(() => {
+        updateAvailable.value = true;
+        updateDownloading.value = false;
+        updateProgress.value = 0;
+    };
+
+    const setUpdateDownloaded = (downloaded: boolean) => {
+        updateDownloaded.value = downloaded;
+        updateDownloading.value = false;
+        updateProgress.value = 100;
+        if (downloaded) {
             updateAvailable.value = true;
-        }, 3000);
+        }
+    };
+
+    const setUpdateDownloading = (downloading: boolean) => {
+        updateDownloading.value = downloading;
+    };
+
+    const setUpdateProgress = (progress: number) => {
+        updateProgress.value = progress;
     };
 
     const markUpdated = () => {
         updateAvailable.value = false;
+        updateDownloaded.value = false;
+        updateDownloading.value = false;
+        updateProgress.value = 0;
     };
 
     const update = () => {
@@ -135,8 +159,14 @@ export const useSettingsStore = defineStore('settings', () => {
         checkForUpdateOptions,
         setSettings,
         updateAvailable,
+        updateDownloaded,
+        updateDownloading,
+        updateProgress,
         latestVersion,
         setUpdateAvailable,
+        setUpdateDownloaded,
+        setUpdateDownloading,
+        setUpdateProgress,
         markUpdated,
         setSplitPaneScreen
     };

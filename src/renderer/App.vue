@@ -16,11 +16,10 @@ import { useClearAll } from '@/composables/useClearAll';
 import JSConfetti from 'js-confetti';
 
 import Toasters from '@/components/common/Toasters.vue';
-import TheAppUpdateInfo from '@/components/app/TheAppUpdateInfo.vue';
+import TheUpdateNotification from '@/components/app/TheUpdateNotification.vue';
 
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
-const screenStore = useScreenStore();
 const logStore = useLogStore();
 const jobStore = useJobStore();
 const brainStore = useBrainStore();
@@ -186,7 +185,7 @@ onMounted(() => {
             <main class="w-full overflow-auto h-[calc(100vh-42px)]">
                 <RouterView :key="$route.fullPath" />
                 <Toasters />
-                <TheAppUpdateInfo />
+                <TheUpdateNotification />
             </main>
         </div>
     </div>

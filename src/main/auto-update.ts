@@ -1,80 +1,110 @@
-import { autoUpdater, UpdateFileInfo, UpdateInfo } from 'electron-updater';
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { autoUpdater, UpdateInfo } from 'electron-updater';
+import { BrowserWindow, ipcMain, app, shell } from 'electron';
+import { download } from 'electron-dl';
 import fs from 'fs';
 
 let globalUpdateInfo: UpdateInfo;
+let mainWindow: BrowserWindow;
 
 export const init = async (window: BrowserWindow) => {
-    ipcMain.on('main:download-update', (): void => {
-        handleDownloadUpdate(window);
-    });
+    mainWindow = window;
+
+    if (process.platform === 'darwin') {
+        process.env.ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES = 'true';
+    }
+
     autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = false;
+
+    autoUpdater.on('checking-for-update', () => {
+        console.log('[AutoUpdater] Checking for updates...');
+    });
+
     autoUpdater.on('update-available', async (updateInfo: UpdateInfo): Promise<void> => {
-        handleUpdateAvailable(window, updateInfo);
+        console.log('[AutoUpdater] Update available:', updateInfo.version);
+        globalUpdateInfo = updateInfo;
+        window.webContents.send('autoUpdater:update-available', updateInfo);
     });
-    autoUpdater.on('update-downloaded', async (): Promise<void> => {
-        await handleUpdateDownloaded(window);
-    });
-};
 
-const handleDownloadUpdate = (window: any) => {
-    setTimeout(async (): Promise<void> => {
+    autoUpdater.on('update-not-available', () => {
+        console.log('[AutoUpdater] No updates available');
+    });
+
+    autoUpdater.on('error', (err) => {
+        console.error('[AutoUpdater] Error:', err.message);
+        window.webContents.send('autoUpdater:error', err.message);
+    });
+
+    autoUpdater.on('download-progress', (progress) => {
+        console.log('[AutoUpdater] Download progress:', progress.percent);
+        window.webContents.send('autoUpdater:download-progress', progress);
+    });
+
+    autoUpdater.on('update-downloaded', async (info: UpdateInfo): Promise<void> => {
+        console.log('[AutoUpdater] Update downloaded');
+        window.webContents.send('autoUpdater:update-downloaded', info);
+    });
+
+    ipcMain.on('main:download-update', async (): Promise<void> => {
+        console.log('[AutoUpdater] User requested download');
+
         if (process.platform === 'darwin') {
-            const downloadPath: string = app.getPath('downloads');
-
-            const files: UpdateFileInfo[] = globalUpdateInfo.files;
-            const filteredFiles: UpdateFileInfo = files.filter((file: UpdateFileInfo) => file.url.includes('dmg'))[0];
-            const fileName: string = filteredFiles.url;
-
-            const downloadedFile = `${downloadPath}/${fileName}`;
-
-            if (fs.existsSync(downloadedFile)) {
-                await shell.openPath(downloadedFile);
-
-                app.quit();
-            } else {
-                window.webContents.send('autoUpdater:update-info', globalUpdateInfo);
-            }
+            await downloadUpdateMacOS();
         } else {
-            window.webContents.send('update-info', globalUpdateInfo);
             await autoUpdater.downloadUpdate();
         }
-    }, 3000);
-};
+    });
 
-const handleUpdateAvailable = (window: any, updateInfo: UpdateInfo) => {
-    setTimeout(async (): Promise<void> => {
+    ipcMain.on('main:install-update', async (): Promise<void> => {
+        console.log('[AutoUpdater] User requested install');
+
         if (process.platform === 'darwin') {
-            globalUpdateInfo = updateInfo;
-            window.webContents.send('update-available', updateInfo);
-        } else {
-            const result = await dialog.showMessageBox({
-                type: 'info',
-                title: 'LaraDumps update available!',
-                message: 'There are updates available for LaraDumps App. Would you like to update it now?',
-                buttons: ['Yes', 'No']
-            });
+            const downloadPath = app.getPath('downloads');
+            const files = globalUpdateInfo.files;
+            const dmgFile = files.find((file) => file.url.includes('.dmg'));
 
-            if (result.response === 0) {
-                window.webContents.send('update-info', updateInfo);
-                await autoUpdater.downloadUpdate();
+            if (dmgFile) {
+                const dmgPath = `${downloadPath}/${dmgFile.url}`;
+                if (fs.existsSync(dmgPath)) {
+                    await shell.openPath(dmgPath);
+                    setTimeout(() => app.quit(), 1000);
+                }
             }
+        } else {
+            setImmediate(() => autoUpdater.quitAndInstall());
         }
-    }, 2000);
+    });
 };
 
-const handleUpdateDownloaded = async (window: any) => {
-    window.show();
+const downloadUpdateMacOS = async (): Promise<void> => {
+    if (!globalUpdateInfo) return;
 
-    await dialog.showMessageBox(
-        new BrowserWindow({
-            show: false,
-            alwaysOnTop: true
-        }),
-        {
-            title: 'Install Updates',
-            message: 'Update completed! Restarting the application...'
-        }
-    );
-    setImmediate(() => autoUpdater.quitAndInstall());
+    const baseURL = 'https://github.com/laradumps/app/releases/download/';
+    const tag = (globalUpdateInfo as any).tag;
+    const files = globalUpdateInfo.files || [];
+
+    const dmgFile = files.find((file) => file.url.includes('.dmg'));
+    if (!dmgFile) {
+        console.error('[AutoUpdater] No DMG file found');
+        mainWindow.webContents.send('autoUpdater:error', 'No DMG file found');
+        return;
+    }
+
+    const downloadURL = `${baseURL}${tag}/${dmgFile.url}`;
+    console.log('[AutoUpdater] Downloading from:', downloadURL);
+
+    try {
+        await download(mainWindow, downloadURL, {
+            onProgress: (progress: number) => {
+                mainWindow.webContents.send('autoUpdater:download-progress', { percent: progress * 100 });
+            },
+            onCompleted: () => {
+                console.log('[AutoUpdater] Download completed');
+                mainWindow.webContents.send('autoUpdater:update-downloaded', globalUpdateInfo);
+            }
+        });
+    } catch (error) {
+        console.error('[AutoUpdater] Download error:', error);
+        mainWindow.webContents.send('autoUpdater:error', error.message);
+    }
 };

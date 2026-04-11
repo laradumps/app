@@ -64,8 +64,6 @@ const modalClose = () => (isListeningModalOpen.value = false);
         <div :class="{ 'ml-[4.6rem]': platform === 'darwin' }">
             <div class="w-auto h-full">
                 <div class="flex items-center gap-2">
-                    <!-- update available -->
-                    <NavBarUpdateAvailable v-if="!isDev && settingsStore.updateAvailable" />
                     <!-- clear -->
                     <ClearAll />
                     <!-- pause -->
