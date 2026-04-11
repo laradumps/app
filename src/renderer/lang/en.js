@@ -116,10 +116,19 @@ export default {
     no: 'No',
     app_update_info: {
         update_available: 'Update Available',
+        update_downloaded: 'Update Downloaded',
+        update_ready_message: 'LaraDumps {version} is ready to install.',
+        update_available_message: 'A new version of LaraDumps ({version}) is now available to install.',
         not_now: 'Not now',
         install: 'Install',
+        install_now: 'Install and Restart',
+        download_install: 'Download and Install',
+        downloading: 'Downloading...',
+        download: 'Download',
+        restart: 'Restart',
         version: 'Version',
-        release_date: 'Release Date'
+        release_date: 'Release Date',
+        ready_to_install: 'Ready to Install'
     },
     pause: 'Pause',
     remove: 'Remove',
