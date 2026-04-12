@@ -517,6 +517,7 @@ onUnmounted(() => {
                         <div
                             v-else-if="payload.type === 'queries'"
                             @click.stop
+                            @dblclick.stop="prettifyQuery"
                             class="w-full"
                         >
                             <DumpQueries
@@ -574,6 +575,18 @@ onUnmounted(() => {
                         v-if="payload.type === 'queries'"
                         class="flex items-center gap-2 ml-auto"
                     >
+                        <span
+                            v-if="payload.queries?.query?.connectionName"
+                            class="badge badge-ghost badge-xs p-1.5 font-mono opacity-70"
+                        >
+                            {{ payload.queries.query.connectionName }}
+                        </span>
+                        <span
+                            v-if="payload.queries?.query?.time != null"
+                            class="badge badge-ghost badge-xs p-1.5 font-mono"
+                        >
+                            {{ payload.queries.query.time.toFixed(2) }}ms
+                        </span>
                         <button
                             v-if="payload.queries?.explain_nodes && payload.queries.explain_nodes.length > 0"
                             @click.stop="openExplainModal()"

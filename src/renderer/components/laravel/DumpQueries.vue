@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { format } from 'sql-formatter';
-import { useTimeStore } from '@/store/time';
 import { Payload } from '@/types/Payload';
 import { useFormattedQueriesStore } from '@/store/formatted-queries';
 
@@ -9,15 +8,12 @@ import hljs from 'highlight.js/lib/core';
 import sql from 'highlight.js/lib/languages/sql';
 
 import { useQueryDuplicated } from '@/store/query-duplicated';
-import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 import IconChevronDown from '@/components/Icons/IconChevronDown.vue';
-import { BoltIcon } from '@heroicons/vue/24/outline';
 import VueJsonPretty from 'vue-json-pretty';
 
 hljs.registerLanguage('sql', sql);
 hljs.registerLanguage('postgresql', sql);
 
-const timeStore = useTimeStore();
 const formattedQueriesStore = useFormattedQueriesStore();
 const duplicatesStore = useQueryDuplicated();
 
@@ -40,7 +36,7 @@ const checkContainerHeight = () => {
 
     const codeHeight = codeContainer.value.offsetHeight;
 
-    showToggleControls.value = codeHeight >= 224;
+    showToggleControls.value = codeHeight >= 112;
     isCollapsed.value = showToggleControls.value;
 };
 
@@ -108,7 +104,9 @@ const formattedSql = computed(() => {
             formattedQueriesStore.formatted || props.isPrettified
                 ? format(sql, {
                       indent: '    ',
-                      language
+                      language,
+                      keywordCase: 'lower',
+                      indentStyle: 'standard'
                   })
                 : sql;
 
@@ -126,7 +124,7 @@ const formattedSql = computed(() => {
             ref="modalRef"
             class="modal modal-start rounded-none"
         >
-            <div class="modal-box max-w-2xl !pl-4 rounded-none">
+            <div class="modal-box max-w-2xl pl-4! rounded-none">
                 <div class="space-y-2 mt-4">
                     <div class="font-semibold">
                         <span class="text-lg">Explain</span>
@@ -140,7 +138,7 @@ const formattedSql = computed(() => {
                             :show-line="false"
                             :data="payload.queries.explain_nodes"
                             :show-double-quotes="false"
-                            class="!text-sm"
+                            class="text-sm!"
                             :deep="6"
                         />
                     </div>
@@ -155,13 +153,13 @@ const formattedSql = computed(() => {
         </dialog>
 
         <!-- SQL Code without badges (badges moved to metadata line in DumpItem) -->
-        <div>
+        <div class="text-left">
             <pre
                 v-if="formattedQueriesStore.formatted || isPrettified"
-                class="relative group overflow-hidden whitespace-pre-wrap break-words"
+                class="relative group overflow-hidden whitespace-pre-wrap wrap-break-word text-left w-full"
             >
                 <code
-                    class="language-sql !leading-[1.2rem] text-base-content !text-xs"
+                    class="language-sql leading-[1.2rem]! text-base-content !text-xs"
                     v-html="formattedSql"
                 ></code>
             </pre>
@@ -171,27 +169,30 @@ const formattedSql = computed(() => {
             >
                 <code
                     ref="codeContainer"
-                    :class="{ 'line-clamp-[14]': isCollapsed }"
+                    :class="{ 'is-collapsed': isCollapsed }"
                     class="text-base-content language-sql rounded !text-xs leading-5 block"
                     v-html="formattedSql"
                 ></code>
 
-                <span
-                    v-if="showToggleControls && isCollapsed"
-                    class="blur-overlay w-full"
-                ></span>
-
-                <button
+                <div
                     v-if="showToggleControls"
-                    class="absolute -bottom-2 z-100 w-full opacity-80 flex items-center justify-center"
+                    class="expand-trigger"
+                    :class="{ 'is-collapsed': isCollapsed }"
                     @click="toggleCollapse"
                 >
-                    <IconChevronDown
-                        class="w-4"
-                        :class="{ 'rotate-180': !isCollapsed }"
-                        stroke-width="2.5"
-                    />
-                </button>
+                    <span
+                        v-if="isCollapsed"
+                        class="expand-fade"
+                    ></span>
+                    <button class="expand-btn">
+                        <IconChevronDown
+                            class="w-3 transition-transform duration-200"
+                            :class="{ 'rotate-180': !isCollapsed }"
+                            stroke-width="2.5"
+                        />
+                        <span class="text-[10px]">{{ isCollapsed ? 'expand' : 'collapse' }}</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -201,21 +202,60 @@ const formattedSql = computed(() => {
 @reference "./../../styles.css";
 
 code * {
-    @apply !font-light !text-base-content tracking-wider;
+    @apply font-light! text-base-content! tracking-wider;
 }
 
-.blur-overlay {
-    @apply absolute h-[40px] blur bg-base-100/90 -bottom-4 right-0 z-40;
-}
-
-code.line-clamp-[14] {
-    max-height: 224px;
+code.is-collapsed {
+    max-height: 112px;
     overflow: hidden;
     transition: max-height 0.3s ease;
 }
 
-code:not(.line-clamp-[14]) {
+code:not(.is-collapsed) {
     max-height: none;
     transition: max-height 0.3s ease;
+}
+
+.expand-trigger {
+    @apply w-full flex items-end justify-center cursor-pointer;
+    padding-top: 4px;
+}
+
+.expand-trigger.is-collapsed {
+    position: absolute;
+    bottom: 0;
+    left: -8px;
+    right: -8px;
+    height: 56px;
+}
+
+.expand-fade {
+    @apply absolute inset-0 pointer-events-none -m-6;
+}
+
+.expand-btn {
+    @apply relative z-10 flex items-center gap-1 text-base-content/40 hover:text-base-content/70 transition-colors duration-150 py-0.5 px-2;
+}
+
+.expand-trigger.is-collapsed {
+    @apply absolute left-0 right-0;
+    bottom: 0;
+    height: 56px;
+    border-radius: 0 0 4px 4px;
+    overflow: hidden;
+}
+
+.expand-fade {
+    @apply absolute inset-0 pointer-events-none;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        oklch(from var(--color-base-100, #1d232a) l c h / 0.95) 60%,
+        oklch(from var(--color-base-100, #1d232a) l c h) 100%
+    );
+}
+
+.expand-btn {
+    @apply relative z-10 flex items-center gap-1 text-base-content/40 hover:text-base-content/70 transition-colors duration-150 py-0.5 px-2;
 }
 </style>
