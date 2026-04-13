@@ -1,190 +1,190 @@
 {
-    "name": "laradumps",
-    "version": "4.13.4",
-    "private": false,
-    "description": "LaraDumps is a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
-    "author": "Luan Freitas <luanfreitas10@protonmail.com>",
-    "main": "dist/main.cjs",
-    "type": "module",
-    "scripts": {
-        "postinstall": "electron-builder install-app-deps",
-        "dev": "concurrently \"vite\" \"node build.js --dev && electron .\"",
-        "build": "vite build && node build.js --prod",
-        "build-win": "npm run build && electron-builder --win",
-        "build-mac": "npm run build && electron-builder --mac --universal",
-        "build-linux": "npm run build && electron-builder --linux AppImage",
-        "build-snap": "npm run build && electron-builder --linux snap",
-        "publish-win": "npm run build && electron-builder --publish always --win",
-        "publish-mac": "npm run build && electron-builder --publish always --mac --universal",
-        "publish-linux": "npm run build && electron-builder --publish always --linux AppImage",
-        "publish-snap": "npm run build && electron-builder --publish always --linux snap",
-        "format": "prettier . --write"
+  "name": "laradumps",
+  "version": "4.13.5",
+  "private": false,
+  "description": "LaraDumps is a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
+  "author": "Luan Freitas <luanfreitas10@protonmail.com>",
+  "main": "dist/main.cjs",
+  "type": "module",
+  "scripts": {
+    "postinstall": "electron-builder install-app-deps",
+    "dev": "concurrently \"vite\" \"node build.js --dev && electron .\"",
+    "build": "vite build && node build.js --prod",
+    "build-win": "npm run build && electron-builder --win",
+    "build-mac": "npm run build && electron-builder --mac --universal",
+    "build-linux": "npm run build && electron-builder --linux AppImage",
+    "build-snap": "npm run build && electron-builder --linux snap",
+    "publish-win": "npm run build && electron-builder --publish always --win",
+    "publish-mac": "npm run build && electron-builder --publish always --mac --universal",
+    "publish-linux": "npm run build && electron-builder --publish always --linux AppImage",
+    "publish-snap": "npm run build && electron-builder --publish always --linux snap",
+    "format": "prettier . --write"
+  },
+  "dependencies": {
+    "@heroicons/vue": "^2.2.0",
+    "@highlightjs/vue-plugin": "^2.1.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@tailwindcss/postcss": "^4.2.2",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.2.2",
+    "auto-launch": "^5.0.6",
+    "body-parser": "^2.2.2",
+    "chart.js": "^4.5.1",
+    "chokidar": "^4.0.3",
+    "cors": "^2.8.6",
+    "dayjs": "^1.11.20",
+    "electron-dl": "^4.0.0",
+    "electron-json-storage": "^4.6.0",
+    "electron-localshortcut": "^3.2.1",
+    "electron-store": "^11.0.2",
+    "electron-updater": "6.8.3",
+    "express": "^5.2.1",
+    "highlight.js": "^11.11.1",
+    "hotkeys-js": "^3.13.15",
+    "humanize-duration": "^3.33.2",
+    "is-wsl": "^3.1.1",
+    "js-confetti": "^0.13.1",
+    "js-yaml": "^4.1.1",
+    "pinia": "^3.0.4",
+    "sql-formatter": "^15.7.3",
+    "ssh2": "^1.17.0",
+    "tippy.js": "^6.3.7",
+    "vue": "3.5.32",
+    "vue-i18n": "9.4.1",
+    "vue-json-pretty": "^2.6.0",
+    "vue-router": "^5.0.4",
+    "xml2js": "^0.6.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.6.10",
+    "@types/electron-json-storage": "^4.5.4",
+    "@types/express": "^5.0.6",
+    "@types/humanize-duration": "^3.27.4",
+    "@types/node": "^25.5.2",
+    "@types/ssh2": "^1.15.5",
+    "@types/xml2js": "^0.4.14",
+    "@typescript-eslint/eslint-plugin": "^8.58.1",
+    "@typescript-eslint/parser": "^8.58.1",
+    "@vitejs/plugin-vue": "6.0.5",
+    "concurrently": "^9.2.1",
+    "daisyui": "^5.5.19",
+    "electron": "^41.2.0",
+    "electron-builder": "^26.8.1",
+    "esbuild": "^0.28.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "5.5.5",
+    "postcss": "8.5.9",
+    "prettier": "3.8.1",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8"
+  },
+  "ts-standard": {
+    "project": "./tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/laradumps/app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/laradumps/app/issues"
+  },
+  "build": {
+    "appId": "com.laradumps.app",
+    "productName": "LaraDumps",
+    "asarUnpack": [
+      "dist/mcp-server.js"
+    ],
+    "files": [
+      "**/*",
+      "!node_modules${/*}"
+    ],
+    "extraResources": [
+      "build/*"
+    ],
+    "extraFiles": [
+      "build/**/*"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "laradumps",
+      "repo": "app",
+      "private": false
     },
-    "dependencies": {
-        "@heroicons/vue": "^2.2.0",
-        "@highlightjs/vue-plugin": "^2.1.0",
-        "@modelcontextprotocol/sdk": "^1.29.0",
-        "@tailwindcss/postcss": "^4.2.2",
-        "@tailwindcss/typography": "^0.5.19",
-        "@tailwindcss/vite": "^4.2.2",
-        "auto-launch": "^5.0.6",
-        "body-parser": "^2.2.2",
-        "chart.js": "^4.5.1",
-        "chokidar": "^4.0.3",
-        "cors": "^2.8.6",
-        "dayjs": "^1.11.20",
-        "electron-dl": "^4.0.0",
-        "electron-json-storage": "^4.6.0",
-        "electron-localshortcut": "^3.2.1",
-        "electron-store": "^11.0.2",
-        "electron-updater": "6.8.3",
-        "express": "^5.2.1",
-        "highlight.js": "^11.11.1",
-        "hotkeys-js": "^3.13.15",
-        "humanize-duration": "^3.33.2",
-        "is-wsl": "^3.1.1",
-        "js-confetti": "^0.13.1",
-        "js-yaml": "^4.1.1",
-        "pinia": "^3.0.4",
-        "sql-formatter": "^15.7.3",
-        "ssh2": "^1.17.0",
-        "tippy.js": "^6.3.7",
-        "vue": "3.5.32",
-        "vue-i18n": "9.4.1",
-        "vue-json-pretty": "^2.6.0",
-        "vue-router": "^5.0.4",
-        "xml2js": "^0.6.2",
-        "zod": "^4.3.6"
+    "directories": {
+      "output": "release"
     },
-    "devDependencies": {
-        "@types/electron": "^1.6.10",
-        "@types/electron-json-storage": "^4.5.4",
-        "@types/express": "^5.0.6",
-        "@types/humanize-duration": "^3.27.4",
-        "@types/node": "^25.5.2",
-        "@types/ssh2": "^1.15.5",
-        "@types/xml2js": "^0.4.14",
-        "@typescript-eslint/eslint-plugin": "^8.58.1",
-        "@typescript-eslint/parser": "^8.58.1",
-        "@vitejs/plugin-vue": "6.0.5",
-        "concurrently": "^9.2.1",
-        "daisyui": "^5.5.19",
-        "electron": "^41.2.0",
-        "electron-builder": "^26.8.1",
-        "esbuild": "^0.28.0",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-prettier": "5.5.5",
-        "postcss": "8.5.9",
-        "prettier": "3.8.1",
-        "tailwindcss": "^4.2.2",
-        "typescript": "^6.0.2",
-        "vite": "^8.0.8"
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerSidebar": "./src/img/installerSidebar.bmp",
+      "installerIcon": "./src/img/icon.ico"
     },
-    "ts-standard": {
-        "project": "./tsconfig.json"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/laradumps/app.git"
-    },
-    "bugs": {
-        "url": "https://github.com/laradumps/app/issues"
-    },
-    "build": {
-        "appId": "com.laradumps.app",
-        "productName": "LaraDumps",
-        "asarUnpack": [
-            "dist/mcp-server.js"
-        ],
-        "files": [
-            "**/*",
-            "!node_modules${/*}"
-        ],
-        "extraResources": [
-            "build/*"
-        ],
-        "extraFiles": [
-            "build/**/*"
-        ],
-        "publish": {
-            "provider": "github",
-            "owner": "laradumps",
-            "repo": "app",
-            "private": false
-        },
-        "directories": {
-            "output": "release"
-        },
-        "nsis": {
-            "oneClick": false,
-            "allowToChangeInstallationDirectory": true,
-            "installerSidebar": "./src/img/installerSidebar.bmp",
-            "installerIcon": "./src/img/icon.ico"
-        },
-        "win": {
-            "icon": "./src/img/icon.ico",
-            "target": [
-                {
-                    "target": "nsis",
-                    "arch": [
-                        "ia32",
-                        "x64"
-                    ]
-                }
-            ]
-        },
-        "linux": {
-            "executableName": "laradumps",
-            "description": "LaraDumps a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
-            "icon": "./build/icon.icns",
-            "target": [
-                "AppImage"
-            ],
-            "desktop": {
-                "entry": "build/linux/laradumps.desktop"
-            },
-            "maintainer": "Luan Freitas",
-            "category": "Development"
-        },
-        "snap": {
-            "base": "core22",
-            "confinement": "strict",
-            "grade": "stable",
-            "summary": "LaraDumps - PHP debugging app",
-            "plugs": [
-                "cups-control"
-            ]
-        },
-        "deb": {
-            "packageCategory": "Development",
-            "depends": [
-                "gconf2",
-                "gconf-service",
-                "libnotify4",
-                "libappindicator1",
-                "libxtst6",
-                "libnss3"
-            ]
-        },
-        "mac": {
-            "darkModeSupport": true
-        },
-        "dmg": {
-            "title": "${productName} ${version}",
-            "icon": "./build/icon.icns",
-            "background": "./src/img/install_dmg.png",
-            "contents": [
-                {
-                    "x": 110,
-                    "y": 150
-                },
-                {
-                    "x": 240,
-                    "y": 150,
-                    "type": "link",
-                    "path": "/Applications"
-                }
-            ]
+    "win": {
+      "icon": "./src/img/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32",
+            "x64"
+          ]
         }
+      ]
+    },
+    "linux": {
+      "executableName": "laradumps",
+      "description": "LaraDumps a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
+      "icon": "./build/icon.icns",
+      "target": [
+        "AppImage"
+      ],
+      "desktop": {
+        "entry": "build/linux/laradumps.desktop"
+      },
+      "maintainer": "Luan Freitas",
+      "category": "Development"
+    },
+    "snap": {
+      "base": "core22",
+      "confinement": "strict",
+      "grade": "stable",
+      "summary": "LaraDumps - PHP debugging app",
+      "plugs": [
+        "cups-control"
+      ]
+    },
+    "deb": {
+      "packageCategory": "Development",
+      "depends": [
+        "gconf2",
+        "gconf-service",
+        "libnotify4",
+        "libappindicator1",
+        "libxtst6",
+        "libnss3"
+      ]
+    },
+    "mac": {
+      "darkModeSupport": true
+    },
+    "dmg": {
+      "title": "${productName} ${version}",
+      "icon": "./build/icon.icns",
+      "background": "./src/img/install_dmg.png",
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
     }
+  }
 }
