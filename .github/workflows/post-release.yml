@@ -17,7 +17,7 @@ jobs:
                   cd homebrew-app
                   git config user.name "laradumps-bot"
                   git config user.email "laradumps@proton.me"
-                  sh update_cask.sh "${VERSION}" "${{ secrets.GH_TOKEN }}"
+                  bash update_cask.sh "${VERSION}" "${{ secrets.GH_TOKEN }}"
 
             - name: Update docs
               run: |
