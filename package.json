@@ -166,11 +166,7 @@
             ]
         },
         "mac": {
-            "darkModeSupport": true,
-            "target": [
-                "dmg"
-            ],
-            "identity": null
+            "darkModeSupport": true
         },
         "dmg": {
             "title": "${productName} ${version}",
