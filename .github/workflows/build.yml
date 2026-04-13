@@ -2,13 +2,56 @@ name: Release
 
 on:
     workflow_dispatch:
+        inputs:
+            version:
+                description: 'Version to release (e.g. 4.14.5)'
+                required: true
+
+permissions:
+    contents: write
 
 jobs:
-    windows:
-        runs-on: windows-latest
+    prepare:
+        runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.set-version.outputs.version }}
         steps:
             - name: Check out Git repository
               uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GH_TOKEN }}
+
+            - name: Install Node.js and npm
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22.x'
+
+            - name: Bump version, commit and tag
+              id: set-version
+              run: |
+                  VERSION="${{ github.event.inputs.version }}"
+                  echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+                  git config user.name "laradumps-bot"
+                  git config user.email "laradumps@proton.me"
+
+                  jq --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
+                  git add package.json
+                  git commit -m "v${VERSION}"
+                  git tag "v${VERSION}"
+                  git push
+                  git push --tags
+
+    windows:
+        needs: prepare
+        runs-on: windows-latest
+        env:
+            VERSION: ${{ needs.prepare.outputs.version }}
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v4
+              with:
+                  ref: v${{ needs.prepare.outputs.version }}
 
             - name: Install Node.js and npm
               uses: actions/setup-node@v4
@@ -29,10 +72,15 @@ jobs:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     mac:
+        needs: prepare
         runs-on: macos-latest
+        env:
+            VERSION: ${{ needs.prepare.outputs.version }}
         steps:
             - name: Check out Git repository
               uses: actions/checkout@v4
+              with:
+                  ref: v${{ needs.prepare.outputs.version }}
 
             - name: Install Node.js and npm
               uses: actions/setup-node@v4
@@ -47,16 +95,21 @@ jobs:
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-            - name:  Release Mac
+            - name: Release Mac
               run: npm run publish-mac
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     linux:
+        needs: prepare
         runs-on: ubuntu-latest
+        env:
+            VERSION: ${{ needs.prepare.outputs.version }}
         steps:
             - name: Check out Git repository
               uses: actions/checkout@v4
+              with:
+                  ref: v${{ needs.prepare.outputs.version }}
 
             - name: Install Node.js and npm
               uses: actions/setup-node@v4
@@ -75,7 +128,7 @@ jobs:
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-            - name: 📦 Publish Snap (non-blocking)
+            - name: 📦 Publish Snap
               continue-on-error: true
               run: npm run publish-snap
               env:
