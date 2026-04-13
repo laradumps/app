@@ -319,6 +319,9 @@ const displayLastLog = computed<boolean>({
         if (!settingsStore.settings) return;
         settingsStore.settings.display_last_log = val;
         settingsStore.update();
+        if (!val) {
+            expandedLogId.value = null;
+        }
     }
 });
 </script>
@@ -397,19 +400,19 @@ const displayLastLog = computed<boolean>({
 
                 <!-- Right: actions -->
                 <div class="flex items-center gap-1">
-                    <!-- Display Last Toggle -->
+                    <!-- Auto Expand Toggle -->
                     <div class="flex items-center gap-1.5 px-1">
                         <label
                             for="toggle-display-last"
                             class="text-[10px] uppercase tracking-wider font-semibold opacity-40 select-none cursor-pointer"
-                            >Display Last</label
+                            >Auto Expand</label
                         >
                         <input
                             id="toggle-display-last"
                             type="checkbox"
                             class="toggle toggle-xs toggle-success"
                             v-model="displayLastLog"
-                            data-tippy-content="Display last (auto-expand newest)"
+                            data-tippy-content="Auto expand newest log"
                         />
                     </div>
 
