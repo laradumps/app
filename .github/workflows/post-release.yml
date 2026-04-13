@@ -1,0 +1,39 @@
+name: Post Release
+
+on:
+    release:
+        types: [published]
+
+jobs:
+    post-release:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Extract version from tag
+              run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+            - name: Update Homebrew tap
+              run: |
+                  git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/laradumps/homebrew-app_2.git homebrew-app
+                  cd homebrew-app
+                  git config user.name "laradumps-bot"
+                  git config user.email "laradumps@proton.me"
+                  sh update_cask.sh "${VERSION}" "${{ secrets.GH_TOKEN }}"
+
+            - name: Update docs
+              run: |
+                  git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/laradumps/laradumps-docs.git laradumps-docs
+                  cd laradumps-docs
+
+                  FILE="docs/get-started/installation.md"
+                  OLD_VERSION=$(grep -oE 'releases/download/v[0-9]+\.[0-9]+\.[0-9]+' "$FILE" | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+
+                  sed -i "s/v${OLD_VERSION}\/LaraDumps-${OLD_VERSION}-universal\.dmg/v${VERSION}\/LaraDumps-${VERSION}-universal.dmg/g" "$FILE"
+                  sed -i "s/v${OLD_VERSION}\/LaraDumps-${OLD_VERSION}\.AppImage/v${VERSION}\/LaraDumps-${VERSION}.AppImage/g" "$FILE"
+                  sed -i "s/LaraDumps-${OLD_VERSION}\.AppImage/LaraDumps-${VERSION}.AppImage/g" "$FILE"
+                  sed -i "s/v${OLD_VERSION}\/LaraDumps-Setup-${OLD_VERSION}\.exe/v${VERSION}\/LaraDumps-Setup-${VERSION}.exe/g" "$FILE"
+
+                  git config user.name "laradumps-bot"
+                  git config user.email "laradumps@proton.me"
+                  git add "$FILE"
+                  git commit -m "v${VERSION}"
+                  git push
