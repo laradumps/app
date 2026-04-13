@@ -149,6 +149,7 @@
         "snap": {
             "base": "core22",
             "confinement": "strict",
+            "grade": "stable",
             "summary": "LaraDumps - PHP debugging app",
             "plugs": [
                 "cups-control"
