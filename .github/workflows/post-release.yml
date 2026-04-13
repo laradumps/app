@@ -13,7 +13,7 @@ jobs:
 
             - name: Update Homebrew tap
               run: |
-                  git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/laradumps/homebrew-app_2.git homebrew-app
+                  git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/laradumps/homebrew-app.git homebrew-app
                   cd homebrew-app
                   git config user.name "laradumps-bot"
                   git config user.email "laradumps@proton.me"
