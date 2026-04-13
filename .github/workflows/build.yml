@@ -127,3 +127,10 @@ jobs:
               run: npm run publish-linux
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: 📦 Publish Snap
+              continue-on-error: true
+              run: npm run publish-snap
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+                  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
