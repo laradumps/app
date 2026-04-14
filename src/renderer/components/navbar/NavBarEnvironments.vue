@@ -66,7 +66,7 @@ currentProjectStore.$subscribe(() => {
 
         <div
             tabindex="0"
-            class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
+            class="dropdown-content mt-2 z-[400] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
         >
             <div class="flex flex-col gap-1.5">
                 <button

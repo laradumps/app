@@ -982,10 +982,6 @@ const hasColorsInPayload = computed((): boolean => {
     return payloadStore.payload.some((payload: Payload) => payload.color && payload.color !== 'gray');
 });
 
-const deleteDump = (id: string): void => {
-    payloadStore.removePayload(id);
-};
-
 const handleDragScreen = ({ screen, _ }) => {
     draggedScreenName.value = screen;
     isDraggingScreen.value = true;
@@ -1185,7 +1181,6 @@ const handleDragEnd = () => {
                                                             :payload="payload"
                                                             :show-time="!settingsStore.settings.grouped_by_time"
                                                             :is-first="index === 0"
-                                                            @delete-dump="deleteDump"
                                                         />
                                                     </div>
                                                 </div>
@@ -1344,7 +1339,6 @@ const handleDragEnd = () => {
                                                         :payload="payload"
                                                         :show-time="!settingsStore.settings.grouped_by_time"
                                                         :is-first="index === 0"
-                                                        @delete-dump="deleteDump"
                                                     />
                                                 </div>
                                             </div>
@@ -1484,7 +1478,6 @@ const handleDragEnd = () => {
                                                     :payload="payload"
                                                     :show-time="!settingsStore.settings.grouped_by_time"
                                                     :is-first="index === 0"
-                                                    @delete-dump="deleteDump"
                                                 />
                                             </div>
                                         </div>
