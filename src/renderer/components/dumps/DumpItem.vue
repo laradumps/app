@@ -43,10 +43,6 @@ const duplicatesStore = useQueryDuplicated();
 const toast = useToastStore();
 const { t } = useI18n({ useScope: 'global' });
 
-const emit = defineEmits<{
-    (e: 'deleteDump', id: string): void;
-}>();
-
 const open = ref(true);
 const openOptions = ref(false);
 const menuX = ref(0);
@@ -695,7 +691,7 @@ onUnmounted(() => {
                                     <button
                                         class="hover:bg-base-300 rounded flex justify-between items-center"
                                         @click.stop="
-                                            deleteDump(payload.id);
+                                            payloadStore.removePayload(payload.id);
                                             openOptions = false;
                                         "
                                     >
