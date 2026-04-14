@@ -58,7 +58,7 @@ const timelineScale = computed(() => {
     if (!selectedProfile.value) return { max: 100, step: 10 };
     const max = selectedProfile.value.total_duration_ms;
     const step = Math.ceil(max / 10);
-    return { max, step };
+    return { max: max > 0 ? max : 100, step: step || 10 };
 });
 
 const timeMarkers = computed(() => {
@@ -73,11 +73,15 @@ const timeMarkers = computed(() => {
 const getBarStyle = (entry: ProfileEntry) => {
     if (!selectedProfile.value) return {};
     const totalMs = selectedProfile.value.total_duration_ms;
-    const left = (entry.start_ms / totalMs) * 100;
-    const width = ((entry.duration_ms || 0.5) / totalMs) * 100;
+    const startPercent = (entry.start_ms / totalMs) * 100;
+    const duration = entry.duration_ms ?? 0;
+    const minWidth = entry.duration_ms === null ? 1.5 : 0.3;
+    const widthPercent = Math.max((duration / totalMs) * 100, minWidth);
+    const endPercent = startPercent + widthPercent;
+    const adjustedWidth = endPercent > 100 ? 100 - startPercent : widthPercent;
     return {
-        left: `${left}%`,
-        width: `${Math.max(width, 0.5)}%`
+        left: `${Math.min(startPercent, 100)}%`,
+        width: `${Math.max(adjustedWidth, minWidth)}%`
     };
 };
 
@@ -180,9 +184,7 @@ const selectProfile = (id: string) => {
                 <!-- Scrollable timeline area -->
                 <div class="flex-1 overflow-auto min-h-0 p-3">
                     <!-- Time scale -->
-                    <div
-                        class="relative h-6 mb-1 border-b border-base-content/20 sticky top-0 bg-base-100 z-10 min-w-[600px]"
-                    >
+                    <div class="relative h-6 mb-1 border-b border-base-content/20 sticky top-0 bg-base-100 z-10">
                         <div
                             v-for="marker in timeMarkers"
                             :key="marker"
@@ -194,7 +196,7 @@ const selectProfile = (id: string) => {
                     </div>
 
                     <!-- Timeline entries -->
-                    <div class="space-y-1 min-w-[600px]">
+                    <div class="space-y-1">
                         <div
                             v-for="entry in sortedEntries"
                             :key="entry.id"
@@ -206,7 +208,7 @@ const selectProfile = (id: string) => {
                             </div>
 
                             <!-- Bar container -->
-                            <div class="flex-1 relative h-5 bg-base-200/50 rounded min-w-[200px]">
+                            <div class="flex-1 relative h-5 bg-base-200/50 rounded">
                                 <!-- Bar -->
                                 <div
                                     class="absolute h-full rounded cursor-pointer transition-opacity"
