@@ -45,8 +45,10 @@ import DropZones from '@/components/split/DropZones.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
 import { useSplitPanesStore } from '@/store/split-panes';
 import BrainView from '@/components/laravel/BrainView.vue';
+import ProfileView from '@/components/laravel/ProfileView.vue';
 import { ClockIcon } from '@heroicons/vue/24/outline';
 import { isSpecialEnvironment } from '@/constants';
+import { useProfileStore } from '@/store/profile';
 
 const xDebugStore = useXDebug();
 const screenStore = useScreenStore();
@@ -62,6 +64,7 @@ const pauseLogsStore = usePauseLogsStore();
 const livewireStore = useLivewireStore();
 const splitPanesStore = useSplitPanesStore();
 const brainStore = useBrainStore();
+const profileStore = useProfileStore();
 
 const { locale } = useI18n({ useScope: 'global' });
 const localeStore = useI18nStore();
@@ -257,6 +260,9 @@ const handleRemoveEnvironmentScreen = async (screenName: string) => {
             break;
         case 'brain':
             brainStore.clear();
+            break;
+        case 'profile':
+            profileStore.clear();
             break;
     }
 
@@ -706,6 +712,49 @@ const dumpListeners = () => {
     window.ipcRenderer.on('dump.batches', handleDumpBatches);
     window.ipcRenderer.on('time_track', handleTimeTrack);
     window.ipcRenderer.on('brain', handleBrain);
+    window.ipcRenderer.on('profile', handleProfile);
+};
+
+const handleProfile = (_: any, { content }: any) => {
+    console.log('Profile payload received:', content);
+
+    if (pausePayloadStore.is_paused) {
+        return;
+    }
+
+    if (content.application_path && applicationPath.value != content.application_path) {
+        window.ipcRenderer.send('storage.check', {
+            applicationPath: content.application_path
+        });
+        applicationPath.value = content.application_path;
+    }
+
+    profileStore.addProfile(content);
+
+    console.log('Profile store after add:', profileStore.profiles, 'selected:', profileStore.selectedProfileId);
+
+    if (content.to_screen) {
+        addScreen(content.to_screen);
+    }
+
+    if (content.to_screen?.new_window) {
+        screenStore.hidden(content.to_screen.screen_name);
+
+        window.ipcRenderer.send('screen-window:show', {
+            screen: content.to_screen.screen_name,
+            payload: {},
+            profiles: deepClone(profileStore.profiles),
+            position: {}
+        });
+    }
+
+    if (content.to_screen && !content.to_screen.new_window) {
+        window.ipcRenderer.send('send-screen-window-update', {
+            screen: content.to_screen.screen_name,
+            payload: {},
+            profiles: deepClone(profileStore.profiles)
+        });
+    }
 };
 
 const clearDumpListeners = () => {
@@ -730,6 +779,7 @@ const clearDumpListeners = () => {
     window.ipcRenderer.off('dump.batches', handleDumpBatches);
     window.ipcRenderer.off('time_track', handleTimeTrack);
     window.ipcRenderer.off('brain', handleBrain);
+    window.ipcRenderer.off('profile', handleProfile);
 };
 
 const dumpsBagFiltered = computed((): Payload[] => {
@@ -781,6 +831,7 @@ const toggleScreen = async (value: string, shouldActivate = false): Promise<void
 };
 
 const dispatch = (content: any): void => {
+    console.log(content);
     if (pausePayloadStore.is_paused) {
         return;
     }
@@ -865,6 +916,7 @@ const openScreenWindow = (targetScreen?: string) => {
     const serializableLogPayload = deepClone(logStore.logs);
     const serializableQueriesPayload = deepClone(queriesStore.payload);
     const serializableBrainsPayload = deepClone(brainStore.brains);
+    const serializableProfilesPayload = deepClone(profileStore.profiles);
 
     window.ipcRenderer.send('screen-window:show', {
         screen,
@@ -874,6 +926,7 @@ const openScreenWindow = (targetScreen?: string) => {
         logs: serializableLogPayload,
         queries: serializableQueriesPayload,
         brains: serializableBrainsPayload,
+        profiles: serializableProfilesPayload,
         position: {}
     });
 
@@ -989,7 +1042,7 @@ const handleDragEnd = () => {
             class="mt-3 h-[calc(100vh-50px)] w-screen text-base"
         >
             <ScreenWindow
-                v-if="!['jobs', 'mail', 'logs', 'queries', 'brain'].includes(inScreenWindow)"
+                v-if="!['jobs', 'mail', 'logs', 'queries', 'brain', 'profile'].includes(inScreenWindow)"
                 v-model:dumps="payloadScreen"
                 v-model:screen="inScreenWindow"
             />
@@ -1004,6 +1057,11 @@ const handleDragEnd = () => {
                 :in-screen-window="inScreenWindow.length > 0"
                 v-if="inScreenWindow === 'brain'"
                 :items="brainScreen"
+            />
+
+            <ProfileView
+                :in-screen-window="inScreenWindow.length > 0"
+                v-if="inScreenWindow === 'profile'"
             />
 
             <MailView
@@ -1055,6 +1113,10 @@ const handleDragEnd = () => {
 
                                     <div v-else-if="screenStore.screen === 'brain'">
                                         <BrainView />
+                                    </div>
+
+                                    <div v-else-if="screenStore.screen === 'profile'">
+                                        <ProfileView />
                                     </div>
 
                                     <div v-else-if="screenStore.screen === 'mail'">
@@ -1134,9 +1196,15 @@ const handleDragEnd = () => {
                                             <div
                                                 v-if="
                                                     dumpsBagFiltered.length === 0 &&
-                                                    !['jobs', 'mail', 'logs', 'queries', 'home'].includes(
-                                                        screenStore.screen
-                                                    )
+                                                    ![
+                                                        'jobs',
+                                                        'mail',
+                                                        'logs',
+                                                        'queries',
+                                                        'home',
+                                                        'brain',
+                                                        'profile'
+                                                    ].includes(screenStore.screen)
                                                 "
                                                 class="flex items-center justify-center w-full h-full py-20"
                                             >
@@ -1195,6 +1263,10 @@ const handleDragEnd = () => {
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'brain'">
                                         <BrainView @open-screen-window="openScreenWindow" />
+                                    </div>
+
+                                    <div v-else-if="splitPanesStore.splitConfig.screenName === 'profile'">
+                                        <ProfileView @open-screen-window="openScreenWindow" />
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'mail'">
@@ -1338,6 +1410,13 @@ const handleDragEnd = () => {
                                 />
                             </div>
 
+                            <div v-if="screenStore.screen === 'profile'">
+                                <ProfileView
+                                    class="w-screen text-base"
+                                    @open-screen-window="openScreenWindow"
+                                />
+                            </div>
+
                             <div
                                 v-else
                                 :class="{
@@ -1416,7 +1495,9 @@ const handleDragEnd = () => {
                                     <div
                                         v-if="
                                             dumpsBagFiltered.length === 0 &&
-                                            !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)
+                                            !['jobs', 'mail', 'logs', 'queries', 'home', 'brain', 'profile'].includes(
+                                                screenStore.screen
+                                            )
                                         "
                                         class="-mt-22.5 -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                                         style="height: -webkit-fill-available"
