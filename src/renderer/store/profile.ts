@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 export interface ProfileEntry {
     id: string;
-    type: 'app' | 'event' | 'sql' | 'eloquent' | 'view' | 'controller' | 'http' | 'cache' | 'job';
+    type: 'app' | 'event' | 'sql' | 'eloquent' | 'view' | 'controller' | 'http' | 'cache' | 'job' | 'method';
     name: string;
     start_ms: number;
     duration_ms: number | null;
