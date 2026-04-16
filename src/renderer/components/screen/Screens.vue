@@ -8,6 +8,7 @@ import { useLogStore } from '@/store/logs.js';
 import { useQueriesPayloadStore } from '@/store/queries.js';
 import { useSplitPanesStore } from '@/store/split-panes';
 import { useBrainStore } from '@/store/brains.ts';
+import { useProfileStore } from '@/store/profile';
 import EnvironmentDropdown from './EnvironmentDropdown.vue';
 import type { Environment } from '../../../main/storage';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
@@ -32,6 +33,7 @@ const mailStore = useMailStore();
 const logStore = useLogStore();
 const brainStore = useBrainStore();
 const queriesStore = useQueriesPayloadStore();
+const profileStore = useProfileStore();
 const splitPanesStore = useSplitPanesStore();
 
 const showTooltip = ref(false);
@@ -144,7 +146,8 @@ const getPayloadScreenCount = (screenName) => {
         mail: mailStore.mails,
         logs: logStore.logs,
         queries: queriesStore.payload,
-        brain: brainStore.brains
+        brain: brainStore.brains,
+        profile: profileStore.profiles
     };
 
     const items = stores[screenName] || payloadStore.get(screenName);

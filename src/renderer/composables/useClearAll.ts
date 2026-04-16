@@ -11,6 +11,7 @@ import { useQueryDuplicated } from '@/store/query-duplicated';
 import { useScreenStore } from '@/store/screen';
 import { useLivewireStore } from '@/store/livewire';
 import { useBrainStore } from '@/store/brains';
+import { useProfileStore } from '@/store/profile';
 
 export function useClearAll() {
     const timeStore = useTimeStore();
@@ -26,6 +27,7 @@ export function useClearAll() {
     const screenStore = useScreenStore();
     const livewireStore = useLivewireStore();
     const brainStore = useBrainStore();
+    const profileStore = useProfileStore();
 
     const clear = (): void => {
         // store
@@ -41,6 +43,7 @@ export function useClearAll() {
         screenStore.clearAll();
         livewireStore.clear();
         brainStore.clear();
+        profileStore.clear();
         pendingRequestsStore.clear('queries');
 
         setTimeout(() => {

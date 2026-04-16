@@ -41,6 +41,13 @@ const typeColors: Record<string, string> = {
     method: 'bg-blue-500'
 };
 
+const entryBarColor = (entry: ProfileEntry): string => {
+    if (entry.type === 'app' && (entry.name === 'app(start)' || entry.name === 'app(end)')) {
+        return 'bg-base-content/20';
+    }
+    return `${typeColors[entry.type]} hover:opacity-80`;
+};
+
 const typeLabels: Record<string, string> = {
     app: 'App',
     event: 'Events',
@@ -479,14 +486,12 @@ const openProfilesModal = () => {
                                         }"
                                     ></span>
                                 </template>
-                                <span
-                                    class="flex-1 text-right text-[10px] font-semibold uppercase tracking-widest text-base-content/40 select-none"
-                                >
+                                <span class="flex-1 text-[11px] tracking-widest text-base-content/40 select-none">
                                     {{ item.className }}
                                 </span>
                             </div>
                             <div class="flex-1 border-t border-base-content/10"></div>
-                            <div class="w-20 pl-2 text-[10px] text-base-content/30 flex-shrink-0 text-right">
+                            <div class="w-20 pl-2 text-[10px] text-base-content/30 shrink-0 text-right">
                                 {{ formatDuration(item.totalDurationMs) }}
                             </div>
                         </div>
@@ -495,9 +500,6 @@ const openProfilesModal = () => {
                         <div
                             v-else-if="item.type === 'entry'"
                             class="flex items-center group rounded cursor-pointer transition-colors"
-                            :class="[hoveredEntry === item.entry.id ? 'bg-base-content/10' : 'hover:bg-base-content/5']"
-                            @mouseenter="hoveredEntry = item.entry.id"
-                            @mouseleave="hoveredEntry = null"
                             @click="selectedEntry = item.entry"
                         >
                             <!-- Label: fixed width area; depth tree indent on the left, text right-aligned -->
@@ -519,7 +521,7 @@ const openProfilesModal = () => {
                                     ></span>
                                 </template>
                                 <!-- Method name, right-fill remaining space -->
-                                <span class="flex-1 truncate text-right">{{
+                                <span class="flex-1 text-left break-all truncate">{{
                                     item.indented ? entryMethodName(item.entry) : entryLabel(item.entry)
                                 }}</span>
                             </div>
@@ -528,7 +530,7 @@ const openProfilesModal = () => {
                             <div class="flex-1 relative h-5 bg-base-200/50 rounded overflow-hidden">
                                 <div
                                     class="absolute h-full rounded transition-opacity"
-                                    :class="typeColors[item.entry.type]"
+                                    :class="entryBarColor(item.entry)"
                                     :style="getBarStyle(item.entry)"
                                     :title="`${entryLabel(item.entry)}\nType: ${item.entry.type}\nDuration: ${formatDuration(item.entry.duration_ms)}\nStart: ${formatDuration(item.entry.start_ms)}${item.entry.origin?.class ? '\nOrigin: ' + item.entry.origin.class : ''}`"
                                 ></div>

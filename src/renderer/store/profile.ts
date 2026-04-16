@@ -78,9 +78,7 @@ export const useProfileStore = defineStore('profile', {
 
             this.profiles[profile.id] = profile;
 
-            if (!this.selectedProfileId) {
-                this.selectedProfileId = profile.id;
-            }
+            this.selectedProfileId = profile.id;
         },
 
         selectProfile(id: string) {
