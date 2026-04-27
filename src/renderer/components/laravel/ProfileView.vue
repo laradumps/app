@@ -48,6 +48,11 @@ const entryBarColor = (entry: ProfileEntry): string => {
     return `${typeColors[entry.type]} hover:opacity-80`;
 };
 
+const legendDotColor = (type: string): string => {
+    if (type === 'app') return 'bg-base-content/20';
+    return typeColors[type] || 'bg-gray-400';
+};
+
 const typeLabels: Record<string, string> = {
     app: 'App',
     event: 'Events',
@@ -281,21 +286,26 @@ const timelineItems = computed((): TimelineGroup[] => {
             continue;
         }
         const runIdx = entryRunIndex.get(entry.id) ?? -1;
-        // Inject a header at the start of each contiguous run
+        const isMultiEntryRun = runIdx >= 0 && runs[runIdx].entries.length > 1;
+        // Only inject a class header when the run has multiple entries.
+        // Single-entry runs show the full class::method label directly,
+        // avoiding redundant headers that duplicate the entry's duration.
         if (runIdx !== lastRunIdx) {
             lastRunIdx = runIdx;
-            const headerDepth = runIdx >= 0 ? runMinDepth[runIdx] : 0;
-            items.push({
-                type: 'class-header',
-                className: cls,
-                totalDurationMs: runIdx >= 0 ? runDuration[runIdx] : 0,
-                count: runIdx >= 0 ? runs[runIdx].entries.length : 0,
-                depth: headerDepth,
-                connectors: []
-            });
+            if (isMultiEntryRun) {
+                const headerDepth = runMinDepth[runIdx];
+                items.push({
+                    type: 'class-header',
+                    className: cls,
+                    totalDurationMs: runDuration[runIdx],
+                    count: runs[runIdx].entries.length,
+                    depth: headerDepth,
+                    connectors: []
+                });
+            }
         }
         const rawDepth = entryDepthMap.value.get(entry.id) ?? 0;
-        items.push({ type: 'entry', entry, indented: true, depth: rawDepth, connectors: [] });
+        items.push({ type: 'entry', entry, indented: isMultiEntryRun, depth: rawDepth, connectors: [] });
     }
 
     // Second pass: compute tree connectors for ALL items (headers + entries)
@@ -433,7 +443,7 @@ const openProfilesModal = () => {
                     >
                         <span
                             class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                            :class="typeColors[type]"
+                            :class="legendDotColor(type as string)"
                         ></span>
                         <span>{{ typeLabels[type as string] || type }} ({{ data.count }})</span>
                     </button>
