@@ -97,11 +97,11 @@ const onEnvironmentSelected = (environment) => {
     showEnvironmentDropdown.value = false;
 };
 
-const isEnvironmentScreen = (screenName) => {
-    const basicScreens = ['queries', 'logs'];
+const BUILT_IN_SCREENS = ['home', 'queries', 'logs', 'jobs', 'mail', 'brain', 'livewire', 'xdebug_inspector'];
 
+const isEnvironmentScreen = (screenName) => {
     return (
-        basicScreens.includes(screenName.toLowerCase()) ||
+        !BUILT_IN_SCREENS.includes(screenName.toLowerCase()) ||
         props.environments?.some((env) => env.value === screenName) ||
         false
     );
@@ -160,8 +160,12 @@ const getPayloadScreenCount = (screenName) => {
     return count > 0 ? `(${count})` : '';
 };
 
+const splitScreenName = computed(() =>
+    splitPanesStore.splitConfig?.active ? splitPanesStore.splitConfig.screenName : null
+);
+
 const isScreenInSplit = (screenName: string) => {
-    return splitPanesStore.splitConfig?.active && splitPanesStore.splitConfig.screenName === screenName;
+    return splitScreenName.value === screenName;
 };
 
 const formattedScreenName = (name: string) => {
@@ -238,16 +242,18 @@ const formattedScreenName = (name: string) => {
                 >
                     <span class="text-xl leading-none">+</span>
                 </button>
-
-                <EnvironmentDropdown
-                    :environments="availableEnvironments"
-                    :visible="showEnvironmentDropdown"
-                    @environment-selected="onEnvironmentSelected"
-                    @close="showEnvironmentDropdown = false"
-                />
             </div>
         </div>
     </div>
+
+    <Teleport to="#context-menu-portal">
+        <EnvironmentDropdown
+            :environments="availableEnvironments"
+            :visible="showEnvironmentDropdown"
+            @environment-selected="onEnvironmentSelected"
+            @close="showEnvironmentDropdown = false"
+        />
+    </Teleport>
 
     <Teleport to="#context-menu-portal">
         <div

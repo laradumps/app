@@ -40,6 +40,7 @@ const localWorkflowItems = ref<Record<string, BrainWorkflow>>({});
 const props = defineProps<{
     items?: Record<string, BrainWorkflow>;
     inScreenWindow?: boolean;
+    hideHeader?: boolean;
 }>();
 
 defineEmits(['open-screen-window']);
@@ -296,7 +297,10 @@ const toggleActionExpanded = (action: any) => {
 <template>
     <div>
         <!-- Actions bar -->
-        <div class="-mt-3 flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3">
+        <div
+            v-if="!hideHeader"
+            class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3"
+        >
             <!-- Left: title -->
             <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">Brain</span>
 
