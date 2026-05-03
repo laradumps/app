@@ -74,7 +74,7 @@
     "esbuild": "^0.28.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "5.5.5",
-    "postcss": "8.5.9",
+    "postcss": "8.5.13",
     "prettier": "3.8.1",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
