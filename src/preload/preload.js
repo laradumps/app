@@ -26,7 +26,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { applyLimit, slimForMcp } from './utils.js';
+import { applyLimit, slimForMcp, slimMailMeta, buildMailDetail, parseMailParts } from './utils.js';
 
 const port = 9191;
 const app = express();
@@ -280,10 +280,34 @@ app.get('/api/mcp/project-info', (req, res) => {
 app.get('/api/mcp/mails', (req, res) => {
     try {
         const mails = applyLimit(window.LaraDumps?.mailStore?.mails);
-        res.send(slimForMcp(mails));
+        res.send(mails.map(slimMailMeta));
     } catch (e) {
         console.error('[MCP Mails Error]', e);
         res.status(503).send({ error: 'Store not initialized or error retrieving mails' });
+    }
+});
+
+const MAIL_DEFAULT_PARTS = ['meta'];
+const MAIL_DEFAULT_TEXT_MAX_LENGTH = 2000;
+
+app.get('/api/mcp/mails/:messageId', (req, res) => {
+    try {
+        const store = window.LaraDumps?.mailStore;
+        if (!store) {
+            return res.status(503).send({ error: 'Store not initialized' });
+        }
+        const mail = (store.mails || []).find((m) => m.message_id === req.params.messageId);
+        if (!mail) {
+            return res.status(404).send({ error: `Mail not found: ${req.params.messageId}` });
+        }
+
+        const parts = parseMailParts(req.query.parts) || MAIL_DEFAULT_PARTS;
+        const maxTextLength = parseInt(req.query.max_length, 10) || MAIL_DEFAULT_TEXT_MAX_LENGTH;
+
+        res.send(buildMailDetail(mail, parts, { maxTextLength }));
+    } catch (e) {
+        console.error('[MCP Mail Detail Error]', e);
+        res.status(503).send({ error: e?.message || 'Error retrieving mail' });
     }
 });
 
