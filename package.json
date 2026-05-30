@@ -54,7 +54,7 @@
     "vue-json-pretty": "^2.6.0",
     "vue-router": "^5.0.4",
     "xml2js": "^0.6.2",
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/electron": "^1.6.10",
