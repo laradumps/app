@@ -1,3 +1,93 @@
+const ALL_MAIL_PARTS = ['meta', 'text', 'html', 'headers', 'details', 'attachments', 'attachment_bodies'];
+
+const stripHtml = (html) => {
+    if (!html || typeof html !== 'string') return '';
+    return html
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+const truncate = (text, maxLen) => {
+    if (!text || text.length <= maxLen) return text;
+    return text.substring(0, maxLen) + '\n... [truncated]';
+};
+
+/**
+ * Slim mail object to meta fields only (safe for listing).
+ */
+export const slimMailMeta = (mail) => {
+    if (!mail) return mail;
+    const location = mail.ide_handle?.class_name && mail.ide_handle?.line
+        ? `${mail.ide_handle.class_name}:${mail.ide_handle.line}`
+        : null;
+    return {
+        message_id: mail.message_id,
+        from: mail.from,
+        from_mail: mail.from_mail,
+        to: mail.to,
+        subject: mail.subject,
+        date: mail.date,
+        is_read: mail.is_read,
+        location,
+        has_attachments: Array.isArray(mail.attachments) && mail.attachments.length > 0
+    };
+};
+
+/**
+ * Build mail detail payload from selected parts.
+ * parts: array of MailPart strings; unknown parts are ignored.
+ */
+export const buildMailDetail = (mail, parts, options = {}) => {
+    if (!mail) return mail;
+    const { maxTextLength = 2000 } = options;
+    const set = new Set(Array.isArray(parts) && parts.length > 0 ? parts : ['meta']);
+    const result = {};
+
+    if (set.has('meta')) Object.assign(result, slimMailMeta(mail));
+
+    if (set.has('text')) {
+        result.text = truncate(stripHtml(mail.html), maxTextLength);
+    }
+    if (set.has('html')) {
+        result.html = truncate(mail.html || '', maxTextLength);
+    }
+    if (set.has('headers')) {
+        result.headers = mail.headers || [];
+    }
+    if (set.has('details')) {
+        result.details = mail.details || [];
+    }
+    if (set.has('attachments') || set.has('attachment_bodies')) {
+        const includeBody = set.has('attachment_bodies');
+        result.attachments = (mail.attachments || []).map((a) => {
+            const entry = { filename: a.filename, path: a.path };
+            if (a.body) entry.size = a.body.length;
+            if (includeBody) entry.body = a.body;
+            return entry;
+        });
+    }
+
+    return result;
+};
+
+export const parseMailParts = (raw) => {
+    if (!raw) return null;
+    const parts = String(raw)
+        .split(',')
+        .map((p) => p.trim())
+        .filter((p) => ALL_MAIL_PARTS.includes(p));
+    return parts.length > 0 ? parts : null;
+};
+
 /**
  * Apply limit to data based on settings
  */

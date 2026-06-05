@@ -1,6 +1,6 @@
 {
   "name": "laradumps",
-  "version": "4.13.8",
+  "version": "4.13.9",
   "private": false,
   "description": "LaraDumps is a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
   "author": "Luan Freitas <luanfreitas10@protonmail.com>",
@@ -24,7 +24,7 @@
     "@heroicons/vue": "^2.2.0",
     "@highlightjs/vue-plugin": "^2.1.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@tailwindcss/postcss": "^4.2.2",
+    "@tailwindcss/postcss": "^4.3.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.2",
     "auto-launch": "^5.0.6",
@@ -32,7 +32,7 @@
     "chart.js": "^4.5.1",
     "chokidar": "^4.0.3",
     "cors": "^2.8.6",
-    "dayjs": "^1.11.20",
+    "dayjs": "^1.11.21",
     "electron-dl": "^4.0.0",
     "electron-json-storage": "^4.6.0",
     "electron-localshortcut": "^3.2.1",
@@ -52,19 +52,19 @@
     "vue": "3.5.32",
     "vue-i18n": "9.4.1",
     "vue-json-pretty": "^2.6.0",
-    "vue-router": "^5.0.4",
+    "vue-router": "^5.1.0",
     "xml2js": "^0.6.2",
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/electron": "^1.6.10",
     "@types/electron-json-storage": "^4.5.4",
     "@types/express": "^5.0.6",
     "@types/humanize-duration": "^3.27.4",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.9.1",
     "@types/ssh2": "^1.15.5",
     "@types/xml2js": "^0.4.14",
-    "@typescript-eslint/eslint-plugin": "^8.58.1",
+    "@typescript-eslint/eslint-plugin": "^8.60.1",
     "@typescript-eslint/parser": "^8.58.1",
     "@vitejs/plugin-vue": "6.0.5",
     "concurrently": "^9.2.1",
@@ -76,9 +76,9 @@
     "eslint-plugin-prettier": "5.5.5",
     "postcss": "8.5.13",
     "prettier": "3.8.1",
-    "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2",
-    "vite": "^8.0.8"
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16"
   },
   "ts-standard": {
     "project": "./tsconfig.json"
