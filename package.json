@@ -32,7 +32,7 @@
     "chart.js": "^4.5.1",
     "chokidar": "^4.0.3",
     "cors": "^2.8.6",
-    "dayjs": "^1.11.20",
+    "dayjs": "^1.11.21",
     "electron-dl": "^4.0.0",
     "electron-json-storage": "^4.6.0",
     "electron-localshortcut": "^3.2.1",
