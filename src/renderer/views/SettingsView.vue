@@ -73,31 +73,39 @@ const copyMcpCommand = (command: string) => {
 };
 
 const copyMcpConfig = () => {
-    let config: {};
+    let config: any;
 
     if (mcpClient.value === 'cursor') {
         config = {
             mcpServers: {
                 laradumps: {
-                    url: `http://127.0.0.1:${settingsStore.settings.mcp_port}/sse`,
-                    type: 'sse'
+                    url: `http://127.0.0.1:${settingsStore.settings.mcp_port}/mcp`
                 }
             }
         };
-    } else {
+    } else if (mcpClient.value === 'opencode') {
         config = {
             $schema: 'https://opencode.ai/config.json',
             mcp: {
                 LaraDumps: {
                     type: 'remote',
-                    url: `http://127.0.0.1:${settingsStore.settings.mcp_port}/sse`
+                    url: `http://127.0.0.1:${settingsStore.settings.mcp_port}/mcp`
                 }
             }
         };
+    } else {
+        config = `claude mcp add laradumps http://127.0.0.1:${settingsStore.settings.mcp_port}/mcp --transport http`;
     }
 
-    navigator.clipboard.writeText(JSON.stringify(config, null, 2));
-    toast.show('Config JSON copied to clipboard', 'success');
+    if (typeof config === 'string') {
+        navigator.clipboard.writeText(config);
+    } else {
+        navigator.clipboard.writeText(JSON.stringify(config, null, 2));
+    }
+    toast.show(
+        mcpClient.value === 'claude' ? 'CLI command copied to clipboard' : 'Configuration JSON copied to clipboard',
+        'success'
+    );
 };
 
 const saveMcpSettings = async () => {
@@ -831,13 +839,13 @@ const saveCustomTheme = async () => {
                             <div class="divider my-1">Modes</div>
 
                             <div class="grid grid-cols-1 gap-4">
-                                <!-- Native (SSE) Mode -->
+                                <!-- Native (Streamable HTTP) Mode -->
                                 <div
                                     class="flex flex-col gap-2 p-3 bg-base-100 border border-base-300 rounded-box relative"
                                 >
                                     <div class="flex justify-between items-center">
                                         <div>
-                                            <h4 class="font-bold text-sm">Native (HTTP/SSE)</h4>
+                                            <h4 class="font-bold text-sm">Native (Streamable HTTP)</h4>
                                         </div>
                                         <input
                                             type="checkbox"
@@ -864,6 +872,14 @@ const saveCustomTheme = async () => {
                                                 type="radio"
                                                 name="mcp_conf_tabs"
                                                 class="tab tab-sm"
+                                                aria-label="Claude Code (CLI)"
+                                                :checked="mcpClient === 'claude'"
+                                                @click="mcpClient = 'claude'"
+                                            />
+                                            <input
+                                                type="radio"
+                                                name="mcp_conf_tabs"
+                                                class="tab tab-sm"
                                                 aria-label="OpenCode"
                                                 :checked="mcpClient === 'opencode'"
                                                 @click="mcpClient = 'opencode'"
@@ -874,17 +890,19 @@ const saveCustomTheme = async () => {
                                             <pre v-if="mcpClient === 'cursor'"><code>{
       "mcpServers": {
         "LaraDumps": {
-           "url": "http://127.0.0.1:{{ settingsStore.settings.mcp_port }}/sse",
-           "type": "sse"
+           "url": "http://127.0.0.1:{{ settingsStore.settings.mcp_port }}/mcp"
         }
       }
   }</code></pre>
+                                            <pre
+                                                v-if="mcpClient === 'claude'"
+                                            ><code>claude mcp add laradumps http://127.0.0.1:{{ settingsStore.settings.mcp_port }}/mcp --transport http</code></pre>
                                             <pre v-if="mcpClient === 'opencode'"><code>{
       "$schema": "https://opencode.ai/config.json",
       "mcp": {
         "LaraDumps": {
            "type": "remote",
-           "url": "http://127.0.0.1:{{ settingsStore.settings.mcp_port }}/sse"
+           "url": "http://127.0.0.1:{{ settingsStore.settings.mcp_port }}/mcp"
         }
       }
   }</code></pre>
@@ -892,7 +910,7 @@ const saveCustomTheme = async () => {
                                                 class="btn btn-xs btn-ghost absolute top-2 right-2"
                                                 @click="copyMcpConfig"
                                             >
-                                                Copy JSON
+                                                {{ mcpClient === 'claude' ? 'Copy Command' : 'Copy JSON' }}
                                             </button>
                                         </div>
                                     </div>
