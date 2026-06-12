@@ -26,7 +26,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@tailwindcss/postcss": "^4.3.0",
     "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.2.2",
+    "@tailwindcss/vite": "^4.3.0",
     "auto-launch": "^5.0.6",
     "body-parser": "^2.2.2",
     "chart.js": "^4.5.1",
