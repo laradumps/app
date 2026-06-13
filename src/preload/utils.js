@@ -26,9 +26,10 @@ const truncate = (text, maxLen) => {
  */
 export const slimMailMeta = (mail) => {
     if (!mail) return mail;
-    const location = mail.ide_handle?.class_name && mail.ide_handle?.line
-        ? `${mail.ide_handle.class_name}:${mail.ide_handle.line}`
-        : null;
+    const location =
+        mail.ide_handle?.class_name && mail.ide_handle?.line
+            ? `${mail.ide_handle.class_name}:${mail.ide_handle.line}`
+            : null;
     return {
         message_id: mail.message_id,
         from: mail.from,
@@ -135,11 +136,12 @@ export const slimForMcp = (data, options = {}) => {
 
         const slimmed = { ...data };
 
-        // Strip dump HTML content - keep only original_content and variable_type
+        // Strip dump HTML content - keep only original_content, variable_type, variable_name
         if (slimmed.dump && typeof slimmed.dump === 'object') {
             slimmed.dump = {
                 original_content: slimmed.dump.original_content,
-                variable_type: slimmed.dump.variable_type
+                variable_type: slimmed.dump.variable_type,
+                ...(slimmed.dump.variable_name != null && { variable_name: slimmed.dump.variable_name })
             };
         }
 

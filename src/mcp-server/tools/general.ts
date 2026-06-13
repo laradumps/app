@@ -134,9 +134,7 @@ export function registerGeneralTools(server: McpServer) {
             inputSchema: {
                 message_id: z.string().describe('The message_id of the email (returned by get_mails)'),
                 include: z
-                    .array(
-                        z.enum(['meta', 'text', 'html', 'headers', 'details', 'attachments', 'attachment_bodies'])
-                    )
+                    .array(z.enum(['meta', 'text', 'html', 'headers', 'details', 'attachments', 'attachment_bodies']))
                     .optional()
                     .describe(
                         "Parts to include. Defaults to ['meta']. 'meta' = from/to/subject/date. 'text' = HTML stripped to plain text (truncated). 'html' = raw HTML (truncated). 'headers' = full headers. 'details' = extra captured details. 'attachments' = filename/path/size (no body). 'attachment_bodies' = attachment body as base64 (heavy)."

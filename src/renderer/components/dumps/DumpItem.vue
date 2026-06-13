@@ -14,6 +14,7 @@ import DumpTableV2 from '@/components/dumps/DumpTableV2.vue';
 import DumpQuery from '@/components/laravel/DumpQuery.vue';
 import { Payload } from '@/types/Payload';
 import DumpDump from '@/components/dumps/DumpDump.vue';
+import DumpGrouped from '@/components/dumps/DumpGrouped.vue';
 import { useCollapse } from '@/store/collapse';
 import { useSettingsStore } from '@/store/settings';
 import dayjs from 'dayjs';
@@ -406,7 +407,7 @@ onUnmounted(() => {
         v-if="
             (payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'
         "
-        :class="{ '-mt-1': isFirst }"
+        :class="{ '-mt-1': isFirst && !payload.dump?.variable_name }"
     >
         <div
             @mouseenter="decrementBadgeCount"
@@ -432,34 +433,66 @@ onUnmounted(() => {
                 @click="open = !open"
                 class="collapse-title p-4! min-h-0 flex flex-col gap-5 cursor-default"
             >
-                <!-- top row: dot + content -->
+                <!-- top row: dot + content + badge -->
                 <div class="flex items-start gap-3">
                     <div
                         class="w-2 h-2 rounded-full shrink-0 mt-1.5"
                         :class="indicatorDotClass"
                     ></div>
 
-                    <div class="flex-1 flex flex-col gap-1 overflow-hidden">
+                    <div class="flex-1 flex flex-col gap-2.5 overflow-hidden">
+                        <!-- Variable header: $name + type badge + label + time -->
+                        <div
+                            v-if="
+                                payload.dump?.variable_name ||
+                                (settingsStore.settings.show_variable_type &&
+                                    payload.dump?.variable_type !== undefined) ||
+                                getLabel !== payload.type ||
+                                !settingsStore.settings.grouped_by_time
+                            "
+                            class="flex items-center gap-1.5 pt-0.5"
+                        >
+                            <span
+                                v-if="payload.dump?.variable_name"
+                                class="font-mono text-[0.72rem] font-semibold text-[#9CDCFE]"
+                                >${{ payload.dump.variable_name }}</span
+                            >
+                            <span
+                                v-if="
+                                    settingsStore.settings.show_variable_type &&
+                                    payload.dump?.variable_type !== undefined
+                                "
+                                class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/50 px-1.5 py-px rounded border border-base-content/10"
+                                >{{ payload.dump.variable_type }}</span
+                            >
+                            <span
+                                v-if="getLabel !== payload.type"
+                                class="text-[10px] px-1.5 py-0.5 rounded bg-base-300 text-base-content/70 whitespace-nowrap"
+                                >{{ getLabel }}</span
+                            >
+                            <span
+                                v-if="!settingsStore.settings.grouped_by_time"
+                                class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/50 px-1.5 py-px rounded border border-base-content/10"
+                                >{{ dayjs(payload.date_time).format('HH:mm:ss') }}</span
+                            >
+                        </div>
+
                         <!-- Model: ClassName + Raw Attributes HTML -->
                         <DumpModel
                             v-if="payload.type === 'model' && payload.model"
                             :payload="payload"
                         />
 
-                        <!-- Dump: Raw Content HTML -->
-                        <DumpDump
-                            v-else-if="payload.type === 'dump' && payload.dump"
+                        <!-- Grouped Dump: multiple vars with individual IDE links -->
+                        <DumpGrouped
+                            v-else-if="payload.type === 'dump_group' && payload.dump_group"
                             :payload="payload"
-                        >
-                            <template #label>
-                                <span
-                                    v-if="getLabel !== payload.type"
-                                    class="text-[10px] px-1.5 py-0.5 rounded bg-base-300 text-base-content/70 whitespace-nowrap"
-                                >
-                                    {{ getLabel }}
-                                </span>
-                            </template>
-                        </DumpDump>
+                        />
+
+                        <!-- Dump: Raw Content HTML -->
+                        <div v-else-if="payload.type === 'dump' && payload.dump">
+                            <DumpDump :payload="payload" />
+                        </div>
 
                         <!-- Table V2 -->
                         <DumpTableV2
@@ -540,11 +573,10 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <!-- variable type (dimmed) -->
+                    <!-- badge dot: top-right -->
                     <div
-                        v-show="settingsStore.settings.show_variable_type && payload.dump?.variable_type !== undefined"
-                        class="text-[0.6rem] opacity-30 font-mono italic"
-                        v-text="`(${payload.dump?.variable_type})`"
+                        v-if="open && shouldDisplayBadge"
+                        class="bg-warning w-1.5 h-1.5 rounded-full shrink-0 mt-1.5"
                     ></div>
                 </div>
 
@@ -559,12 +591,6 @@ onUnmounted(() => {
                         />
                         <span v-else> Unknown </span>
                     </div>
-
-                    <span
-                        class="opacity-70"
-                        v-if="!settingsStore.settings.grouped_by_time"
-                        >{{ dayjs(payload.date_time).format('hh:mm:ss') }}</span
-                    >
 
                     <!-- Query badges (Explain only) -->
                     <div
@@ -592,13 +618,6 @@ onUnmounted(() => {
                             <BoltIcon class="w-3" />
                             <span class="text-xs">Explain</span>
                         </button>
-                    </div>
-
-                    <div
-                        v-else-if="open && shouldDisplayBadge"
-                        class="relative items-center ml-auto"
-                    >
-                        <div class="bg-warning w-1.5 h-1.5 rounded-full"></div>
                     </div>
                 </div>
             </div>
