@@ -441,39 +441,20 @@ onUnmounted(() => {
                     ></div>
 
                     <div class="flex-1 flex flex-col gap-2.5 overflow-hidden">
-                        <!-- Variable header: $name + type badge + label + time -->
+                        <!-- Header: time + label -->
                         <div
-                            v-if="
-                                payload.dump?.variable_name ||
-                                (settingsStore.settings.show_variable_type &&
-                                    payload.dump?.variable_type !== undefined) ||
-                                getLabel !== payload.type ||
-                                !settingsStore.settings.grouped_by_time
-                            "
+                            v-if="getLabel !== payload.type || !settingsStore.settings.grouped_by_time"
                             class="flex items-center gap-1.5 pt-0.5"
                         >
                             <span
-                                v-if="payload.dump?.variable_name"
-                                class="font-mono text-[0.72rem] font-semibold text-[#9CDCFE]"
-                                >${{ payload.dump.variable_name }}</span
-                            >
-                            <span
-                                v-if="
-                                    settingsStore.settings.show_variable_type &&
-                                    payload.dump?.variable_type !== undefined
-                                "
-                                class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/50 px-1.5 py-px rounded border border-base-content/10"
-                                >{{ payload.dump.variable_type }}</span
+                                v-if="!settingsStore.settings.grouped_by_time"
+                                class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded border border-base-content/10"
+                                >{{ dayjs(payload.date_time).format('HH:mm:ss') }}</span
                             >
                             <span
                                 v-if="getLabel !== payload.type"
-                                class="text-[10px] px-1.5 py-0.5 rounded bg-base-300 text-base-content/70 whitespace-nowrap"
+                                class="text-[10px] px-1.5 py-0.5 rounded bg-base-300 text-base-content/80 whitespace-nowrap"
                                 >{{ getLabel }}</span
-                            >
-                            <span
-                                v-if="!settingsStore.settings.grouped_by_time"
-                                class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/50 px-1.5 py-px rounded border border-base-content/10"
-                                >{{ dayjs(payload.date_time).format('HH:mm:ss') }}</span
                             >
                         </div>
 
@@ -491,6 +472,21 @@ onUnmounted(() => {
 
                         <!-- Dump: Raw Content HTML -->
                         <div v-else-if="payload.type === 'dump' && payload.dump">
+                            <div
+                                v-if="(payload.dump.variable_name && payload.dump.variable_name !== 'arg0') || (settingsStore.settings.show_variable_type && payload.dump.variable_type !== undefined)"
+                                class="flex items-center gap-1.5 mb-2"
+                            >
+                                <span
+                                    v-if="payload.dump.variable_name && payload.dump.variable_name !== 'arg0'"
+                                    class="font-mono text-[0.72rem] font-semibold text-[#9CDCFE]"
+                                    >${{ payload.dump.variable_name }}</span
+                                >
+                                <span
+                                    v-if="settingsStore.settings.show_variable_type && payload.dump.variable_type !== undefined"
+                                    class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded border border-base-content/10"
+                                    >{{ payload.dump.variable_type }}</span
+                                >
+                            </div>
                             <DumpDump :payload="payload" />
                         </div>
 
