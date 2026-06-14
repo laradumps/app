@@ -35,9 +35,9 @@ jobs:
                   git config user.name "laradumps-bot"
                   git config user.email "laradumps@proton.me"
 
-                  jq --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
+                  jq --indent 4 --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
                   git add package.json
-                  git commit -m "v${VERSION}"
+                  git diff --cached --quiet || git commit -m "v${VERSION}"
                   git tag "v${VERSION}"
                   git push
                   git push --tags
