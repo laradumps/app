@@ -704,6 +704,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on('json_validate', handleJsonValidate);
     window.ipcRenderer.on('validate', handleValidate);
     window.ipcRenderer.on('dump.batches', handleDumpBatches);
+    window.ipcRenderer.on('dump_group', handleDump);
     window.ipcRenderer.on('time_track', handleTimeTrack);
     window.ipcRenderer.on('brain', handleBrain);
 };
@@ -728,6 +729,7 @@ const clearDumpListeners = () => {
     window.ipcRenderer.off('json_validate', handleJsonValidate);
     window.ipcRenderer.off('validate', handleValidate);
     window.ipcRenderer.off('dump.batches', handleDumpBatches);
+    window.ipcRenderer.off('dump_group', handleDump);
     window.ipcRenderer.off('time_track', handleTimeTrack);
     window.ipcRenderer.off('brain', handleBrain);
 };
@@ -1100,7 +1102,7 @@ const handleDragEnd = () => {
                                                             !['livewire'].includes(screenStore.screen) &&
                                                             settingsStore.settings.grouped_by_time
                                                         "
-                                                        class="bg-base-200 flex-1 text-left px-3 py-1.5 z-70 text-xs sticky top-0"
+                                                        class="bg-base-200 flex-1 text-left px-4 py-1.5 z-70 text-xs sticky top-0"
                                                     >
                                                         <span
                                                             class="flex items-center gap-1 opacity-70"
@@ -1260,7 +1262,7 @@ const handleDragEnd = () => {
                                                             splitPanesStore.splitConfig.screenName
                                                         ) && settingsStore.settings.grouped_by_time
                                                     "
-                                                    class="bg-base-200 flex-1 text-left px-3 py-1.5 z-70 text-xs sticky top-0"
+                                                    class="bg-base-200 flex-1 text-left px-4 py-1.5 z-70 text-xs sticky top-0"
                                                 >
                                                     <span
                                                         class="flex items-center gap-1 opacity-70"
@@ -1387,7 +1389,7 @@ const handleDragEnd = () => {
                                                     !['livewire'].includes(screenStore.screen) &&
                                                     settingsStore.settings.grouped_by_time
                                                 "
-                                                class="bg-base-200 flex-1 text-left px-3 py-1.5 z-70 text-xs sticky -top-2"
+                                                class="bg-base-200 flex-1 text-left px-4 py-1.5 z-70 text-xs sticky -top-2"
                                             >
                                                 <span
                                                     class="flex items-center gap-1 opacity-70"

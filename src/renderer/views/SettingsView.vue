@@ -29,7 +29,10 @@ const mcpTools = ref([
     { name: 'get_dumps', description: 'Get all dumps' },
     { name: 'get_project_info', description: 'Get current project information' },
     { name: 'get_mails', description: 'List captured emails (metadata only)' },
-    { name: 'get_mail', description: 'Get a single email by message_id, with selectable parts (text/html/attachments/...)' },
+    {
+        name: 'get_mail',
+        description: 'Get a single email by message_id, with selectable parts (text/html/attachments/...)'
+    },
     { name: 'get_livewire_components', description: 'Get all Livewire components' },
     { name: 'search_dumps', description: 'Search across all dumps, queries, logs, and mails' },
     { name: 'analyze_last_exception', description: 'Analyze the most recent exception or error log (Prompt)' },

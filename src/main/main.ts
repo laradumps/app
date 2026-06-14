@@ -129,6 +129,10 @@ ipcMain.on('dump', (event: Electron.IpcMainEvent, arg): void => {
     event.sender.send(arg.type, arg);
 });
 
+ipcMain.on('dump_group', (event: Electron.IpcMainEvent, arg): void => {
+    event.sender.send('dump_group', arg);
+});
+
 ipcMain.on('badge-icon.decrement', (_: Electron.IpcMainEvent, args): void => {
     if (badgeCount > 0) {
         badgeCount -= 1;
