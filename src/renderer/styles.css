@@ -101,7 +101,9 @@
 }
 
 body {
-    color: #18171b;
+    /* Follow the active theme instead of a hardcoded near-black, which was invisible on dark
+       surfaces (and on the darkened light-theme glass). Theme text uses `text-base-content`. */
+    color: var(--color-base-content);
     margin: 0;
     padding-bottom: 3rem;
 }
@@ -109,11 +111,21 @@ body {
 /**
  * Window transparency / native OS blur ("glass" effect).
  *
- * When `glass-enabled` is set on <html>, the window background is let through so the
- * native OS blur (macOS vibrancy / Windows 11 acrylic) shows behind the UI. DaisyUI paints
- * opaque base surfaces, so we re-tint them with `color-mix(... transparent)` at the user's
- * chosen opacity (`--glass-pct`). We override `background-color` at the point of use instead
- * of redefining `--color-base-*`, which keeps it theme-agnostic and avoids circular vars.
+ * When `glass-enabled` is set on <html> (added by index.html from the main process's
+ * `?blur=1`, and re-asserted by the settings store), the window background is let through
+ * so the native OS blur (macOS vibrancy / Windows 11 acrylic) shows behind the UI.
+ *
+ * These rules are the single source of truth for the effect. They win the cascade through
+ * the `html.glass-enabled` prefix — specificity (0,2,x) plus `!important` beats DaisyUI's
+ * low-specificity `:where()` component styles — and they apply at first paint, before any
+ * JS runs, which prevents an opaque flash.
+ *
+ * DaisyUI paints opaque base surfaces, so we re-tint them with `color-mix(... transparent)`
+ * at the user's chosen opacity (`--glass-pct`, set live on <html> by the settings store).
+ * We override `background-color` at the point of use instead of redefining `--color-base-*`,
+ * which keeps it theme-agnostic and avoids circular vars. The tints are factored into the
+ * `--glass-*` helper vars below so every surface stays consistent and opacity changes apply
+ * without recompiling CSS.
  *
  * DaisyUI v5 mechanisms neutralized here:
  *   - `background: var(--page-scroll-bg, var(--root-bg))` on `:root` + `[data-theme]`
@@ -129,7 +141,8 @@ html.glass-enabled body {
     background-image: none !important;
 }
 
-/* Neutralize all DaisyUI v5 root-background mechanisms on :root itself */
+/* Neutralize all DaisyUI v5 root-background mechanisms on :root itself, and define the
+   shared tint palette every glass surface draws from. */
 html.glass-enabled {
     --root-bg: transparent !important;
     --page-scroll-bg: transparent !important;
@@ -144,6 +157,35 @@ html.glass-enabled {
     background: transparent !important;
     background-color: transparent !important;
     background-image: none !important;
+
+    /* Shared glass tints.
+     *
+     * The look is per color-scheme (every DaisyUI theme sets `color-scheme`, which drives
+     * `light-dark()`).
+     *
+     * Both schemes just fade their own base color toward transparent by the user's `--glass-pct`:
+     * at 0% the surface is fully transparent (pure blur), at higher values it reads as a frosted
+     * panel in the theme's own color — no artificial white lift, so light themes don't look milky.
+     * The three bases keep their real lightness step so elevation hierarchy survives the glass. */
+    --glass-base-100: color-mix(in oklab, var(--color-base-100) var(--glass-pct, 65%), transparent);
+    --glass-base-200: color-mix(in oklab, var(--color-base-200) var(--glass-pct, 65%), transparent);
+    --glass-base-300: color-mix(in oklab, var(--color-base-300) var(--glass-pct, 65%), transparent);
+    /* Overlays (modals, dropdowns) float above content and must stay readable, so they get a
+       near-opaque floor in both schemes — just a touch of blur shows through. */
+    --glass-overlay: light-dark(
+        color-mix(
+            in oklab,
+            color-mix(in oklab, var(--color-base-100), white 18%) max(95%, var(--glass-pct, 65%)),
+            transparent
+        ),
+        color-mix(in oklab, var(--color-base-100) max(93%, var(--glass-pct, 65%)), transparent)
+    );
+    /* Borders read as a frosted edge: a soft light highlight in light themes (catches the light
+       like real glass) and a faint content-tinted line in dark themes. */
+    --glass-border: light-dark(
+        color-mix(in oklab, var(--color-base-content) 12%, transparent),
+        color-mix(in oklab, var(--color-base-content) 14%, transparent)
+    );
 }
 
 /* Neutralize DaisyUI's [data-theme] background rule (same mechanism, different selector) */
@@ -156,24 +198,115 @@ html.glass-enabled [data-theme] {
     background-image: none !important;
 }
 
+/* Floating overlays: kept near-opaque so their text stays legible over the blur (DaisyUI
+   modals and some dropdowns ship their own opaque/`/95` fill — this standardizes them). */
+html.glass-enabled :is(.modal-box, .dropdown-content) {
+    background-color: var(--glass-overlay) !important;
+    border: 1px solid var(--glass-border) !important;
+}
+
+/* In-page surfaces that paint a base color through their own CSS (not the bg-base-* utility).
+   `.menu`/`.navbar` are intentionally excluded: they either carry an explicit `bg-base-*`
+   utility or sit inside `.dropdown-content`, so they already inherit a tint. */
+html.glass-enabled :is(.card, .alert, .collapse, .table) {
+    background-color: var(--glass-base-100) !important;
+}
+
+/* Code blocks (`mockup-code`) ship a terminal look: a fill plus a LIGHT text color meant for a
+   dark background. Our glass tint lightens that fill, so the light text washes out and becomes
+   unreadable. Give it a slightly firmer base-200 surface and pin the text/children back to the
+   theme's base content so the JSON snippet stays legible over the blur. */
+html.glass-enabled .mockup-code {
+    background-color: var(--glass-base-200) !important;
+    color: var(--color-base-content) !important;
+}
+html.glass-enabled .mockup-code :is(pre, code) {
+    color: var(--color-base-content) !important;
+}
+
+/* Tab bar: the container's filled box reads as a distinct lighter strip over the blur, which
+   breaks the seamless glass look — so it stays transparent and the tabs float directly on the
+   window. Only the active tab gets a tinted "raised pill" fill to mark selection. */
+html.glass-enabled .tabs-box {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+html.glass-enabled :is(.tabs-box .tab-active, .tabs-box .tab:checked, .tabs-box [aria-selected='true']) {
+    background-color: var(--glass-base-100) !important;
+}
+/* The sticky "+" add-tab button sits in its own `bg-base-200` wrapper (used to mask tabs
+   scrolling underneath it). Over the glass that wrapper reads as a misaligned light box, so we
+   drop its fill — the button floats transparently like the rest of the tab bar. */
+html.glass-enabled .tabs-box :has(> [data-add-env-button]) {
+    background-color: transparent !important;
+}
+
+/* Form controls: same concept as the tab bar — no filled light box. They stay transparent so
+   the blur shows through, with just a defining border so they still read as interactive
+   fields. The border firms up on focus. */
+html.glass-enabled :is(.input, .select, .textarea, .file-input) {
+    background-color: transparent !important;
+    border-color: var(--glass-border) !important;
+}
+html.glass-enabled
+    :is(.input:focus, .select:focus, .textarea:focus, .file-input:focus, .input:focus-within, .select:focus-within) {
+    border-color: color-mix(in oklab, var(--color-base-content) 30%, transparent) !important;
+}
+/* The native <select> popup inherits the control's background-color — with the field
+   transparent, the dropdown list goes see-through and the page bleeds through it. Pin the
+   options to a SOLID theme color so the open list renders as a proper opaque overlay while the
+   closed field stays transparent. */
+html.glass-enabled .select option {
+    background-color: var(--color-base-100) !important;
+    color: var(--color-base-content) !important;
+}
+
+/* Selected menu item (settings sidebar, dropdown menus). DaisyUI's `.menu-active` also swaps in
+   an inverted foreground color meant for a saturated active bg — over our light glass tint that
+   washes the label out, so we pin the text back to the theme's base content. */
+html.glass-enabled :is(.menu-active, .menu [aria-current='page']) {
+    background-color: var(--glass-base-300) !important;
+    color: var(--color-base-content) !important;
+}
+
+/* Base surfaces (utilities). Declared last so an explicit `bg-base-*` always wins over the
+   component defaults above when both land on the same element. */
 html.glass-enabled .bg-base-100 {
-    background-color: color-mix(in oklab, var(--color-base-100) var(--glass-pct, 65%), transparent) !important;
+    background-color: var(--glass-base-100) !important;
 }
 html.glass-enabled .bg-base-200 {
-    background-color: color-mix(in oklab, var(--color-base-200) var(--glass-pct, 65%), transparent) !important;
+    background-color: var(--glass-base-200) !important;
 }
 html.glass-enabled .bg-base-300 {
-    background-color: color-mix(in oklab, var(--color-base-300) var(--glass-pct, 65%), transparent) !important;
+    background-color: var(--glass-base-300) !important;
 }
 
-/* DaisyUI components that paint base colors via component CSS (not the bg-base-* utility) */
-html.glass-enabled :is(.modal-box, .dropdown-content, .table, .card, .alert, .collapse, .tabs-box) {
-    background-color: color-mix(in oklab, var(--color-base-100) var(--glass-pct, 65%), transparent) !important;
+/* Floating dropdown panels render as `.dropdown-content.menu` and float OVER in-page content
+   (settings rows, toggles), so they must stay near-opaque or that content bleeds through. The
+   plain `.dropdown-content` rule above ties with the `.bg-base-100` utility these panels also
+   carry (and loses on source order), leaving them at the translucent surface tint. This higher-
+   specificity rule pins them to the opaque overlay. Declared after the `bg-base-*` block. */
+html.glass-enabled .dropdown-content.menu {
+    background-color: var(--glass-overlay) !important;
 }
 
-/* Optional surface shadows for legibility over the blurred background */
-html.glass-shadows :is(.bg-base-200, .navbar, .menu, .modal-box, .dropdown-content, .card) {
-    box-shadow: 0 2px 14px color-mix(in oklab, black 28%, transparent);
+/* Nav menu (settings sidebar): same concept as the tab bar — the filled container box reads as
+   a distinct lighter panel over the blur, so it stays transparent and the items float on the
+   glass. Only the active item keeps its highlight (rule above). Declared last so it overrides
+   the `bg-base-200` utility the menu also carries. Scoped with `:not(.dropdown-content)` so
+   floating dropdown panels (which ARE `.menu .dropdown-content`) keep their opaque overlay
+   fill and don't go see-through. */
+html.glass-enabled .menu:not(.dropdown-content) {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Button-as-trigger that carries a base fill (e.g. the navbar project switcher pill): same
+   concept as the form controls — drop the solid box, keep it as a bordered transparent control
+   so it blends into the glass. The compound selector outspecs the `.bg-base-*` utility rules.
+   Hover still tints subtly through the button's own `hover:bg-base-200` utility. */
+html.glass-enabled :is(.btn.bg-base-100, .btn.bg-base-200) {
+    background-color: transparent !important;
 }
 
 .nav-bar {

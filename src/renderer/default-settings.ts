@@ -47,6 +47,6 @@ export const DEFAULT_SETTINGS: Settings = {
     mcp_limit_payload_objects: 10,
     window_blur: false,
     window_blur_mode: 'fullscreen-ui',
-    window_blur_opacity: 50,
-    window_blur_shadow: false
+    window_blur_opacity: 0,
+    window_opacity: 100
 };

@@ -422,7 +422,7 @@ onUnmounted(() => {
                 }
             ]"
             :style="isPercentageColors ? computedBackgroundStyle : {}"
-            class="collapse rounded-none group/item border-b border-base-content/10 transition-colors"
+            class="rounded-none group/item border-b border-base-content/10 transition-colors"
             @contextmenu.prevent="onContextMenu($event)"
             @click="
                 handleDuplicatedClick($event);
@@ -473,7 +473,11 @@ onUnmounted(() => {
                         <!-- Dump: Raw Content HTML -->
                         <div v-else-if="payload.type === 'dump' && payload.dump">
                             <div
-                                v-if="(payload.dump.variable_name && payload.dump.variable_name !== 'arg0') || (settingsStore.settings.show_variable_type && payload.dump.variable_type !== undefined)"
+                                v-if="
+                                    (payload.dump.variable_name && payload.dump.variable_name !== 'arg0') ||
+                                    (settingsStore.settings.show_variable_type &&
+                                        payload.dump.variable_type !== undefined)
+                                "
                                 class="flex items-center gap-1.5 mb-2"
                             >
                                 <span
@@ -482,7 +486,10 @@ onUnmounted(() => {
                                     >${{ payload.dump.variable_name }}</span
                                 >
                                 <span
-                                    v-if="settingsStore.settings.show_variable_type && payload.dump.variable_type !== undefined"
+                                    v-if="
+                                        settingsStore.settings.show_variable_type &&
+                                        payload.dump.variable_type !== undefined
+                                    "
                                     class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded border border-base-content/10"
                                     >{{ payload.dump.variable_type }}</span
                                 >

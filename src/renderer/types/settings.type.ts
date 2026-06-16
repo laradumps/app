@@ -40,7 +40,7 @@ export interface Settings {
     display_last_log: boolean;
     mcp_limit_payload_objects?: number;
     window_blur: boolean;
-    window_blur_mode: 'mirror' | 'fullscreen-ui' | 'hud' | 'sidebar' | 'under-window';
+    window_blur_mode: 'fullscreen-ui' | 'hud' | 'sidebar' | 'under-window';
     window_blur_opacity: number;
-    window_blur_shadow: boolean;
+    window_opacity: number;
 }
