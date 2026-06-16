@@ -45,6 +45,23 @@ let downloadCompleted = false;
 
 const electronLocalShortcut = require('electron-localshortcut');
 
+// Map a 0–100 window-opacity value to a window alpha, clamped to [0.3, 1] so the window can never
+// become fully invisible (and lost). NOTE: on macOS any alpha < 1 turns OFF the native vibrancy
+// blur (the OS only blurs behind a fully opaque window) — this is surfaced to the user in the UI.
+function setWindowOpacity(win: BrowserWindow, pct: number): void {
+    if (!win || win.isDestroyed()) return;
+    win.setOpacity(Math.min(1, Math.max(0.3, (pct ?? 100) / 100)));
+}
+
+function applyWindowOpacity(win: BrowserWindow): void {
+    const currentSettings = settings.getSettings();
+    // Keep window alpha at 100% when native blur is disabled. The opacity slider lives under
+    // the blur section in Settings, so if users turn blur off we should not leave stale window
+    // alpha values from previous sessions.
+    const pct = currentSettings.window_blur ? (currentSettings.window_opacity ?? 100) : 100;
+    setWindowOpacity(win, pct);
+}
+
 function createWindow(): BrowserWindow {
     const browserWindowOptions: BrowserWindowConstructorOptions = {
         fullscreen: false,
@@ -72,27 +89,19 @@ function createWindow(): BrowserWindow {
         browserWindowOptions.trafficLightPosition = { x: 12, y: 11 };
     }
 
-    // Native OS background blur (vibrancy on macOS, acrylic on Windows 11). This MUST be applied at
-    // window creation: Electron's runtime BrowserWindow.setVibrancy() does not engage on macOS
-    // (verified on Electron 41 — it is a no-op in both directions), so toggling the setting in the
-    // UI recreates the window via app.relaunch() instead of mutating vibrancy live.
     blurActive = !!settings.getSettings().window_blur && (isMac || process.platform === 'win32');
     if (blurActive) {
         browserWindowOptions.backgroundColor = '#00000000';
         if (isMac) {
-            // The glass "mode" picks the look: "mirror" is a true see-through window, every other
-            // value is a native NSVisualEffect (frosted blur) material. `fullscreen-ui` is the most
-            // translucent material — the darker ones (`under-window`, `content`) blend toward black
-            // in dark mode. Mode is a window-creation property, so changing it relaunches the app.
-            const mode = settings.getSettings().window_blur_mode || 'fullscreen-ui';
-            if (mode === 'mirror') {
-                // Alpha is only honored with `transparent: true`; the content behind then shows
-                // through sharply (a mirror/see-through look) instead of the frosted blur.
-                browserWindowOptions.transparent = true;
-            } else {
-                browserWindowOptions.vibrancy = mode;
-                browserWindowOptions.visualEffectState = 'active';
-            }
+            const validModes: BrowserWindowConstructorOptions['vibrancy'][] = [
+                'fullscreen-ui',
+                'hud',
+                'sidebar',
+                'under-window'
+            ];
+            const stored = settings.getSettings().window_blur_mode as BrowserWindowConstructorOptions['vibrancy'];
+            browserWindowOptions.vibrancy = validModes.includes(stored) ? stored : 'fullscreen-ui';
+            browserWindowOptions.visualEffectState = 'active';
         } else {
             browserWindowOptions.backgroundMaterial = 'acrylic';
         }
@@ -101,6 +110,8 @@ function createWindow(): BrowserWindow {
     const window: BrowserWindow = new BrowserWindow(browserWindowOptions);
 
     window.setMenuBarVisibility(false);
+
+    applyWindowOpacity(window);
 
     const qs = `screen=default${blurActive ? '&blur=1' : ''}`;
     window.loadURL(
@@ -421,6 +432,12 @@ ipcMain.on('main:openLink', (event: Electron.IpcMainEvent, url: any): void => {
 
 ipcMain.on('main:toggle-always-on-top', (event, arg) => {
     setTimeout(() => mainWindow.setAlwaysOnTop(arg), 200);
+});
+
+// Live window-opacity updates from the Appearance slider (0–100). Applied directly from the
+// message so it never races the separate settings.store persistence round-trip.
+ipcMain.on('main:set-window-opacity', (_event, value: number): void => {
+    setWindowOpacity(mainWindow, value);
 });
 
 ipcMain.on('main:is-always-on-top', (event): void => {

@@ -141,11 +141,23 @@ const saveSettings = async () => {
     toast.show(i18n.t('settings.changes_saved'), 'success');
 };
 
-// Native vibrancy/acrylic can only be applied at window creation, so toggling it asks the main
-// process to confirm and relaunch. Opacity/shadow stay live (handled by the store watcher).
 const saveWindowBlur = async () => {
+    if (!settingsStore.settings.window_blur) {
+        settingsStore.settings.window_opacity = 100;
+        settingsStore.applyWindowBlur(false);
+        window.ipcRenderer.send('main:set-window-opacity', 100);
+    }
+
     await settingsStore.update();
     window.ipcRenderer.send('main:relaunch-for-blur');
+};
+
+const previewWindowOpacity = () => {
+    window.ipcRenderer.send('main:set-window-opacity', settingsStore.settings.window_opacity);
+};
+const saveWindowOpacity = async () => {
+    previewWindowOpacity();
+    await settingsStore.update();
 };
 
 const saveTheme = async () => {
@@ -718,11 +730,16 @@ const saveCustomTheme = async () => {
                                                 :placeholder="$t('settings.window_blur_mode')"
                                                 class="w-full select-sm"
                                             >
-                                                <option value="fullscreen-ui">{{ $t('settings.window_blur_mode_glass') }}</option>
-                                                <option value="mirror">{{ $t('settings.window_blur_mode_mirror') }}</option>
+                                                <option value="fullscreen-ui">
+                                                    {{ $t('settings.window_blur_mode_glass') }}
+                                                </option>
                                                 <option value="hud">{{ $t('settings.window_blur_mode_hud') }}</option>
-                                                <option value="sidebar">{{ $t('settings.window_blur_mode_sidebar') }}</option>
-                                                <option value="under-window">{{ $t('settings.window_blur_mode_subtle') }}</option>
+                                                <option value="sidebar">
+                                                    {{ $t('settings.window_blur_mode_sidebar') }}
+                                                </option>
+                                                <option value="under-window">
+                                                    {{ $t('settings.window_blur_mode_subtle') }}
+                                                </option>
                                             </SelectInput>
                                         </div>
                                     </div>
@@ -749,16 +766,29 @@ const saveCustomTheme = async () => {
 
                                 <Divider class="mt-2" />
                                 <div class="mt-2 grid grid-cols-2 items-center">
-                                    <div>{{ $t('settings.window_blur_shadow') }}</div>
-                                    <div class="flex items-center justify-end">
-                                        <div class="p-1.5">
-                                            <input
-                                                type="checkbox"
-                                                class="toggle toggle-sm toggle-accent"
-                                                v-model="settingsStore.settings.window_blur_shadow"
-                                                @change="saveSettings()"
-                                            />
+                                    <div>
+                                        {{ $t('settings.window_opacity') }}
+                                        <div
+                                            v-if="settingsStore.settings.window_opacity < 100"
+                                            class="text-[10px] text-base-content/50 mt-0.5"
+                                        >
+                                            {{ $t('settings.window_opacity_hint') }}
                                         </div>
+                                    </div>
+                                    <div class="flex items-center justify-end gap-2">
+                                        <input
+                                            type="range"
+                                            min="30"
+                                            max="100"
+                                            step="5"
+                                            class="range range-sm range-accent w-full"
+                                            v-model.number="settingsStore.settings.window_opacity"
+                                            @input="previewWindowOpacity()"
+                                            @change="saveWindowOpacity()"
+                                        />
+                                        <span class="text-xs w-10 text-right"
+                                            >{{ settingsStore.settings.window_opacity }}%</span
+                                        >
                                     </div>
                                 </div>
                             </template>
