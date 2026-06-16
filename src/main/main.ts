@@ -39,6 +39,7 @@ const isMac: boolean = process.platform === 'darwin';
 
 let mainWindow: BrowserWindow;
 let badgeCount = 0;
+let blurActive = false;
 const windowsMap = new Map();
 let downloadCompleted = false;
 
@@ -71,18 +72,45 @@ function createWindow(): BrowserWindow {
         browserWindowOptions.trafficLightPosition = { x: 12, y: 11 };
     }
 
+    // Native OS background blur (vibrancy on macOS, acrylic on Windows 11). This MUST be applied at
+    // window creation: Electron's runtime BrowserWindow.setVibrancy() does not engage on macOS
+    // (verified on Electron 41 — it is a no-op in both directions), so toggling the setting in the
+    // UI recreates the window via app.relaunch() instead of mutating vibrancy live.
+    blurActive = !!settings.getSettings().window_blur && (isMac || process.platform === 'win32');
+    if (blurActive) {
+        browserWindowOptions.backgroundColor = '#00000000';
+        if (isMac) {
+            // The glass "mode" picks the look: "mirror" is a true see-through window, every other
+            // value is a native NSVisualEffect (frosted blur) material. `fullscreen-ui` is the most
+            // translucent material — the darker ones (`under-window`, `content`) blend toward black
+            // in dark mode. Mode is a window-creation property, so changing it relaunches the app.
+            const mode = settings.getSettings().window_blur_mode || 'fullscreen-ui';
+            if (mode === 'mirror') {
+                // Alpha is only honored with `transparent: true`; the content behind then shows
+                // through sharply (a mirror/see-through look) instead of the frosted blur.
+                browserWindowOptions.transparent = true;
+            } else {
+                browserWindowOptions.vibrancy = mode;
+                browserWindowOptions.visualEffectState = 'active';
+            }
+        } else {
+            browserWindowOptions.backgroundMaterial = 'acrylic';
+        }
+    }
+
     const window: BrowserWindow = new BrowserWindow(browserWindowOptions);
 
     window.setMenuBarVisibility(false);
 
+    const qs = `screen=default${blurActive ? '&blur=1' : ''}`;
     window.loadURL(
         isDev
-            ? `http://localhost:4999?screen=default`
+            ? `http://localhost:4999?${qs}`
             : format({
                   pathname: join(__dirname, 'app', 'index.html'),
                   protocol: 'file:',
                   slashes: true
-              }) + `?screen=default`
+              }) + `?${qs}`
     );
 
     window.on('resize', (): void => {
@@ -97,7 +125,8 @@ function createWindow(): BrowserWindow {
     window.webContents.on('did-finish-load', async () => {
         try {
             window.webContents.send('init.reply', {
-                settings: settings.getSettings()
+                settings: settings.getSettings(),
+                blurActive
             });
 
             window.show();
@@ -117,7 +146,11 @@ function createWindow(): BrowserWindow {
 
         if (isDev) {
             setTimeout(() => {
-                window.webContents.openDevTools();
+                // Docked DevTools repaints the web contents opaque, which kills the macOS
+                // vibrancy/blur (the window looks transparent for ~1s, then turns opaque the moment
+                // DevTools docks). When the glass effect is active, open DevTools detached — a
+                // separate window — so the transparency survives while developing.
+                window.webContents.openDevTools(blurActive ? { mode: 'detach' } : undefined);
             }, 400);
         }
     });
@@ -392,6 +425,23 @@ ipcMain.on('main:toggle-always-on-top', (event, arg) => {
 
 ipcMain.on('main:is-always-on-top', (event): void => {
     event.reply('main:is-always-on-top', { is_always_on_top: mainWindow.isAlwaysOnTop() });
+});
+
+ipcMain.on('main:relaunch-for-blur', (): void => {
+    const choice = dialog.showMessageBoxSync(mainWindow, {
+        type: 'question',
+        buttons: ['Restart now', 'Later'],
+        defaultId: 0,
+        cancelId: 1,
+        title: 'LaraDumps',
+        message: 'Window transparency change',
+        detail: 'LaraDumps needs to restart to apply the window transparency. Current dumps will be cleared.'
+    });
+
+    if (choice === 0) {
+        app.relaunch();
+        app.exit(0);
+    }
 });
 
 ipcMain.on('main:app-version', (event): void => {

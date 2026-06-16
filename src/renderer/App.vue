@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TheNavBar from '@/components/navbar/TheNavBar.vue';
 import { usePayloadStore } from '@/store/payload';
-import { onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import { useSettingsStore } from '@/store/settings';
 import { useScreenStore } from '@/store/screen';
 import { useLogStore } from '@/store/logs';
@@ -118,7 +118,11 @@ onMounted(() => {
         settingsStore.settings = args.settings;
         readyToLoad.value = true;
         exposeMcp();
+        settingsStore.applyWindowBlur(args.blurActive);
         window.ipcRenderer.send('settings.init-shortcuts');
+
+        await nextTick();
+        settingsStore.applyWindowBlur();
     });
 
     window.ipcRenderer.send('zoom-level');

@@ -106,6 +106,76 @@ body {
     padding-bottom: 3rem;
 }
 
+/**
+ * Window transparency / native OS blur ("glass" effect).
+ *
+ * When `glass-enabled` is set on <html>, the window background is let through so the
+ * native OS blur (macOS vibrancy / Windows 11 acrylic) shows behind the UI. DaisyUI paints
+ * opaque base surfaces, so we re-tint them with `color-mix(... transparent)` at the user's
+ * chosen opacity (`--glass-pct`). We override `background-color` at the point of use instead
+ * of redefining `--color-base-*`, which keeps it theme-agnostic and avoids circular vars.
+ *
+ * DaisyUI v5 mechanisms neutralized here:
+ *   - `background: var(--page-scroll-bg, var(--root-bg))` on `:root` + `[data-theme]`
+ *   - `--root-bg: var(--color-base-100)` (opaque solid color)
+ *   - `--page-scroll-bg-on` gradient activated by drawer components
+ *   - `transition: var(--page-scroll-transition)` on :root (can cause opaque fade-in)
+ *   - `animation` on :root for scroll-driven gutter behaviour
+ */
+html.glass-enabled,
+html.glass-enabled body {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+/* Neutralize all DaisyUI v5 root-background mechanisms on :root itself */
+html.glass-enabled {
+    --root-bg: transparent !important;
+    --page-scroll-bg: transparent !important;
+    --page-scroll-bg-on: transparent !important;
+    --page-has-backdrop: 0 !important;
+    /* cancel the background-color transition DaisyUI sets when drawers open */
+    --page-scroll-transition: none !important;
+    --page-scroll-transition-on: none !important;
+    transition: none !important;
+    /* cancel scroll-driven animation (set-page-has-scroll) on :root */
+    animation: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+/* Neutralize DaisyUI's [data-theme] background rule (same mechanism, different selector) */
+html.glass-enabled [data-theme] {
+    --root-bg: transparent !important;
+    --page-scroll-bg: transparent !important;
+    --page-scroll-bg-on: transparent !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+html.glass-enabled .bg-base-100 {
+    background-color: color-mix(in oklab, var(--color-base-100) var(--glass-pct, 65%), transparent) !important;
+}
+html.glass-enabled .bg-base-200 {
+    background-color: color-mix(in oklab, var(--color-base-200) var(--glass-pct, 65%), transparent) !important;
+}
+html.glass-enabled .bg-base-300 {
+    background-color: color-mix(in oklab, var(--color-base-300) var(--glass-pct, 65%), transparent) !important;
+}
+
+/* DaisyUI components that paint base colors via component CSS (not the bg-base-* utility) */
+html.glass-enabled :is(.modal-box, .dropdown-content, .table, .card, .alert, .collapse, .tabs-box) {
+    background-color: color-mix(in oklab, var(--color-base-100) var(--glass-pct, 65%), transparent) !important;
+}
+
+/* Optional surface shadows for legibility over the blurred background */
+html.glass-shadows :is(.bg-base-200, .navbar, .menu, .modal-box, .dropdown-content, .card) {
+    box-shadow: 0 2px 14px color-mix(in oklab, black 28%, transparent);
+}
+
 .nav-bar {
     -webkit-app-region: drag;
     height: 39px;
