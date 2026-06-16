@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Divider from '@/components/common/Divider.vue';
-import { nextTick, onMounted, onUpdated, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUpdated, ref, watch } from 'vue';
 import { useSettingsStore } from '@/store/settings';
 import SelectInput from '@/components/common/SelectInput.vue';
 import { useI18n } from 'vue-i18n';
@@ -61,12 +61,21 @@ const { locale } = useI18n({ useScope: 'global' });
 const localeStore = useI18nStore();
 const route = useRoute();
 
+const platform = ref<string>('');
+const blurSupported = computed(() => platform.value === 'darwin' || platform.value === 'win32');
+const isWindows = computed(() => platform.value === 'win32');
+
 onMounted(async () => {
     if (route.query.tab) {
         selected.value = route.query.tab as string;
     }
     customTheme.value = settingsStore.settings.custom_css;
     mcpServerPath.value = await window.ipcRenderer.invoke('get-mcp-server-path');
+
+    window.ipcRenderer.send('platform');
+    window.ipcRenderer.on('platform.reply', (_e: any, p: string) => {
+        platform.value = p;
+    });
 });
 
 const copyMcpCommand = (command: string) => {
@@ -130,6 +139,13 @@ const saveSettings = async () => {
     await settingsStore.update();
 
     toast.show(i18n.t('settings.changes_saved'), 'success');
+};
+
+// Native vibrancy/acrylic can only be applied at window creation, so toggling it asks the main
+// process to confirm and relaunch. Opacity/shadow stay live (handled by the store watcher).
+const saveWindowBlur = async () => {
+    await settingsStore.update();
+    window.ipcRenderer.send('main:relaunch-for-blur');
 };
 
 const saveTheme = async () => {
@@ -666,6 +682,87 @@ const saveCustomTheme = async () => {
                                 </div>
                             </div>
                         </div>
+
+                        <template v-if="blurSupported">
+                            <Divider class="mt-2" />
+                            <div class="mt-2 grid grid-cols-2 items-center">
+                                <div>
+                                    {{ $t('settings.window_blur') }}
+                                    <span
+                                        v-if="isWindows"
+                                        class="block text-xs opacity-60"
+                                        >{{ $t('settings.window_blur_hint_win') }}</span
+                                    >
+                                </div>
+                                <div class="flex items-center justify-end">
+                                    <div class="p-1.5">
+                                        <input
+                                            type="checkbox"
+                                            class="toggle toggle-sm toggle-accent"
+                                            v-model="settingsStore.settings.window_blur"
+                                            @change="saveWindowBlur()"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <template v-if="settingsStore.settings.window_blur">
+                                <template v-if="!isWindows">
+                                    <Divider class="mt-2" />
+                                    <div class="mt-2 grid grid-cols-2 items-center">
+                                        <div>{{ $t('settings.window_blur_mode') }}</div>
+                                        <div class="flex items-center justify-end">
+                                            <SelectInput
+                                                v-model="settingsStore.settings.window_blur_mode"
+                                                @change="saveWindowBlur()"
+                                                :placeholder="$t('settings.window_blur_mode')"
+                                                class="w-full select-sm"
+                                            >
+                                                <option value="fullscreen-ui">{{ $t('settings.window_blur_mode_glass') }}</option>
+                                                <option value="mirror">{{ $t('settings.window_blur_mode_mirror') }}</option>
+                                                <option value="hud">{{ $t('settings.window_blur_mode_hud') }}</option>
+                                                <option value="sidebar">{{ $t('settings.window_blur_mode_sidebar') }}</option>
+                                                <option value="under-window">{{ $t('settings.window_blur_mode_subtle') }}</option>
+                                            </SelectInput>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <Divider class="mt-2" />
+                                <div class="mt-2 grid grid-cols-2 items-center">
+                                    <div>{{ $t('settings.window_blur_opacity') }}</div>
+                                    <div class="flex items-center justify-end gap-2">
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="100"
+                                            step="5"
+                                            class="range range-sm range-accent w-full"
+                                            v-model.number="settingsStore.settings.window_blur_opacity"
+                                            @change="saveSettings()"
+                                        />
+                                        <span class="text-xs w-10 text-right"
+                                            >{{ settingsStore.settings.window_blur_opacity }}%</span
+                                        >
+                                    </div>
+                                </div>
+
+                                <Divider class="mt-2" />
+                                <div class="mt-2 grid grid-cols-2 items-center">
+                                    <div>{{ $t('settings.window_blur_shadow') }}</div>
+                                    <div class="flex items-center justify-end">
+                                        <div class="p-1.5">
+                                            <input
+                                                type="checkbox"
+                                                class="toggle toggle-sm toggle-accent"
+                                                v-model="settingsStore.settings.window_blur_shadow"
+                                                @change="saveSettings()"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
                     </div>
 
                     <div
