@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { useSettingsStore } from '@/store/settings';
 import { CpuChipIcon } from '@heroicons/vue/24/outline';
 
-const router = useRouter();
 const settingsStore = useSettingsStore();
 
 const mcpStatus = ref<'connected' | 'error' | 'loading' | 'disabled'>('disabled');
@@ -75,11 +73,8 @@ onMounted(() => {
 });
 
 const navigate = () => {
-    if (mcpStatus.value === 'error') {
-        router.push('/settings?tab=logs');
-    } else {
-        router.push('/settings?tab=mcp');
-    }
+    const modal = document.getElementById('settings_modal') as HTMLDialogElement;
+    modal?.showModal();
 };
 </script>
 

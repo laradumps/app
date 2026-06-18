@@ -83,7 +83,17 @@ export default {
         laravel_jobs: 'Laravel Jobs',
         shortcut_placeholder: 'digite aqui ...',
         appearance: 'Aparência',
-        grouped_by_time: 'Agrupar por horário'
+        grouped_by_time: 'Agrupar por horário',
+        window_blur: 'Transparência da janela (blur)',
+        window_blur_mode: 'Modo do vidro',
+        window_blur_mode_glass: 'Vidro (vibrante)',
+        window_blur_mode_hud: 'Vidro (escuro / HUD)',
+        window_blur_mode_sidebar: 'Vidro (sidebar)',
+        window_blur_mode_subtle: 'Vidro (suave)',
+        window_blur_opacity: 'Opacidade das superfícies',
+        window_opacity: 'Opacidade da janela',
+        window_opacity_hint: 'Abaixo de 100% desliga o blur nativo',
+        window_blur_hint_win: 'Requer Windows 11'
     },
     copy: 'Copiar',
     delete: 'Excluir',

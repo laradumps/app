@@ -710,6 +710,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on('json_validate', handleJsonValidate);
     window.ipcRenderer.on('validate', handleValidate);
     window.ipcRenderer.on('dump.batches', handleDumpBatches);
+    window.ipcRenderer.on('dump_group', handleDump);
     window.ipcRenderer.on('time_track', handleTimeTrack);
     window.ipcRenderer.on('brain', handleBrain);
     window.ipcRenderer.on('profile', handleProfile);
@@ -777,6 +778,7 @@ const clearDumpListeners = () => {
     window.ipcRenderer.off('json_validate', handleJsonValidate);
     window.ipcRenderer.off('validate', handleValidate);
     window.ipcRenderer.off('dump.batches', handleDumpBatches);
+    window.ipcRenderer.off('dump_group', handleDump);
     window.ipcRenderer.off('time_track', handleTimeTrack);
     window.ipcRenderer.off('brain', handleBrain);
     window.ipcRenderer.off('profile', handleProfile);
@@ -997,6 +999,8 @@ const handleDropZone = (zone: 'right' | 'bottom') => {
     splitPanesStore.setSplit(draggedScreenName.value, orientation);
     settingsStore.setSplitPaneScreen(draggedScreenName.value);
 
+    screenStore.hidden(draggedScreenName.value);
+
     if (screenStore.screen === draggedScreenName.value) {
         const nextScreen = screenStore.getNext(draggedScreenName.value);
         if (nextScreen) {
@@ -1009,8 +1013,13 @@ const handleDropZone = (zone: 'right' | 'bottom') => {
 };
 
 const handleCloseSplit = () => {
+    const splitScreenName = splitPanesStore.splitConfig?.screenName;
     splitPanesStore.clearSplit();
     settingsStore.setSplitPaneScreen(null);
+    if (splitScreenName) {
+        screenStore.toggleVisible(splitScreenName);
+        toggleScreen(splitScreenName, true);
+    }
 };
 
 const handleDragEnd = () => {
@@ -1089,7 +1098,7 @@ const handleDragEnd = () => {
                         <template #pane-a>
                             <div class="flex flex-col h-full">
                                 <div class="shrink-0 z-380">
-                                    <div class="flex h-12 p-1.5 items-center justify-between w-full">
+                                    <div class="flex h-12 px-1.5 items-center justify-between w-full">
                                         <Screens
                                             class="flex-1 min-w-0"
                                             :environments="environments"
@@ -1155,7 +1164,7 @@ const handleDragEnd = () => {
                                                             !['livewire'].includes(screenStore.screen) &&
                                                             settingsStore.settings.grouped_by_time
                                                         "
-                                                        class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
+                                                        class="bg-base-200 flex-1 text-left px-4 py-1.5 z-70 text-xs sticky top-0"
                                                     >
                                                         <span
                                                             class="flex items-center gap-1 opacity-70"
@@ -1225,13 +1234,12 @@ const handleDragEnd = () => {
 
                         <template #pane-b>
                             <div class="flex flex-col h-full overflow-hidden">
-                                <div class="shrink-0 h-12 px-3 py-1.5 items-center justify-between flex">
-                                    <h2 class="text-sm font-semibold capitalize">
-                                        {{ splitPanesStore.splitConfig.screenName }}
-                                    </h2>
+                                <div
+                                    class="shrink-0 h-12 flex items-center justify-end px-3 border-b border-base-content/5"
+                                >
                                     <button
                                         @click="handleCloseSplit"
-                                        class="btn border border-base-content/5 btn-sm p-2 btn-circle btn-soft z-9999"
+                                        class="btn border border-base-content/5 btn-sm p-2 btn-circle btn-soft"
                                         aria-label="Close split"
                                         title="Close split"
                                     >
@@ -1253,11 +1261,17 @@ const handleDragEnd = () => {
 
                                 <div class="flex-1 overflow-auto min-h-0">
                                     <div v-if="splitPanesStore.splitConfig.screenName === 'jobs'">
-                                        <JobView @open-screen-window="openScreenWindow" />
+                                        <JobView
+                                            hide-header
+                                            @open-screen-window="openScreenWindow"
+                                        />
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'brain'">
-                                        <BrainView @open-screen-window="openScreenWindow" />
+                                        <BrainView
+                                            hide-header
+                                            @open-screen-window="openScreenWindow"
+                                        />
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'profile'">
@@ -1265,11 +1279,15 @@ const handleDragEnd = () => {
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'mail'">
-                                        <MailView @open-screen-window="openScreenWindow" />
+                                        <MailView
+                                            hide-header
+                                            @open-screen-window="openScreenWindow"
+                                        />
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'logs'">
                                         <LogView
+                                            hide-header
                                             :yaml-config="yamlConfig"
                                             @open-screen-window="openScreenWindow"
                                         />
@@ -1277,6 +1295,7 @@ const handleDragEnd = () => {
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'queries'">
                                         <QueriesView
+                                            hide-header
                                             :yaml-config="yamlConfig"
                                             @open-screen-window="openScreenWindow"
                                         />
@@ -1315,7 +1334,7 @@ const handleDragEnd = () => {
                                                             splitPanesStore.splitConfig.screenName
                                                         ) && settingsStore.settings.grouped_by_time
                                                     "
-                                                    class="bg-base-200 flex-1 text-left pt-0 py-1.5 z-300 text-xs sticky top-0"
+                                                    class="bg-base-200 flex-1 text-left px-4 py-1.5 z-70 text-xs sticky top-0"
                                                 >
                                                     <span
                                                         class="flex items-center gap-1 opacity-70"
@@ -1354,7 +1373,7 @@ const handleDragEnd = () => {
                     <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
                         <main class="flex flex-col flex-1 min-h-full space-y-1">
                             <div class="flex z-50">
-                                <div class="flex h-12 p-1.5 items-center justify-between w-full">
+                                <div class="flex h-12 px-1.5 items-center justify-between w-full">
                                     <Screens
                                         class="flex-1 min-w-0"
                                         :environments="environments"
@@ -1449,7 +1468,7 @@ const handleDragEnd = () => {
                                                     !['livewire'].includes(screenStore.screen) &&
                                                     settingsStore.settings.grouped_by_time
                                                 "
-                                                class="bg-base-200 flex-1 text-left p-3 z-300 text-xs sticky -top-2"
+                                                class="bg-base-200 flex-1 text-left px-4 py-1.5 z-70 text-xs sticky -top-2"
                                             >
                                                 <span
                                                     class="flex items-center gap-1 opacity-70"

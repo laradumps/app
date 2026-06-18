@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useToastStore } from '@/store/toast';
+import { toastHost } from '@/composables/useToastHost';
 
 const toast = useToastStore();
 const items = computed(() => toast.all);
@@ -20,21 +21,23 @@ const typeClasses = (type: string) => {
 </script>
 
 <template>
-    <div class="fixed z-[9999] top-12 right-3 flex flex-col gap-3 items-end">
-        <TransitionGroup
-            name="toast-fade"
-            tag="div"
-        >
-            <div
-                v-for="item in items"
-                :key="item.id"
-                class="shadow border rounded px-3 py-2 text-sm max-w-[60vw]"
-                :class="typeClasses(item.type)"
+    <Teleport :to="toastHost || 'body'">
+        <div class="fixed z-[9999] top-12 right-3 flex flex-col gap-3 items-end">
+            <TransitionGroup
+                name="toast-fade"
+                tag="div"
             >
-                {{ item.message }}
-            </div>
-        </TransitionGroup>
-    </div>
+                <div
+                    v-for="item in items"
+                    :key="item.id"
+                    class="shadow border rounded px-3 py-2 text-sm max-w-[60vw]"
+                    :class="typeClasses(item.type)"
+                >
+                    {{ item.message }}
+                </div>
+            </TransitionGroup>
+        </div>
+    </Teleport>
 </template>
 
 <style scoped>

@@ -117,12 +117,45 @@ export function registerGeneralTools(server: McpServer) {
     server.registerTool(
         'get_mails',
         {
-            description: 'Get all captured emails',
+            description:
+                'List captured emails (metadata only: message_id, from, to, subject, date, is_read, location, has_attachments). Use get_mail with a message_id to read body, headers or attachments.',
             inputSchema: {
                 limit: z.number().optional().describe('Limit the number of emails returned')
             }
         },
         ({ limit }) => fetchTool('mails', limit)
+    );
+
+    server.registerTool(
+        'get_mail',
+        {
+            description:
+                "Get a single captured email by message_id. Defaults to metadata only (['meta']) to keep payloads small; request body/headers/attachments via 'include' when needed. Use this instead of get_mails when you need email content — get_mails returns only metadata.",
+            inputSchema: {
+                message_id: z.string().describe('The message_id of the email (returned by get_mails)'),
+                include: z
+                    .array(z.enum(['meta', 'text', 'html', 'headers', 'details', 'attachments', 'attachment_bodies']))
+                    .optional()
+                    .describe(
+                        "Parts to include. Defaults to ['meta']. 'meta' = from/to/subject/date. 'text' = HTML stripped to plain text (truncated). 'html' = raw HTML (truncated). 'headers' = full headers. 'details' = extra captured details. 'attachments' = filename/path/size (no body). 'attachment_bodies' = attachment body as base64 (heavy)."
+                    ),
+                max_length: z
+                    .number()
+                    .int()
+                    .positive()
+                    .optional()
+                    .describe("Truncate length for 'text' and 'html' parts. Defaults to 2000 characters.")
+            }
+        },
+        async ({ message_id, include, max_length }) => {
+            const params = new URLSearchParams();
+            if (include && include.length > 0) params.set('parts', include.join(','));
+            if (max_length) params.set('max_length', String(max_length));
+            const qs = params.toString() ? `?${params.toString()}` : '';
+            const data = await fetchData(`mails/${encodeURIComponent(message_id)}${qs}`);
+            if (data.error) return errorResponse(data.error);
+            return textResponse(JSON.stringify(data, null, 2));
+        }
     );
 
     server.registerTool(

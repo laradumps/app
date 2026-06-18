@@ -84,6 +84,8 @@ export const useSettingsStore = defineStore('settings', () => {
     const initial = savedSettings ? JSON.parse(savedSettings) : {};
     const settings = ref<Settings>({ ...DEFAULT_SETTINGS, ...initial });
 
+    document.documentElement.setAttribute('data-theme', settings.value.theme);
+
     const updateAvailable = ref<boolean>(false);
     const updateDownloaded = ref<boolean>(false);
     const updateDownloading = ref<boolean>(false);
@@ -139,12 +141,58 @@ export const useSettingsStore = defineStore('settings', () => {
         update();
     };
 
+    const blurActive = ref(false);
+    let glassObserver: MutationObserver | null = null;
+
+    const applyGlassVars = () => {
+        const html = document.documentElement;
+        html.style.setProperty('--glass-pct', `${settings.value.window_blur_opacity ?? 65}%`);
+    };
+
+    const applyWindowBlur = (active?: boolean) => {
+        if (typeof active === 'boolean') {
+            blurActive.value = active;
+        }
+
+        const html = document.documentElement;
+
+        if (blurActive.value) {
+            html.classList.add('glass-enabled');
+            applyGlassVars();
+
+            // Guard: re-assert if anything removes the class (HMR, theme switches, etc.)
+            if (!glassObserver) {
+                glassObserver = new MutationObserver(() => {
+                    if (!html.classList.contains('glass-enabled')) {
+                        glassObserver!.disconnect();
+                        html.classList.add('glass-enabled');
+                        applyGlassVars();
+                        glassObserver!.observe(html, { attributes: true, attributeFilter: ['class'] });
+                    }
+                });
+                glassObserver.observe(html, { attributes: true, attributeFilter: ['class'] });
+            }
+        } else {
+            if (glassObserver) {
+                glassObserver.disconnect();
+                glassObserver = null;
+            }
+            html.classList.remove('glass-enabled');
+            html.style.removeProperty('--glass-pct');
+        }
+    };
+
     watch(
         () => settings.value.theme,
         (newTheme) => {
             localStorage.setItem('user-settings', JSON.stringify(settings.value));
             document.documentElement.setAttribute('data-theme', newTheme);
         }
+    );
+
+    watch(
+        () => settings.value.window_blur_opacity,
+        () => applyWindowBlur()
     );
 
     return {
@@ -168,6 +216,7 @@ export const useSettingsStore = defineStore('settings', () => {
         setUpdateDownloading,
         setUpdateProgress,
         markUpdated,
-        setSplitPaneScreen
+        setSplitPaneScreen,
+        applyWindowBlur
     };
 });

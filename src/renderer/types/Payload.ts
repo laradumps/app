@@ -32,6 +32,20 @@ export interface DumpPayload {
     dump?: string | null;
     original_content: string;
     variable_type: string;
+    variable_name?: string | null;
+}
+
+export interface GroupedDumpItem {
+    name: string;
+    line: number;
+    sf_dump_id: string;
+    dump: string;
+    original_content: string;
+    variable_type: string;
+}
+
+export interface GroupedDumpPayload {
+    items: GroupedDumpItem[];
 }
 
 export interface TimeTrackPayload {
@@ -176,6 +190,7 @@ export interface Payload {
     application_path: string;
     sf_dump_id: string;
     dump?: DumpPayload;
+    dump_group?: GroupedDumpPayload;
     model?: ModelPayload;
     queries?: QueriesPayload;
     query?: QueryPayload;

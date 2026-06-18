@@ -1,27 +1,21 @@
 <script setup>
-import { ref } from 'vue';
-import { CogIcon, HomeIcon } from '@heroicons/vue/24/outline';
+import { CogIcon } from '@heroicons/vue/24/outline';
 
-const inSettingPage = ref(false);
-
-const togglePage = () => {
-    inSettingPage.value = !inSettingPage.value;
+const openSettings = () => {
+    const modal = document.getElementById('settings_modal');
+    modal?.showModal();
 };
 </script>
 
 <template>
     <div class="-mr-2">
         <div class="px-1 border-l border-base-content/20 flex items-center justify-center">
-            <RouterLink
-                :to="inSettingPage ? '/' : '/settings'"
-                @click="togglePage"
+            <button
+                @click="openSettings"
                 class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
             >
-                <component
-                    :is="inSettingPage ? HomeIcon : CogIcon"
-                    class="w-5"
-                />
-            </RouterLink>
+                <CogIcon class="w-5" />
+            </button>
         </div>
     </div>
 </template>

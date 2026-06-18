@@ -43,11 +43,17 @@ export async function createMcpServer(
     logger('Prompts registered');
 
     let httpServer: http.Server | null = null;
-    let currentTransport: StreamableHTTPServerTransport | null = null;
-    let isTransportValid = false;
+    let transport: StreamableHTTPServerTransport | null = null;
 
     if (port > 0) {
         logger(`HTTP mode - Starting Express app...`);
+
+        transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => crypto.randomUUID()
+        });
+
+        await server.connect(transport);
+        logger('MCP Server connected to Streamable HTTP transport');
 
         const app = express();
         app.use(cors());
@@ -59,34 +65,22 @@ export async function createMcpServer(
         logger('Registering endpoints...');
 
         app.use((req: any, res: any, next: any) => {
-            if (req.path === '/sse' || req.path === '/messages') {
+            if (req.path === '/mcp') {
                 logger(`Incoming ${req.method} request to ${req.url}`);
             }
             next();
         });
 
-        app.get('/sse', async (req: any, res: any) => {
+        app.all('/mcp', async (req: any, res: any) => {
             try {
-                logger('Handling GET /sse request');
-                logger(`  Headers: ${JSON.stringify(req.headers)}`);
-
-                if (!currentTransport || !isTransportValid) {
-                    await server.close();
-                    // @ts-ignore
-                    currentTransport = new StreamableHTTPServerTransport({
-                        sessionIdGenerator: () => crypto.randomUUID()
-                    });
-
-                    await server.connect(currentTransport);
-                    isTransportValid = true;
-                    logger('New transport created for SSE');
+                logger(`Handling ${req.method} /mcp request`);
+                if (!transport) {
+                    throw new Error('Transport not initialized');
                 }
-
-                await currentTransport.handleRequest(req, res);
-                logger('GET /sse request handled');
+                await transport.handleRequest(req, res, req.body);
+                logger(`${req.method} /mcp request handled`);
             } catch (err) {
-                logger(`CRITICAL Error in GET /sse: ${err}`, 'error');
-                isTransportValid = false;
+                logger(`CRITICAL Error in ${req.method} /mcp: ${err}`, 'error');
                 if (err instanceof Error) {
                     logger(`Stack: ${err.stack}`, 'error');
                 }
@@ -95,7 +89,7 @@ export async function createMcpServer(
                 }
             }
         });
-        logger('  GET /sse');
+        logger('  ALL /mcp');
 
         // Handlers for OAuth discovery to avoid 404s that might confuse clients
         app.get('/.well-known/oauth-authorization-server', (req, res) => {
@@ -108,47 +102,10 @@ export async function createMcpServer(
             res.status(404).json({ error: 'OpenID not supported' });
         });
 
-        // Handle POST messages
-        const handlePost = async (req: any, res: any) => {
-            try {
-                logger(`Handling POST ${req.path} request`);
-                logger(`  Headers: ${JSON.stringify(req.headers)}`);
-
-                if (!currentTransport || !isTransportValid) {
-                    await server.close();
-                    // @ts-ignore
-                    currentTransport = new StreamableHTTPServerTransport({
-                        sessionIdGenerator: () => crypto.randomUUID()
-                    });
-                    await server.connect(currentTransport);
-                    isTransportValid = true;
-                    logger('New transport created for POST');
-                }
-
-                await currentTransport.handleRequest(req, res, req.body);
-                logger(`POST ${req.path} request handled`);
-            } catch (err) {
-                logger(`CRITICAL Error in POST ${req.path}: ${err}`, 'error');
-                isTransportValid = false;
-                if (err instanceof Error) {
-                    logger(`Stack: ${err.stack}`, 'error');
-                }
-                if (!res.headersSent) {
-                    res.status(500).send('Internal Server Error');
-                }
-            }
-        };
-
-        app.post('/messages', handlePost);
-        logger('  POST /messages');
-
-        app.post('/sse', handlePost);
-        logger('  POST /sse');
-
         logger(`Starting HTTP server on port ${port}...`);
 
         httpServer = app.listen(port, '0.0.0.0', () => {
-            logger(`LaraDumps MCP Server running on Streamable HTTP mode at http://0.0.0.0:${port}/sse`);
+            logger(`LaraDumps MCP Server running on Streamable HTTP mode at http://0.0.0.0:${port}/mcp`);
         });
 
         logger('HTTP server listening');
@@ -170,11 +127,10 @@ export async function createMcpServer(
         server,
         httpServer,
         stop: async () => {
-            if (currentTransport) {
+            if (transport) {
                 logger('Closing transport...');
                 await server.close();
-                currentTransport = null;
-                isTransportValid = false;
+                transport = null;
             }
             if (httpServer) {
                 logger('Closing HTTP server...');

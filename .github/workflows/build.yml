@@ -17,12 +17,12 @@ jobs:
             version: ${{ steps.set-version.outputs.version }}
         steps:
             - name: Check out Git repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   token: ${{ secrets.GH_TOKEN }}
 
             - name: Install Node.js and npm
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: '22.x'
 
@@ -35,9 +35,9 @@ jobs:
                   git config user.name "laradumps-bot"
                   git config user.email "laradumps@proton.me"
 
-                  jq --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
+                  jq --indent 4 --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
                   git add package.json
-                  git commit -m "v${VERSION}"
+                  git diff --cached --quiet || git commit -m "v${VERSION}"
                   git tag "v${VERSION}"
                   git push
                   git push --tags
@@ -49,12 +49,12 @@ jobs:
             VERSION: ${{ needs.prepare.outputs.version }}
         steps:
             - name: Check out Git repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   ref: v${{ needs.prepare.outputs.version }}
 
             - name: Install Node.js and npm
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: '22.x'
 
@@ -78,12 +78,12 @@ jobs:
             VERSION: ${{ needs.prepare.outputs.version }}
         steps:
             - name: Check out Git repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   ref: v${{ needs.prepare.outputs.version }}
 
             - name: Install Node.js and npm
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: '22.x'
 
@@ -107,12 +107,12 @@ jobs:
             VERSION: ${{ needs.prepare.outputs.version }}
         steps:
             - name: Check out Git repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   ref: v${{ needs.prepare.outputs.version }}
 
             - name: Install Node.js and npm
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: '22.x'
 

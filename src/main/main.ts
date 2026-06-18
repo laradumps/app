@@ -39,10 +39,28 @@ const isMac: boolean = process.platform === 'darwin';
 
 let mainWindow: BrowserWindow;
 let badgeCount = 0;
+let blurActive = false;
 const windowsMap = new Map();
 let downloadCompleted = false;
 
 const electronLocalShortcut = require('electron-localshortcut');
+
+// Map a 0–100 window-opacity value to a window alpha, clamped to [0.3, 1] so the window can never
+// become fully invisible (and lost). NOTE: on macOS any alpha < 1 turns OFF the native vibrancy
+// blur (the OS only blurs behind a fully opaque window) — this is surfaced to the user in the UI.
+function setWindowOpacity(win: BrowserWindow, pct: number): void {
+    if (!win || win.isDestroyed()) return;
+    win.setOpacity(Math.min(1, Math.max(0.3, (pct ?? 100) / 100)));
+}
+
+function applyWindowOpacity(win: BrowserWindow): void {
+    const currentSettings = settings.getSettings();
+    // Keep window alpha at 100% when native blur is disabled. The opacity slider lives under
+    // the blur section in Settings, so if users turn blur off we should not leave stale window
+    // alpha values from previous sessions.
+    const pct = currentSettings.window_blur ? (currentSettings.window_opacity ?? 100) : 100;
+    setWindowOpacity(win, pct);
+}
 
 function createWindow(): BrowserWindow {
     const browserWindowOptions: BrowserWindowConstructorOptions = {
@@ -71,18 +89,39 @@ function createWindow(): BrowserWindow {
         browserWindowOptions.trafficLightPosition = { x: 12, y: 11 };
     }
 
+    blurActive = !!settings.getSettings().window_blur && (isMac || process.platform === 'win32');
+    if (blurActive) {
+        browserWindowOptions.backgroundColor = '#00000000';
+        if (isMac) {
+            const validModes: BrowserWindowConstructorOptions['vibrancy'][] = [
+                'fullscreen-ui',
+                'hud',
+                'sidebar',
+                'under-window'
+            ];
+            const stored = settings.getSettings().window_blur_mode as BrowserWindowConstructorOptions['vibrancy'];
+            browserWindowOptions.vibrancy = validModes.includes(stored) ? stored : 'fullscreen-ui';
+            browserWindowOptions.visualEffectState = 'active';
+        } else {
+            browserWindowOptions.backgroundMaterial = 'acrylic';
+        }
+    }
+
     const window: BrowserWindow = new BrowserWindow(browserWindowOptions);
 
     window.setMenuBarVisibility(false);
 
+    applyWindowOpacity(window);
+
+    const qs = `screen=default${blurActive ? '&blur=1' : ''}`;
     window.loadURL(
         isDev
-            ? `http://localhost:4999?screen=default`
+            ? `http://localhost:4999?${qs}`
             : format({
                   pathname: join(__dirname, 'app', 'index.html'),
                   protocol: 'file:',
                   slashes: true
-              }) + `?screen=default`
+              }) + `?${qs}`
     );
 
     window.on('resize', (): void => {
@@ -97,7 +136,8 @@ function createWindow(): BrowserWindow {
     window.webContents.on('did-finish-load', async () => {
         try {
             window.webContents.send('init.reply', {
-                settings: settings.getSettings()
+                settings: settings.getSettings(),
+                blurActive
             });
 
             window.show();
@@ -117,7 +157,11 @@ function createWindow(): BrowserWindow {
 
         if (isDev) {
             setTimeout(() => {
-                window.webContents.openDevTools();
+                // Docked DevTools repaints the web contents opaque, which kills the macOS
+                // vibrancy/blur (the window looks transparent for ~1s, then turns opaque the moment
+                // DevTools docks). When the glass effect is active, open DevTools detached — a
+                // separate window — so the transparency survives while developing.
+                window.webContents.openDevTools(blurActive ? { mode: 'detach' } : undefined);
             }, 400);
         }
     });
@@ -127,6 +171,10 @@ function createWindow(): BrowserWindow {
 
 ipcMain.on('dump', (event: Electron.IpcMainEvent, arg): void => {
     event.sender.send(arg.type, arg);
+});
+
+ipcMain.on('dump_group', (event: Electron.IpcMainEvent, arg): void => {
+    event.sender.send('dump_group', arg);
 });
 
 ipcMain.on('badge-icon.decrement', (_: Electron.IpcMainEvent, args): void => {
@@ -386,8 +434,31 @@ ipcMain.on('main:toggle-always-on-top', (event, arg) => {
     setTimeout(() => mainWindow.setAlwaysOnTop(arg), 200);
 });
 
+// Live window-opacity updates from the Appearance slider (0–100). Applied directly from the
+// message so it never races the separate settings.store persistence round-trip.
+ipcMain.on('main:set-window-opacity', (_event, value: number): void => {
+    setWindowOpacity(mainWindow, value);
+});
+
 ipcMain.on('main:is-always-on-top', (event): void => {
     event.reply('main:is-always-on-top', { is_always_on_top: mainWindow.isAlwaysOnTop() });
+});
+
+ipcMain.on('main:relaunch-for-blur', (): void => {
+    const choice = dialog.showMessageBoxSync(mainWindow, {
+        type: 'question',
+        buttons: ['Restart now', 'Later'],
+        defaultId: 0,
+        cancelId: 1,
+        title: 'LaraDumps',
+        message: 'Window transparency change',
+        detail: 'LaraDumps needs to restart to apply the window transparency. Current dumps will be cleared.'
+    });
+
+    if (choice === 0) {
+        app.relaunch();
+        app.exit(0);
+    }
 });
 
 ipcMain.on('main:app-version', (event): void => {
