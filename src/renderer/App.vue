@@ -17,6 +17,7 @@ import JSConfetti from 'js-confetti';
 
 import Toasters from '@/components/common/Toasters.vue';
 import TheUpdateNotification from '@/components/app/TheUpdateNotification.vue';
+import SettingsModal from '@/components/settings/SettingsModal.vue';
 
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
@@ -190,6 +191,7 @@ onMounted(() => {
                 <RouterView :key="$route.fullPath" />
                 <Toasters />
                 <TheUpdateNotification />
+                <SettingsModal />
             </main>
         </div>
     </div>
