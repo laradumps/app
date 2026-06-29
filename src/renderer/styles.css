@@ -212,6 +212,14 @@ html.glass-enabled :is(.card, .alert, .collapse, .table) {
     background-color: var(--glass-base-100) !important;
 }
 
+/* Zebra tables (e.g. the Jobs listing) paint their alternating rows with an opaque
+   `--color-base-200` fill that isn't a `bg-base-*` utility, so the glass tints above miss them
+   and the list reads as a solid block over the blur. Re-tint the striped rows so the listing
+   stays translucent like the dumps/logs tables. */
+html.glass-enabled .table-zebra tbody tr:nth-child(2n) {
+    background-color: var(--glass-base-200) !important;
+}
+
 /* Code blocks (`mockup-code`) ship a terminal look: a fill plus a LIGHT text color meant for a
    dark background. Our glass tint lightens that fill, so the light text washes out and becomes
    unreadable. Give it a slightly firmer base-200 surface and pin the text/children back to the
@@ -232,7 +240,11 @@ html.glass-enabled .tabs-box {
     box-shadow: none !important;
 }
 html.glass-enabled :is(.tabs-box .tab-active, .tabs-box .tab:checked, .tabs-box [aria-selected='true']) {
-    background-color: var(--glass-base-100) !important;
+    /* Selected screen tab: use the near-opaque overlay (same fill as the switch-project dropdown)
+       plus a defining border, so the active pill reads as a solid, clearly-selected chip over the
+       blur instead of a faint tint that vanishes against the dark glass. */
+    background-color: var(--glass-overlay) !important;
+    border: 1px solid var(--glass-border) !important;
 }
 /* The sticky "+" add-tab button sits in its own `bg-base-200` wrapper (used to mask tabs
    scrolling underneath it). Over the glass that wrapper reads as a misaligned light box, so we
@@ -299,6 +311,23 @@ html.glass-enabled .dropdown-content.menu {
 html.glass-enabled .menu:not(.dropdown-content) {
     background-color: transparent !important;
     box-shadow: none !important;
+}
+
+/* Side drawers (Jobs / Brain detail panels) render as `.drawer-side > .menu.bg-base-*`. They
+   float OVER the listing like a modal, so the transparent `.menu` rule above lets the page bleed
+   through and the payload text becomes unreadable. Pin them to the same near-opaque overlay the
+   switch-project modal uses so the content stays legible while a hint of blur shows through.
+   Declared after the `.menu` rule to win on source order (equal specificity). */
+html.glass-enabled .drawer-side .menu {
+    background-color: var(--glass-overlay) !important;
+}
+
+/* Environments selector (screen tabs) is a floating `.menu` that — unlike the project switcher —
+   carries no `.dropdown-content` class, so the transparent `.menu` rule above lets the page bleed
+   through it. It floats OVER content like the other dropdowns, so pin it to the same opaque
+   overlay. The compound `.menu.environment-dropdown` outspecs `.menu:not(.dropdown-content)`. */
+html.glass-enabled .menu.environment-dropdown {
+    background-color: var(--glass-overlay) !important;
 }
 
 /* Button-as-trigger that carries a base fill (e.g. the navbar project switcher pill): same

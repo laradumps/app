@@ -1,6 +1,7 @@
 import { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain } from 'electron';
 import { join, resolve } from 'path';
 import { format } from 'url';
+import * as settings from '../settings';
 
 const isDev = process.env.NODE_ENV === 'development';
 const isMac: boolean = process.platform === 'darwin';
@@ -31,18 +32,37 @@ const createScreenWindow = (mainEvent: BrowserWindow, screen: String) => {
         screenWindowOptions.trafficLightPosition = { x: 12, y: 11 };
     }
 
+    const blurActive = !!settings.getSettings().window_blur && (isMac || process.platform === 'win32');
+    if (blurActive) {
+        screenWindowOptions.backgroundColor = '#00000000';
+        if (isMac) {
+            const validModes: BrowserWindowConstructorOptions['vibrancy'][] = [
+                'fullscreen-ui',
+                'hud',
+                'sidebar',
+                'under-window'
+            ];
+            const stored = settings.getSettings().window_blur_mode as BrowserWindowConstructorOptions['vibrancy'];
+            screenWindowOptions.vibrancy = validModes.includes(stored) ? stored : 'hud';
+            screenWindowOptions.visualEffectState = 'active';
+        } else {
+            screenWindowOptions.backgroundMaterial = 'acrylic';
+        }
+    }
+
     const window = new BrowserWindow(screenWindowOptions);
 
     window.setMenu(null);
 
+    const qs = `screen=${screen}${blurActive ? '&blur=1' : ''}`;
     window.loadURL(
         isDev
-            ? `http://localhost:4999?screen=${screen}`
+            ? `http://localhost:4999?${qs}`
             : format({
                   pathname: join(__dirname, 'app', 'index.html'),
                   protocol: 'file:',
                   slashes: true
-              }) + `?screen=${screen}`
+              }) + `?${qs}`
     );
 
     window.on('closed', () => {

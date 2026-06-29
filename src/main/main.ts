@@ -100,7 +100,7 @@ function createWindow(): BrowserWindow {
                 'under-window'
             ];
             const stored = settings.getSettings().window_blur_mode as BrowserWindowConstructorOptions['vibrancy'];
-            browserWindowOptions.vibrancy = validModes.includes(stored) ? stored : 'fullscreen-ui';
+            browserWindowOptions.vibrancy = validModes.includes(stored) ? stored : 'hud';
             browserWindowOptions.visualEffectState = 'active';
         } else {
             browserWindowOptions.backgroundMaterial = 'acrylic';

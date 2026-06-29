@@ -156,6 +156,10 @@ onMounted(() => {
     const urlParams = new URLSearchParams(window.location.search);
     screen.value = urlParams.get('screen');
 
+    if (urlParams.has('blur')) {
+        settingsStore.applyWindowBlur(true);
+    }
+
     const style = document.createElement('style');
     style.innerHTML = settingsStore.settings.custom_css;
     document.head.appendChild(style);
