@@ -10,7 +10,9 @@ import {
     FunnelIcon,
     ClockIcon,
     FireIcon,
-    MagnifyingGlassIcon
+    MagnifyingGlassIcon,
+    Square3Stack3DIcon,
+    ChevronRightIcon
 } from '@heroicons/vue/24/outline';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import dayjs from 'dayjs';
@@ -100,10 +102,16 @@ const toggleType = (type: string) => {
     hiddenTypes.value = next;
 };
 
-// View mode: aggregated hotspots (default) vs chronological timeline. The
-// user's choice persists across profile changes, so it is intentionally not
-// reset below.
-const viewMode = ref<'timeline' | 'hotspots'>('hotspots');
+// View mode: aggregated hotspots (default), chronological timeline, or flame
+// graph. The user's choice persists across profile changes, so it is
+// intentionally not reset below.
+const viewMode = ref<'timeline' | 'hotspots' | 'flame'>('hotspots');
+
+// Flame graph: id of the node currently zoomed into (null = whole profile).
+const flameRootId = ref<string | null>(null);
+watch(selectedProfile, () => {
+    flameRootId.value = null;
+});
 
 // Noise filtering: hide fast `method` entries by default
 const showAllEntries = ref(false);
@@ -501,6 +509,126 @@ const hotspots = computed((): Hotspot[] => {
 
 const maxHotspotMs = computed(() => hotspots.value[0]?.totalMs || 1);
 
+// ---- Flame graph (icicle) ----
+
+// Children indexed by parent_id, each list sorted by start_ms.
+const childrenMap = computed((): Map<string | null, ProfileEntry[]> => {
+    const map = new Map<string | null, ProfileEntry[]>();
+    if (!selectedProfile.value) return map;
+    for (const e of selectedProfile.value.entries) {
+        const arr = map.get(e.parent_id) ?? [];
+        arr.push(e);
+        map.set(e.parent_id, arr);
+    }
+    for (const arr of map.values()) arr.sort((a, b) => a.start_ms - b.start_ms);
+    return map;
+});
+
+const entriesById = computed((): Map<string, ProfileEntry> => {
+    const map = new Map<string, ProfileEntry>();
+    if (!selectedProfile.value) return map;
+    for (const e of selectedProfile.value.entries) map.set(e.id, e);
+    return map;
+});
+
+// Self time = own duration minus the sum of children durations (durations are inclusive).
+const selfMs = (entry: ProfileEntry): number => {
+    const children = childrenMap.value.get(entry.id) ?? [];
+    const childSum = children.reduce((s, c) => s + (c.duration_ms ?? 0), 0);
+    return Math.max(0, (entry.duration_ms ?? 0) - childSum);
+};
+
+type FlameNode = {
+    entry: ProfileEntry;
+    depth: number;
+    left: number; // %
+    width: number; // %
+    self: number; // ms
+};
+
+const FLAME_MIN_WIDTH = 0.2; // % — prune blocks narrower than this (and their subtrees)
+
+const flameRootEntry = computed((): ProfileEntry | null =>
+    flameRootId.value ? (entriesById.value.get(flameRootId.value) ?? null) : null
+);
+
+const flameNodes = computed((): FlameNode[] => {
+    if (!selectedProfile.value) return [];
+    const typeAllowed = (e: ProfileEntry) => !hiddenTypes.value.has(e.type);
+
+    const root = flameRootEntry.value;
+    const focusStart = root ? root.start_ms : 0;
+    const focusDuration = (root ? root.duration_ms : selectedProfile.value.total_duration_ms) || 1;
+
+    const nodes: FlameNode[] = [];
+
+    const pushNode = (entry: ProfileEntry, depth: number) => {
+        const rawWidth = ((entry.duration_ms ?? 0) / focusDuration) * 100;
+        if (rawWidth < FLAME_MIN_WIDTH) return; // prune tiny blocks (children are narrower → pruned too)
+        const left = Math.max(0, Math.min(((entry.start_ms - focusStart) / focusDuration) * 100, 100));
+        nodes.push({
+            entry,
+            depth,
+            left,
+            width: Math.min(rawWidth, 100 - left),
+            self: selfMs(entry)
+        });
+        for (const child of childrenMap.value.get(entry.id) ?? []) {
+            if (!typeAllowed(child) || child.duration_ms === null) continue;
+            pushNode(child, depth + 1);
+        }
+    };
+
+    if (root) {
+        pushNode(root, 0);
+    } else {
+        for (const e of childrenMap.value.get(null) ?? []) {
+            if (!typeAllowed(e) || e.duration_ms === null) continue;
+            pushNode(e, 0);
+        }
+    }
+    return nodes;
+});
+
+// Nodes grouped into rows by depth (row 0 = top).
+const flameRows = computed((): FlameNode[][] => {
+    const rows: FlameNode[][] = [];
+    for (const n of flameNodes.value) (rows[n.depth] ??= []).push(n);
+    return rows;
+});
+
+// Ancestor trail of the focused node (root … focus), for the breadcrumb.
+const flameBreadcrumb = computed((): ProfileEntry[] => {
+    const root = flameRootEntry.value;
+    if (!root) return [];
+    const trail: ProfileEntry[] = [];
+    let cur: ProfileEntry | undefined = root;
+    const guard = new Set<string>();
+    while (cur && !guard.has(cur.id)) {
+        guard.add(cur.id);
+        trail.unshift(cur);
+        cur = cur.parent_id ? entriesById.value.get(cur.parent_id) : undefined;
+    }
+    return trail;
+});
+
+const flameTooltip = (n: FlameNode): string => {
+    const pct = n.width.toFixed(1);
+    return (
+        `${entryLabel(n.entry)}\nType: ${typeLabels[n.entry.type] || n.entry.type}` +
+        `\nTotal: ${formatDuration(n.entry.duration_ms)} (${pct}% of focus)` +
+        `\nSelf: ${formatDuration(n.self)}` +
+        (n.entry.origin?.class ? `\nOrigin: ${n.entry.origin.class}` : '')
+    );
+};
+
+const zoomFlame = (id: string) => {
+    flameRootId.value = id;
+};
+const resetFlameZoom = () => {
+    flameRootId.value = null;
+};
+
 const clear = () => {
     profileStore.clear();
 };
@@ -575,6 +703,14 @@ const openProfilesModal = () => {
                         >
                             <FireIcon class="w-3" />
                             Hotspots
+                        </button>
+                        <button
+                            class="btn btn-xs join-item gap-1"
+                            :class="viewMode === 'flame' ? 'btn-active' : 'btn-ghost'"
+                            @click="viewMode = 'flame'"
+                        >
+                            <Square3Stack3DIcon class="w-3" />
+                            Flame
                         </button>
                     </div>
                     <div class="badge badge-primary badge-sm font-mono">
@@ -780,7 +916,7 @@ const openProfilesModal = () => {
 
             <!-- Hotspots view: slowest aggregated functions first -->
             <div
-                v-else
+                v-else-if="viewMode === 'hotspots'"
                 class="flex-1 overflow-auto min-h-0 px-3 py-2"
             >
                 <div
@@ -811,6 +947,81 @@ const openProfilesModal = () => {
                     >
                         {{ formatDuration(h.totalMs) }}
                     </span>
+                </div>
+            </div>
+
+            <!-- Flame graph (icicle) view -->
+            <div
+                v-else
+                class="flex-1 flex flex-col overflow-hidden min-h-0"
+            >
+                <!-- Breadcrumb / zoom controls -->
+                <div
+                    v-if="flameBreadcrumb.length > 0"
+                    class="shrink-0 flex items-center gap-1 px-3 py-1.5 border-b border-base-content/10 text-[11px] overflow-x-auto"
+                >
+                    <button
+                        class="text-base-content/50 hover:text-base-content shrink-0"
+                        @click="resetFlameZoom"
+                    >
+                        Root
+                    </button>
+                    <template
+                        v-for="(node, bi) in flameBreadcrumb"
+                        :key="node.id"
+                    >
+                        <ChevronRightIcon class="w-3 text-base-content/30 shrink-0" />
+                        <button
+                            class="shrink-0 font-mono truncate max-w-40"
+                            :class="
+                                bi === flameBreadcrumb.length - 1
+                                    ? 'text-base-content/90'
+                                    : 'text-base-content/50 hover:text-base-content'
+                            "
+                            @click="zoomFlame(node.id)"
+                        >
+                            {{ entryLabel(node) }}
+                        </button>
+                    </template>
+                    <button
+                        class="btn btn-ghost btn-xs gap-1 ml-auto shrink-0"
+                        @click="resetFlameZoom"
+                    >
+                        <XMarkIcon class="w-3" />
+                        Reset zoom
+                    </button>
+                </div>
+
+                <!-- Stacked rows -->
+                <div class="flex-1 overflow-auto min-h-0 px-3 py-2">
+                    <div
+                        v-if="flameNodes.length > 0"
+                        class="flex flex-col gap-px"
+                    >
+                        <div
+                            v-for="(row, depth) in flameRows"
+                            :key="depth"
+                            class="relative h-5 w-full"
+                        >
+                            <div
+                                v-for="n in row"
+                                :key="n.entry.id"
+                                class="absolute h-full rounded-sm flex items-center px-1 overflow-hidden cursor-pointer text-[10px] leading-none text-black/80 hover:brightness-110 transition-all"
+                                :class="entryBarColor(n.entry)"
+                                :style="{ left: `${n.left}%`, width: `${n.width}%` }"
+                                :title="flameTooltip(n)"
+                                @click="zoomFlame(n.entry.id)"
+                            >
+                                <span class="truncate">{{ entryLabel(n.entry) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        v-else
+                        class="h-full flex items-center justify-center text-xs text-base-content/40"
+                    >
+                        No call stack to display
+                    </div>
                 </div>
             </div>
         </div>
