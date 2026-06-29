@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useProfileStore, type Profile, type ProfileEntry } from '@/store/profile';
-import { TrashIcon, ArrowsRightLeftIcon } from '@heroicons/vue/24/outline';
+import {
+    TrashIcon,
+    ArrowsRightLeftIcon,
+    XMarkIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    FunnelIcon,
+    ClockIcon,
+    FireIcon,
+    MagnifyingGlassIcon
+} from '@heroicons/vue/24/outline';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -69,6 +79,14 @@ const typeLabels: Record<string, string> = {
 const selectedProfile = computed(() => profileStore.selectedProfile);
 const profiles = computed(() => profileStore.profileList);
 
+// Profile selector search
+const profileSearch = ref('');
+const filteredProfiles = computed(() => {
+    const q = profileSearch.value.trim().toLowerCase();
+    if (!q) return profiles.value;
+    return profiles.value.filter((p) => p.label.toLowerCase().includes(q));
+});
+
 // Types currently hidden from the timeline
 const hiddenTypes = ref<Set<string>>(new Set());
 
@@ -82,10 +100,30 @@ const toggleType = (type: string) => {
     hiddenTypes.value = next;
 };
 
-// Reset filters when profile changes
-watch(selectedProfile, () => {
-    hiddenTypes.value = new Set();
-});
+// View mode: aggregated hotspots (default) vs chronological timeline. The
+// user's choice persists across profile changes, so it is intentionally not
+// reset below.
+const viewMode = ref<'timeline' | 'hotspots'>('hotspots');
+
+// Noise filtering: hide fast `method` entries by default
+const showAllEntries = ref(false);
+const noiseThresholdMs = ref(1);
+
+// Total `method` entries in the profile (used to decide whether to show the noise bar)
+const methodCount = computed(() => selectedProfile.value?.entries.filter((e) => e.type === 'method').length ?? 0);
+
+// NOTE: filter state (viewMode, hiddenTypes, showAllEntries, noiseThresholdMs)
+// intentionally persists across profile/route changes — e.g. keeping only
+// "Methods" visible while switching between requests.
+
+// A `method` entry is "noise" when faster than the threshold.
+const isNoise = (entry: ProfileEntry): boolean =>
+    entry.type === 'method' && (entry.duration_ms ?? 0) < noiseThresholdMs.value;
+
+// An entry counts as "slow" when at/above 5% of the request total (min 5ms).
+const slowThresholdMs = computed(() => Math.max(5, (selectedProfile.value?.total_duration_ms ?? 0) * 0.05));
+const isSlowMs = (ms: number | null): boolean => (ms ?? 0) >= slowThresholdMs.value;
+const isSlow = (entry: ProfileEntry): boolean => isSlowMs(entry.duration_ms);
 
 const timelineScale = computed(() => {
     if (!selectedProfile.value) return { max: 100, step: 10 };
@@ -125,15 +163,74 @@ const formatDuration = (ms: number | null): string => {
     return `${(ms / 1000).toFixed(2)}s`;
 };
 
+// Split a profile label like "POST /track-ads" into an HTTP method + path.
+const parseLabel = (label: string): { method: string | null; path: string } => {
+    const m = label.match(/^(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)\s+(.+)$/i);
+    if (m) return { method: m[1].toUpperCase(), path: m[2] };
+    return { method: null, path: label };
+};
+
+const httpMethodColor = (method: string): string => {
+    switch (method) {
+        case 'GET':
+            return 'bg-sky-500/15 text-sky-400';
+        case 'POST':
+            return 'bg-emerald-500/15 text-emerald-400';
+        case 'PUT':
+        case 'PATCH':
+            return 'bg-amber-500/15 text-amber-400';
+        case 'DELETE':
+            return 'bg-red-500/15 text-red-400';
+        default:
+            return 'bg-base-content/10 text-base-content/60';
+    }
+};
+
+// Visible entries for the timeline: type filters always apply; on top of that,
+// fast `method` entries are dropped unless they are an ancestor of a kept entry
+// (so the tree never loses a needed branch node). Non-method types are never
+// dropped by the noise filter.
 const sortedEntries = computed(() => {
     if (!selectedProfile.value) return [];
-    return [...selectedProfile.value.entries]
-        .filter((e) => !hiddenTypes.value.has(e.type))
-        .sort((a, b) => a.start_ms - b.start_ms);
+    const all = selectedProfile.value.entries;
+    const byId = new Map(all.map((e) => [e.id, e] as const));
+    const typeAllowed = (e: ProfileEntry) => !hiddenTypes.value.has(e.type);
+
+    const kept = new Set<string>();
+    for (const e of all) {
+        if (!typeAllowed(e)) continue;
+        if (showAllEntries.value || !isNoise(e)) kept.add(e.id);
+    }
+
+    // Promote ancestors of kept entries so the tree stays connected.
+    if (!showAllEntries.value) {
+        for (const e of all) {
+            if (!kept.has(e.id)) continue;
+            let pid = e.parent_id;
+            const guard = new Set<string>();
+            while (pid && !guard.has(pid)) {
+                guard.add(pid);
+                const parent = byId.get(pid);
+                if (!parent) break;
+                if (typeAllowed(parent)) kept.add(parent.id);
+                pid = parent.parent_id;
+            }
+        }
+    }
+
+    return all.filter((e) => kept.has(e.id)).sort((a, b) => a.start_ms - b.start_ms);
 });
 
-// Build a depth map for all entries using parent_id relationships.
-// Depth 0 = root (no parent or parent filtered out).
+// How many type-allowed entries are currently hidden by the noise filter.
+const hiddenCount = computed(() => {
+    if (!selectedProfile.value || showAllEntries.value) return 0;
+    const visibleIds = new Set(sortedEntries.value.map((e) => e.id));
+    return selectedProfile.value.entries.filter((e) => !hiddenTypes.value.has(e.type) && !visibleIds.has(e.id)).length;
+});
+
+// Build a depth map for the visible entries. Depth counts only ancestors that
+// are themselves visible, so filtered branch nodes don't leave indentation gaps
+// (an orphaned child re-parents to its nearest visible ancestor).
 const entryDepthMap = computed((): Map<string, number> => {
     if (!selectedProfile.value) return new Map();
 
@@ -143,6 +240,7 @@ const entryDepthMap = computed((): Map<string, number> => {
         allById.set(e.id, e);
     }
 
+    const visibleIds = new Set(sortedEntries.value.map((e) => e.id));
     const depthMap = new Map<string, number>();
 
     const getDepth = (id: string, visited = new Set<string>()): number => {
@@ -156,13 +254,26 @@ const entryDepthMap = computed((): Map<string, number> => {
             return 0;
         }
 
-        const parentDepth = getDepth(entry.parent_id, visited);
-        const depth = parentDepth + 1;
-        depthMap.set(id, depth);
-        return depth;
+        // Walk up to the nearest visible ancestor; ignore filtered-out parents.
+        let pid: string | null = entry.parent_id;
+        const guard = new Set<string>();
+        while (pid && !guard.has(pid)) {
+            guard.add(pid);
+            if (visibleIds.has(pid)) {
+                const depth = getDepth(pid, visited) + 1;
+                depthMap.set(id, depth);
+                return depth;
+            }
+            const parent: ProfileEntry | undefined = allById.get(pid);
+            if (!parent) break;
+            pid = parent.parent_id;
+        }
+
+        depthMap.set(id, 0);
+        return 0;
     };
 
-    for (const e of selectedProfile.value.entries) {
+    for (const e of sortedEntries.value) {
         getDepth(e.id);
     }
 
@@ -357,6 +468,39 @@ const timelineItems = computed((): TimelineGroup[] => {
     return items;
 });
 
+// Hotspots: aggregate entries by function/name, summing duration and count,
+// ordered slowest-first. Respects type filters. Each hotspot keeps its slowest
+// entry as a representative so the detail modal shows real origin/metadata.
+type Hotspot = {
+    key: string;
+    label: string;
+    type: string;
+    totalMs: number;
+    count: number;
+    rep: ProfileEntry;
+};
+
+const hotspots = computed((): Hotspot[] => {
+    if (!selectedProfile.value) return [];
+    const map = new Map<string, Hotspot>();
+    for (const e of selectedProfile.value.entries) {
+        if (hiddenTypes.value.has(e.type)) continue;
+        const label = entryLabel(e);
+        const key = `${e.type}|${label}`;
+        const cur = map.get(key);
+        if (cur) {
+            cur.totalMs += e.duration_ms ?? 0;
+            cur.count += 1;
+            if ((e.duration_ms ?? 0) > (cur.rep.duration_ms ?? 0)) cur.rep = e;
+        } else {
+            map.set(key, { key, label, type: e.type, totalMs: e.duration_ms ?? 0, count: 1, rep: e });
+        }
+    }
+    return [...map.values()].sort((a, b) => b.totalMs - a.totalMs);
+});
+
+const maxHotspotMs = computed(() => hotspots.value[0]?.totalMs || 1);
+
 const clear = () => {
     profileStore.clear();
 };
@@ -368,6 +512,7 @@ const selectProfile = (id: string) => {
 };
 
 const openProfilesModal = () => {
+    profileSearch.value = '';
     const modal = document.getElementById('profile_selector_dialog') as HTMLDialogElement;
     if (modal) modal.showModal();
 };
@@ -412,10 +557,25 @@ const openProfilesModal = () => {
                     <span class="truncate">{{ selectedProfile.label }}</span>
                 </button>
 
-                <!-- Right badges -->
+                <!-- Right: view toggle + badges -->
                 <div class="flex items-center gap-2">
-                    <div class="badge badge-ghost badge-sm font-mono">
-                        {{ selectedProfile.summary.total_entries }} entries
+                    <div class="join">
+                        <button
+                            class="btn btn-xs join-item gap-1"
+                            :class="viewMode === 'timeline' ? 'btn-active' : 'btn-ghost'"
+                            @click="viewMode = 'timeline'"
+                        >
+                            <ClockIcon class="w-3" />
+                            Timeline
+                        </button>
+                        <button
+                            class="btn btn-xs join-item gap-1"
+                            :class="viewMode === 'hotspots' ? 'btn-active' : 'btn-ghost'"
+                            @click="viewMode = 'hotspots'"
+                        >
+                            <FireIcon class="w-3" />
+                            Hotspots
+                        </button>
                     </div>
                     <div class="badge badge-primary badge-sm font-mono">
                         {{ formatDuration(selectedProfile.total_duration_ms) }}
@@ -450,8 +610,56 @@ const openProfilesModal = () => {
                 </div>
             </div>
 
+            <!-- Noise filter bar (timeline only, when the profile has method entries) -->
+            <div
+                v-if="viewMode === 'timeline' && methodCount > 0"
+                class="shrink-0 flex items-center justify-between gap-2 px-3 py-1.5 border-b border-base-content/10 text-[11px] text-base-content/60"
+            >
+                <span class="flex items-center gap-1.5">
+                    <FunnelIcon class="w-3 flex-shrink-0" />
+                    <template v-if="!showAllEntries && hiddenCount > 0">
+                        Hiding fast methods —
+                        <span class="font-medium text-base-content/80">{{ hiddenCount }} hidden</span>
+                    </template>
+                    <template v-else-if="showAllEntries">Showing all entries</template>
+                    <template v-else>No fast methods to hide</template>
+                </span>
+                <span class="flex items-center gap-2">
+                    <span
+                        v-if="!showAllEntries"
+                        class="flex items-center gap-1.5"
+                    >
+                        <span class="text-base-content/50">Hide &lt;</span>
+                        <div class="join">
+                            <button
+                                v-for="opt in [0.5, 1, 5]"
+                                :key="opt"
+                                class="btn btn-xs join-item font-mono"
+                                :class="noiseThresholdMs === opt ? 'btn-active btn-primary' : 'btn-ghost'"
+                                @click="noiseThresholdMs = opt"
+                            >
+                                {{ opt }}ms
+                            </button>
+                        </div>
+                    </span>
+                    <button
+                        class="btn btn-ghost btn-xs gap-1"
+                        @click="showAllEntries = !showAllEntries"
+                    >
+                        <component
+                            :is="showAllEntries ? EyeSlashIcon : EyeIcon"
+                            class="w-3"
+                        />
+                        {{ showAllEntries ? 'Hide noise' : 'Show all' }}
+                    </button>
+                </span>
+            </div>
+
             <!-- Time scale ruler (fixed, outside scroll area) -->
-            <div class="shrink-0 relative h-7 border-b border-base-content/20 bg-base-100 px-3">
+            <div
+                v-if="viewMode === 'timeline'"
+                class="shrink-0 relative h-7 border-b border-base-content/20 bg-base-100 px-3"
+            >
                 <div class="absolute inset-0 flex">
                     <div class="w-52 flex-shrink-0"></div>
                     <div class="flex-1 relative">
@@ -469,7 +677,10 @@ const openProfilesModal = () => {
             </div>
 
             <!-- Scrollable timeline area -->
-            <div class="flex-1 overflow-auto min-h-0 px-3 py-2">
+            <div
+                v-if="viewMode === 'timeline'"
+                class="flex-1 overflow-auto min-h-0 px-3 py-2"
+            >
                 <!-- Timeline entries -->
                 <div>
                     <template
@@ -540,18 +751,66 @@ const openProfilesModal = () => {
                             <div class="flex-1 relative h-5 bg-base-200/50 rounded overflow-hidden">
                                 <div
                                     class="absolute h-full rounded transition-opacity"
-                                    :class="entryBarColor(item.entry)"
+                                    :class="[
+                                        entryBarColor(item.entry),
+                                        isSlow(item.entry) ? 'ring-1 ring-base-content/40' : ''
+                                    ]"
                                     :style="getBarStyle(item.entry)"
                                     :title="`${entryLabel(item.entry)}\nType: ${item.entry.type}\nDuration: ${formatDuration(item.entry.duration_ms)}\nStart: ${formatDuration(item.entry.start_ms)}${item.entry.origin?.class ? '\nOrigin: ' + item.entry.origin.class : ''}`"
                                 ></div>
                             </div>
 
                             <!-- Duration -->
-                            <div class="w-20 pl-2 text-[10px] text-base-content/50 flex-shrink-0 text-right">
+                            <div
+                                class="w-20 pl-2 text-[10px] flex-shrink-0 text-right"
+                                :class="
+                                    isSlow(item.entry)
+                                        ? 'text-base-content/90 font-medium'
+                                        : isNoise(item.entry)
+                                          ? 'text-base-content/30'
+                                          : 'text-base-content/50'
+                                "
+                            >
                                 {{ formatDuration(item.entry.duration_ms) }}
                             </div>
                         </div>
                     </template>
+                </div>
+            </div>
+
+            <!-- Hotspots view: slowest aggregated functions first -->
+            <div
+                v-else
+                class="flex-1 overflow-auto min-h-0 px-3 py-2"
+            >
+                <div
+                    v-for="(h, idx) in hotspots"
+                    :key="h.key"
+                    class="flex items-center gap-2.5 px-1 py-1 rounded cursor-pointer hover:bg-base-content/5 transition-colors"
+                    @click="selectedEntry = h.rep"
+                >
+                    <span class="w-5 text-[10px] text-base-content/40 font-mono text-right flex-shrink-0">
+                        {{ idx + 1 }}
+                    </span>
+                    <span
+                        class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        :class="legendDotColor(h.type)"
+                    ></span>
+                    <span class="w-44 text-xs text-base-content/80 truncate flex-shrink-0">{{ h.label }}</span>
+                    <div class="flex-1 relative h-3.5 bg-base-200/50 rounded overflow-hidden">
+                        <div
+                            class="absolute h-full rounded"
+                            :class="typeColors[h.type]"
+                            :style="{ width: `${(h.totalMs / maxHotspotMs) * 100}%` }"
+                        ></div>
+                    </div>
+                    <span class="badge badge-ghost badge-xs font-mono flex-shrink-0">×{{ h.count }}</span>
+                    <span
+                        class="w-16 text-right text-[10px] font-mono flex-shrink-0"
+                        :class="isSlowMs(h.totalMs) ? 'text-base-content/90 font-medium' : 'text-base-content/50'"
+                    >
+                        {{ formatDuration(h.totalMs) }}
+                    </span>
                 </div>
             </div>
         </div>
@@ -573,42 +832,72 @@ const openProfilesModal = () => {
             id="profile_selector_dialog"
             class="modal"
         >
-            <div class="modal-box min-w-80 max-w-2xl p-4 py-0">
-                <div class="py-4 space-y-4 text-sm overflow-auto">
-                    <div class="font-semibold px-2">
-                        <span class="text-lg">Profiles</span>
+            <div class="modal-box rounded-xl min-w-80 max-w-2xl p-0 overflow-hidden">
+                <!-- Header -->
+                <div class="flex items-center justify-between gap-3 px-4 pt-4 pb-3 border-b border-base-content/10">
+                    <span class="text-base font-semibold">Profiles</span>
+                    <div class="flex items-center gap-2">
+                        <label class="input input-sm input-bordered flex items-center gap-2 h-8 w-44 rounded-lg">
+                            <MagnifyingGlassIcon class="w-3.5 opacity-50" />
+                            <input
+                                v-model="profileSearch"
+                                type="text"
+                                class="grow text-xs"
+                                placeholder="Filter…"
+                            />
+                        </label>
+                        <span class="badge badge-ghost badge-sm font-mono">{{ filteredProfiles.length }}</span>
                     </div>
-                    <div class="max-h-[calc(100vh-22rem)] overflow-auto">
-                        <table class="table table-sm w-full">
-                            <thead>
-                                <tr class="text-xs text-base-content/50">
-                                    <th>#</th>
-                                    <th>Label</th>
-                                    <th class="text-right">Entries</th>
-                                    <th class="text-right">Duration</th>
-                                    <th class="text-right">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr
-                                    v-for="(profile, idx) in profiles"
-                                    :key="profile.id"
-                                    @click="selectProfile(profile.id)"
-                                    class="cursor-pointer hover:bg-base-200 transition-colors"
-                                    :class="{ 'bg-neutral text-neutral-content': profile.id === selectedProfile?.id }"
-                                >
-                                    <td class="text-xs opacity-50">{{ idx + 1 }}</td>
-                                    <td class="text-xs font-medium">{{ profile.label }}</td>
-                                    <td class="text-xs text-right">{{ profile.summary.total_entries }}</td>
-                                    <td class="text-xs text-right font-mono">
-                                        {{ formatDuration(profile.total_duration_ms) }}
-                                    </td>
-                                    <td class="text-xs text-right opacity-50">
-                                        {{ dayjs(profile.date_time).fromNow() }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                </div>
+
+                <!-- List -->
+                <div class="p-2 max-h-[calc(100vh-22rem)] overflow-auto flex flex-col gap-1">
+                    <button
+                        v-for="(profile, idx) in filteredProfiles"
+                        :key="profile.id"
+                        type="button"
+                        @click="selectProfile(profile.id)"
+                        class="w-full text-left flex items-center gap-3 px-2.5 py-2 rounded-lg border transition-colors"
+                        :class="
+                            profile.id === selectedProfile?.id
+                                ? 'border-primary/40 bg-primary/10'
+                                : 'border-transparent hover:bg-base-200'
+                        "
+                    >
+                        <span class="w-5 text-[11px] font-mono text-base-content/40 text-right flex-shrink-0">
+                            {{ idx + 1 }}
+                        </span>
+
+                        <span
+                            v-if="parseLabel(profile.label).method"
+                            class="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded flex-shrink-0 w-14 text-center"
+                            :class="httpMethodColor(parseLabel(profile.label).method!)"
+                        >
+                            {{ parseLabel(profile.label).method }}
+                        </span>
+
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-xs font-medium truncate">
+                                {{ parseLabel(profile.label).path }}
+                            </span>
+                            <span class="block text-[10px] text-base-content/40 mt-0.5">
+                                {{ profile.summary.total_entries }} entries · {{ dayjs(profile.date_time).fromNow() }}
+                            </span>
+                        </span>
+
+                        <span
+                            class="badge badge-sm font-mono flex-shrink-0"
+                            :class="profile.total_duration_ms >= 100 ? 'badge-warning' : 'badge-ghost'"
+                        >
+                            {{ formatDuration(profile.total_duration_ms) }}
+                        </span>
+                    </button>
+
+                    <div
+                        v-if="filteredProfiles.length === 0"
+                        class="text-center text-xs text-base-content/40 py-6"
+                    >
+                        No profiles match “{{ profileSearch }}”
                     </div>
                 </div>
             </div>
@@ -625,77 +914,81 @@ const openProfilesModal = () => {
             id="profile_entry_modal"
             class="modal modal-middle"
         >
-            <div class="modal-box !rounded-md text-sm w-11/12 max-w-lg">
-                <h3 class="font-bold text-lg mb-4">Entry Details</h3>
+            <div
+                v-if="selectedEntry"
+                class="modal-box rounded-xl text-sm w-11/12 max-w-lg p-0"
+            >
+                <!-- Header: type dot + entry name + close -->
+                <div class="flex items-center gap-2.5 px-4 pt-4 pb-3">
+                    <span
+                        class="w-3 h-3 rounded-full flex-shrink-0"
+                        :class="legendDotColor(selectedEntry.type)"
+                    ></span>
+                    <span class="flex-1 font-medium truncate">{{ entryLabel(selectedEntry) }}</span>
+                    <form method="dialog">
+                        <button
+                            class="btn btn-ghost btn-circle btn-sm"
+                            aria-label="Close"
+                            @click="selectedEntry = null"
+                        >
+                            <XMarkIcon class="w-4" />
+                        </button>
+                    </form>
+                </div>
 
-                <div
-                    v-if="selectedEntry"
-                    class="space-y-3"
-                >
-                    <div>
+                <!-- Badge row: type + start/end + duration -->
+                <div class="flex flex-wrap items-center gap-1.5 px-4 pb-3 border-b border-base-content/10">
+                    <span
+                        class="badge badge-sm border-0 text-white font-mono"
+                        :class="typeColors[selectedEntry.type]"
+                    >
+                        {{ typeLabels[selectedEntry.type] || selectedEntry.type }}
+                    </span>
+                    <span class="badge badge-ghost badge-sm font-mono">
+                        start {{ formatDuration(selectedEntry.start_ms) }}
+                    </span>
+                    <span class="badge badge-ghost badge-sm font-mono">
+                        end {{ formatDuration((selectedEntry.start_ms || 0) + (selectedEntry.duration_ms || 0)) }}
+                    </span>
+                    <span class="badge badge-primary badge-sm font-mono">
+                        {{ formatDuration(selectedEntry.duration_ms) }}
+                    </span>
+                </div>
+
+                <!-- Body -->
+                <div class="p-4 space-y-3">
+                    <div v-if="selectedEntry.name !== entryLabel(selectedEntry)">
                         <div class="text-xs text-base-content/50 mb-1">Name</div>
-                        <div class="text-sm font-medium">{{ selectedEntry.name }}</div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <div class="text-xs text-base-content/50 mb-1">Type</div>
-                            <div class="text-sm">
-                                <span
-                                    class="px-2 py-0.5 rounded text-xs text-white"
-                                    :class="typeColors[selectedEntry.type]"
-                                >
-                                    {{ typeLabels[selectedEntry.type] || selectedEntry.type }}
-                                </span>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="text-xs text-base-content/50 mb-1">Duration</div>
-                            <div class="text-sm">{{ formatDuration(selectedEntry.duration_ms) }}</div>
-                        </div>
-                        <div>
-                            <div class="text-xs text-base-content/50 mb-1">Start</div>
-                            <div class="text-sm">{{ formatDuration(selectedEntry.start_ms) }}</div>
-                        </div>
-                        <div>
-                            <div class="text-xs text-base-content/50 mb-1">End</div>
-                            <div class="text-sm">
-                                {{ formatDuration((selectedEntry.start_ms || 0) + (selectedEntry.duration_ms || 0)) }}
-                            </div>
-                        </div>
+                        <div class="text-sm font-medium break-all">{{ selectedEntry.name }}</div>
                     </div>
 
                     <div v-if="selectedEntry.origin?.class">
                         <div class="text-xs text-base-content/50 mb-1">Origin</div>
-                        <div class="text-sm">
-                            <span class="font-mono text-xs">{{ selectedEntry.origin.class }}</span>
-                            <span
-                                v-if="selectedEntry.origin.method"
-                                class="text-xs"
-                            >
-                                ::{{ selectedEntry.origin.method }}()
-                            </span>
+                        <div class="text-sm font-mono text-xs break-all">
+                            {{ selectedEntry.origin.class
+                            }}<span v-if="selectedEntry.origin.method">::{{ selectedEntry.origin.method }}()</span>
                         </div>
                         <div
                             v-if="selectedEntry.origin.file"
-                            class="text-xs text-base-content/60 mt-1"
+                            class="text-xs text-base-content/60 mt-1 font-mono break-all"
                         >
                             {{ selectedEntry.origin.file }}:{{ selectedEntry.origin.line }}
                         </div>
                     </div>
 
                     <div v-if="selectedEntry.metadata && Object.keys(selectedEntry.metadata).length > 0">
-                        <div class="text-xs text-base-content/50 mb-2">Metadata</div>
-                        <div class="bg-base-200 rounded p-3 text-xs font-mono overflow-auto max-h-40">
+                        <div class="text-xs text-base-content/50 mb-1">Metadata</div>
+                        <div class="bg-base-200 rounded-lg p-3 text-xs font-mono overflow-auto max-h-40">
                             <pre>{{ JSON.stringify(selectedEntry.metadata, null, 2) }}</pre>
                         </div>
                     </div>
                 </div>
 
-                <div class="modal-action">
+                <!-- Footer -->
+                <div class="flex justify-end px-4 py-3 border-t border-base-content/10">
                     <form method="dialog">
                         <button
-                            class="btn"
+                            class="btn btn-sm"
                             @click="selectedEntry = null"
                         >
                             Close
