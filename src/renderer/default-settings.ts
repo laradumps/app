@@ -48,5 +48,6 @@ export const DEFAULT_SETTINGS: Settings = {
     window_blur: false,
     window_blur_mode: 'hud',
     window_blur_opacity: 0,
-    window_opacity: 100
+    window_opacity: 100,
+    show_dump_notifications: false
 };

@@ -32,6 +32,7 @@ import * as mcpManager from './mcp-manager';
 import { CompletedInfo } from '@/types/Updater';
 import { createMenu } from './main-menu';
 import { createScreenWindow } from './window/screen';
+import * as notificationWindow from './window/notification';
 import { format } from 'url';
 
 const isDev: boolean = process.env.NODE_ENV === 'development';
@@ -171,6 +172,10 @@ function createWindow(): BrowserWindow {
 
 ipcMain.on('dump', (event: Electron.IpcMainEvent, arg): void => {
     event.sender.send(arg.type, arg);
+
+    if (isMac && arg.type === 'dump' && settings.getSettings().show_dump_notifications) {
+        notificationWindow.push(arg);
+    }
 });
 
 ipcMain.on('dump_group', (event: Electron.IpcMainEvent, arg): void => {
@@ -319,6 +324,7 @@ app.whenReady().then(async (): Promise<void> => {
     await xdebug.init(mainWindow);
     await settings.init();
     await customWindow.init();
+    await notificationWindow.init(mainWindow);
     await electronAutoLaunch.init();
     await electronStore.init();
     await ssh.init();

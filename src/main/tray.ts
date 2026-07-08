@@ -4,6 +4,8 @@ import path from 'path';
 let tray: Electron.Tray;
 const isMac: boolean = process.platform === 'darwin';
 
+export const getTrayBounds = (): Electron.Rectangle | undefined => tray?.getBounds();
+
 export const init = async (window: BrowserWindow) => {
     if (isMac) {
         const iconPath: string = path.join(app.getAppPath(), 'src/img/icon@2x.png');
