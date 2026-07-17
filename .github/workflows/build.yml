@@ -22,7 +22,7 @@ jobs:
                   token: ${{ secrets.GH_TOKEN }}
 
             - name: Install Node.js and npm
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v7
               with:
                   node-version: '22.x'
 
@@ -54,7 +54,7 @@ jobs:
                   ref: v${{ needs.prepare.outputs.version }}
 
             - name: Install Node.js and npm
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v7
               with:
                   node-version: '22.x'
 
@@ -83,7 +83,7 @@ jobs:
                   ref: v${{ needs.prepare.outputs.version }}
 
             - name: Install Node.js and npm
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v7
               with:
                   node-version: '22.x'
 
@@ -112,7 +112,7 @@ jobs:
                   ref: v${{ needs.prepare.outputs.version }}
 
             - name: Install Node.js and npm
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v7
               with:
                   node-version: '22.x'
 
