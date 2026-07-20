@@ -170,6 +170,11 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on('dump', (event: Electron.IpcMainEvent, arg): void => {
+    if (!arg || typeof arg.type !== 'string' || arg.type.length === 0) {
+        console.warn('Ignoring dump with missing or invalid "type":', arg);
+        return;
+    }
+
     event.sender.send(arg.type, arg);
 });
 
