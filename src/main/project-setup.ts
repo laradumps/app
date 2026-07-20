@@ -1,13 +1,51 @@
 import { BrowserWindow, dialog, IpcMainEvent, Notification } from 'electron';
 import path from 'path';
+import os from 'os';
 import fs from 'fs';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import isWsl from 'is-wsl';
 import { Logger } from './logger/logger';
 import { IpcLogDriver } from './logger/ipc-log-driver';
 import { ConsoleLogDriver } from './logger/console-log-driver';
 
 const isWindows = process.platform === 'win32';
+
+let cachedShellPath: string | null = null;
+
+const getLoginShellPath = (): string => {
+    if (cachedShellPath !== null) return cachedShellPath;
+    cachedShellPath = '';
+
+    if (isWindows) return cachedShellPath;
+
+    try {
+        const shell = process.env.SHELL || '/bin/zsh';
+        const out = execSync(`${shell} -ilc 'printf "__LD_PATH__%s__LD_PATH__" "$PATH"'`, {
+            encoding: 'utf8',
+            timeout: 5000,
+            stdio: ['ignore', 'pipe', 'ignore']
+        });
+        const match = out.match(/__LD_PATH__([\s\S]*?)__LD_PATH__/);
+        cachedShellPath = (match ? match[1] : '').trim();
+    } catch (_e) {
+        cachedShellPath = '';
+    }
+
+    return cachedShellPath;
+};
+
+const getCommonShimDirs = (): string[] => {
+    if (isWindows) return [];
+    const home = os.homedir();
+    return [
+        path.join(home, '.proto', 'shims'),
+        path.join(home, '.proto', 'bin'),
+        path.join(home, '.asdf', 'shims'),
+        path.join(home, '.local', 'share', 'mise', 'shims'),
+        path.join(home, '.config', 'herd-lite', 'bin'),
+        path.join(home, 'Library', 'Application Support', 'Herd', 'bin')
+    ].filter((dir) => fs.existsSync(dir));
+};
 
 const CHANNELS = {
     COMPOSER_AUTO_INSTALL: 'composer-auto-install',
@@ -24,17 +62,29 @@ const notifyOnce = (title: string, body: string) => {
     setTimeout(() => (notifyLock = false), 1000);
 };
 
-// Run a command and return stdout as string (throws on non-zero exit)
 const runCommand = (command: string, cwd: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         const isDarwin = process.platform === 'darwin';
         const isLinux = process.platform === 'linux';
-        const extraPaths = isDarwin
+        const staticPaths = isDarwin
             ? '/opt/homebrew/bin:/usr/local/bin:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
             : isLinux
               ? '/usr/local/bin:/usr/bin:/bin'
               : '';
-        const PATH = extraPaths ? `${extraPaths}:${process.env.PATH ?? ''}` : process.env.PATH;
+
+        const segments = [
+            getLoginShellPath(),
+            getCommonShimDirs().join(path.delimiter),
+            staticPaths,
+            process.env.PATH ?? ''
+        ]
+            .filter(Boolean)
+            .join(path.delimiter)
+            .split(path.delimiter)
+            .filter(Boolean);
+
+        const seen = new Set<string>();
+        const PATH = segments.filter((dir) => (seen.has(dir) ? false : (seen.add(dir), true))).join(path.delimiter);
 
         exec(command, { cwd, env: { ...process.env, PATH } }, (error, stdout, stderr) => {
             if (error) {
@@ -52,14 +102,11 @@ const isWSL = (): boolean => {
     return isWsl;
 };
 
-// Check whether the current project uses DDEV and the web service is running
 const isDdevRunning = async (projectPath: string): Promise<boolean> => {
     const ddevDir = path.join(projectPath, '.ddev');
     if (!fs.existsSync(ddevDir)) return false;
     try {
-        // Ensure ddev command is available
         await runCommand(`ddev --version`, projectPath);
-        // Query status via JSON
         const desc = await runCommand(`ddev describe -j`, projectPath);
         const data = JSON.parse(desc);
         const raw = (data && data.raw) || undefined;
@@ -70,24 +117,38 @@ const isDdevRunning = async (projectPath: string): Promise<boolean> => {
     }
 };
 
+const isLaraDumpsAlreadyInstalled = (projectPath: string): boolean => {
+    try {
+        const composerJson = JSON.parse(fs.readFileSync(path.join(projectPath, 'composer.json'), 'utf8'));
+        const deps = { ...(composerJson.require || {}), ...(composerJson['require-dev'] || {}) };
+        const declared = 'laradumps/laradumps-core' in deps || 'laradumps/laradumps' in deps;
+        if (!declared) return false;
+
+        return (
+            fs.existsSync(path.join(projectPath, 'vendor', 'laradumps', 'laradumps-core')) ||
+            fs.existsSync(path.join(projectPath, 'vendor', 'laradumps', 'laradumps'))
+        );
+    } catch (_e) {
+        return false;
+    }
+};
+
 const getComposerCandidates = async (projectPath: string): Promise<string[]> => {
     const candidates: string[] = [];
 
-    // 0) If DDEV is running, prefer running composer inside DDEV first
     if (await isDdevRunning(projectPath)) {
         candidates.push('ddev composer');
     }
 
-    // 1) Prefer local composer.phar executed via PHP
     const composerPhar = path.join(projectPath, 'composer.phar');
     if (fs.existsSync(composerPhar)) {
         candidates.push(`php "${composerPhar}"`);
     }
 
     if (isWindows && !isWSL()) {
-        candidates.push('composer.bat'); // Windows
+        candidates.push('composer.bat');
     } else {
-        candidates.push('composer'); // Linux/macOS/WSL
+        candidates.push('composer');
     }
 
     return candidates;
@@ -99,7 +160,6 @@ const installLaraDumps = async (projectPath: string, logger: Logger) => {
 
     if (fs.existsSync(artisanPath)) {
         try {
-            // 1) Try with DDEV (if .ddev exists and ddev is running)
             logger.info(`Checking if DDEV is running...`);
             if (await isDdevRunning(projectPath)) {
                 logger.info(`DDEV is running. Retrying with DDEV...`);
@@ -114,7 +174,6 @@ const installLaraDumps = async (projectPath: string, logger: Logger) => {
             logger.warn(`DDEV failed. Retrying with Sail/PHP...`, msg);
         }
 
-        // 2) Try with Sail (if artisan and sail are present)
         const sailPath = path.join(projectPath, 'vendor', 'bin', isWindows ? 'sail.bat' : 'sail');
         logger.info(`Checking if Laravel Sail is present...`);
         if (fs.existsSync(sailPath)) {
@@ -133,7 +192,6 @@ const installLaraDumps = async (projectPath: string, logger: Logger) => {
             }
         }
 
-        // 3) Try with PHP artisan
         try {
             console.log(`Using PHP to run artisan commands.`, artisanPath);
             logger.info(`Using PHP to run artisan commands: php artisan ds:init "${projectPath}"`);
@@ -148,7 +206,6 @@ const installLaraDumps = async (projectPath: string, logger: Logger) => {
         }
     }
 
-    // 4) Try with LaraDumps binary
     const bin = isWindows
         ? path.join(projectPath, 'vendor', 'bin', 'laradumps.bat')
         : path.join(projectPath, 'vendor', 'bin', 'laradumps');
@@ -182,7 +239,6 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
 
     try {
         const composerJsonPath = path.join(selectedDir, 'composer.json');
-        // Start signal
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { status: 'start', path: selectedDir });
         logger.info(`Installing LaraDumps: ${selectedDir}`);
 
@@ -196,9 +252,10 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
 
         const artisanPath = path.join(selectedDir, 'artisan');
 
-        // Step: composer requires start
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'composer-require', running: true });
-        {
+        if (isLaraDumpsAlreadyInstalled(selectedDir)) {
+            logger.info('LaraDumps is already installed in this project. Skipping composer require.');
+        } else {
             const errors: string[] = [];
             const candidates = await getComposerCandidates(selectedDir);
             const requireCmd = fs.existsSync(artisanPath)
@@ -235,11 +292,8 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
             }
         }
 
-        // Step: composer requires to be done
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'composer-require', done: true });
-        logger.info(`Composer require successful.`);
 
-        // Step: remove laradumps.yaml
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'remove-config', running: true });
         {
             const configPath = path.join(selectedDir, 'laradumps.yaml');
@@ -254,26 +308,20 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
             }
         }
 
-        // Step: remove laradumps.yaml done
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'remove-config', done: true });
 
-        // Step: ds:init start
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'ds-init', running: true });
         logger.info(`Running ds:init command: artisan ds:init ${selectedDir}`);
         if (fs.existsSync(artisanPath)) {
             await installLaraDumps(selectedDir, logger);
-            logger.info(`ds:init command completed successfully.`);
         } else {
             console.log('artisan not found. Running LaraDumps binary initialization.');
             await installLaraDumps(selectedDir, logger);
-            logger.info(`LaraDumps binary initialization successful.`);
         }
 
-        // Step: ds:init done
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'ds-init', done: true });
         logger.info(`ds:init command completed successfully.`);
 
-        // Finish
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, {
             step: 'finish',
             done: true,
@@ -283,7 +331,6 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
         });
         notifyOnce('LaraDumps', 'LaraDumps installed successfully.');
 
-        // Notify that the project directory is ready/selected post install
         mainWindow.webContents.send(CHANNELS.PROJECT_DIRECTORY_SELECTED, selectedDir);
     } catch (error) {
         console.log(error);
