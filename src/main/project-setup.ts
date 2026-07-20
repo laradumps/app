@@ -255,7 +255,6 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'composer-require', running: true });
         if (isLaraDumpsAlreadyInstalled(selectedDir)) {
             logger.info('LaraDumps is already installed in this project. Skipping composer require.');
-            mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'composer-require', done: true });
         } else {
             const errors: string[] = [];
             const candidates = await getComposerCandidates(selectedDir);
@@ -294,7 +293,6 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
         }
 
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'composer-require', done: true });
-        logger.info(`Composer require successful.`);
 
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'remove-config', running: true });
         {
@@ -316,11 +314,9 @@ const composerAutoInstall = async (mainWindow: BrowserWindow, selectedDir: strin
         logger.info(`Running ds:init command: artisan ds:init ${selectedDir}`);
         if (fs.existsSync(artisanPath)) {
             await installLaraDumps(selectedDir, logger);
-            logger.info(`ds:init command completed successfully.`);
         } else {
             console.log('artisan not found. Running LaraDumps binary initialization.');
             await installLaraDumps(selectedDir, logger);
-            logger.info(`LaraDumps binary initialization successful.`);
         }
 
         mainWindow.webContents.send(CHANNELS.COMPOSER_AUTO_INSTALL, { step: 'ds-init', done: true });
