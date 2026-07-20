@@ -22,13 +22,12 @@ import { useMailStore } from '@/store/mail';
 import MailView from '@/components/laravel/MailView.vue';
 import { useLogStore } from '@/store/logs';
 import LogView from '@/components/laravel/LogView.vue';
+import CacheGateView from '@/components/laravel/CacheGateView.vue';
 import { useQueriesPayloadStore } from '@/store/queries';
 import { useBrainStore } from '@/store/brains';
 import { useLivewireStore } from '@/store/livewire';
 import { useQueriesBlockedStore } from '@/store/queries-blocked';
-import { useQueryDuplicated } from '@/store/query-duplicated';
 import { usePauseQueriesStore } from '@/store/pause-queries';
-import { useFormattedQueriesStore } from '@/store/formatted-queries';
 import QueriesView from '@/components/laravel/QueriesView.vue';
 import { deepClone } from '@/lib/deep_clone';
 import { useSavedDumpsStore } from '@/store/saved-dumps';
@@ -40,7 +39,6 @@ import { Environment } from '../../main/storage';
 import { usePauseJobsStore } from '@/store/pause-jobs';
 import { usePauseLogsStore } from '@/store/pause-logs';
 import dayjs from 'dayjs';
-import HeaderColorsFilter from '@/components/app/HeaderColorsFilter.vue';
 import DropZones from '@/components/split/DropZones.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
 import { useSplitPanesStore } from '@/store/split-panes';
@@ -994,9 +992,23 @@ const handleDragEnd = () => {
             class="mt-3 h-[calc(100vh-50px)] w-screen text-base"
         >
             <ScreenWindow
-                v-if="!['jobs', 'mail', 'logs', 'queries', 'brain'].includes(inScreenWindow)"
+                v-if="!['jobs', 'mail', 'logs', 'queries', 'brain', 'cache', 'gate'].includes(inScreenWindow)"
                 v-model:dumps="payloadScreen"
                 v-model:screen="inScreenWindow"
+            />
+
+            <CacheGateView
+                v-if="inScreenWindow === 'cache'"
+                screen="cache"
+                :in-screen-window="inScreenWindow.length > 0"
+                :items="payloadScreen"
+            />
+
+            <CacheGateView
+                v-if="inScreenWindow === 'gate'"
+                screen="gate"
+                :in-screen-window="inScreenWindow.length > 0"
+                :items="payloadScreen"
             />
 
             <JobView
@@ -1072,6 +1084,14 @@ const handleDragEnd = () => {
 
                                     <div v-else-if="screenStore.screen === 'queries'">
                                         <QueriesView :yaml-config="yamlConfig" />
+                                    </div>
+
+                                    <div v-else-if="screenStore.screen === 'cache'">
+                                        <CacheGateView screen="cache" />
+                                    </div>
+
+                                    <div v-else-if="screenStore.screen === 'gate'">
+                                        <CacheGateView screen="gate" />
                                     </div>
 
                                     <div
@@ -1229,6 +1249,20 @@ const handleDragEnd = () => {
                                         />
                                     </div>
 
+                                    <div v-else-if="splitPanesStore.splitConfig.screenName === 'cache'">
+                                        <CacheGateView
+                                            screen="cache"
+                                            hide-header
+                                        />
+                                    </div>
+
+                                    <div v-else-if="splitPanesStore.splitConfig.screenName === 'gate'">
+                                        <CacheGateView
+                                            screen="gate"
+                                            hide-header
+                                        />
+                                    </div>
+
                                     <div
                                         v-else
                                         class="px-3"
@@ -1314,6 +1348,20 @@ const handleDragEnd = () => {
                                 </div>
                             </div>
 
+                            <div v-if="screenStore.screen === 'cache'">
+                                <CacheGateView
+                                    screen="cache"
+                                    class="w-screen text-base"
+                                />
+                            </div>
+
+                            <div v-if="screenStore.screen === 'gate'">
+                                <CacheGateView
+                                    screen="gate"
+                                    class="w-screen text-base"
+                                />
+                            </div>
+
                             <div v-if="screenStore.screen === 'jobs'">
                                 <JobView
                                     class="w-screen text-base"
@@ -1352,7 +1400,7 @@ const handleDragEnd = () => {
                             </div>
 
                             <div
-                                v-else
+                                v-else-if="!['cache', 'gate'].includes(screenStore.screen)"
                                 :class="{
                                     'items-center': payloadStore.payload.length === 0,
                                     'h-[calc(100vh-90px)]': true
