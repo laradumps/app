@@ -32,6 +32,10 @@ const saveTheme = async () => {
     await save();
 };
 
+const editCustomTheme = () => {
+    customThemeModal.value?.open();
+};
+
 const onBadgeCountChange = () => {
     if (!settingsStore.settings.show_badge_count) {
         window.ipcRenderer.send('badge-icon.increment', { reset: true });
@@ -61,8 +65,9 @@ const saveWindowOpacity = async () => {
 <template>
     <div>
         <SettingsRow :label="$t('settings.theme')">
-            <div class="w-52">
+            <div class="flex items-center gap-2 w-52">
                 <SelectInput
+                    class="flex-1"
                     v-model="settingsStore.settings.theme"
                     @change="saveTheme()"
                 >
@@ -73,6 +78,14 @@ const saveWindowOpacity = async () => {
                         {{ value }}
                     </option>
                 </SelectInput>
+                <button
+                    v-if="settingsStore.settings.theme === 'custom'"
+                    type="button"
+                    class="btn btn-sm"
+                    @click="editCustomTheme()"
+                >
+                    {{ $t('settings.edit') }}
+                </button>
             </div>
         </SettingsRow>
 

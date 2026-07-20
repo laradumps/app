@@ -21,11 +21,15 @@ const openThemeGenerator = () => {
 };
 
 const saveCustomTheme = async () => {
-    settingsStore.settings.custom_css = customCss.value.replace(/@plugin.*?{([\s\S]*?)}/g, `[data-theme="custom"] { $1 }`);
+    settingsStore.settings.custom_css = customCss.value.replace(
+        /@plugin.*?{([\s\S]*?)}/g,
+        `[data-theme="custom"] { $1 }`
+    );
     settingsStore.settings.theme = 'custom';
 
     await save();
-    window.ipcRenderer.send('reload');
+
+    dialog.value?.close();
 };
 
 defineExpose({ open });
