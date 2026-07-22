@@ -28,6 +28,7 @@ import * as electronAutoLaunch from './auto-launch';
 import * as settings from './settings';
 import * as xdebug from './xdebug';
 import * as mcpManager from './mcp-manager';
+import * as logTailer from './log-tailer';
 
 import { CompletedInfo } from '@/types/Updater';
 import { createMenu } from './main-menu';
@@ -323,6 +324,7 @@ app.whenReady().then(async (): Promise<void> => {
 
     await xdebug.init(mainWindow);
     await settings.init();
+    await logTailer.init(mainWindow);
     await customWindow.init();
     await electronAutoLaunch.init();
     await electronStore.init();
