@@ -147,15 +147,6 @@ const saveWindowOpacity = async () => {
             />
         </SettingsRow>
 
-        <SettingsRow :label="$t('settings.show_dump_notifications')">
-            <input
-                type="checkbox"
-                class="toggle toggle-sm toggle-accent"
-                v-model="settingsStore.settings.show_dump_notifications"
-                @change="save()"
-            />
-        </SettingsRow>
-
         <SettingsRow :label="$t('settings.show_pause_button')">
             <input
                 type="checkbox"
