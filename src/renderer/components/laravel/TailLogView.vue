@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 import {
     FunnelIcon,
-    TrashIcon,
     ClipboardDocumentIcon,
     CheckIcon,
     FolderOpenIcon,
@@ -13,7 +12,8 @@ import {
     DocumentMinusIcon,
     ChevronDownIcon,
     DocumentTextIcon,
-    ArrowPathIcon
+    ArrowPathIcon,
+    ArrowTopRightOnSquareIcon
 } from '@heroicons/vue/24/outline';
 
 import { Log } from '@/store/logs';
@@ -23,18 +23,16 @@ import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useTailLogStore, DiscoveredLogFile } from '@/store/tail-logs';
 import { useCurrentProject } from '@/store/current-project';
+import DumpLink from '@/components/dumps/DumpLink.vue';
 import { generateLink } from '@/utils/ideHandler';
 import { copyLogToMarkdown } from '@/utils/logToMarkdown';
-import { useSettingsStore } from '@/store/settings';
 
 const tailLogStore = useTailLogStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
-const settingsStore = useSettingsStore();
 const currentProjectStore = useCurrentProject();
 
 const expandedLogId = ref<string | null>(null);
-const collapsedLogGroups = ref<Record<string, boolean>>({});
 const levelFilter = ref<string[]>([]);
 const copiedLogId = ref<string | null>(null);
 
@@ -48,8 +46,6 @@ const fileName = computed(() => {
     if (!path) return '';
     return path.split(/[\\/]/).pop() || path;
 });
-
-const totalLogs = computed(() => Object.values(tailLogStore.entries).length);
 
 const levelCounts = computed(() => {
     return Object.values(tailLogStore.entries).reduce(
@@ -87,22 +83,6 @@ const logs = computed(() => {
         });
 });
 
-watch(
-    logs,
-    (newLogs, oldLogs) => {
-        if (newLogs.length > 0) {
-            const newestLogId = newLogs[0].log_id;
-            const shouldDisplayLast = settingsStore.settings?.display_last_log ?? true;
-            if (shouldDisplayLast) {
-                if (!oldLogs || oldLogs.length === 0 || newestLogId !== oldLogs[0].log_id) {
-                    expandedLogId.value = newestLogId;
-                }
-            }
-        }
-    },
-    { immediate: true }
-);
-
 const selectedLevel = (level: string) => {
     const index = levelFilter.value.indexOf(level);
     if (index > -1) {
@@ -123,10 +103,6 @@ const groupedLogsByRelativeTime = computed(() => {
     }
     return groups;
 });
-
-const toggleLogGroup = (timeKey: string) => {
-    collapsedLogGroups.value[timeKey] = !collapsedLogGroups.value[timeKey];
-};
 
 const toggleLogExpand = (logId: string) => {
     expandedLogId.value = expandedLogId.value === logId ? null : logId;
@@ -190,11 +166,6 @@ const pickFile = () => {
     (document.activeElement as HTMLElement)?.blur();
 };
 
-const clear = () => {
-    expandedLogId.value = null;
-    tailLogStore.clear();
-};
-
 const clearFile = () => {
     window.ipcRenderer.send('tail-log:clear-file');
 };
@@ -202,58 +173,36 @@ const clearFile = () => {
 onMounted(() => {
     window.addEventListener('keydown', handleKeyDown);
     refreshFiles();
-    nextTick(() => {
-        if (logs.value.length > 0 && (settingsStore.settings?.display_last_log ?? true)) {
-            expandedLogId.value = logs.value[0].log_id;
-        }
-    });
 });
 
 onUnmounted(() => {
     window.removeEventListener('keydown', handleKeyDown);
 });
 
-const getBorderColor = (level: string) => {
-    const colors: Record<string, string> = {
-        error: 'border-error',
-        critical: 'border-error',
-        alert: 'border-error',
-        emergency: 'border-error',
-        warning: 'border-warning',
-        notice: 'border-success',
-        info: 'border-info',
-        debug: 'border-base-content/40'
-    };
-    return colors[level] || 'border-primary';
+type LevelColor = 'success' | 'warning' | 'info' | 'error' | 'neutral';
+
+const colorClasses: Record<LevelColor, { badge: string; dot: string }> = {
+    success: { badge: 'text-success bg-success/10', dot: 'bg-success' },
+    warning: { badge: 'text-warning bg-warning/10', dot: 'bg-warning' },
+    info: { badge: 'text-info bg-info/10', dot: 'bg-info' },
+    error: { badge: 'text-error bg-error/10', dot: 'bg-error' },
+    neutral: { badge: 'text-base-content/80 bg-base-content/10', dot: 'bg-base-content/40' }
 };
 
-const getBgColor = (level: string) => {
-    const colors: Record<string, string> = {
-        error: 'bg-error/10',
-        critical: 'bg-error/10',
-        alert: 'bg-error/10',
-        emergency: 'bg-error/10',
-        warning: 'bg-warning/10',
-        notice: 'bg-success/10',
-        info: 'bg-info/10',
-        debug: 'bg-base-content/5'
-    };
-    return colors[level] || '';
+const levelColorMap: Record<string, LevelColor> = {
+    error: 'error',
+    critical: 'error',
+    alert: 'error',
+    emergency: 'error',
+    warning: 'warning',
+    notice: 'success',
+    info: 'info',
+    debug: 'neutral'
 };
 
-const getDotColor = (level: string) => {
-    const colors: Record<string, string> = {
-        error: 'bg-error',
-        critical: 'bg-error',
-        alert: 'bg-error',
-        emergency: 'bg-error',
-        warning: 'bg-warning',
-        notice: 'bg-success',
-        info: 'bg-info',
-        debug: 'bg-base-content/40'
-    };
-    return colors[level] || 'bg-primary';
-};
+const levelClasses = (level: string) => colorClasses[levelColorMap[level] ?? 'neutral'];
+
+const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
 </script>
 
 <template>
@@ -293,9 +242,7 @@ const getDotColor = (level: string) => {
                             class="btn btn-ghost btn-circle btn-sm"
                             data-tippy-content="Filter Levels"
                         >
-                            <FunnelIcon
-                                :class="levelFilter.length === 0 ? 'w-4' : 'w-5 text-primary'"
-                            />
+                            <FunnelIcon :class="levelFilter.length === 0 ? 'w-4' : 'w-5 text-primary'" />
                         </button>
                         <div
                             tabindex="0"
@@ -358,7 +305,9 @@ const getDotColor = (level: string) => {
                             class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-80 max-h-[60vh] flex-nowrap overflow-y-auto"
                         >
                             <!-- Header -->
-                            <div class="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-base-content/10">
+                            <div
+                                class="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-base-content/10"
+                            >
                                 <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/50">
                                     Log files
                                 </span>
@@ -429,16 +378,6 @@ const getDotColor = (level: string) => {
                     >
                         <DocumentMinusIcon class="w-4" />
                     </button>
-
-                    <!-- Clear view -->
-                    <button
-                        v-if="totalLogs > 0"
-                        @click="clear()"
-                        class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                        data-tippy-content="Clear view"
-                    >
-                        <TrashIcon class="w-4" />
-                    </button>
                 </div>
             </div>
 
@@ -457,113 +396,171 @@ const getDotColor = (level: string) => {
                     class="overflow-auto"
                     style="height: -webkit-fill-available"
                 >
-                    <div class="space-y-1 p-2">
-                        <template
-                            v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
-                            :key="timeKey"
-                        >
-                            <div
-                                class="text-xs font-semibold text-center bg-base-200 py-2 transition-all duration-200"
-                                :class="{
-                                    'blur-sm opacity-40':
-                                        expandedLogId !== null &&
-                                        !logsOnTime.some((log) => log.log_id === expandedLogId)
-                                }"
+                    <table class="table table-pin-rows table-fixed w-full log-table">
+                        <thead>
+                            <tr class="text-xs bg-base-300! font-light text-base-content">
+                                <th class="w-[120px]">Level</th>
+                                <th>Message</th>
+                                <th class="w-[190px]">Origin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template
+                                v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
+                                :key="timeKey"
                             >
-                                <span
-                                    class="cursor-pointer link select-none"
-                                    @click="toggleLogGroup(timeKey)"
+                                <!-- Time Group Header -->
+                                <tr
+                                    class="bg-base-200 text-xs font-semibold"
+                                    :class="{
+                                        'blur-sm opacity-40':
+                                            expandedLogId !== null &&
+                                            !logsOnTime.some((log) => log.log_id === expandedLogId)
+                                    }"
                                 >
-                                    {{ timeKey }}
-                                    <span class="ml-1">{{ collapsedLogGroups[timeKey] ? '▼' : '▲' }}</span>
-                                </span>
-                            </div>
+                                    <td
+                                        colspan="3"
+                                        class="select-none text-base-content/60"
+                                    >
+                                        {{ timeKey }}
+                                    </td>
+                                </tr>
 
-                            <template v-if="!collapsedLogGroups[timeKey]">
-                                <div
+                                <!-- Logs -->
+                                <template
                                     v-for="log in logsOnTime"
                                     :key="`tail-log-${log.log_id}`"
-                                    :data-log-id="log.log_id"
-                                    class="rounded-md overflow-hidden border-l-4 border-b-0"
-                                    :class="[
-                                        getBorderColor(log.level),
-                                        getBgColor(log.level),
-                                        {
-                                            'blur-xs opacity-40': expandedLogId !== null && expandedLogId !== log.log_id
-                                        }
-                                    ]"
                                 >
-                                    <div
-                                        class="flex items-start gap-3 p-3 cursor-pointer hover:bg-base-100/50 transition-colors text-sm"
+                                    <!-- Log Row -->
+                                    <tr
+                                        :data-log-id="log.log_id"
                                         @click="toggleLogExpand(log.log_id)"
+                                        class="hover:bg-base-100 cursor-pointer transition-all duration-200"
+                                        :class="[
+                                            { 'bg-base-300': expandedLogId === log.log_id },
+                                            {
+                                                'blur-xs opacity-40':
+                                                    expandedLogId !== null && expandedLogId !== log.log_id
+                                            }
+                                        ]"
                                     >
-                                        <div
-                                            class="w-2 h-2 rounded-full shrink-0 mt-1.5"
-                                            :class="getDotColor(log.level)"
-                                        ></div>
-
-                                        <div class="flex-1 flex flex-col gap-1 overflow-hidden min-w-0">
-                                            <div class="line-clamp-2 overflow-hidden">{{ log.message }}</div>
-                                            <div
-                                                v-if="log.ide_handle.class_name !== 'empty'"
-                                                class="truncate"
+                                        <!-- Level badge -->
+                                        <td>
+                                            <span
+                                                class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md whitespace-nowrap uppercase"
+                                                :class="levelClasses(log.level).badge"
                                             >
+                                                <span
+                                                    class="w-1.5 h-1.5 rounded-full"
+                                                    :class="levelClasses(log.level).dot"
+                                                ></span>
+                                                {{ log.level }}
+                                            </span>
+                                        </td>
+                                        <!-- Message (single line) -->
+                                        <td class="text-xs truncate">
+                                            <span :title="log.message">{{ log.message }}</span>
+                                        </td>
+                                        <!-- Origin -->
+                                        <td class="text-xs truncate">
+                                            <DumpLink
+                                                v-if="showOrigin(log)"
+                                                :ide-handler="log.ide_handle"
+                                                truncate
+                                                class="opacity-70 hover:opacity-100"
+                                            />
+                                            <span
+                                                v-else
+                                                class="opacity-40"
+                                                >—</span
+                                            >
+                                        </td>
+                                    </tr>
+
+                                    <!-- Expanded Content -->
+                                    <tr
+                                        v-if="expandedLogId === log.log_id"
+                                        class="bg-base-200/60"
+                                    >
+                                        <td colspan="3">
+                                            <!-- Full message + timestamp -->
+                                            <div class="mb-3">
+                                                <div
+                                                    class="text-[10px] uppercase tracking-widest text-base-content/50 mb-1"
+                                                >
+                                                    Message
+                                                </div>
+                                                <div
+                                                    class="text-xs bg-base-100 border border-base-content/10 rounded-lg p-2.5 leading-relaxed font-mono break-words whitespace-pre-wrap"
+                                                >
+                                                    {{ log.message }}
+                                                </div>
+                                                <div class="text-[10px] text-base-content/50 mt-1.5 font-mono">
+                                                    {{ dayjs(log.created_at).format('YYYY-MM-DD HH:mm:ss') }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Origin (full) -->
+                                            <div
+                                                v-if="showOrigin(log)"
+                                                class="mb-3"
+                                            >
+                                                <div
+                                                    class="text-[10px] uppercase tracking-widest text-base-content/50 mb-1"
+                                                >
+                                                    Origin
+                                                </div>
                                                 <a
                                                     :href="generateLink(log.ide_handle)"
-                                                    v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
-                                                    class="text-xs link opacity-60 inline-block"
+                                                    class="inline-flex items-start gap-1.5 text-xs link link-hover text-base-content/80 font-mono break-all"
                                                     @click.stop
-                                                />
+                                                >
+                                                    <ArrowTopRightOnSquareIcon class="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                                                    <span
+                                                        >{{ log.ide_handle.class_name }}:{{ log.ide_handle.line }}</span
+                                                    >
+                                                </a>
                                             </div>
-                                        </div>
 
-                                        <span class="text-[10px] uppercase font-bold opacity-40 shrink-0 mt-1">{{
-                                            log.level
-                                        }}</span>
-                                    </div>
-
-                                    <div
-                                        v-if="expandedLogId === log.log_id"
-                                        class="px-4 py-2"
-                                    >
-                                        <div
-                                            v-if="canCopyToMarkdown(log)"
-                                            class="flex justify-end mb-2"
-                                        >
-                                            <button
-                                                @click.stop="copyToMarkdown(log)"
-                                                class="btn btn-sm btn-soft gap-2"
-                                                data-tippy-content="Copy to Markdown"
+                                            <div
+                                                v-if="canCopyToMarkdown(log)"
+                                                class="flex justify-end mb-2"
                                             >
-                                                <CheckIcon
-                                                    v-if="copiedLogId === log.log_id"
-                                                    class="w-4 text-success"
-                                                />
-                                                <ClipboardDocumentIcon
-                                                    v-else
-                                                    class="w-4"
-                                                />
-                                                Copy to Markdown
-                                            </button>
-                                        </div>
-
-                                        <div v-if="log.code_snippet && log.code_snippet.length > 0">
-                                            <CodeSnippet
-                                                :code_snippet="log.code_snippet"
-                                                :ide_handle="log.ide_handle"
-                                            />
-                                        </div>
-
-                                        <div v-else-if="log.context && log.context.length > 0">
-                                            <div class="px-1">
-                                                <div v-html="log.context[0]"></div>
+                                                <button
+                                                    @click.stop="copyToMarkdown(log)"
+                                                    class="btn btn-sm btn-soft gap-2"
+                                                    data-tippy-content="Copy to Markdown"
+                                                >
+                                                    <CheckIcon
+                                                        v-if="copiedLogId === log.log_id"
+                                                        class="w-4 text-success"
+                                                    />
+                                                    <ClipboardDocumentIcon
+                                                        v-else
+                                                        class="w-4"
+                                                    />
+                                                    Copy to Markdown
+                                                </button>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
+
+                                            <div v-if="log.code_snippet && log.code_snippet.length > 0">
+                                                <CodeSnippet
+                                                    :code_snippet="log.code_snippet"
+                                                    :ide_handle="log.ide_handle"
+                                                />
+                                            </div>
+
+                                            <div v-else-if="log.context && log.context.length > 0">
+                                                <div class="px-1">
+                                                    <div v-html="log.context[0]"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
                             </template>
-                        </template>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
 
                 <div
@@ -580,3 +577,15 @@ const getDotColor = (level: string) => {
         </div>
     </div>
 </template>
+
+<style scoped>
+@reference "./../../styles.css";
+
+:deep(.log-table > thead) :where(th, td) {
+    @apply p-2;
+}
+
+:deep(.log-table > tbody > tr > :where(th, td)) {
+    @apply p-1.5 px-2;
+}
+</style>
