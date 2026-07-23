@@ -23,7 +23,7 @@
     "dependencies": {
         "@heroicons/vue": "^2.2.0",
         "@highlightjs/vue-plugin": "^2.1.0",
-        "@modelcontextprotocol/sdk": "^1.29.0",
+        "@modelcontextprotocol/sdk": "^1.24.3",
         "@tailwindcss/postcss": "^4.3.0",
         "@tailwindcss/typography": "^0.5.20",
         "@tailwindcss/vite": "^4.3.3",
@@ -67,7 +67,7 @@
         "@typescript-eslint/eslint-plugin": "^8.62.0",
         "@typescript-eslint/parser": "^8.64.0",
         "@vitejs/plugin-vue": "6.0.7",
-        "concurrently": "^10.0.3",
+        "concurrently": "^9.2.4",
         "daisyui": "^5.5.23",
         "electron": "^41.2.0",
         "electron-builder": "26.8.1",
