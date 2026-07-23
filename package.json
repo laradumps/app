@@ -23,7 +23,7 @@
     "dependencies": {
         "@heroicons/vue": "^2.2.0",
         "@highlightjs/vue-plugin": "^2.1.0",
-        "@modelcontextprotocol/sdk": "^1.24.3",
+        "@modelcontextprotocol/sdk": "^1.26.0",
         "@tailwindcss/postcss": "^4.3.0",
         "@tailwindcss/typography": "^0.5.20",
         "@tailwindcss/vite": "^4.3.3",
