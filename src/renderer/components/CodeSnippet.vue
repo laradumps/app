@@ -46,13 +46,7 @@ const visibleFrames = computed(() => {
         return list.map((s, i) => ({ codeSnippet: s, index: i }));
     }
 
-    if (activeFileIndex.value === -1) {
-        return list.slice(0, 5).map((s, i) => ({ codeSnippet: s, index: i }));
-    }
-
-    const start = activeFileIndex.value;
-    const end = start + 5;
-    return list.slice(start, end + 1).map((s, i) => ({ codeSnippet: s, index: start + i }));
+    return list.slice(0, 5).map((s, i) => ({ codeSnippet: s, index: i }));
 });
 
 const navigateToNextFile = () => {

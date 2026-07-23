@@ -10,7 +10,8 @@ import {
     ClipboardDocumentIcon,
     CheckIcon,
     CogIcon,
-    ChevronDownIcon
+    ChevronDownIcon,
+    ArrowTopRightOnSquareIcon
 } from '@heroicons/vue/24/outline';
 
 import { Log, useLogStore } from '@/store/logs';
@@ -21,6 +22,7 @@ import { useGlobalSearchStore } from '@/store/global-search';
 import IconPause from '@/components/Icons/IconPause.vue';
 import { usePauseLogsStore } from '@/store/pause-logs';
 import DumpQuery from '@/components/laravel/DumpQuery.vue';
+import DumpLink from '@/components/dumps/DumpLink.vue';
 import { generateLink } from '@/utils/ideHandler';
 import { copyLogToMarkdown } from '@/utils/logToMarkdown';
 import { useSettingsStore } from '@/store/settings';
@@ -35,7 +37,6 @@ const currentProjectStore = useCurrentProject();
 
 const forceUpdate = ref(0);
 const expandedLogId = ref<string | null>(null);
-const collapsedLogGroups = ref<Record<string, boolean>>({});
 const levelFilter = ref<string[]>([]);
 const copiedLogId = ref<string | null>(null);
 const expandedRequestLogIds = ref<Set<string>>(new Set());
@@ -205,10 +206,6 @@ const groupedLogsByRelativeTime = computed(() => {
     return groups;
 });
 
-const toggleLogGroup = (timeKey: string) => {
-    collapsedLogGroups.value[timeKey] = !collapsedLogGroups.value[timeKey];
-};
-
 const toggleLogExpand = (logId: string) => {
     if (expandedLogId.value === logId) {
         expandedLogId.value = null;
@@ -257,46 +254,32 @@ const clear = () => {
     logStore.clear();
 };
 
-const getBorderColor = (level: string) => {
-    const colors: Record<string, string> = {
-        error: 'border-error',
-        critical: 'border-error',
-        alert: 'border-error',
-        emergency: 'border-error',
-        warning: 'border-warning',
-        notice: 'border-success',
-        info: 'border-info',
-        debug: 'border-base-content/40'
-    };
-    return colors[level] || 'border-primary';
+type LevelColor = 'success' | 'warning' | 'info' | 'error' | 'neutral';
+
+const colorClasses: Record<LevelColor, { badge: string; dot: string }> = {
+    success: { badge: 'text-success bg-success/10', dot: 'bg-success' },
+    warning: { badge: 'text-warning bg-warning/10', dot: 'bg-warning' },
+    info: { badge: 'text-info bg-info/10', dot: 'bg-info' },
+    error: { badge: 'text-error bg-error/10', dot: 'bg-error' },
+    neutral: { badge: 'text-base-content/80 bg-base-content/10', dot: 'bg-base-content/40' }
 };
 
-const getBgColor = (level: string) => {
-    const colors: Record<string, string> = {
-        error: 'bg-error/10',
-        critical: 'bg-error/10',
-        alert: 'bg-error/10',
-        emergency: 'bg-error/10',
-        warning: 'bg-warning/10',
-        notice: 'bg-success/10',
-        info: 'bg-info/10',
-        debug: 'bg-base-content/5'
-    };
-    return colors[level] || '';
+const levelColorMap: Record<string, LevelColor> = {
+    error: 'error',
+    critical: 'error',
+    alert: 'error',
+    emergency: 'error',
+    warning: 'warning',
+    notice: 'success',
+    info: 'info',
+    debug: 'neutral'
 };
 
-const getDotColor = (level: string) => {
-    const colors: Record<string, string> = {
-        error: 'bg-error',
-        critical: 'bg-error',
-        alert: 'bg-error',
-        emergency: 'bg-error',
-        warning: 'bg-warning',
-        notice: 'bg-success',
-        info: 'bg-info',
-        debug: 'bg-base-content/40'
-    };
-    return colors[level] || 'bg-primary';
+const levelClasses = (level: string) => colorClasses[levelColorMap[level] ?? 'neutral'];
+
+const showOrigin = (log: Log) => {
+    const { class_name, line } = log.ide_handle;
+    return class_name !== 'empty' && !(class_name === 'unknown' && String(line) === '0');
 };
 
 const canCopyToMarkdown = computed(() => {
@@ -521,245 +504,299 @@ const displayLastLog = computed<boolean>({
                     class="overflow-auto"
                     style="height: -webkit-fill-available"
                 >
-                    <!-- Body -->
-                    <div class="space-y-1 p-2">
-                        <template
-                            v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
-                            :key="timeKey"
-                        >
-                            <!-- Time Group Header -->
-                            <div
-                                class="text-xs font-semibold text-center bg-base-200 py-2 transition-all duration-200"
-                                :class="{
-                                    'blur-sm opacity-40':
-                                        expandedLogId !== null &&
-                                        !logsOnTime.some((log) => log.log_id === expandedLogId)
-                                }"
+                    <table class="table table-pin-rows table-fixed w-full log-table">
+                        <thead>
+                            <tr class="text-xs bg-base-300! font-light text-base-content">
+                                <th class="w-[120px]">Level</th>
+                                <th>Message</th>
+                                <th class="w-[190px]">Origin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template
+                                v-for="(logsOnTime, timeKey) in groupedLogsByRelativeTime"
+                                :key="timeKey"
                             >
-                                <span
-                                    class="cursor-pointer link select-none"
-                                    @click="toggleLogGroup(timeKey)"
+                                <!-- Time Group Header -->
+                                <tr
+                                    class="bg-base-200 text-xs font-semibold"
+                                    :class="{
+                                        'blur-sm opacity-40':
+                                            expandedLogId !== null &&
+                                            !logsOnTime.some((log) => log.log_id === expandedLogId)
+                                    }"
                                 >
-                                    {{ timeKey }}
-                                    <span class="ml-1">{{ collapsedLogGroups[timeKey] ? '▼' : '▲' }}</span>
-                                </span>
-                            </div>
+                                    <td
+                                        colspan="3"
+                                        class="select-none text-base-content/60"
+                                    >
+                                        {{ timeKey }}
+                                    </td>
+                                </tr>
 
-                            <!-- Logs -->
-                            <template v-if="!collapsedLogGroups[timeKey]">
-                                <div
-                                    v-for="(log, index) in logsOnTime"
+                                <!-- Logs -->
+                                <template
+                                    v-for="log in logsOnTime"
                                     :key="`log-group-${log.log_id}`"
-                                    :data-log-id="log.log_id"
-                                    class="rounded-md overflow-hidden border-l-4 border-b-0"
-                                    :class="[
-                                        getBorderColor(log.level),
-                                        getBgColor(log.level),
-                                        {
-                                            'blur-xs opacity-40': expandedLogId !== null && expandedLogId !== log.log_id
-                                        }
-                                    ]"
                                 >
                                     <!-- Log Row -->
-                                    <div
-                                        class="flex items-start gap-3 p-3 cursor-pointer hover:bg-base-100/50 transition-colors text-sm"
+                                    <tr
+                                        :data-log-id="log.log_id"
                                         @click="toggleLogExpand(log.log_id)"
+                                        class="hover:bg-base-100 cursor-pointer transition-all duration-200"
+                                        :class="[
+                                            { 'bg-base-300': expandedLogId === log.log_id },
+                                            {
+                                                'blur-xs opacity-40':
+                                                    expandedLogId !== null && expandedLogId !== log.log_id
+                                            }
+                                        ]"
                                     >
-                                        <!-- Dot -->
-                                        <div
-                                            class="w-2 h-2 rounded-full shrink-0 mt-1.5"
-                                            :class="getDotColor(log.level)"
-                                        ></div>
-
-                                        <!-- Content -->
-                                        <div class="flex-1 flex flex-col gap-1 overflow-hidden min-w-0">
-                                            <!-- Message -->
-                                            <div class="line-clamp-2 overflow-hidden">{{ log.message }}</div>
-                                            <div
-                                                v-if="
-                                                    log.ide_handle.class_name !== 'empty' &&
-                                                    !(
-                                                        log.ide_handle.class_name === 'unknown' &&
-                                                        String(log.ide_handle.line) === '0'
-                                                    )
-                                                "
-                                                class="truncate"
+                                        <!-- Level badge -->
+                                        <td>
+                                            <span
+                                                class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md whitespace-nowrap uppercase"
+                                                :class="levelClasses(log.level).badge"
                                             >
-                                                <a
-                                                    :href="generateLink(log.ide_handle)"
-                                                    v-text="`${log.ide_handle.class_name}:${log.ide_handle.line}`"
-                                                    class="text-xs link opacity-60 inline-block"
-                                                    @click.stop
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                                <span
+                                                    class="w-1.5 h-1.5 rounded-full"
+                                                    :class="levelClasses(log.level).dot"
+                                                ></span>
+                                                {{ log.level }}
+                                            </span>
+                                        </td>
+                                        <!-- Message (single line) -->
+                                        <td class="text-xs truncate">
+                                            <span :title="log.message">{{ log.message }}</span>
+                                        </td>
+                                        <!-- Origin -->
+                                        <td class="text-xs truncate">
+                                            <DumpLink
+                                                v-if="showOrigin(log)"
+                                                :ide-handler="log.ide_handle"
+                                                truncate
+                                                class="opacity-70 hover:opacity-100"
+                                            />
+                                            <span
+                                                v-else
+                                                class="opacity-40"
+                                                >—</span
+                                            >
+                                        </td>
+                                    </tr>
 
                                     <!-- Expanded Content -->
-                                    <div
+                                    <tr
                                         v-if="expandedLogId === log.log_id"
-                                        class="px-4 py-2"
+                                        class="bg-base-200/60"
                                     >
-                                        <!-- Copy to Markdown Button -->
-                                        <div
-                                            v-if="canCopyToMarkdown(log)"
-                                            class="flex justify-end mb-2"
-                                        >
-                                            <button
-                                                @click.stop="copyToMarkdown(log)"
-                                                class="btn btn-sm btn-soft gap-2"
-                                                data-tippy-content="Copy to Markdown"
-                                            >
-                                                <CheckIcon
-                                                    v-if="copiedLogId === log.log_id"
-                                                    class="w-4 text-success"
-                                                />
-                                                <ClipboardDocumentIcon
-                                                    v-else
-                                                    class="w-4"
-                                                />
-                                                Copy to Markdown
-                                            </button>
-                                        </div>
-
-                                        <!-- Stack Trace -->
-                                        <div v-if="log.code_snippet && log.code_snippet.length > 0">
-                                            <CodeSnippet
-                                                :code_snippet="log.code_snippet"
-                                                :ide_handle="log.ide_handle"
-                                            />
-                                        </div>
-
-                                        <!-- Payload -->
-                                        <div v-else-if="log.context && log.context.length > 0">
-                                            <div class="px-1">
-                                                <div v-html="log.context[0]"></div>
+                                        <td colspan="3">
+                                            <!-- Full message + timestamp -->
+                                            <div class="mb-3">
+                                                <div
+                                                    class="text-[10px] uppercase tracking-widest text-base-content/50 mb-1"
+                                                >
+                                                    Message
+                                                </div>
+                                                <div
+                                                    class="text-xs bg-base-100 border border-base-content/10 rounded-lg p-2.5 leading-relaxed font-mono break-words whitespace-pre-wrap"
+                                                >
+                                                    {{ log.message }}
+                                                </div>
+                                                <div class="text-[10px] text-base-content/50 mt-1.5 font-mono">
+                                                    {{ dayjs(log.created_at).format('YYYY-MM-DD HH:mm:ss') }}
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <!-- Request / Routing / Queries — collapsible toggle -->
-                                        <div
-                                            v-if="
-                                                log.requests &&
-                                                (log.requests.headers ||
-                                                    log.requests.body ||
-                                                    Object.keys(log.requests?.routeContext || {}).length > 0 ||
-                                                    (log.queries && log.queries.length > 0))
-                                            "
-                                            class="mt-3"
-                                        >
-                                            <!-- Toggle button -->
-                                            <button
-                                                class="flex items-center gap-1.5 text-xs text-base-content/50 hover:text-base-content/80 transition-colors"
-                                                @click.stop="toggleRequestSection(log.log_id)"
-                                            >
-                                                <ChevronDownIcon
-                                                    class="w-3.5 h-3.5 transition-transform duration-200"
-                                                    :class="{ 'rotate-180': expandedRequestLogIds.has(log.log_id) }"
-                                                />
-                                                <span>Request</span>
-                                            </button>
-
-                                            <!-- Collapsible content -->
+                                            <!-- Origin (full) -->
                                             <div
-                                                v-if="expandedRequestLogIds.has(log.log_id)"
-                                                class="mt-3 space-y-4"
+                                                v-if="showOrigin(log)"
+                                                class="mb-3"
                                             >
-                                                <!-- Headers -->
                                                 <div
-                                                    v-if="
-                                                        log.requests.headers &&
-                                                        Object.keys(log.requests.headers).length > 0
-                                                    "
-                                                    class="space-y-1"
+                                                    class="text-[10px] uppercase tracking-widest text-base-content/50 mb-1"
                                                 >
-                                                    <span class="font-semibold ml-1 text-xs">Headers</span>
-                                                    <div
-                                                        class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
-                                                    >
-                                                        <table class="table table-sm">
-                                                            <tbody>
-                                                                <tr
-                                                                    v-for="(value, key) in log.requests.headers"
-                                                                    :key="key"
-                                                                >
-                                                                    <th class="whitespace-nowrap">{{ key }}</th>
-                                                                    <td class="break-all">
-                                                                        <code
-                                                                            class="overflow-y-hidden scrollbar-hidden max-h-32 overflow-x-scroll scrollbar-hidden-x"
-                                                                            >{{ value }}</code
-                                                                        >
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                                    Origin
                                                 </div>
-
-                                                <!-- Body -->
-                                                <div
-                                                    v-if="log.requests.body"
-                                                    class="space-y-1"
+                                                <a
+                                                    :href="generateLink(log.ide_handle)"
+                                                    class="inline-flex items-start gap-1.5 text-xs link link-hover text-base-content/80 font-mono break-all"
+                                                    @click.stop
                                                 >
-                                                    <span class="font-semibold ml-1 text-xs">Body</span>
-                                                    <div
-                                                        class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
+                                                    <ArrowTopRightOnSquareIcon class="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                                                    <span
+                                                        >{{ log.ide_handle.class_name }}:{{ log.ide_handle.line }}</span
                                                     >
-                                                        <pre
-                                                            class="scrollbar-hidden mx-5 my-3 overflow-y-hidden text-xs lg:text-sm"
-                                                        ><code class="overflow-y-hidden scrollbar-hidden overflow-x-scroll scrollbar-hidden-x">{{ log.requests.body }}</code></pre>
-                                                    </div>
+                                                </a>
+                                            </div>
+
+                                            <!-- Copy to Markdown Button -->
+                                            <div
+                                                v-if="canCopyToMarkdown(log)"
+                                                class="flex justify-end mb-2"
+                                            >
+                                                <button
+                                                    @click.stop="copyToMarkdown(log)"
+                                                    class="btn btn-sm btn-soft gap-2"
+                                                    data-tippy-content="Copy to Markdown"
+                                                >
+                                                    <CheckIcon
+                                                        v-if="copiedLogId === log.log_id"
+                                                        class="w-4 text-success"
+                                                    />
+                                                    <ClipboardDocumentIcon
+                                                        v-else
+                                                        class="w-4"
+                                                    />
+                                                    Copy to Markdown
+                                                </button>
+                                            </div>
+
+                                            <!-- Stack Trace -->
+                                            <div v-if="log.code_snippet && log.code_snippet.length > 0">
+                                                <CodeSnippet
+                                                    :code_snippet="log.code_snippet"
+                                                    :ide_handle="log.ide_handle"
+                                                />
+                                            </div>
+
+                                            <!-- Payload -->
+                                            <div v-else-if="log.context && log.context.length > 0">
+                                                <div class="px-1">
+                                                    <div v-html="log.context[0]"></div>
                                                 </div>
+                                            </div>
 
-                                                <!-- Routing -->
-                                                <div
-                                                    v-if="Object.keys(log.requests?.routeContext || {}).length > 0"
-                                                    class="space-y-1"
+                                            <!-- Request / Routing / Queries — collapsible toggle -->
+                                            <div
+                                                v-if="
+                                                    log.requests &&
+                                                    (log.requests.headers ||
+                                                        log.requests.body ||
+                                                        Object.keys(log.requests?.routeContext || {}).length > 0 ||
+                                                        (log.queries && log.queries.length > 0))
+                                                "
+                                                class="mt-3"
+                                            >
+                                                <!-- Toggle button -->
+                                                <button
+                                                    class="flex items-center gap-1.5 text-xs text-base-content/50 hover:text-base-content/80 transition-colors"
+                                                    @click.stop="toggleRequestSection(log.log_id)"
                                                 >
-                                                    <span class="font-semibold ml-1 text-xs">Routing</span>
+                                                    <ChevronDownIcon
+                                                        class="w-3.5 h-3.5 transition-transform duration-200"
+                                                        :class="{ 'rotate-180': expandedRequestLogIds.has(log.log_id) }"
+                                                    />
+                                                    <span>Request</span>
+                                                </button>
+
+                                                <!-- Collapsible content -->
+                                                <div
+                                                    v-if="expandedRequestLogIds.has(log.log_id)"
+                                                    class="mt-3 space-y-4"
+                                                >
+                                                    <!-- Headers -->
                                                     <div
-                                                        class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
+                                                        v-if="
+                                                            log.requests.headers &&
+                                                            Object.keys(log.requests.headers).length > 0
+                                                        "
+                                                        class="space-y-1"
                                                     >
-                                                        <table class="table table-sm">
-                                                            <tbody>
-                                                                <tr v-if="log.requests.routeContext?.controller">
-                                                                    <th>Controller</th>
-                                                                    <td>{{ log.requests.routeContext.controller }}</td>
-                                                                </tr>
-                                                                <tr v-if="log.requests.routeContext?.middleware">
-                                                                    <th>Middleware</th>
-                                                                    <td>{{ log.requests.routeContext.middleware }}</td>
-                                                                </tr>
-                                                                <tr v-if="log.requests.routeContext?.routeName">
-                                                                    <th>Route name</th>
-                                                                    <td>{{ log.requests.routeContext.routeName }}</td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
+                                                        <span class="font-semibold ml-1 text-xs">Headers</span>
+                                                        <div
+                                                            class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
+                                                        >
+                                                            <table class="table table-sm">
+                                                                <tbody>
+                                                                    <tr
+                                                                        v-for="(value, key) in log.requests.headers"
+                                                                        :key="key"
+                                                                    >
+                                                                        <th class="whitespace-nowrap">{{ key }}</th>
+                                                                        <td class="break-all">
+                                                                            <code
+                                                                                class="overflow-y-hidden scrollbar-hidden max-h-32 overflow-x-scroll scrollbar-hidden-x"
+                                                                                >{{ value }}</code
+                                                                            >
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                <!-- Queries -->
-                                                <div
-                                                    v-if="log.queries && log.queries.length > 0"
-                                                    class="space-y-2"
-                                                >
-                                                    <span class="font-semibold ml-1 text-xs">Queries</span>
+                                                    <!-- Body -->
                                                     <div
-                                                        v-for="(query, queryIndex) in log.queries"
-                                                        :key="queryIndex"
-                                                        class="border border-base-content/5 rounded p-2 bg-base-200"
+                                                        v-if="log.requests.body"
+                                                        class="space-y-1"
                                                     >
-                                                        <DumpQuery :query="query" />
+                                                        <span class="font-semibold ml-1 text-xs">Body</span>
+                                                        <div
+                                                            class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
+                                                        >
+                                                            <pre
+                                                                class="scrollbar-hidden mx-5 my-3 overflow-y-hidden text-xs lg:text-sm"
+                                                            ><code class="overflow-y-hidden scrollbar-hidden overflow-x-scroll scrollbar-hidden-x">{{ log.requests.body }}</code></pre>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Routing -->
+                                                    <div
+                                                        v-if="Object.keys(log.requests?.routeContext || {}).length > 0"
+                                                        class="space-y-1"
+                                                    >
+                                                        <span class="font-semibold ml-1 text-xs">Routing</span>
+                                                        <div
+                                                            class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
+                                                        >
+                                                            <table class="table table-sm">
+                                                                <tbody>
+                                                                    <tr v-if="log.requests.routeContext?.controller">
+                                                                        <th>Controller</th>
+                                                                        <td>
+                                                                            {{ log.requests.routeContext.controller }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr v-if="log.requests.routeContext?.middleware">
+                                                                        <th>Middleware</th>
+                                                                        <td>
+                                                                            {{ log.requests.routeContext.middleware }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr v-if="log.requests.routeContext?.routeName">
+                                                                        <th>Route name</th>
+                                                                        <td>
+                                                                            {{ log.requests.routeContext.routeName }}
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Queries -->
+                                                    <div
+                                                        v-if="log.queries && log.queries.length > 0"
+                                                        class="space-y-2"
+                                                    >
+                                                        <span class="font-semibold ml-1 text-xs">Queries</span>
+                                                        <div
+                                                            v-for="(query, queryIndex) in log.queries"
+                                                            :key="queryIndex"
+                                                            class="border border-base-content/5 rounded p-2 bg-base-200"
+                                                        >
+                                                            <DumpQuery :query="query" />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                        </td>
+                                    </tr>
+                                </template>
                             </template>
-                        </template>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
 
                 <div
@@ -776,3 +813,15 @@ const displayLastLog = computed<boolean>({
         </div>
     </div>
 </template>
+
+<style scoped>
+@reference "./../../styles.css";
+
+:deep(.log-table > thead) :where(th, td) {
+    @apply p-2;
+}
+
+:deep(.log-table > tbody > tr > :where(th, td)) {
+    @apply p-1.5 px-2;
+}
+</style>

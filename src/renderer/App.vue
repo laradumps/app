@@ -18,6 +18,7 @@ import JSConfetti from 'js-confetti';
 import Toasters from '@/components/common/Toasters.vue';
 import TheUpdateNotification from '@/components/app/TheUpdateNotification.vue';
 import SettingsModal from '@/components/settings/SettingsModal.vue';
+import NotificationWindow from '@/components/notification/NotificationWindow.vue';
 
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
@@ -63,6 +64,7 @@ watch(
 
 const readyToLoad = ref(false);
 const screen = ref<string | null>('');
+const isNotification = ref(new URLSearchParams(window.location.search).get('notification') === '1');
 
 //* * Convert shortcuts to Electron format **/
 Object.defineProperty(String.prototype, 'beautifyShortcut', {
@@ -160,14 +162,38 @@ onMounted(() => {
         settingsStore.applyWindowBlur(true);
     }
 
-    const style = document.createElement('style');
-    style.innerHTML = settingsStore.settings.custom_css;
-    document.head.appendChild(style);
+    const applyCustomCss = (css: string) => {
+        let style = document.getElementById('ld-custom-theme') as HTMLStyleElement | null;
+        if (!style) {
+            style = document.createElement('style');
+            style.id = 'ld-custom-theme';
+            document.head.appendChild(style);
+        }
+        style.innerHTML = css ?? '';
+    };
+
+    applyCustomCss(settingsStore.settings.custom_css);
+
+    watch(
+        () => settingsStore.settings.custom_css,
+        (css) => applyCustomCss(css)
+    );
 });
 </script>
 
 <template>
-    <div class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available">
+    <div
+        v-if="isNotification"
+        :data-theme="settingsStore.settings.theme"
+        class="bg-base-200 absolute w-full h-full min-h-full overflow-hidden"
+    >
+        <NotificationWindow />
+    </div>
+
+    <div
+        v-else
+        class="flex overflow-hidden flex-col flex-1 right-0 left-0 h-fill-available"
+    >
         <div
             :data-theme="settingsStore.settings.theme"
             :class="{

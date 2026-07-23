@@ -37,6 +37,8 @@ export const DEFAULT_SETTINGS: Settings = {
     mcp_port: 3002,
     limit_laravel_logs: 100,
     limit_laravel_jobs: 100,
+    tail_log_enabled: false,
+    tail_log_max_size_mb: 25,
     custom_css: '/* // Example: \n [data-theme="custom"] .header { \n    background-color: red; \n } \n */',
     show_badge_count: true,
     show_context: true,
@@ -48,5 +50,6 @@ export const DEFAULT_SETTINGS: Settings = {
     window_blur: false,
     window_blur_mode: 'hud',
     window_blur_opacity: 0,
-    window_opacity: 100
+    window_opacity: 100,
+    show_dump_notifications: false
 };

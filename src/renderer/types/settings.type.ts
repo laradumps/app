@@ -31,6 +31,8 @@ export interface Settings {
     mcp_port: number;
     limit_laravel_logs: number;
     limit_laravel_jobs: number;
+    tail_log_enabled: boolean;
+    tail_log_max_size_mb: number;
     custom_css: string;
     show_badge_count: boolean;
     show_context: boolean;
@@ -43,4 +45,5 @@ export interface Settings {
     window_blur_mode: 'fullscreen-ui' | 'hud' | 'sidebar' | 'under-window';
     window_blur_opacity: number;
     window_opacity: number;
+    show_dump_notifications: boolean;
 }
