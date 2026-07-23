@@ -45,4 +45,5 @@ export interface Settings {
     window_blur_mode: 'fullscreen-ui' | 'hud' | 'sidebar' | 'under-window';
     window_blur_opacity: number;
     window_opacity: number;
+    show_dump_notifications: boolean;
 }
