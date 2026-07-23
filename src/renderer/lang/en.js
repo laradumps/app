@@ -82,6 +82,8 @@ export default {
         laravel_queries: 'Laravel Queries',
         laravel_logs: 'Laravel Logs',
         laravel_jobs: 'Laravel Jobs',
+        tail_log_max_size: 'Tail Log Max Size (MB)',
+        tail_log_max_size_hint: 'How much to read from the end of the log file',
         shortcut_placeholder: 'type here ...',
         appearance: 'Appearance',
         grouped_by_time: 'Grouped by Time',

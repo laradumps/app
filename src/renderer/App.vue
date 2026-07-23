@@ -162,9 +162,22 @@ onMounted(() => {
         settingsStore.applyWindowBlur(true);
     }
 
-    const style = document.createElement('style');
-    style.innerHTML = settingsStore.settings.custom_css;
-    document.head.appendChild(style);
+    const applyCustomCss = (css: string) => {
+        let style = document.getElementById('ld-custom-theme') as HTMLStyleElement | null;
+        if (!style) {
+            style = document.createElement('style');
+            style.id = 'ld-custom-theme';
+            document.head.appendChild(style);
+        }
+        style.innerHTML = css ?? '';
+    };
+
+    applyCustomCss(settingsStore.settings.custom_css);
+
+    watch(
+        () => settingsStore.settings.custom_css,
+        (css) => applyCustomCss(css)
+    );
 });
 </script>
 

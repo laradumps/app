@@ -5,6 +5,7 @@ import { usePayloadStore } from '@/store/payload';
 import { useJobStore } from '@/store/jobs';
 import { useMailStore } from '@/store/mail';
 import { useLogStore } from '@/store/logs.js';
+import { useTailLogStore } from '@/store/tail-logs';
 import { useQueriesPayloadStore } from '@/store/queries.js';
 import { useSplitPanesStore } from '@/store/split-panes';
 import { useBrainStore } from '@/store/brains.ts';
@@ -30,6 +31,7 @@ const payloadStore = usePayloadStore();
 const jobStore = useJobStore();
 const mailStore = useMailStore();
 const logStore = useLogStore();
+const tailLogStore = useTailLogStore();
 const brainStore = useBrainStore();
 const queriesStore = useQueriesPayloadStore();
 const splitPanesStore = useSplitPanesStore();
@@ -97,7 +99,17 @@ const onEnvironmentSelected = (environment) => {
     showEnvironmentDropdown.value = false;
 };
 
-const BUILT_IN_SCREENS = ['home', 'queries', 'logs', 'jobs', 'mail', 'brain', 'livewire', 'xdebug_inspector'];
+const BUILT_IN_SCREENS = [
+    'home',
+    'queries',
+    'logs',
+    'tail_logs',
+    'jobs',
+    'mail',
+    'brain',
+    'livewire',
+    'xdebug_inspector'
+];
 
 const isEnvironmentScreen = (screenName) => {
     return (
@@ -143,6 +155,7 @@ const getPayloadScreenCount = (screenName) => {
         jobs: jobStore.jobs,
         mail: mailStore.mails,
         logs: logStore.logs,
+        tail_logs: tailLogStore.entries,
         queries: queriesStore.payload,
         brain: brainStore.brains
     };

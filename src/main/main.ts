@@ -28,6 +28,7 @@ import * as electronAutoLaunch from './auto-launch';
 import * as settings from './settings';
 import * as xdebug from './xdebug';
 import * as mcpManager from './mcp-manager';
+import * as logTailer from './log-tailer';
 
 import { CompletedInfo } from '@/types/Updater';
 import { createMenu } from './main-menu';
@@ -171,6 +172,11 @@ function createWindow(): BrowserWindow {
 }
 
 ipcMain.on('dump', (event: Electron.IpcMainEvent, arg): void => {
+    if (!arg || typeof arg.type !== 'string' || arg.type.length === 0) {
+        console.warn('Ignoring dump with missing or invalid "type":', arg);
+        return;
+    }
+
     event.sender.send(arg.type, arg);
 
     if (isMac && arg.type === 'dump' && settings.getSettings().show_dump_notifications) {
@@ -323,6 +329,7 @@ app.whenReady().then(async (): Promise<void> => {
 
     await xdebug.init(mainWindow);
     await settings.init();
+    await logTailer.init(mainWindow);
     await customWindow.init();
     await notificationWindow.init(mainWindow);
     await electronAutoLaunch.init();

@@ -22,13 +22,14 @@ import { useMailStore } from '@/store/mail';
 import MailView from '@/components/laravel/MailView.vue';
 import { useLogStore } from '@/store/logs';
 import LogView from '@/components/laravel/LogView.vue';
+import TailLogView from '@/components/laravel/TailLogView.vue';
+import { useTailLogStore } from '@/store/tail-logs';
+import CacheGateView from '@/components/laravel/CacheGateView.vue';
 import { useQueriesPayloadStore } from '@/store/queries';
 import { useBrainStore } from '@/store/brains';
 import { useLivewireStore } from '@/store/livewire';
 import { useQueriesBlockedStore } from '@/store/queries-blocked';
-import { useQueryDuplicated } from '@/store/query-duplicated';
 import { usePauseQueriesStore } from '@/store/pause-queries';
-import { useFormattedQueriesStore } from '@/store/formatted-queries';
 import QueriesView from '@/components/laravel/QueriesView.vue';
 import { deepClone } from '@/lib/deep_clone';
 import { useSavedDumpsStore } from '@/store/saved-dumps';
@@ -40,7 +41,6 @@ import { Environment } from '../../main/storage';
 import { usePauseJobsStore } from '@/store/pause-jobs';
 import { usePauseLogsStore } from '@/store/pause-logs';
 import dayjs from 'dayjs';
-import HeaderColorsFilter from '@/components/app/HeaderColorsFilter.vue';
 import DropZones from '@/components/split/DropZones.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
 import { useSplitPanesStore } from '@/store/split-panes';
@@ -56,6 +56,7 @@ const globalSearchStore = useGlobalSearchStore();
 const payloadStore = usePayloadStore();
 const settingsStore = useSettingsStore();
 const logStore = useLogStore();
+const tailLogStore = useTailLogStore();
 const queriesStore = useQueriesPayloadStore();
 const pausePayloadStore = usePausePayloadStore();
 const pauseLogsStore = usePauseLogsStore();
@@ -112,6 +113,60 @@ watch(
             environments.value = [];
 
             window.ipcRenderer.send('storage.get-yaml', newProject.path);
+
+            if (settingsStore.settings.tail_log_enabled) {
+                tailLogStore.reset();
+                startTailLog();
+            }
+        }
+    }
+);
+
+const startTailLog = () => {
+    window.ipcRenderer.send('tail-log:start', {
+        projectPath: currentProjectStore.projectInfo?.path
+    });
+};
+
+const enableTailLog = () => {
+    addScreen({
+        screen_name: 'tail_logs',
+        raise_in: 0,
+        visible: true,
+        pinned: false,
+        new_window: false
+    });
+    startTailLog();
+};
+
+const disableTailLog = () => {
+    window.ipcRenderer.send('tail-log:stop');
+    tailLogStore.reset();
+    screenStore.remove('tail_logs');
+    if (screenStore.screen === 'tail_logs') {
+        toggleScreen('home', true);
+    }
+};
+
+const handleTailEntries = (_: any, batch: any) => tailLogStore.addBatch(batch);
+const handleTailReset = () => tailLogStore.reset();
+const handleTailMeta = (_: any, meta: any) => tailLogStore.setMeta(meta);
+const handleTailError = (_: any, error: any) => tailLogStore.setError(error);
+const handleTailFilePicked = (_: any, { filePath }: any) => {
+    tailLogStore.setMeta({ filePath });
+    window.ipcRenderer.send('tail-log:start', {
+        filePath,
+        projectPath: currentProjectStore.projectInfo?.path
+    });
+};
+
+watch(
+    () => settingsStore.settings.tail_log_enabled,
+    (enabled) => {
+        if (enabled) {
+            enableTailLog();
+        } else {
+            disableTailLog();
         }
     }
 );
@@ -682,6 +737,10 @@ onMounted(() => {
         window.ipcRenderer.send('storage.get-environments', currentProjectStore.projectInfo.path);
         window.ipcRenderer.send('storage.get-yaml', currentProjectStore.projectInfo.path);
     }
+
+    if (settingsStore.settings.tail_log_enabled) {
+        enableTailLog();
+    }
 });
 
 const dumpListeners = () => {
@@ -707,6 +766,11 @@ const dumpListeners = () => {
     window.ipcRenderer.on('dump_group', handleDump);
     window.ipcRenderer.on('time_track', handleTimeTrack);
     window.ipcRenderer.on('brain', handleBrain);
+    window.ipcRenderer.on('tail-log:entries', handleTailEntries);
+    window.ipcRenderer.on('tail-log:reset', handleTailReset);
+    window.ipcRenderer.on('tail-log:meta', handleTailMeta);
+    window.ipcRenderer.on('tail-log:error', handleTailError);
+    window.ipcRenderer.on('tail-log:file-picked', handleTailFilePicked);
 };
 
 const clearDumpListeners = () => {
@@ -732,6 +796,11 @@ const clearDumpListeners = () => {
     window.ipcRenderer.off('dump_group', handleDump);
     window.ipcRenderer.off('time_track', handleTimeTrack);
     window.ipcRenderer.off('brain', handleBrain);
+    window.ipcRenderer.off('tail-log:entries', handleTailEntries);
+    window.ipcRenderer.off('tail-log:reset', handleTailReset);
+    window.ipcRenderer.off('tail-log:meta', handleTailMeta);
+    window.ipcRenderer.off('tail-log:error', handleTailError);
+    window.ipcRenderer.off('tail-log:file-picked', handleTailFilePicked);
 };
 
 const dumpsBagFiltered = computed((): Payload[] => {
@@ -776,7 +845,7 @@ const toggleScreen = async (value: string, shouldActivate = false): Promise<void
     }
 
     await nextTick(() => {
-        if (!['jobs', 'mail', 'logs', 'queries'].includes(screenStore.screen)) {
+        if (!['jobs', 'mail', 'logs', 'queries', 'tail_logs'].includes(screenStore.screen)) {
             document.getElementById(settingsStore.settings.scroll_direction)?.scrollIntoView({ behavior: 'smooth' });
         }
     });
@@ -994,9 +1063,23 @@ const handleDragEnd = () => {
             class="mt-3 h-[calc(100vh-50px)] w-screen text-base"
         >
             <ScreenWindow
-                v-if="!['jobs', 'mail', 'logs', 'queries', 'brain'].includes(inScreenWindow)"
+                v-if="!['jobs', 'mail', 'logs', 'queries', 'brain', 'cache', 'gate'].includes(inScreenWindow)"
                 v-model:dumps="payloadScreen"
                 v-model:screen="inScreenWindow"
+            />
+
+            <CacheGateView
+                v-if="inScreenWindow === 'cache'"
+                screen="cache"
+                :in-screen-window="inScreenWindow.length > 0"
+                :items="payloadScreen"
+            />
+
+            <CacheGateView
+                v-if="inScreenWindow === 'gate'"
+                screen="gate"
+                :in-screen-window="inScreenWindow.length > 0"
+                :items="payloadScreen"
             />
 
             <JobView
@@ -1070,8 +1153,20 @@ const handleDragEnd = () => {
                                         <LogView :yaml-config="yamlConfig" />
                                     </div>
 
+                                    <div v-else-if="screenStore.screen === 'tail_logs'">
+                                        <TailLogView />
+                                    </div>
+
                                     <div v-else-if="screenStore.screen === 'queries'">
                                         <QueriesView :yaml-config="yamlConfig" />
+                                    </div>
+
+                                    <div v-else-if="screenStore.screen === 'cache'">
+                                        <CacheGateView screen="cache" />
+                                    </div>
+
+                                    <div v-else-if="screenStore.screen === 'gate'">
+                                        <CacheGateView screen="gate" />
                                     </div>
 
                                     <div
@@ -1138,7 +1233,7 @@ const handleDragEnd = () => {
                                             <div
                                                 v-if="
                                                     dumpsBagFiltered.length === 0 &&
-                                                    !['jobs', 'mail', 'logs', 'queries', 'home'].includes(
+                                                    !['jobs', 'mail', 'logs', 'queries', 'home', 'tail_logs'].includes(
                                                         screenStore.screen
                                                     )
                                                 "
@@ -1221,11 +1316,29 @@ const handleDragEnd = () => {
                                         />
                                     </div>
 
+                                    <div v-else-if="splitPanesStore.splitConfig.screenName === 'tail_logs'">
+                                        <TailLogView hide-header />
+                                    </div>
+
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'queries'">
                                         <QueriesView
                                             hide-header
                                             :yaml-config="yamlConfig"
                                             @open-screen-window="openScreenWindow"
+                                        />
+                                    </div>
+
+                                    <div v-else-if="splitPanesStore.splitConfig.screenName === 'cache'">
+                                        <CacheGateView
+                                            screen="cache"
+                                            hide-header
+                                        />
+                                    </div>
+
+                                    <div v-else-if="splitPanesStore.splitConfig.screenName === 'gate'">
+                                        <CacheGateView
+                                            screen="gate"
+                                            hide-header
                                         />
                                     </div>
 
@@ -1314,6 +1427,20 @@ const handleDragEnd = () => {
                                 </div>
                             </div>
 
+                            <div v-if="screenStore.screen === 'cache'">
+                                <CacheGateView
+                                    screen="cache"
+                                    class="w-screen text-base"
+                                />
+                            </div>
+
+                            <div v-if="screenStore.screen === 'gate'">
+                                <CacheGateView
+                                    screen="gate"
+                                    class="w-screen text-base"
+                                />
+                            </div>
+
                             <div v-if="screenStore.screen === 'jobs'">
                                 <JobView
                                     class="w-screen text-base"
@@ -1336,6 +1463,10 @@ const handleDragEnd = () => {
                                 />
                             </div>
 
+                            <div v-if="screenStore.screen === 'tail_logs'">
+                                <TailLogView class="w-screen text-base" />
+                            </div>
+
                             <div v-if="screenStore.screen === 'queries'">
                                 <QueriesView
                                     class="text-base"
@@ -1352,7 +1483,7 @@ const handleDragEnd = () => {
                             </div>
 
                             <div
-                                v-else
+                                v-else-if="!['cache', 'gate'].includes(screenStore.screen)"
                                 :class="{
                                     'items-center': payloadStore.payload.length === 0,
                                     'h-[calc(100vh-90px)]': true
@@ -1428,7 +1559,9 @@ const handleDragEnd = () => {
                                     <div
                                         v-if="
                                             dumpsBagFiltered.length === 0 &&
-                                            !['jobs', 'mail', 'logs', 'queries', 'home'].includes(screenStore.screen)
+                                            !['jobs', 'mail', 'logs', 'queries', 'home', 'tail_logs'].includes(
+                                                screenStore.screen
+                                            )
                                         "
                                         class="-mt-22.5 -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                                         style="height: -webkit-fill-available"
