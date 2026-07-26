@@ -21,7 +21,7 @@ import CodeSnippet from '@/components/CodeSnippet.vue';
 import { useColorStore } from '@/store/colors';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
-import { useTailLogStore, DiscoveredLogFile } from '@/store/tail-logs';
+import { useTailLogStore, DiscoveredLogFile } from '@/store/tail-log';
 import { useCurrentProject } from '@/store/current-project';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import { generateLink } from '@/utils/ideHandler';

@@ -23,7 +23,7 @@ import MailView from '@/components/laravel/MailView.vue';
 import { useLogStore } from '@/store/logs';
 import LogView from '@/components/laravel/LogView.vue';
 import TailLogView from '@/components/laravel/TailLogView.vue';
-import { useTailLogStore } from '@/store/tail-logs';
+import { useTailLogStore } from '@/store/tail-log';
 import CacheGateView from '@/components/laravel/CacheGateView.vue';
 import { useQueriesPayloadStore } from '@/store/queries';
 import { useBrainStore } from '@/store/brains';

@@ -5,7 +5,7 @@ import { usePayloadStore } from '@/store/payload';
 import { useJobStore } from '@/store/jobs';
 import { useMailStore } from '@/store/mail';
 import { useLogStore } from '@/store/logs.js';
-import { useTailLogStore } from '@/store/tail-logs';
+import { useTailLogStore } from '@/store/tail-log';
 import { useQueriesPayloadStore } from '@/store/queries.js';
 import { useSplitPanesStore } from '@/store/split-panes';
 import { useBrainStore } from '@/store/brains.ts';
