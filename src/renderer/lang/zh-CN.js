@@ -119,7 +119,8 @@ export default {
         not_now: '以后再说',
         install: '安装',
         version: '版本',
-        release_date: '发布日期'
+        release_date: '发布日期',
+        whats_new: '更新内容'
     },
     pause: '暂停',
     remove: '移除',

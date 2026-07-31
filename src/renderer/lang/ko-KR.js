@@ -119,7 +119,8 @@ export default {
         not_now: '나중에',
         install: '설치',
         version: '버전',
-        release_date: '출시일'
+        release_date: '출시일',
+        whats_new: '새로운 기능'
     },
     pause: '일시정지',
     remove: '제거',
