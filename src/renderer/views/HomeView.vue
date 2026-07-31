@@ -804,12 +804,20 @@ const clearDumpListeners = () => {
 };
 
 const dumpsBagFiltered = computed((): Payload[] => {
+    const search = globalSearchStore.search.toLowerCase();
+
     return payloadStore.filteredPayload
-        .filter(
-            (dump: Payload) =>
-                dump.content?.toLowerCase().includes(globalSearchStore.search.toLowerCase()) ||
-                JSON.stringify(dump.with_label)?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
-        )
+        .filter((dump: Payload) => {
+            if (!search) {
+                return true;
+            }
+
+            const content = dump[dump.type] ?? '';
+            const contentMatch = JSON.stringify(content).toLowerCase().includes(search);
+            const labelMatch = JSON.stringify(dump.with_label ?? '').toLowerCase().includes(search);
+
+            return contentMatch || labelMatch;
+        })
         .filter((dump: Payload) => {
             if (colorStore.colors.length > 0 && dump.color) {
                 return colorStore.colors.includes(dump.color);
