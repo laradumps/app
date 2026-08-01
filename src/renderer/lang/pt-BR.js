@@ -139,7 +139,8 @@ export default {
         restart: 'Reiniciar',
         version: 'Versão',
         release_date: 'Data de lançamento',
-        ready_to_install: 'Pronto para Instalar'
+        ready_to_install: 'Pronto para Instalar',
+        whats_new: 'Ver novidades'
     },
     pause: 'Pausar',
     remove: 'Remover',

@@ -95,8 +95,12 @@ const downloadUpdateMacOS = async (): Promise<void> => {
 
     try {
         await download(mainWindow, downloadURL, {
-            onProgress: (progress: number) => {
-                mainWindow.webContents.send('autoUpdater:download-progress', { percent: progress * 100 });
+            onProgress: (progress) => {
+                mainWindow.webContents.send('autoUpdater:download-progress', {
+                    percent: progress.percent * 100,
+                    transferredBytes: progress.transferredBytes,
+                    totalBytes: progress.totalBytes
+                });
             },
             onCompleted: () => {
                 console.log('[AutoUpdater] Download completed');
