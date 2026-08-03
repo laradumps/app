@@ -15,6 +15,7 @@ import DumpQuery from '@/components/laravel/DumpQuery.vue';
 import { Payload } from '@/types/Payload';
 import DumpDump from '@/components/dumps/DumpDump.vue';
 import DumpGrouped from '@/components/dumps/DumpGrouped.vue';
+import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import { useCollapse } from '@/store/collapse';
 import { useSettingsStore } from '@/store/settings';
 import dayjs from 'dayjs';
@@ -407,6 +408,7 @@ onUnmounted(() => {
         v-if="
             (payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'
         "
+        :id="`ld-anchor-${payload.id}`"
         :class="{ '-mt-1': isFirst && !payload.dump?.variable_name }"
     >
         <div
@@ -431,160 +433,153 @@ onUnmounted(() => {
         >
             <div
                 @click="open = !open"
-                class="collapse-title p-4! min-h-0 flex flex-col gap-5 cursor-default"
+                class="collapse-title p-4! min-h-0 flex flex-col gap-2.5 cursor-default overflow-hidden"
             >
-                <!-- top row: dot + content + badge -->
-                <div class="flex items-start gap-3">
-                    <div
-                        class="w-2 h-2 rounded-full shrink-0 mt-1.5"
-                        :class="indicatorDotClass"
-                    ></div>
-
-                    <div class="flex-1 flex flex-col gap-2.5 overflow-hidden">
-                        <!-- Header: time + label -->
+                <!-- top row: header (dot + time + label) + badge dot -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
                         <div
-                            v-if="getLabel !== payload.type || !settingsStore.settings.grouped_by_time"
-                            class="flex items-center gap-1.5 pt-0.5"
+                            class="w-2 h-2 rounded-full shrink-0"
+                            :class="indicatorDotClass"
+                        ></div>
+                        <span
+                            v-if="!settingsStore.settings.grouped_by_time"
+                            class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded"
+                            >{{ dayjs(payload.date_time).format('HH:mm:ss') }}</span
                         >
-                            <span
-                                v-if="!settingsStore.settings.grouped_by_time"
-                                class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded border border-base-content/10"
-                                >{{ dayjs(payload.date_time).format('HH:mm:ss') }}</span
-                            >
-                            <span
-                                v-if="getLabel !== payload.type"
-                                class="text-[10px] px-1.5 py-0.5 rounded bg-base-300 text-base-content/80 whitespace-nowrap"
-                                >{{ getLabel }}</span
-                            >
-                        </div>
-
-                        <!-- Model: ClassName + Raw Attributes HTML -->
-                        <DumpModel
-                            v-if="payload.type === 'model' && payload.model"
-                            :payload="payload"
-                        />
-
-                        <!-- Grouped Dump: multiple vars with individual IDE links -->
-                        <DumpGrouped
-                            v-else-if="payload.type === 'dump_group' && payload.dump_group"
-                            :payload="payload"
-                        />
-
-                        <!-- Dump: Raw Content HTML -->
-                        <div v-else-if="payload.type === 'dump' && payload.dump">
-                            <div
-                                v-if="
-                                    (payload.dump.variable_name && payload.dump.variable_name !== 'arg0') ||
-                                    (settingsStore.settings.show_variable_type &&
-                                        payload.dump.variable_type !== undefined)
-                                "
-                                class="flex items-center gap-1.5 mb-2"
-                            >
-                                <span
-                                    v-if="payload.dump.variable_name && payload.dump.variable_name !== 'arg0'"
-                                    class="font-mono text-[0.72rem] font-semibold text-[#9CDCFE]"
-                                    >${{ payload.dump.variable_name }}</span
-                                >
-                                <span
-                                    v-if="
-                                        settingsStore.settings.show_variable_type &&
-                                        payload.dump.variable_type !== undefined
-                                    "
-                                    class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded border border-base-content/10"
-                                    >{{ payload.dump.variable_type }}</span
-                                >
-                            </div>
-                            <DumpDump :payload="payload" />
-                        </div>
-
-                        <!-- Table V2 -->
-                        <DumpTableV2
-                            v-else-if="payload.type === 'table_v2' && payload.table_v2"
-                            :payload="payload"
-                        />
-
-                        <!-- Table -->
-                        <DumpTable
-                            v-else-if="payload.type === 'table' && payload.table"
-                            :payload="payload"
-                        />
-
-                        <!-- HTML -->
-                        <DumpHTML
-                            v-else-if="payload.type === 'html'"
-                            :payload="payload"
-                        />
-
-                        <!-- Time Track -->
-                        <DumpTimeTrack
-                            v-else-if="payload.type === 'time_track' && payload.time_track"
-                            :payload="payload"
-                        />
-
-                        <!-- Contains -->
-                        <DumpContains
-                            v-else-if="payload.type === 'contains' && payload.contains"
-                            :payload="payload"
-                        />
-
-                        <!-- JSON -->
-                        <DumpJson
-                            v-else-if="payload.type === 'json' && payload.json"
-                            :payload="payload"
-                        />
-
-                        <!-- Validate JSON -->
-                        <DumpIsJson
-                            v-else-if="payload.validate_json"
-                            :payload="payload"
-                        />
-
-                        <!-- Mailable -->
-                        <DumpMailable
-                            v-else-if="payload.type === 'mailable' && payload.mailable"
-                            :payload="payload"
-                        />
-
-                        <!-- Queries -->
-                        <div
-                            v-else-if="payload.type === 'queries'"
-                            @click.stop
-                            @dblclick.stop="prettifyQuery"
-                            class="w-full"
+                        <span
+                            v-if="getLabel !== payload.type"
+                            class="text-[10px] px-1.5 py-0.5 rounded bg-base-300 text-base-content/80 whitespace-nowrap"
+                            >{{ getLabel }}</span
                         >
-                            <DumpQueries
-                                :payload="payload"
-                                :is-prettified="isPrettified"
-                            />
-                        </div>
-
-                        <!-- Individual Query -->
-                        <div
-                            v-else-if="payload.type === 'query'"
-                            @click.stop
-                            class="w-full"
-                        >
-                            <DumpQuery :query="payload.query" />
-                        </div>
-
-                        <!-- Others -->
-                        <div
-                            v-else
-                            class="font-bold text-sm truncate"
-                        >
-                            {{ titleContent }}
-                        </div>
                     </div>
 
                     <!-- badge dot: top-right -->
                     <div
                         v-if="open && shouldDisplayBadge"
-                        class="bg-warning w-1.5 h-1.5 rounded-full shrink-0 mt-1.5"
+                        class="bg-warning w-1.5 h-1.5 rounded-full shrink-0"
                     ></div>
                 </div>
 
+                <!-- Model: ClassName + Raw Attributes HTML -->
+                <DumpModel
+                    v-if="payload.type === 'model' && payload.model"
+                    :payload="payload"
+                />
+
+                <!-- Grouped Dump: multiple vars with individual IDE links -->
+                <DumpGrouped
+                    v-else-if="payload.type === 'dump_group' && payload.dump_group"
+                    :payload="payload"
+                />
+
+                <!-- Dump: Raw Content HTML -->
+                <div v-else-if="payload.type === 'dump' && payload.dump">
+                    <div
+                        v-if="
+                            (payload.dump.variable_name && payload.dump.variable_name !== 'arg0') ||
+                            (settingsStore.settings.show_variable_type &&
+                                payload.dump.variable_type !== undefined)
+                        "
+                        class="flex items-center gap-1.5 mb-2"
+                    >
+                        <span
+                            v-if="payload.dump.variable_name && payload.dump.variable_name !== 'arg0'"
+                            class="font-mono text-[0.72rem] font-semibold text-[#9CDCFE]"
+                            >${{ payload.dump.variable_name }}</span
+                        >
+                        <span
+                            v-if="
+                                settingsStore.settings.show_variable_type &&
+                                payload.dump.variable_type !== undefined
+                            "
+                            class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded"
+                            >{{ payload.dump.variable_type }}</span
+                        >
+                    </div>
+                    <DumpDump :payload="payload" />
+                </div>
+
+                <!-- Table V2 -->
+                <DumpTableV2
+                    v-else-if="payload.type === 'table_v2' && payload.table_v2"
+                    :payload="payload"
+                />
+
+                <!-- Table -->
+                <DumpTable
+                    v-else-if="payload.type === 'table' && payload.table"
+                    :payload="payload"
+                />
+
+                <!-- HTML -->
+                <DumpHTML
+                    v-else-if="payload.type === 'html'"
+                    :payload="payload"
+                />
+
+                <!-- Time Track -->
+                <DumpTimeTrack
+                    v-else-if="payload.type === 'time_track' && payload.time_track"
+                    :payload="payload"
+                />
+
+                <!-- Contains -->
+                <DumpContains
+                    v-else-if="payload.type === 'contains' && payload.contains"
+                    :payload="payload"
+                />
+
+                <!-- JSON -->
+                <DumpJson
+                    v-else-if="payload.type === 'json' && payload.json"
+                    :payload="payload"
+                />
+
+                <!-- Validate JSON -->
+                <DumpIsJson
+                    v-else-if="payload.validate_json"
+                    :payload="payload"
+                />
+
+                <!-- Mailable -->
+                <DumpMailable
+                    v-else-if="payload.type === 'mailable' && payload.mailable"
+                    :payload="payload"
+                />
+
+                <!-- Queries -->
+                <div
+                    v-else-if="payload.type === 'queries'"
+                    @click.stop
+                    @dblclick.stop="prettifyQuery"
+                    class="w-full"
+                >
+                    <DumpQueries
+                        :payload="payload"
+                        :is-prettified="isPrettified"
+                    />
+                </div>
+
+                <!-- Individual Query -->
+                <div
+                    v-else-if="payload.type === 'query'"
+                    @click.stop
+                    class="w-full"
+                >
+                    <DumpQuery :query="payload.query" />
+                </div>
+
+                <!-- Others -->
+                <div
+                    v-else
+                    class="font-bold text-sm truncate"
+                >
+                    {{ titleContent }}
+                </div>
+
                 <!-- bottom row: metadata -->
-                <div class="flex items-center gap-3 pl-5 text-[0.73rem] font-medium">
+                <div class="flex items-center gap-3 text-[0.73rem] font-medium">
                     <div class="hover:opacity-100 transition-opacity">
                         <DumpLink
                             v-if="payload.ide_handle.real_path"
@@ -595,39 +590,45 @@ onUnmounted(() => {
                         <span v-else> Unknown </span>
                     </div>
 
-                    <!-- Query badges (Explain only) -->
-                    <div
-                        v-if="payload.type === 'queries'"
-                        class="flex items-center gap-2 ml-auto"
-                    >
-                        <span
-                            v-if="payload.queries?.query?.connectionName"
-                            class="badge badge-ghost badge-xs p-1.5 font-mono opacity-70"
-                        >
-                            {{ payload.queries.query.connectionName }}
-                        </span>
-                        <span
-                            v-if="payload.queries?.query?.time != null"
-                            class="badge badge-ghost badge-xs p-1.5 font-mono"
-                        >
-                            {{ payload.queries.query.time.toFixed(2) }}ms
-                        </span>
-                        <button
-                            v-if="payload.queries?.explain_nodes && payload.queries.explain_nodes.length > 0"
-                            @click.stop="openExplainModal()"
-                            class="badge badge-warning hover:opacity-80 badge-xs p-1.5 font-mono"
-                            title="This query has problematic nodes in the EXPLAIN plan."
-                        >
-                            <BoltIcon class="w-3" />
-                            <span class="text-xs">Explain</span>
-                        </button>
+                    <!-- right-aligned badges: query info + related job -->
+                    <div class="flex items-center gap-2 ml-auto">
+                        <template v-if="payload.type === 'queries'">
+                            <span
+                                v-if="payload.queries?.query?.connectionName"
+                                class="badge badge-ghost badge-xs p-1.5 font-mono opacity-70"
+                            >
+                                {{ payload.queries.query.connectionName }}
+                            </span>
+                            <span
+                                v-if="payload.queries?.query?.time != null"
+                                class="badge badge-ghost badge-xs p-1.5 font-mono"
+                            >
+                                {{ payload.queries.query.time.toFixed(2) }}ms
+                            </span>
+                            <button
+                                v-if="
+                                    payload.queries?.explain_nodes && payload.queries.explain_nodes.length > 0
+                                "
+                                @click.stop="openExplainModal()"
+                                class="badge badge-warning hover:opacity-80 badge-xs p-1.5 font-mono"
+                                title="This query has problematic nodes in the EXPLAIN plan."
+                            >
+                                <BoltIcon class="w-3" />
+                                <span class="text-xs">Explain</span>
+                            </button>
+                        </template>
+                        <RelatedJobButton
+                            v-if="payload.related_job"
+                            :related-job="payload.related_job"
+                            :origin-id="payload.id"
+                        />
                     </div>
                 </div>
             </div>
 
             <div
                 v-show="open"
-                class="collapse-content !p-0 px-9 pb-4"
+                class="collapse-content !p-0 px-4 pb-4"
             >
                 <div
                     class="relative"

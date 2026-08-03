@@ -16,6 +16,7 @@ import {
 
 import { Log, useLogStore } from '@/store/logs';
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import { useColorStore } from '@/store/colors';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
@@ -106,18 +107,40 @@ const logs = computed(() => {
         });
 });
 
+const displayLastLog = computed<boolean>({
+    get: () => {
+        return settingsStore.settings?.display_last_log ?? false;
+    },
+    set: (val: boolean) => {
+        if (!settingsStore.settings) return;
+        settingsStore.settings.display_last_log = val;
+        settingsStore.update();
+        if (!val) {
+            expandedLogId.value = null;
+        }
+    }
+});
+
+const isAnyLogExpanded = computed(() => {
+    return expandedLogId.value !== null && (logs.value?.some((log) => log.log_id === expandedLogId.value) ?? false);
+});
+
 watch(
     logs,
     (newLogs, oldLogs) => {
-        if (newLogs.length > 0) {
+        if (newLogs && newLogs.length > 0) {
             const newestLogId = newLogs[0].log_id;
 
-            const shouldDisplayLast = settingsStore.settings?.display_last_log ?? true;
+            const shouldDisplayLast = settingsStore.settings?.display_last_log ?? false;
             if (shouldDisplayLast) {
                 if (!oldLogs || oldLogs.length === 0 || (oldLogs.length > 0 && newestLogId !== oldLogs[0].log_id)) {
                     expandedLogId.value = newestLogId;
                 }
             }
+        }
+
+        if (expandedLogId.value && (!newLogs || !newLogs.some((log) => log.log_id === expandedLogId.value))) {
+            expandedLogId.value = null;
         }
     },
     { immediate: true }
@@ -130,6 +153,7 @@ watch(expandedLogId, (newId) => {
 
     nextTick(() => {
         const findLog = logs.value.find((log) => log.log_id === newId);
+        if (!findLog || !findLog.context) return;
         const sfDumpId = findLog.context[1];
 
         const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
@@ -294,20 +318,6 @@ const canCopyToMarkdown = computed(() => {
         return !containsEmptySfDump;
     };
 });
-
-const displayLastLog = computed<boolean>({
-    get: () => {
-        return settingsStore.settings?.display_last_log ?? true;
-    },
-    set: (val: boolean) => {
-        if (!settingsStore.settings) return;
-        settingsStore.settings.display_last_log = val;
-        settingsStore.update();
-        if (!val) {
-            expandedLogId.value = null;
-        }
-    }
-});
 </script>
 
 <template>
@@ -316,7 +326,7 @@ const displayLastLog = computed<boolean>({
             <!-- Actions Bar -->
             <div
                 v-if="!hideHeader"
-                class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3"
+                class="flex items-center justify-between w-full h-9 px-3"
             >
                 <!-- Left: title + YAML cog -->
                 <div class="flex items-center gap-2">
@@ -501,7 +511,7 @@ const displayLastLog = computed<boolean>({
             <div class="h-[calc(100vh-140px)]">
                 <div
                     v-if="logs.length > 0"
-                    class="overflow-auto"
+                    class="overflow-y-auto overflow-x-hidden px-3"
                     style="height: -webkit-fill-available"
                 >
                     <table class="table table-pin-rows table-fixed w-full log-table">
@@ -522,8 +532,8 @@ const displayLastLog = computed<boolean>({
                                     class="bg-base-200 text-xs font-semibold"
                                     :class="{
                                         'blur-sm opacity-40':
-                                            expandedLogId !== null &&
-                                            !logsOnTime.some((log) => log.log_id === expandedLogId)
+                                            isAnyLogExpanded &&
+                                            !logsOnTime?.some((log) => log.log_id === expandedLogId)
                                     }"
                                 >
                                     <td
@@ -542,13 +552,14 @@ const displayLastLog = computed<boolean>({
                                     <!-- Log Row -->
                                     <tr
                                         :data-log-id="log.log_id"
+                                        :id="`ld-anchor-${log.log_id}`"
                                         @click="toggleLogExpand(log.log_id)"
                                         class="hover:bg-base-100 cursor-pointer transition-all duration-200"
                                         :class="[
                                             { 'bg-base-300': expandedLogId === log.log_id },
                                             {
                                                 'blur-xs opacity-40':
-                                                    expandedLogId !== null && expandedLogId !== log.log_id
+                                                    isAnyLogExpanded && expandedLogId !== log.log_id
                                             }
                                         ]"
                                     >
@@ -566,8 +577,20 @@ const displayLastLog = computed<boolean>({
                                             </span>
                                         </td>
                                         <!-- Message (single line) -->
-                                        <td class="text-xs truncate">
-                                            <span :title="log.message">{{ log.message }}</span>
+                                        <td class="text-xs">
+                                            <div class="flex items-center justify-between gap-2 min-w-0">
+                                                <span
+                                                    class="truncate min-w-0"
+                                                    :title="log.message"
+                                                    >{{ log.message }}</span
+                                                >
+                                                <RelatedJobButton
+                                                    v-if="log.related_job"
+                                                    :related-job="log.related_job"
+                                                    :origin-id="log.log_id"
+                                                    class="shrink-0"
+                                                />
+                                            </div>
                                         </td>
                                         <!-- Origin -->
                                         <td class="text-xs truncate">
@@ -590,7 +613,10 @@ const displayLastLog = computed<boolean>({
                                         v-if="expandedLogId === log.log_id"
                                         class="bg-base-200/60"
                                     >
-                                        <td colspan="3">
+                                        <td
+                                            colspan="3"
+                                            class="!py-3"
+                                        >
                                             <!-- Full message + timestamp -->
                                             <div class="mb-3">
                                                 <div

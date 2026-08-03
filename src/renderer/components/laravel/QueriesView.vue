@@ -288,7 +288,7 @@ const setOrder = (order: string) => {
         <!-- Actions bar -->
         <div
             v-if="!hideHeader"
-            class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3"
+            class="flex items-center justify-between w-full h-9 px-3"
         >
             <!-- Left: title + YAML cog -->
             <div class="flex items-center gap-2">
@@ -727,7 +727,7 @@ const setOrder = (order: string) => {
                     />
 
                     <div
-                        class="overflow-auto h-[calc(100vh-184px)]"
+                        class="overflow-auto h-[calc(100vh-184px)] px-3"
                         v-else
                     >
                         <div

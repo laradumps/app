@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Job, useJobStore } from '@/store/jobs';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useScreenStore } from '@/store/screen';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -16,17 +17,23 @@ import { useGlobalSearchStore } from '@/store/global-search';
 import { FunnelIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon as FunnelSolidIcon } from '@heroicons/vue/24/solid';
 import { generateLink } from '@/utils/ideHandler';
+import { useCurrentProject } from '@/store/current-project';
+import IconExternalLink from '@/components/Icons/IconExternalLink.vue';
 
 const jobStore = useJobStore();
+const screenStore = useScreenStore();
 const pauseJobsStore = usePauseJobsStore();
 const globalSearchStore = useGlobalSearchStore();
+const currentProjectStore = useCurrentProject();
 
 const forceUpdate = ref(0);
 const selected = ref();
+const focusedJobId = ref<string | null>(null);
 const statusFilter = ref<string | null>(null);
 const sortBy = ref<'display_name' | 'duration' | 'pushed_time'>('pushed_time');
 const sortDirection = ref<'asc' | 'desc'>('desc');
 const collapsedGroups = ref<Record<string, boolean>>({});
+const horizonUrl = ref<string | null>(null);
 
 const props = defineProps<{
     items: Record<string, Job>;
@@ -154,6 +161,8 @@ const openModal = (id: string) => {
         created_at: findJob.pushed_time
     };
 
+    fetchAppUrl();
+
     const sfDumpId = findJob.job[1];
 
     nextTick(() => {
@@ -167,6 +176,100 @@ const openModal = (id: string) => {
         if (toggle) {
             toggle.checked = true;
         }
+    });
+};
+
+const fetchAppUrl = () => {
+    const projectPath = currentProjectStore.projectInfo?.path;
+    if (!projectPath) {
+        horizonUrl.value = null;
+        return;
+    }
+
+    window.ipcRenderer.once('storage.get-app-url.reply', (event, url: string | null) => {
+        horizonUrl.value = url || null;
+    });
+    window.ipcRenderer.send('storage.get-app-url', projectPath);
+};
+
+const statusToHorizonSegment = (status: string) => {
+    const segments: Record<string, string> = {
+        Processed: 'completed',
+        Failed: 'failed',
+        Queued: 'pending',
+        Processing: 'running'
+    };
+
+    return segments[status] ?? 'pending';
+};
+
+const openInHorizon = () => {
+    if (!horizonUrl.value || !selected.value) return;
+
+    const segment = statusToHorizonSegment(selected.value.status);
+    const url = `${horizonUrl.value.replace(/\/$/, '')}/horizon/jobs/${segment}/${selected.value.id}`;
+    window.ipcRenderer.send('main:openLink', url);
+};
+
+const focusJob = async (id: string) => {
+    statusFilter.value = null;
+    collapsedGroups.value = {};
+
+    await nextTick();
+
+    const row = document.querySelector(`[data-job-id="${id}"]`);
+    if (row) {
+        row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    focusedJobId.value = id;
+    setTimeout(() => {
+        if (focusedJobId.value === id) {
+            focusedJobId.value = null;
+        }
+    }, 2500);
+
+    openModal(id);
+    jobStore.clearFocus();
+};
+
+watch(
+    () => jobStore.focusJobId,
+    (id) => {
+        if (id) {
+            focusJob(id);
+        }
+    }
+);
+
+const backToDump = () => {
+    const origin = jobStore.origin;
+
+    const drawer = document.getElementById('job-drawer') as HTMLInputElement;
+    if (drawer) {
+        drawer.checked = false;
+    }
+
+    if (!origin) {
+        return;
+    }
+
+    screenStore.activeScreen(origin.screen);
+    jobStore.clearOrigin();
+
+    if (!origin.id) {
+        return;
+    }
+
+    nextTick(() => {
+        const el = document.getElementById(`ld-anchor-${origin.id}`);
+        if (!el) {
+            return;
+        }
+
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        el.classList.add('ld-dump-focus');
+        setTimeout(() => el.classList.remove('ld-dump-focus'), 2100);
     });
 };
 
@@ -189,6 +292,10 @@ const duration = (startTime: any, endTime: any) => {
 };
 
 onMounted(() => {
+    if (jobStore.focusJobId) {
+        focusJob(jobStore.focusJobId);
+    }
+
     setInterval(() => {
         forceUpdate.value++;
         window.addEventListener('keydown', handleEscape);
@@ -226,91 +333,85 @@ const toggleMessageLimit = () => {
                         class="space-y-3"
                         v-if="selected"
                     >
-                        <div class="flex justify-between nav-bar mb-0">
-                            <h4 class="font-semibold">Job</h4>
-                            <span>{{ selected.display_name }}</span>
+                        <div class="flex justify-between items-center nav-bar mb-0">
+                            <div class="flex items-center gap-2">
+                                <button
+                                    v-if="jobStore.origin"
+                                    @click="backToDump"
+                                    class="btn btn-xs btn-ghost gap-1 [-webkit-app-region:no-drag]"
+                                    title="Back to dump"
+                                >
+                                    ← Back to dump
+                                </button>
+                                <h4 class="font-semibold">Job</h4>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button
+                                    v-if="horizonUrl"
+                                    @click="openInHorizon"
+                                    class="btn btn-xs btn-ghost gap-1 [-webkit-app-region:no-drag]"
+                                    title="Open job in Horizon"
+                                >
+                                    <IconExternalLink class="w-3.5" />
+                                    Horizon
+                                </button>
+                                <span>{{ selected.display_name }}</span>
+                            </div>
                         </div>
                         <Divider />
 
-                        <div class="tabs tabs-lift">
-                            <input
-                                v-if="selected.code_snippet && selected.code_snippet.length > 0"
-                                checked
-                                type="radio"
-                                name="tab_jobs"
-                                class="tab"
-                                aria-label="Exception"
-                            />
-                            <div
-                                v-if="selected.code_snippet && selected.code_snippet.length > 0"
-                                class="relative tab-content bg-base-100 border-base-300 p-6"
-                            >
-                                <div class="w-[calc(100vw-200px)] space-y-2">
-                                    <span
-                                        v-if="selected.exception_message"
-                                        class="text-sm font-normal"
-                                        @click="toggleMessageLimit"
-                                        :class="{
-                                            'line-clamp-5': selected.message_limit
-                                        }"
-                                        >{{ selected.exception_message }}</span
-                                    >
-                                    <CodeSnippet
-                                        :code_snippet="selected.code_snippet"
-                                        :ide_handle="selected.ide_handle"
-                                    />
-                                </div>
+                        <div
+                            v-if="selected.code_snippet && selected.code_snippet.length > 0"
+                            class="relative bg-base-100 border-base-300 p-3"
+                        >
+                            <div class="w-[calc(100vw-200px)] space-y-2">
+                                <span
+                                    v-if="selected.exception_message"
+                                    class="text-sm font-normal"
+                                    @click="toggleMessageLimit"
+                                    :class="{
+                                        'line-clamp-5': selected.message_limit
+                                    }"
+                                    >{{ selected.exception_message }}</span
+                                >
+                                <CodeSnippet
+                                    :code_snippet="selected.code_snippet"
+                                    :ide_handle="selected.ide_handle"
+                                />
                             </div>
+                        </div>
 
-                            <input
-                                :checked="selected.code_snippet === null"
-                                type="radio"
-                                name="tab_jobs"
-                                class="tab"
-                                aria-label="Payload"
-                            />
-                            <div class="tab-content bg-base-100 border-base-300 p-6">
-                                <div v-html="selected.html"></div>
-                            </div>
-
-                            <input
-                                type="radio"
-                                name="tab_jobs"
-                                class="tab"
-                                aria-label="Details"
-                            />
-                            <div class="tab-content bg-base-100 border-base-300 p-6">
-                                <table class="table">
-                                    <thead>
-                                        <tr class="text-base-content bg-base-100">
-                                            <td>Job ID</td>
-                                            <td>Start Time</td>
-                                            <td>End Time</td>
-                                            <td>Duration</td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>{{ selected.id }}</td>
-                                            <td class="whitespace-nowrap">
-                                                {{
-                                                    selected.start_time
-                                                        ? dayjs(selected.start_time).format('hh:mm:ss a')
-                                                        : '-'
-                                                }}
-                                            </td>
-                                            <td class="whitespace-nowrap">
-                                                {{
-                                                    selected.end_time
-                                                        ? dayjs(selected.end_time).format('hh:mm:ss a')
-                                                        : '-'
-                                                }}
-                                            </td>
-                                            <td>{{ duration(selected.start_time, selected.end_time) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div class="bg-base-100 border-base-300 p-3">
+                            <table class="table">
+                                <thead>
+                                    <tr class="text-base-content bg-base-100">
+                                        <td>Job ID</td>
+                                        <td>Start Time</td>
+                                        <td>End Time</td>
+                                        <td>Duration</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ selected.id }}</td>
+                                        <td class="whitespace-nowrap">
+                                            {{
+                                                selected.start_time
+                                                    ? dayjs(selected.start_time).format('hh:mm:ss a')
+                                                    : '-'
+                                            }}
+                                        </td>
+                                        <td class="whitespace-nowrap">
+                                            {{
+                                                selected.end_time ? dayjs(selected.end_time).format('hh:mm:ss a') : '-'
+                                            }}
+                                        </td>
+                                        <td>{{ duration(selected.start_time, selected.end_time) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <Divider class="my-4" />
+                            <div v-html="selected.html"></div>
                         </div>
                     </div>
                 </div>
@@ -320,7 +421,7 @@ const toggleMessageLimit = () => {
         <!-- Actions Bar -->
         <div
             v-if="!hideHeader"
-            class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3"
+            class="flex items-center justify-between w-full h-9 px-3"
         >
             <!-- Left: title -->
             <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">Jobs</span>
@@ -413,7 +514,7 @@ const toggleMessageLimit = () => {
         <div :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'">
             <div
                 v-if="jobs.length > 0"
-                class="overflow-auto"
+                class="overflow-y-auto overflow-x-hidden px-3"
                 style="height: -webkit-fill-available"
             >
                 <table class="table table-pin-rows table-zebra">
@@ -459,10 +560,12 @@ const toggleMessageLimit = () => {
                                 v-for="job in jobsOnRelativeTime"
                                 v-if="!collapsedGroups[timeKey]"
                                 :key="job.job_id"
+                                :data-job-id="job.job_id"
                                 @click="openModal(job.job_id)"
                                 class="hover:bg-base-100 cursor-pointer"
                                 :class="{
-                                    'bg-base-300 hover:bg-neutral/70': selected && selected.id === job.job_id
+                                    'bg-base-300 hover:bg-neutral/70': selected && selected.id === job.job_id,
+                                    'ld-job-focus': focusedJobId === job.job_id
                                 }"
                             >
                                 <td>
@@ -533,5 +636,21 @@ const toggleMessageLimit = () => {
     :where(th, td) {
         @apply p-1.5 px-2;
     }
+}
+
+@keyframes ld-job-focus-blink {
+    0% {
+        background-color: transparent;
+    }
+    30% {
+        background-color: color-mix(in oklab, var(--color-primary) 18%, transparent);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.ld-job-focus {
+    animation: ld-job-focus-blink 1.6s ease-in-out 1;
 }
 </style>

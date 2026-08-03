@@ -18,15 +18,34 @@ export type Job = {
     original_content?: string;
 };
 
+export type JobOrigin = {
+    screen: string;
+    id?: string;
+};
+
 type State = {
     jobs: Record<string, Job>;
+    focusJobId: string | null;
+    origin: JobOrigin | null;
 };
 
 export const useJobStore = defineStore('jobStore', {
     state: (): State => ({
-        jobs: {}
+        jobs: {},
+        focusJobId: null,
+        origin: null
     }),
     actions: {
+        requestFocus(job_id: string, origin?: JobOrigin) {
+            this.focusJobId = job_id;
+            this.origin = origin ?? null;
+        },
+        clearFocus() {
+            this.focusJobId = null;
+        },
+        clearOrigin() {
+            this.origin = null;
+        },
         addOrUpdateJob(payload: Payload) {
             const job: JobPayload = payload.jobs;
             const ide_handle: IdeHandle = payload.ide_handle;

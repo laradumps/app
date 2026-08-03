@@ -15,6 +15,7 @@ import { FunnelIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon as FunnelSolidIcon } from '@heroicons/vue/24/solid';
 import IconPause from '@/components/Icons/IconPause.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
+import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 
 const props = defineProps<{
@@ -220,7 +221,7 @@ const clear = () => {
     <div>
         <div
             v-if="!hideHeader"
-            class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3"
+            class="flex items-center justify-between w-full h-9 px-3"
         >
             <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">
                 {{ title }}
@@ -291,7 +292,7 @@ const clear = () => {
         <div :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'">
             <div
                 v-if="items.length > 0"
-                class="overflow-auto"
+                class="overflow-auto px-3"
                 style="height: -webkit-fill-available"
             >
                 <table class="table table-pin-rows">
@@ -323,6 +324,7 @@ const clear = () => {
                                 :key="payload.id"
                             >
                                 <tr
+                                    :id="`ld-anchor-${payload.id}`"
                                     @click="toggleExpand(payload)"
                                     class="hover:bg-base-100 cursor-pointer"
                                     :class="{ 'bg-base-300': expanded[payload.id] }"
@@ -359,7 +361,14 @@ const clear = () => {
                                         >
                                     </td>
                                     <td class="whitespace-nowrap text-right text-xs opacity-60 font-mono">
-                                        {{ dayjs(payload.date_time).format('HH:mm:ss') }}
+                                        <div class="flex items-center justify-end gap-2">
+                                            <RelatedJobButton
+                                                v-if="payload.related_job"
+                                                :related-job="payload.related_job"
+                                                :origin-id="payload.id"
+                                            />
+                                            <span>{{ dayjs(payload.date_time).format('HH:mm:ss') }}</span>
+                                        </div>
                                     </td>
                                 </tr>
 

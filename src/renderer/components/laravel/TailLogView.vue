@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -26,11 +26,13 @@ import { useCurrentProject } from '@/store/current-project';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import { generateLink } from '@/utils/ideHandler';
 import { copyLogToMarkdown } from '@/utils/logToMarkdown';
+import { useSettingsStore } from '@/store/settings';
 
 const tailLogStore = useTailLogStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const currentProjectStore = useCurrentProject();
+const settingsStore = useSettingsStore();
 
 const expandedLogId = ref<string | null>(null);
 const levelFilter = ref<string[]>([]);
@@ -82,6 +84,45 @@ const logs = computed(() => {
             return dateB - dateA;
         });
 });
+
+const displayLastLog = computed<boolean>({
+    get: () => {
+        return settingsStore.settings?.display_last_log ?? false;
+    },
+    set: (val: boolean) => {
+        if (!settingsStore.settings) return;
+        settingsStore.settings.display_last_log = val;
+        settingsStore.update();
+        if (!val) {
+            expandedLogId.value = null;
+        }
+    }
+});
+
+const isAnyLogExpanded = computed(() => {
+    return expandedLogId.value !== null && (logs.value?.some((log) => log.log_id === expandedLogId.value) ?? false);
+});
+
+watch(
+    logs,
+    (newLogs, oldLogs) => {
+        if (newLogs && newLogs.length > 0) {
+            const newestLogId = newLogs[0].log_id;
+
+            const shouldDisplayLast = settingsStore.settings?.display_last_log ?? false;
+            if (shouldDisplayLast) {
+                if (!oldLogs || oldLogs.length === 0 || (oldLogs.length > 0 && newestLogId !== oldLogs[0].log_id)) {
+                    expandedLogId.value = newestLogId;
+                }
+            }
+        }
+
+        if (expandedLogId.value && (!newLogs || !newLogs.some((log) => log.log_id === expandedLogId.value))) {
+            expandedLogId.value = null;
+        }
+    },
+    { immediate: true }
+);
 
 const selectedLevel = (level: string) => {
     const index = levelFilter.value.indexOf(level);
@@ -211,7 +252,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
             <!-- Actions Bar -->
             <div
                 v-if="!hideHeader"
-                class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3 gap-2"
+                class="flex items-center justify-between w-full h-9 px-3 gap-2"
             >
                 <!-- Left: title + file -->
                 <div class="flex items-center gap-2 min-w-0">
@@ -234,6 +275,21 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
 
                 <!-- Right: actions -->
                 <div class="flex items-center gap-1">
+                    <!-- AUTO EXPAND toggle -->
+                    <div class="flex items-center gap-1.5 px-2">
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/50 select-none"
+                            >AUTO EXPAND</span
+                        >
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-xs toggle-success"
+                            v-model="displayLastLog"
+                            data-tippy-content="Auto expand newest log"
+                        />
+                    </div>
+
+                    <div class="w-px h-4 bg-base-content/10 mx-0.5"></div>
+
                     <!-- Filter Levels -->
                     <div class="dropdown dropdown-bottom dropdown-end">
                         <button
@@ -393,7 +449,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
             <div class="h-[calc(100vh-140px)]">
                 <div
                     v-if="logs.length > 0"
-                    class="overflow-auto"
+                    class="overflow-y-auto overflow-x-hidden px-3"
                     style="height: -webkit-fill-available"
                 >
                     <table class="table table-pin-rows table-fixed w-full log-table">
@@ -414,8 +470,8 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                     class="bg-base-200 text-xs font-semibold"
                                     :class="{
                                         'blur-sm opacity-40':
-                                            expandedLogId !== null &&
-                                            !logsOnTime.some((log) => log.log_id === expandedLogId)
+                                            isAnyLogExpanded &&
+                                            !logsOnTime?.some((log) => log.log_id === expandedLogId)
                                     }"
                                 >
                                     <td
@@ -440,7 +496,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                             { 'bg-base-300': expandedLogId === log.log_id },
                                             {
                                                 'blur-xs opacity-40':
-                                                    expandedLogId !== null && expandedLogId !== log.log_id
+                                                    isAnyLogExpanded && expandedLogId !== log.log_id
                                             }
                                         ]"
                                     >
@@ -482,7 +538,10 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                         v-if="expandedLogId === log.log_id"
                                         class="bg-base-200/60"
                                     >
-                                        <td colspan="3">
+                                        <td
+                                            colspan="3"
+                                            class="!py-3"
+                                        >
                                             <!-- Full message + timestamp -->
                                             <div class="mb-3">
                                                 <div
