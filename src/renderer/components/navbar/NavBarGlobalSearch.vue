@@ -42,6 +42,11 @@ const activateBadge = (badge) => {
     const map = { dumps: 'home', logs: 'logs', jobs: 'jobs', mail: 'mail', queries: 'queries' };
     const target = map[badge.key] || badge.key;
     screenStore.activeScreen?.(target);
+
+    payloadStore.filteredPayload = payloadStore.payload.filter(
+        (payload) => payload.type !== 'screen' && payload.to_screen?.screen_name === target
+    );
+
     showInput.value = false;
 };
 

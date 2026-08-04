@@ -121,7 +121,8 @@ export default {
         not_now: 'Şimdi değil',
         install: 'Yükle',
         version: 'Sürüm',
-        release_date: 'Yayınlanma Tarihi'
+        release_date: 'Yayınlanma Tarihi',
+        whats_new: 'Yenilikler'
     },
     pause: 'Duraklat',
     remove: 'Kaldır',

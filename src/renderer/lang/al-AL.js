@@ -120,7 +120,8 @@ export default {
         not_now: 'Not now',
         install: 'Install',
         version: 'Version',
-        release_date: 'Release Date'
+        release_date: 'Release Date',
+        whats_new: "What's new"
     },
     pause: 'Pause',
     remove: 'Remove',
