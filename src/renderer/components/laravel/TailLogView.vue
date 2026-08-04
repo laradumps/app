@@ -18,6 +18,8 @@ import {
 
 import { Log } from '@/store/logs';
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import FilterChip from '@/components/common/FilterChip.vue';
 import { useColorStore } from '@/store/colors';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
@@ -83,20 +85,6 @@ const logs = computed(() => {
             const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
             return dateB - dateA;
         });
-});
-
-const displayLastLog = computed<boolean>({
-    get: () => {
-        return settingsStore.settings?.display_last_log ?? false;
-    },
-    set: (val: boolean) => {
-        if (!settingsStore.settings) return;
-        settingsStore.settings.display_last_log = val;
-        settingsStore.update();
-        if (!val) {
-            expandedLogId.value = null;
-        }
-    }
 });
 
 const isAnyLogExpanded = computed(() => {
@@ -250,55 +238,30 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
     <div>
         <div>
             <!-- Actions Bar -->
-            <div
+            <ViewToolbar
                 v-if="!hideHeader"
-                class="flex items-center justify-between w-full h-9 px-3 gap-2"
+                :count="logs.length"
+                noun="log"
             >
-                <!-- Left: title + file -->
-                <div class="flex items-center gap-2 min-w-0">
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none"
-                        >Tail Log</span
-                    >
+                <template #chips>
+                    <FilterChip
+                        v-for="lvl in levelFilter"
+                        :key="lvl"
+                        :label="lvl"
+                        @remove="selectedLevel(lvl)"
+                    />
+                </template>
 
-                    <span
-                        v-if="fileName"
-                        class="flex items-center gap-1.5 text-[11px] font-mono text-base-content/60 bg-base-content/5 border border-base-content/10 rounded px-2 py-0.5 truncate max-w-[220px]"
-                        :data-tippy-content="tailLogStore.filePath"
-                    >
-                        <span
-                            class="w-1.5 h-1.5 rounded-full shrink-0"
-                            :class="tailLogStore.watching ? 'bg-success' : 'bg-base-content/30'"
-                        ></span>
-                        <span class="truncate">{{ fileName }}</span>
-                    </span>
-                </div>
-
-                <!-- Right: actions -->
-                <div class="flex items-center gap-1">
-                    <!-- AUTO EXPAND toggle -->
-                    <div class="flex items-center gap-1.5 px-2">
-                        <span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/50 select-none"
-                            >AUTO EXPAND</span
-                        >
-                        <input
-                            type="checkbox"
-                            class="toggle toggle-xs toggle-success"
-                            v-model="displayLastLog"
-                            data-tippy-content="Auto expand newest log"
-                        />
-                    </div>
-
-                    <div class="w-px h-4 bg-base-content/10 mx-0.5"></div>
-
+                <template #filter>
                     <!-- Filter Levels -->
-                    <div class="dropdown dropdown-bottom dropdown-end">
+                    <div class="dropdown dropdown-bottom dropdown-start">
                         <button
                             tabindex="0"
                             role="button"
                             class="btn btn-ghost btn-circle btn-sm"
                             data-tippy-content="Filter Levels"
                         >
-                            <FunnelIcon :class="levelFilter.length === 0 ? 'w-4' : 'w-5 text-primary'" />
+                            <FunnelIcon :class="levelFilter.length === 0 ? 'w-4' : 'w-4 text-primary'" />
                         </button>
                         <div
                             tabindex="0"
@@ -343,6 +306,21 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                             </div>
                         </div>
                     </div>
+                </template>
+
+                <template #right>
+                    <!-- Watched file chip -->
+                    <span
+                        v-if="fileName"
+                        class="flex items-center gap-1.5 text-[11px] font-mono text-base-content/60 bg-base-content/5 border border-base-content/10 rounded px-2 py-0.5 truncate max-w-[220px]"
+                        :data-tippy-content="tailLogStore.filePath"
+                    >
+                        <span
+                            class="w-1.5 h-1.5 rounded-full shrink-0"
+                            :class="tailLogStore.watching ? 'bg-success' : 'bg-base-content/30'"
+                        ></span>
+                        <span class="truncate">{{ fileName }}</span>
+                    </span>
 
                     <!-- Choose log file (dropdown of discovered *.log files) -->
                     <div class="dropdown dropdown-bottom dropdown-end">
@@ -434,8 +412,8 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                     >
                         <DocumentMinusIcon class="w-4" />
                     </button>
-                </div>
-            </div>
+                </template>
+            </ViewToolbar>
 
             <!-- Error banner -->
             <div
@@ -446,7 +424,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                 <span class="truncate">{{ tailLogStore.error.message }}</span>
             </div>
 
-            <div class="h-[calc(100vh-140px)]">
+            <div class="h-[calc(100vh-140px)] pt-3">
                 <div
                     v-if="logs.length > 0"
                     class="overflow-y-auto overflow-x-hidden px-3"
@@ -470,8 +448,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                     class="bg-base-200 text-xs font-semibold"
                                     :class="{
                                         'blur-sm opacity-40':
-                                            isAnyLogExpanded &&
-                                            !logsOnTime?.some((log) => log.log_id === expandedLogId)
+                                            isAnyLogExpanded && !logsOnTime?.some((log) => log.log_id === expandedLogId)
                                     }"
                                 >
                                     <td
@@ -495,8 +472,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                         :class="[
                                             { 'bg-base-300': expandedLogId === log.log_id },
                                             {
-                                                'blur-xs opacity-40':
-                                                    isAnyLogExpanded && expandedLogId !== log.log_id
+                                                'blur-xs opacity-40': isAnyLogExpanded && expandedLogId !== log.log_id
                                             }
                                         ]"
                                     >

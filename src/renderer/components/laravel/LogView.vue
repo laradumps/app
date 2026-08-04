@@ -15,6 +15,8 @@ import {
 } from '@heroicons/vue/24/outline';
 
 import { Log, useLogStore } from '@/store/logs';
+import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import FilterChip from '@/components/common/FilterChip.vue';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import { useColorStore } from '@/store/colors';
@@ -324,18 +326,106 @@ const canCopyToMarkdown = computed(() => {
     <div>
         <div>
             <!-- Actions Bar -->
-            <div
+            <ViewToolbar
                 v-if="!hideHeader"
-                class="flex items-center justify-between w-full h-9 px-3"
+                :count="logs.length"
+                noun="log"
             >
-                <!-- Left: title + YAML cog -->
-                <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none"
-                        >Logs</span
-                    >
+                <template #chips>
+                    <FilterChip
+                        v-for="lvl in levelFilter"
+                        :key="lvl"
+                        :label="lvl"
+                        @remove="selectedLevel(lvl)"
+                    />
+                </template>
+
+                <template #filter>
+                    <!-- Filter Levels -->
+                    <div class="dropdown dropdown-bottom dropdown-start">
+                        <button
+                            tabindex="0"
+                            role="button"
+                            class="btn btn-ghost btn-circle btn-sm"
+                            data-tippy-content="Filter Levels"
+                        >
+                            <FunnelIcon
+                                v-if="levelFilter.length === 0"
+                                class="w-4"
+                            />
+                            <FunnelIcon
+                                v-else
+                                class="w-4 text-primary"
+                            />
+                        </button>
+                        <div
+                            tabindex="0"
+                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
+                        >
+                            <div class="flex flex-col gap-1.5">
+                                <button
+                                    v-for="level in [
+                                        'debug',
+                                        'info',
+                                        'notice',
+                                        'warning',
+                                        'error',
+                                        'critical',
+                                        'alert',
+                                        'emergency'
+                                    ]"
+                                    :key="level"
+                                    @click="selectedLevel(level)"
+                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
+                                    :class="
+                                        levelFilter.includes(level)
+                                            ? 'bg-base-content/10 text-base-content font-medium'
+                                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                                    "
+                                >
+                                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
+                                        <span
+                                            v-if="levelFilter.includes(level)"
+                                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
+                                        ></span>
+                                        <span
+                                            class="relative inline-flex rounded-full size-2 transition-all duration-200"
+                                            :class="
+                                                levelFilter.includes(level)
+                                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
+                                                    : 'bg-base-content/20'
+                                            "
+                                        ></span>
+                                    </div>
+                                    <span class="truncate capitalize text-xs whitespace-nowrap">{{ level }}</span>
+                                    <span class="ml-auto text-base-content/40 text-[10px]">{{
+                                        levelCounts[level] || 0
+                                    }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <template #right>
+                    <!-- Auto Expand Toggle -->
+                    <div class="flex items-center gap-1.5 px-1">
+                        <label
+                            for="toggle-display-last"
+                            class="text-[10px] uppercase tracking-wider font-semibold opacity-40 select-none cursor-pointer"
+                            >Auto Expand</label
+                        >
+                        <input
+                            id="toggle-display-last"
+                            type="checkbox"
+                            class="toggle toggle-xs toggle-success"
+                            v-model="displayLastLog"
+                            data-tippy-content="Auto expand newest log"
+                        />
+                    </div>
 
                     <!-- YAML Configuration Dropdown -->
-                    <div class="dropdown dropdown-bottom dropdown-start">
+                    <div class="dropdown dropdown-bottom dropdown-end">
                         <button
                             tabindex="0"
                             role="button"
@@ -393,92 +483,8 @@ const canCopyToMarkdown = computed(() => {
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Right: actions -->
-                <div class="flex items-center gap-1">
-                    <!-- Auto Expand Toggle -->
-                    <div class="flex items-center gap-1.5 px-1">
-                        <label
-                            for="toggle-display-last"
-                            class="text-[10px] uppercase tracking-wider font-semibold opacity-40 select-none cursor-pointer"
-                            >Auto Expand</label
-                        >
-                        <input
-                            id="toggle-display-last"
-                            type="checkbox"
-                            class="toggle toggle-xs toggle-success"
-                            v-model="displayLastLog"
-                            data-tippy-content="Auto expand newest log"
-                        />
-                    </div>
 
                     <div class="w-px h-4 bg-base-content/10 mx-0.5"></div>
-
-                    <!-- Filter Levels -->
-                    <div class="dropdown dropdown-bottom dropdown-end">
-                        <button
-                            tabindex="0"
-                            role="button"
-                            class="btn btn-ghost btn-circle btn-sm"
-                            data-tippy-content="Filter Levels"
-                        >
-                            <FunnelIcon
-                                v-if="levelFilter.length === 0"
-                                class="w-4"
-                            />
-                            <FunnelIcon
-                                v-else
-                                class="w-5 text-primary"
-                            />
-                        </button>
-                        <div
-                            tabindex="0"
-                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
-                        >
-                            <div class="flex flex-col gap-1.5">
-                                <button
-                                    v-for="level in [
-                                        'debug',
-                                        'info',
-                                        'notice',
-                                        'warning',
-                                        'error',
-                                        'critical',
-                                        'alert',
-                                        'emergency'
-                                    ]"
-                                    :key="level"
-                                    @click="selectedLevel(level)"
-                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
-                                    :class="
-                                        levelFilter.includes(level)
-                                            ? 'bg-base-content/10 text-base-content font-medium'
-                                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                                    "
-                                >
-                                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
-                                        <span
-                                            v-if="levelFilter.includes(level)"
-                                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                                        ></span>
-                                        <span
-                                            class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                            :class="
-                                                levelFilter.includes(level)
-                                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                                    : 'bg-base-content/20'
-                                            "
-                                        ></span>
-                                    </div>
-                                    <span class="truncate capitalize text-xs whitespace-nowrap">{{ level }}</span>
-                                    <span class="ml-auto text-base-content/40 text-[10px]">{{
-                                        levelCounts[level] || 0
-                                    }}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Pause -->
                     <button
@@ -505,10 +511,10 @@ const canCopyToMarkdown = computed(() => {
                     >
                         <TrashIcon class="w-4" />
                     </button>
-                </div>
-            </div>
+                </template>
+            </ViewToolbar>
 
-            <div class="h-[calc(100vh-140px)]">
+            <div class="h-[calc(100vh-140px)] pt-3">
                 <div
                     v-if="logs.length > 0"
                     class="overflow-y-auto overflow-x-hidden px-3"
@@ -532,8 +538,7 @@ const canCopyToMarkdown = computed(() => {
                                     class="bg-base-200 text-xs font-semibold"
                                     :class="{
                                         'blur-sm opacity-40':
-                                            isAnyLogExpanded &&
-                                            !logsOnTime?.some((log) => log.log_id === expandedLogId)
+                                            isAnyLogExpanded && !logsOnTime?.some((log) => log.log_id === expandedLogId)
                                     }"
                                 >
                                     <td
@@ -558,8 +563,7 @@ const canCopyToMarkdown = computed(() => {
                                         :class="[
                                             { 'bg-base-300': expandedLogId === log.log_id },
                                             {
-                                                'blur-xs opacity-40':
-                                                    isAnyLogExpanded && expandedLogId !== log.log_id
+                                                'blur-xs opacity-40': isAnyLogExpanded && expandedLogId !== log.log_id
                                             }
                                         ]"
                                     >

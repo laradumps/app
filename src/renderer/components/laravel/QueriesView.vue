@@ -18,6 +18,8 @@ import {
 import tippy from 'tippy.js';
 import { usePendingRequestsStore } from '@/store/pending-requests';
 import QueriesRequests from '@/components/laravel/QueriesRequests.vue';
+import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import FilterChip from '@/components/common/FilterChip.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
 import { usePauseQueriesStore } from '@/store/pause-queries';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
@@ -286,18 +288,146 @@ const setOrder = (order: string) => {
 <template>
     <div>
         <!-- Actions bar -->
-        <div
+        <ViewToolbar
             v-if="!hideHeader"
-            class="flex items-center justify-between w-full h-9 px-3"
+            :count="queries.length"
+            noun="query"
         >
-            <!-- Left: title + YAML cog -->
-            <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none"
-                    >Queries</span
-                >
+            <template #chips>
+                <FilterChip
+                    v-if="duplicatesStore.showOnlyDuplicated"
+                    label="Duplicated"
+                    @remove="duplicatesStore.toggleShowOnlyDuplicated()"
+                />
+                <FilterChip
+                    v-for="o in filteredOrigins"
+                    :key="'o-' + o"
+                    :label="o"
+                    @remove="filteredOrigins = filteredOrigins.filter((x) => x !== o)"
+                />
+                <FilterChip
+                    v-for="c in filteredClasses"
+                    :key="'c-' + c"
+                    :label="c.split('\\').pop() || c"
+                    @remove="filteredClasses = filteredClasses.filter((x) => x !== c)"
+                />
+            </template>
 
-                <!-- YAML Configuration Dropdown -->
+            <template #filter>
+                <!-- Filter -->
                 <div class="dropdown dropdown-bottom dropdown-start">
+                    <button
+                        tabindex="0"
+                        role="button"
+                        class="btn btn-ghost btn-circle btn-sm"
+                        :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
+                        @click.stop
+                        :class="{
+                            'text-primary':
+                                filteredClasses.length > 0 ||
+                                filteredOrigins.length > 0 ||
+                                duplicatesStore.showOnlyDuplicated
+                        }"
+                        data-tippy-content="Filters"
+                    >
+                        <FunnelIcon class="w-4" />
+                    </button>
+
+                    <div
+                        tabindex="0"
+                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-64"
+                    >
+                        <ul>
+                            <li
+                                v-show="duplicatesStore.hasDuplicatesInCurrentRequest"
+                                @click="duplicatesStore.toggleShowOnlyDuplicated"
+                                :class="{
+                                    'bg-base-content/10 text-base-content font-medium':
+                                        duplicatesStore.showOnlyDuplicated,
+                                    'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
+                                        !duplicatesStore.showOnlyDuplicated
+                                }"
+                            >
+                                <a class="!text-xs">Duplicated</a>
+                            </li>
+
+                            <li>
+                                <a
+                                    href="#"
+                                    class="!text-xs text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
+                                    >Origin</a
+                                >
+                                <ul tabindex="0">
+                                    <li
+                                        v-for="option in availableOrigins"
+                                        :key="option"
+                                    >
+                                        <label class="!text-xs">
+                                            <input
+                                                type="checkbox"
+                                                :value="option"
+                                                :checked="filteredOrigins.includes(option)"
+                                                @change="
+                                                    () => {
+                                                        if (filteredOrigins.includes(option)) {
+                                                            filteredOrigins = filteredOrigins.filter(
+                                                                (o) => o !== option
+                                                            );
+                                                        } else {
+                                                            filteredOrigins.push(option);
+                                                        }
+                                                    }
+                                                "
+                                                class="checkbox checkbox-sm"
+                                            />
+                                            {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+                                        </label>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a
+                                    href="#"
+                                    class="!text-xs text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
+                                    >Class</a
+                                >
+                                <ul tabindex="0">
+                                    <li
+                                        v-for="className in availableClasses"
+                                        :key="className"
+                                    >
+                                        <label class="!text-xs">
+                                            <input
+                                                type="checkbox"
+                                                :value="className"
+                                                :checked="filteredClasses.includes(className)"
+                                                @change="
+                                                    () => {
+                                                        if (filteredClasses.includes(className)) {
+                                                            filteredClasses = filteredClasses.filter(
+                                                                (c) => c !== className
+                                                            );
+                                                        } else {
+                                                            filteredClasses.push(className);
+                                                        }
+                                                    }
+                                                "
+                                                class="checkbox checkbox-sm"
+                                            />
+                                            <span class="whitespace-nowrap">{{ className.split('\\').pop() }}</span>
+                                        </label>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </template>
+
+            <template #right>
+                <!-- YAML Configuration Dropdown -->
+                <div class="dropdown dropdown-bottom dropdown-end">
                     <button
                         tabindex="0"
                         role="button"
@@ -362,10 +492,7 @@ const setOrder = (order: string) => {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Right: actions -->
-            <div class="flex items-center gap-1">
                 <!-- Actions Dropdown -->
                 <div
                     v-if="queries.length > 0"
@@ -489,116 +616,6 @@ const setOrder = (order: string) => {
                     </ul>
                 </div>
 
-                <!-- Filter -->
-                <div class="dropdown dropdown-bottom dropdown-end">
-                    <button
-                        tabindex="0"
-                        role="button"
-                        class="btn btn-ghost btn-circle btn-sm"
-                        :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
-                        @click.stop
-                        :class="{
-                            'text-primary':
-                                filteredClasses.length > 0 ||
-                                filteredOrigins.length > 0 ||
-                                duplicatesStore.showOnlyDuplicated
-                        }"
-                        data-tippy-content="Filters"
-                    >
-                        <FunnelIcon class="w-4" />
-                    </button>
-
-                    <div
-                        tabindex="0"
-                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-64"
-                    >
-                        <ul>
-                            <li
-                                v-show="duplicatesStore.hasDuplicatesInCurrentRequest"
-                                @click="duplicatesStore.toggleShowOnlyDuplicated"
-                                :class="{
-                                    'bg-base-content/10 text-base-content font-medium':
-                                        duplicatesStore.showOnlyDuplicated,
-                                    'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
-                                        !duplicatesStore.showOnlyDuplicated
-                                }"
-                            >
-                                <a class="!text-xs">Duplicated</a>
-                            </li>
-
-                            <li>
-                                <a
-                                    href="#"
-                                    class="!text-xs text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
-                                    >Origin</a
-                                >
-                                <ul tabindex="0">
-                                    <li
-                                        v-for="option in availableOrigins"
-                                        :key="option"
-                                    >
-                                        <label class="!text-xs">
-                                            <input
-                                                type="checkbox"
-                                                :value="option"
-                                                :checked="filteredOrigins.includes(option)"
-                                                @change="
-                                                    () => {
-                                                        if (filteredOrigins.includes(option)) {
-                                                            filteredOrigins = filteredOrigins.filter(
-                                                                (o) => o !== option
-                                                            );
-                                                        } else {
-                                                            filteredOrigins.push(option);
-                                                        }
-                                                    }
-                                                "
-                                                class="checkbox checkbox-sm"
-                                            />
-                                            {{ option.charAt(0).toUpperCase() + option.slice(1) }}
-                                        </label>
-                                    </li>
-                                </ul>
-                            </li>
-
-                            <li>
-                                <a
-                                    href="#"
-                                    class="!text-xs text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
-                                    >Class</a
-                                >
-                                <ul tabindex="0">
-                                    <li
-                                        v-for="className in availableClasses"
-                                        :key="className"
-                                    >
-                                        <label class="!text-xs">
-                                            <input
-                                                type="checkbox"
-                                                :value="className"
-                                                :checked="filteredClasses.includes(className)"
-                                                @change="
-                                                    () => {
-                                                        if (filteredClasses.includes(className)) {
-                                                            filteredClasses = filteredClasses.filter(
-                                                                (c) => c !== className
-                                                            );
-                                                        } else {
-                                                            filteredClasses.push(className);
-                                                        }
-                                                    }
-                                                "
-                                                class="checkbox checkbox-sm"
-                                            />
-                                            <span class="whitespace-nowrap">{{ className.split('\\').pop() }}</span>
-                                        </label>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
                 <!-- Pause -->
                 <button
                     @click="pauseQueries.toggle()"
@@ -627,8 +644,8 @@ const setOrder = (order: string) => {
                 >
                     <TrashIcon class="w-4" />
                 </button>
-            </div>
-        </div>
+            </template>
+        </ViewToolbar>
 
         <div>
             <dialog
@@ -701,9 +718,9 @@ const setOrder = (order: string) => {
                         class="max-w-1/2 btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
                         @click="openRequestsModal()"
                     >
-                        <ArrowsRightLeftIcon class="w-4 inline-block" />
-                        <span class="opacity-80"> ({{ timeStore.getRequestCount() }}) </span>
-                        <span class="truncate">{{
+                        <ArrowsRightLeftIcon class="w-4 shrink-0" />
+                        <span class="opacity-80 shrink-0"> ({{ timeStore.getRequestCount() }}) </span>
+                        <span class="truncate min-w-0">{{
                             timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : 'Tinker'
                         }}</span>
                     </button>

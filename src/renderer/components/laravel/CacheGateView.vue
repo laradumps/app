@@ -8,6 +8,8 @@ import VueJsonPretty from 'vue-json-pretty';
 import { Payload } from '@/types/Payload';
 import { usePayloadStore } from '@/store/payload';
 import { usePausePayloadStore } from '@/store/pause';
+import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import FilterChip from '@/components/common/FilterChip.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 
 import { PlayIcon, TrashIcon } from '@heroicons/vue/24/outline';
@@ -219,16 +221,21 @@ const clear = () => {
 
 <template>
     <div>
-        <div
+        <ViewToolbar
             v-if="!hideHeader"
-            class="flex items-center justify-between w-full h-9 px-3"
+            :count="items.length"
+            noun="event"
         >
-            <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">
-                {{ title }}
-            </span>
+            <template #chips>
+                <FilterChip
+                    v-if="typeFilter"
+                    :label="typeFilter"
+                    @remove="selectType(typeFilter)"
+                />
+            </template>
 
-            <div class="flex items-center gap-1">
-                <div class="dropdown dropdown-bottom dropdown-end">
+            <template #filter>
+                <div class="dropdown dropdown-bottom dropdown-start">
                     <button
                         tabindex="0"
                         role="button"
@@ -262,7 +269,9 @@ const clear = () => {
                         </li>
                     </ul>
                 </div>
+            </template>
 
+            <template #right>
                 <button
                     @click="pauseStore.toggle()"
                     class="btn btn-ghost btn-circle btn-sm"
@@ -286,10 +295,13 @@ const clear = () => {
                 >
                     <TrashIcon class="w-4" />
                 </button>
-            </div>
-        </div>
+            </template>
+        </ViewToolbar>
 
-        <div :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'">
+        <div
+            class="pt-3"
+            :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"
+        >
             <div
                 v-if="items.length > 0"
                 class="overflow-auto px-3"

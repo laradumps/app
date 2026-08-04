@@ -7,7 +7,6 @@ dayjs.extend(relativeTime);
 import { computed, nextTick, ref } from 'vue';
 import {
     CloudArrowDownIcon,
-    TrashIcon,
     DevicePhoneMobileIcon,
     DeviceTabletIcon,
     ComputerDesktopIcon
@@ -54,11 +53,6 @@ const display = (mail: Mail) => {
         name: previewUrl.value,
         content: modifiedHtml
     });
-};
-
-const clear = () => {
-    visited.value = undefined;
-    mailStore.clear();
 };
 
 const removeMail = (messageId: string) => {
@@ -180,27 +174,6 @@ const setPreviewMode = (mode: string) => {
 
 <template>
     <div>
-        <!-- Actions bar -->
-        <div
-            v-if="!hideHeader"
-            class="flex items-center justify-between w-full h-9 px-3"
-        >
-            <!-- Left: title -->
-            <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">Mail</span>
-
-            <!-- Right: actions -->
-            <div class="flex items-center gap-1">
-                <button
-                    v-if="mails.length > 0"
-                    @click="clear()"
-                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                    data-tippy-content="Clear All"
-                >
-                    <TrashIcon class="w-4" />
-                </button>
-            </div>
-        </div>
-
         <div class="text-sm">
             <dialog
                 id="modal_context"
