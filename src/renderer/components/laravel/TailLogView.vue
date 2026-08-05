@@ -12,7 +12,6 @@ import {
     DocumentMinusIcon,
     ChevronDownIcon,
     ClockIcon,
-    DocumentTextIcon,
     ArrowPathIcon,
     ArrowTopRightOnSquareIcon
 } from '@heroicons/vue/24/outline';
@@ -319,31 +318,39 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                 </template>
 
                 <template #right>
-                    <!-- Watched file chip -->
-                    <span
-                        v-if="fileName"
-                        class="flex items-center gap-1.5 text-[11px] font-mono text-base-content/60 bg-base-content/5 border border-base-content/10 rounded px-2 py-0.5 truncate max-w-[220px]"
-                        :data-tippy-content="tailLogStore.filePath"
-                    >
-                        <span
-                            class="w-1.5 h-1.5 rounded-full shrink-0"
-                            :class="tailLogStore.watching ? 'bg-success' : 'bg-base-content/30'"
-                        ></span>
-                        <span class="truncate">{{ fileName }}</span>
-                    </span>
-
-                    <!-- Choose log file (dropdown of discovered *.log files) -->
+                    <!-- Choose log file (chip trigger + dropdown of discovered *.log files) -->
                     <div class="dropdown dropdown-bottom dropdown-end">
-                        <button
+                        <div
                             tabindex="0"
                             role="button"
-                            class="btn btn-ghost btn-sm gap-1 px-2"
-                            data-tippy-content="Choose log file"
+                            class="flex items-center font-mono truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-7 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/20 rounded-lg transition-colors"
+                            :data-tippy-content="tailLogStore.filePath"
                             @click="openFileDropdown()"
                         >
-                            <DocumentTextIcon class="w-4" />
-                            <ChevronDownIcon class="w-3 opacity-60" />
-                        </button>
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div
+                                    v-if="fileName"
+                                    class="size-2 rounded-full shrink-0"
+                                    :class="
+                                        tailLogStore.watching
+                                            ? 'bg-success shadow-[0_0_8px_rgba(0,180,0,0.6)]'
+                                            : 'bg-base-content/30'
+                                    "
+                                ></div>
+                                <div
+                                    v-else
+                                    class="size-2 rounded-full shrink-0 bg-error"
+                                ></div>
+                                <span
+                                    v-if="fileName"
+                                    class="max-w-[220px] truncate"
+                                >
+                                    {{ fileName }}
+                                </span>
+                                <span v-else>Select log file</span>
+                            </div>
+                            <ChevronDownIcon class="size-3 opacity-50 shrink-0" />
+                        </div>
                         <div
                             tabindex="0"
                             class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-80 max-h-[60vh] flex-nowrap overflow-y-auto"
