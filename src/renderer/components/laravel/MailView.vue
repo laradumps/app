@@ -7,13 +7,13 @@ dayjs.extend(relativeTime);
 import { computed, nextTick, ref } from 'vue';
 import {
     CloudArrowDownIcon,
-    TrashIcon,
     DevicePhoneMobileIcon,
     DeviceTabletIcon,
     ComputerDesktopIcon
 } from '@heroicons/vue/24/outline';
 import IconExternalLink from '@/components/Icons/IconExternalLink.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
+import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import { modifyHtml } from './../utils';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useCurrentProject } from '@/store/current-project';
@@ -53,11 +53,6 @@ const display = (mail: Mail) => {
         name: previewUrl.value,
         content: modifiedHtml
     });
-};
-
-const clear = () => {
-    visited.value = undefined;
-    mailStore.clear();
 };
 
 const removeMail = (messageId: string) => {
@@ -179,27 +174,6 @@ const setPreviewMode = (mode: string) => {
 
 <template>
     <div>
-        <!-- Actions bar -->
-        <div
-            v-if="!hideHeader"
-            class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3"
-        >
-            <!-- Left: title -->
-            <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">Mail</span>
-
-            <!-- Right: actions -->
-            <div class="flex items-center gap-1">
-                <button
-                    v-if="mails.length > 0"
-                    @click="clear()"
-                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                    data-tippy-content="Clear All"
-                >
-                    <TrashIcon class="w-4" />
-                </button>
-            </div>
-        </div>
-
         <div class="text-sm">
             <dialog
                 id="modal_context"
@@ -275,12 +249,13 @@ const setPreviewMode = (mode: string) => {
                 >
                     <template #pane-a>
                         <div
-                            class="overflow-auto flex flex-col gap-1"
+                            class="overflow-auto flex flex-col gap-1 px-3"
                             style="height: -webkit-fill-available"
                         >
                             <div
                                 v-for="mail in mails.slice().reverse()"
                                 :key="mail.message_id"
+                                :id="`ld-anchor-${mail.message_id}`"
                                 :class="{
                                     'hover:bg-base-300 hover:rounded-md': visited?.message_id !== mail.message_id,
                                     'opacity-40 !font-normal': mail.is_read && visited?.message_id !== mail.message_id,
@@ -293,6 +268,11 @@ const setPreviewMode = (mode: string) => {
                                 <div class="flex justify-between items-center cursor-pointer">
                                     <div class="truncate">{{ mail.from_mail }}</div>
                                     <div class="flex items-center gap-2">
+                                        <RelatedJobButton
+                                            v-if="mail.related_job"
+                                            :related-job="mail.related_job"
+                                            :origin-id="mail.message_id"
+                                        />
                                         <span class="px-1 text-xs">{{ dayjs(mail.date).format('HH:mm') }}</span>
                                         <button
                                             @click.stop="removeMail(mail.message_id)"

@@ -471,7 +471,7 @@ const handleMail = (_: any, { content }: any) => {
         applicationPath.value = content.application_path;
     }
 
-    mailStore.addOrUpdateMail(content.mail, content.ide_handle, content.context);
+    mailStore.addOrUpdateMail(content.mail, content.ide_handle, content.context, content.related_job);
 };
 
 const handleLabel = (_: any, { content }: any) => {

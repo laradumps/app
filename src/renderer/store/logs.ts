@@ -15,6 +15,7 @@ export type Log = {
     color: string;
     queries: string[];
     requests: any[];
+    related_job?: { job_id: string; display_name: string };
     app?: {
         php_version: string;
         laravel_version: string;
@@ -76,6 +77,7 @@ export const useLogStore = defineStore('logStore', {
                 color: this._parseColor(log_application.level),
                 queries: log_application.queries || [],
                 requests: log_application.request || [],
+                related_job: payload.related_job || undefined,
                 app: log_application.app || undefined
             };
         },

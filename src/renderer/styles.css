@@ -494,3 +494,20 @@ html:not([data-theme='light']) .hljs-meta .hljs-string {
 .hljs-tag {
     /* purposely ignored */
 }
+
+@keyframes ld-dump-focus-blink {
+    0% {
+        background-color: transparent;
+    }
+    30% {
+        background-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.ld-dump-focus {
+    animation: ld-dump-focus-blink 1.6s ease-in-out 1;
+    border-radius: 0.375rem;
+}

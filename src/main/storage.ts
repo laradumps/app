@@ -51,6 +51,8 @@ const CHANNELS = {
     STORAGE_SET_ENVIRONMENTS_ORDER: 'storage.set-environments-order',
     STORAGE_SET_PROJECTS_ORDER: 'storage.set-projects-order',
     STORAGE_GET_PROJECTS_ORDER: 'storage.get-projects-order',
+    STORAGE_GET_APP_URL: 'storage.get-app-url',
+    STORAGE_GET_APP_URL_REPLY: 'storage.get-app-url.reply',
 
     APP_SETTING_PROJECT_ADDED: 'app-setting:project-added',
     STORAGE_SET_ACTIVE_REPLY: 'storage.set-active.reply'
@@ -67,6 +69,7 @@ export const init = async () => {
     ipcMain.on(CHANNELS.STORAGE_SET_ENVIRONMENTS_ORDER, setEnvironmentsOrder);
     ipcMain.on(CHANNELS.STORAGE_SET_PROJECTS_ORDER, setProjectsOrder);
     ipcMain.on(CHANNELS.STORAGE_GET_PROJECTS_ORDER, getProjectsOrder);
+    ipcMain.on(CHANNELS.STORAGE_GET_APP_URL, getAppUrl);
 };
 
 const getEnvironments = (event: IpcMainEvent) => {
@@ -308,5 +311,17 @@ const getProjectsOrder = (event: IpcMainEvent) => {
     } catch (err) {
         console.error('Error getting projects order:', err);
         event.reply(CHANNELS.STORAGE_GET_PROJECTS_ORDER, []);
+    }
+};
+
+const getAppUrl = (event: IpcMainEvent, projectPath: string) => {
+    try {
+        const envFile = path.join(projectPath, '.env');
+        const content = fs.readFileSync(envFile, 'utf8');
+        const match = content.match(/^APP_URL\s*=\s*(.*)$/m);
+        const appUrl = match ? match[1].trim().replace(/^["']|["']$/g, '') : null;
+        event.reply(CHANNELS.STORAGE_GET_APP_URL_REPLY, appUrl);
+    } catch (e) {
+        event.reply(CHANNELS.STORAGE_GET_APP_URL_REPLY, null);
     }
 };

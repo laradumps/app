@@ -11,11 +11,15 @@ import {
     CheckIcon,
     CogIcon,
     ChevronDownIcon,
+    ClockIcon,
     ArrowTopRightOnSquareIcon
 } from '@heroicons/vue/24/outline';
 
 import { Log, useLogStore } from '@/store/logs';
+import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import FilterChip from '@/components/common/FilterChip.vue';
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import { useColorStore } from '@/store/colors';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
@@ -40,6 +44,11 @@ const expandedLogId = ref<string | null>(null);
 const levelFilter = ref<string[]>([]);
 const copiedLogId = ref<string | null>(null);
 const expandedRequestLogIds = ref<Set<string>>(new Set());
+const collapsedGroups = ref<Record<string, boolean>>({});
+
+const toggleGroup = (timeKey: string) => {
+    collapsedGroups.value[timeKey] = !collapsedGroups.value[timeKey];
+};
 
 const toggleRequestSection = (logId: string) => {
     const s = expandedRequestLogIds.value;
@@ -106,18 +115,44 @@ const logs = computed(() => {
         });
 });
 
+const displayLastLog = computed<boolean>({
+    get: () => {
+        return settingsStore.settings?.display_last_log ?? false;
+    },
+    set: (val: boolean) => {
+        if (!settingsStore.settings) return;
+        settingsStore.settings.display_last_log = val;
+        settingsStore.update();
+        if (!val) {
+            expandedLogId.value = null;
+        }
+    }
+});
+
+const isAnyLogExpanded = computed(() => {
+    if (expandedLogId.value === null) return false;
+    const focused = logs.value?.find((log) => log.log_id === expandedLogId.value);
+    if (!focused) return false;
+    const timeKey = dayjs(focused.created_at).fromNow();
+    return !collapsedGroups.value[timeKey];
+});
+
 watch(
     logs,
     (newLogs, oldLogs) => {
-        if (newLogs.length > 0) {
+        if (newLogs && newLogs.length > 0) {
             const newestLogId = newLogs[0].log_id;
 
-            const shouldDisplayLast = settingsStore.settings?.display_last_log ?? true;
+            const shouldDisplayLast = settingsStore.settings?.display_last_log ?? false;
             if (shouldDisplayLast) {
                 if (!oldLogs || oldLogs.length === 0 || (oldLogs.length > 0 && newestLogId !== oldLogs[0].log_id)) {
                     expandedLogId.value = newestLogId;
                 }
             }
+        }
+
+        if (expandedLogId.value && (!newLogs || !newLogs.some((log) => log.log_id === expandedLogId.value))) {
+            expandedLogId.value = null;
         }
     },
     { immediate: true }
@@ -130,6 +165,7 @@ watch(expandedLogId, (newId) => {
 
     nextTick(() => {
         const findLog = logs.value.find((log) => log.log_id === newId);
+        if (!findLog || !findLog.context) return;
         const sfDumpId = findLog.context[1];
 
         const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
@@ -294,38 +330,112 @@ const canCopyToMarkdown = computed(() => {
         return !containsEmptySfDump;
     };
 });
-
-const displayLastLog = computed<boolean>({
-    get: () => {
-        return settingsStore.settings?.display_last_log ?? true;
-    },
-    set: (val: boolean) => {
-        if (!settingsStore.settings) return;
-        settingsStore.settings.display_last_log = val;
-        settingsStore.update();
-        if (!val) {
-            expandedLogId.value = null;
-        }
-    }
-});
 </script>
 
 <template>
     <div>
         <div>
             <!-- Actions Bar -->
-            <div
+            <ViewToolbar
                 v-if="!hideHeader"
-                class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3"
+                :count="logs.length"
+                noun="log"
             >
-                <!-- Left: title + YAML cog -->
-                <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none"
-                        >Logs</span
-                    >
+                <template #chips>
+                    <FilterChip
+                        v-for="lvl in levelFilter"
+                        :key="lvl"
+                        :label="lvl"
+                        @remove="selectedLevel(lvl)"
+                    />
+                </template>
+
+                <template #filter>
+                    <!-- Filter Levels -->
+                    <div class="dropdown dropdown-bottom dropdown-start">
+                        <button
+                            tabindex="0"
+                            role="button"
+                            class="btn btn-ghost btn-circle btn-sm"
+                            data-tippy-content="Filter Levels"
+                        >
+                            <FunnelIcon
+                                v-if="levelFilter.length === 0"
+                                class="w-4"
+                            />
+                            <FunnelIcon
+                                v-else
+                                class="w-4 text-primary"
+                            />
+                        </button>
+                        <div
+                            tabindex="0"
+                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
+                        >
+                            <div class="flex flex-col gap-1.5">
+                                <button
+                                    v-for="level in [
+                                        'debug',
+                                        'info',
+                                        'notice',
+                                        'warning',
+                                        'error',
+                                        'critical',
+                                        'alert',
+                                        'emergency'
+                                    ]"
+                                    :key="level"
+                                    @click="selectedLevel(level)"
+                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
+                                    :class="
+                                        levelFilter.includes(level)
+                                            ? 'bg-base-content/10 text-base-content font-medium'
+                                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                                    "
+                                >
+                                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
+                                        <span
+                                            v-if="levelFilter.includes(level)"
+                                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
+                                        ></span>
+                                        <span
+                                            class="relative inline-flex rounded-full size-2 transition-all duration-200"
+                                            :class="
+                                                levelFilter.includes(level)
+                                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
+                                                    : 'bg-base-content/20'
+                                            "
+                                        ></span>
+                                    </div>
+                                    <span class="truncate capitalize text-xs whitespace-nowrap">{{ level }}</span>
+                                    <span class="ml-auto text-base-content/40 text-[10px]">{{
+                                        levelCounts[level] || 0
+                                    }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <template #right>
+                    <!-- Auto Expand Toggle -->
+                    <div class="flex items-center gap-1.5 px-1">
+                        <label
+                            for="toggle-display-last"
+                            class="text-[10px] uppercase tracking-wider font-semibold opacity-40 select-none cursor-pointer"
+                            >Auto Expand</label
+                        >
+                        <input
+                            id="toggle-display-last"
+                            type="checkbox"
+                            class="toggle toggle-xs toggle-success"
+                            v-model="displayLastLog"
+                            data-tippy-content="Auto expand newest log"
+                        />
+                    </div>
 
                     <!-- YAML Configuration Dropdown -->
-                    <div class="dropdown dropdown-bottom dropdown-start">
+                    <div class="dropdown dropdown-bottom dropdown-end">
                         <button
                             tabindex="0"
                             role="button"
@@ -383,92 +493,8 @@ const displayLastLog = computed<boolean>({
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Right: actions -->
-                <div class="flex items-center gap-1">
-                    <!-- Auto Expand Toggle -->
-                    <div class="flex items-center gap-1.5 px-1">
-                        <label
-                            for="toggle-display-last"
-                            class="text-[10px] uppercase tracking-wider font-semibold opacity-40 select-none cursor-pointer"
-                            >Auto Expand</label
-                        >
-                        <input
-                            id="toggle-display-last"
-                            type="checkbox"
-                            class="toggle toggle-xs toggle-success"
-                            v-model="displayLastLog"
-                            data-tippy-content="Auto expand newest log"
-                        />
-                    </div>
 
                     <div class="w-px h-4 bg-base-content/10 mx-0.5"></div>
-
-                    <!-- Filter Levels -->
-                    <div class="dropdown dropdown-bottom dropdown-end">
-                        <button
-                            tabindex="0"
-                            role="button"
-                            class="btn btn-ghost btn-circle btn-sm"
-                            data-tippy-content="Filter Levels"
-                        >
-                            <FunnelIcon
-                                v-if="levelFilter.length === 0"
-                                class="w-4"
-                            />
-                            <FunnelIcon
-                                v-else
-                                class="w-5 text-primary"
-                            />
-                        </button>
-                        <div
-                            tabindex="0"
-                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
-                        >
-                            <div class="flex flex-col gap-1.5">
-                                <button
-                                    v-for="level in [
-                                        'debug',
-                                        'info',
-                                        'notice',
-                                        'warning',
-                                        'error',
-                                        'critical',
-                                        'alert',
-                                        'emergency'
-                                    ]"
-                                    :key="level"
-                                    @click="selectedLevel(level)"
-                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
-                                    :class="
-                                        levelFilter.includes(level)
-                                            ? 'bg-base-content/10 text-base-content font-medium'
-                                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                                    "
-                                >
-                                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
-                                        <span
-                                            v-if="levelFilter.includes(level)"
-                                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                                        ></span>
-                                        <span
-                                            class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                            :class="
-                                                levelFilter.includes(level)
-                                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                                    : 'bg-base-content/20'
-                                            "
-                                        ></span>
-                                    </div>
-                                    <span class="truncate capitalize text-xs whitespace-nowrap">{{ level }}</span>
-                                    <span class="ml-auto text-base-content/40 text-[10px]">{{
-                                        levelCounts[level] || 0
-                                    }}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Pause -->
                     <button
@@ -495,21 +521,21 @@ const displayLastLog = computed<boolean>({
                     >
                         <TrashIcon class="w-4" />
                     </button>
-                </div>
-            </div>
+                </template>
+            </ViewToolbar>
 
-            <div class="h-[calc(100vh-140px)]">
+            <div class="h-[calc(100vh-140px)] pt-3">
                 <div
                     v-if="logs.length > 0"
-                    class="overflow-auto"
+                    class="overflow-y-auto overflow-x-hidden px-3"
                     style="height: -webkit-fill-available"
                 >
                     <table class="table table-pin-rows table-fixed w-full log-table">
                         <thead>
                             <tr class="text-xs bg-base-300! font-light text-base-content">
-                                <th class="w-[120px]">Level</th>
+                                <th class="w-[90px]">Level</th>
                                 <th>Message</th>
-                                <th class="w-[190px]">Origin</th>
+                                <th class="w-[190px] text-right">Origin</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -519,36 +545,53 @@ const displayLastLog = computed<boolean>({
                             >
                                 <!-- Time Group Header -->
                                 <tr
-                                    class="bg-base-200 text-xs font-semibold"
-                                    :class="{
-                                        'blur-sm opacity-40':
-                                            expandedLogId !== null &&
-                                            !logsOnTime.some((log) => log.log_id === expandedLogId)
-                                    }"
+                                    class="bg-base-200/60"
+                                    :class="{ 'blur-sm opacity-40': isAnyLogExpanded }"
                                 >
                                     <td
                                         colspan="3"
-                                        class="select-none text-base-content/60"
+                                        class="p-0!"
                                     >
-                                        {{ timeKey }}
+                                        <div
+                                            class="group flex items-center gap-2.5 px-3 py-2 cursor-pointer select-none"
+                                            @click="toggleGroup(timeKey)"
+                                        >
+                                            <ClockIcon class="w-3.5 h-3.5 text-base-content/40 shrink-0" />
+                                            <span
+                                                class="text-xs tracking-wider text-base-content/70 group-hover:text-base-content whitespace-nowrap transition-colors"
+                                            >
+                                                {{ timeKey }}
+                                            </span>
+                                            <span class="h-px flex-1 bg-base-content/10"></span>
+                                            <span
+                                                class="font-mono text-[10px] text-base-content/50 bg-base-content/10 rounded-full px-2 py-0.5 shrink-0"
+                                            >
+                                                {{ logsOnTime.length }}
+                                            </span>
+                                            <ChevronDownIcon
+                                                class="w-3.5 h-3.5 text-base-content/40 shrink-0 transition-transform duration-200"
+                                                :class="{ '-rotate-90': collapsedGroups[timeKey] }"
+                                            />
+                                        </div>
                                     </td>
                                 </tr>
 
                                 <!-- Logs -->
                                 <template
                                     v-for="log in logsOnTime"
+                                    v-if="!collapsedGroups[timeKey]"
                                     :key="`log-group-${log.log_id}`"
                                 >
                                     <!-- Log Row -->
                                     <tr
                                         :data-log-id="log.log_id"
+                                        :id="`ld-anchor-${log.log_id}`"
                                         @click="toggleLogExpand(log.log_id)"
                                         class="hover:bg-base-100 cursor-pointer transition-all duration-200"
                                         :class="[
-                                            { 'bg-base-300': expandedLogId === log.log_id },
+                                            { 'ld-focus-row relative z-10': expandedLogId === log.log_id },
                                             {
-                                                'blur-xs opacity-40':
-                                                    expandedLogId !== null && expandedLogId !== log.log_id
+                                                'blur-xs opacity-40': isAnyLogExpanded && expandedLogId !== log.log_id
                                             }
                                         ]"
                                     >
@@ -566,45 +609,62 @@ const displayLastLog = computed<boolean>({
                                             </span>
                                         </td>
                                         <!-- Message (single line) -->
-                                        <td class="text-xs truncate">
-                                            <span :title="log.message">{{ log.message }}</span>
+                                        <td class="text-xs">
+                                            <div class="flex items-center justify-between gap-2 min-w-0">
+                                                <span
+                                                    class="truncate min-w-0"
+                                                    :title="log.message"
+                                                    >{{ log.message }}</span
+                                                >
+                                                <div class="flex items-center gap-2 shrink-0">
+                                                    <RelatedJobButton
+                                                        v-if="log.related_job"
+                                                        :related-job="log.related_job"
+                                                        :origin-id="log.log_id"
+                                                    />
+                                                    <span
+                                                        class="font-mono text-[10px] text-base-content/50 whitespace-nowrap"
+                                                    >
+                                                        {{ dayjs(log.created_at).format('HH:mm:ss') }}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </td>
                                         <!-- Origin -->
-                                        <td class="text-xs truncate">
-                                            <DumpLink
-                                                v-if="showOrigin(log)"
-                                                :ide-handler="log.ide_handle"
-                                                truncate
-                                                class="opacity-70 hover:opacity-100"
-                                            />
-                                            <span
-                                                v-else
-                                                class="opacity-40"
-                                                >—</span
-                                            >
+                                        <td class="text-xs truncate text-right">
+                                            <div class="flex justify-end min-w-0">
+                                                <DumpLink
+                                                    v-if="showOrigin(log)"
+                                                    :ide-handler="log.ide_handle"
+                                                    truncate
+                                                    middle-truncate
+                                                    :max-length="24"
+                                                    class="opacity-70 hover:opacity-100"
+                                                />
+                                                <span
+                                                    v-else
+                                                    class="opacity-40"
+                                                    >—</span
+                                                >
+                                            </div>
                                         </td>
                                     </tr>
 
                                     <!-- Expanded Content -->
                                     <tr
                                         v-if="expandedLogId === log.log_id"
-                                        class="bg-base-200/60"
+                                        class="ld-focus-detail relative z-10"
                                     >
-                                        <td colspan="3">
+                                        <td
+                                            colspan="3"
+                                            class="!py-3"
+                                        >
                                             <!-- Full message + timestamp -->
                                             <div class="mb-3">
-                                                <div
-                                                    class="text-[10px] uppercase tracking-widest text-base-content/50 mb-1"
-                                                >
-                                                    Message
-                                                </div>
                                                 <div
                                                     class="text-xs bg-base-100 border border-base-content/10 rounded-lg p-2.5 leading-relaxed font-mono break-words whitespace-pre-wrap"
                                                 >
                                                     {{ log.message }}
-                                                </div>
-                                                <div class="text-[10px] text-base-content/50 mt-1.5 font-mono">
-                                                    {{ dayjs(log.created_at).format('YYYY-MM-DD HH:mm:ss') }}
                                                 </div>
                                             </div>
 
@@ -823,5 +883,36 @@ const displayLastLog = computed<boolean>({
 
 :deep(.log-table > tbody > tr > :where(th, td)) {
     @apply p-1.5 px-2;
+}
+
+/* Focused log renders as a floating card above the blurred background */
+:deep(.log-table) {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+:deep(.log-table tr.ld-focus-row > td),
+:deep(.log-table tr.ld-focus-detail > td) {
+    background-color: var(--color-base-100);
+}
+
+:deep(.log-table tr.ld-focus-row > td) {
+    box-shadow: 0 -12px 28px -14px rgba(0, 0, 0, 0.4);
+}
+
+:deep(.log-table tr.ld-focus-row > td:first-child) {
+    border-top-left-radius: 0.6rem;
+    box-shadow: -10px -12px 28px -14px rgba(0, 0, 0, 0.4);
+}
+
+:deep(.log-table tr.ld-focus-row > td:last-child) {
+    border-top-right-radius: 0.6rem;
+    box-shadow: 10px -12px 28px -14px rgba(0, 0, 0, 0.4);
+}
+
+:deep(.log-table tr.ld-focus-detail > td) {
+    border-bottom-left-radius: 0.6rem;
+    border-bottom-right-radius: 0.6rem;
+    box-shadow: 0 14px 28px -14px rgba(0, 0, 0, 0.4);
 }
 </style>
