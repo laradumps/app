@@ -575,7 +575,7 @@ const toggleActionExpanded = (action: any) => {
                 >
                     <SvgEmpty class="w-30 opacity-25" />
                     <div class="text-base-content/70">
-                        <h1 class="text-lg font-semibold mb-2">Empty</h1>
+                        <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
                     </div>
                 </div>
             </div>

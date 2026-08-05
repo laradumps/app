@@ -12,7 +12,6 @@ import {
     DocumentMinusIcon,
     ChevronDownIcon,
     ClockIcon,
-    DocumentTextIcon,
     ArrowPathIcon,
     ArrowTopRightOnSquareIcon
 } from '@heroicons/vue/24/outline';
@@ -269,7 +268,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                             tabindex="0"
                             role="button"
                             class="btn btn-ghost btn-circle btn-sm"
-                            data-tippy-content="Filter Levels"
+                            :data-tippy-content="$t('filter_levels')"
                         >
                             <FunnelIcon :class="levelFilter.length === 0 ? 'w-4' : 'w-4 text-primary'" />
                         </button>
@@ -319,31 +318,39 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                 </template>
 
                 <template #right>
-                    <!-- Watched file chip -->
-                    <span
-                        v-if="fileName"
-                        class="flex items-center gap-1.5 text-[11px] font-mono text-base-content/60 bg-base-content/5 border border-base-content/10 rounded px-2 py-0.5 truncate max-w-[220px]"
-                        :data-tippy-content="tailLogStore.filePath"
-                    >
-                        <span
-                            class="w-1.5 h-1.5 rounded-full shrink-0"
-                            :class="tailLogStore.watching ? 'bg-success' : 'bg-base-content/30'"
-                        ></span>
-                        <span class="truncate">{{ fileName }}</span>
-                    </span>
-
-                    <!-- Choose log file (dropdown of discovered *.log files) -->
+                    <!-- Choose log file (chip trigger + dropdown of discovered *.log files) -->
                     <div class="dropdown dropdown-bottom dropdown-end">
-                        <button
+                        <div
                             tabindex="0"
                             role="button"
-                            class="btn btn-ghost btn-sm gap-1 px-2"
-                            data-tippy-content="Choose log file"
+                            class="flex items-center font-medium truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-7 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/20 rounded-lg transition-colors"
+                            :data-tippy-content="tailLogStore.filePath"
                             @click="openFileDropdown()"
                         >
-                            <DocumentTextIcon class="w-4" />
-                            <ChevronDownIcon class="w-3 opacity-60" />
-                        </button>
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div
+                                    v-if="fileName"
+                                    class="size-2 rounded-full shrink-0"
+                                    :class="
+                                        tailLogStore.watching
+                                            ? 'bg-success shadow-[0_0_8px_rgba(0,180,0,0.6)]'
+                                            : 'bg-base-content/30'
+                                    "
+                                ></div>
+                                <div
+                                    v-else
+                                    class="size-2 rounded-full shrink-0 bg-error"
+                                ></div>
+                                <span
+                                    v-if="fileName"
+                                    class="max-w-[220px] truncate"
+                                >
+                                    {{ fileName }}
+                                </span>
+                                <span v-else>{{ $t('tail_log.select_log_file') }}</span>
+                            </div>
+                            <ChevronDownIcon class="size-3 opacity-50 shrink-0" />
+                        </div>
                         <div
                             tabindex="0"
                             class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-80 max-h-[60vh] flex-nowrap overflow-y-auto"
@@ -353,12 +360,12 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                 class="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-base-content/10"
                             >
                                 <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/50">
-                                    Log files
+                                    {{ $t('tail_log.log_files') }}
                                 </span>
                                 <button
                                     @click.stop="refreshFiles()"
                                     class="btn btn-ghost btn-xs btn-circle"
-                                    data-tippy-content="Rescan"
+                                    :data-tippy-content="$t('tail_log.rescan')"
                                 >
                                     <ArrowPathIcon
                                         class="w-3.5"
@@ -372,7 +379,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                 v-if="!tailLogStore.loadingFiles && availableFiles.length === 0"
                                 class="px-3 py-4 text-center text-xs text-base-content/50"
                             >
-                                No .log files found.
+                                {{ $t('tail_log.no_log_files_found') }}
                             </div>
 
                             <!-- File list -->
@@ -407,7 +414,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                     class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-left w-full text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
                                 >
                                     <FolderOpenIcon class="w-4 shrink-0" />
-                                    <span class="text-xs">Choose another file…</span>
+                                    <span class="text-xs">{{ $t('tail_log.choose_another_file') }}</span>
                                 </button>
                             </div>
                         </div>
@@ -418,7 +425,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                         v-if="tailLogStore.filePath"
                         @click="clearFile()"
                         class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                        data-tippy-content="Clear log file contents"
+                        :data-tippy-content="$t('tail_log.clear_log_file_contents')"
                     >
                         <DocumentMinusIcon class="w-4" />
                     </button>
@@ -443,9 +450,9 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                     <table class="table table-pin-rows table-fixed w-full log-table">
                         <thead>
                             <tr class="text-xs bg-base-300! font-light text-base-content">
-                                <th class="w-[90px]">Level</th>
-                                <th>Message</th>
-                                <th class="w-[190px] text-right">Origin</th>
+                                <th class="w-[90px]">{{ $t('level') }}</th>
+                                <th>{{ $t('message') }}</th>
+                                <th class="w-[190px] text-right">{{ $t('origin') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -578,7 +585,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                                 <div
                                                     class="text-[10px] uppercase tracking-widest text-base-content/50 mb-1"
                                                 >
-                                                    Origin
+                                                    {{ $t('origin') }}
                                                 </div>
                                                 <a
                                                     :href="generateLink(log.ide_handle)"
@@ -599,7 +606,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                                 <button
                                                     @click.stop="copyToMarkdown(log)"
                                                     class="btn btn-sm btn-soft gap-2"
-                                                    data-tippy-content="Copy to Markdown"
+                                                    :data-tippy-content="$t('copy_to_markdown')"
                                                 >
                                                     <CheckIcon
                                                         v-if="copiedLogId === log.log_id"
@@ -609,7 +616,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                                         v-else
                                                         class="w-4"
                                                     />
-                                                    Copy to Markdown
+                                                    {{ $t('copy_to_markdown') }}
                                                 </button>
                                             </div>
 
@@ -640,7 +647,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                 >
                     <SvgEmpty class="opacity-25 w-30" />
                     <div class="text-base-content/70">
-                        <h1 class="mb-2 text-lg font-semibold">Empty</h1>
+                        <h1 class="mb-2 text-lg font-semibold">{{ $t('empty') }}</h1>
                     </div>
                 </div>
             </div>
