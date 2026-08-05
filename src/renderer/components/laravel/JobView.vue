@@ -607,7 +607,7 @@ const toggleMessageLimit = () => {
                                 <span>Duration</span>
                                 <span v-if="sortBy === 'duration'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             </th>
-                            <th class="w-[190px] text-right">Origin</th>
+                            <th class="w-[190px] text-right">{{ $t('origin') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -724,7 +724,7 @@ const toggleMessageLimit = () => {
             >
                 <SvgEmpty class="w-30 opacity-25" />
                 <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
+                    <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
                 </div>
             </div>
         </div>

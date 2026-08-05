@@ -357,7 +357,7 @@ const canCopyToMarkdown = computed(() => {
                             tabindex="0"
                             role="button"
                             class="btn btn-ghost btn-circle btn-sm"
-                            data-tippy-content="Filter Levels"
+                            :data-tippy-content="$t('filter_levels')"
                         >
                             <FunnelIcon
                                 v-if="levelFilter.length === 0"
@@ -533,9 +533,9 @@ const canCopyToMarkdown = computed(() => {
                     <table class="table table-pin-rows table-fixed w-full log-table">
                         <thead>
                             <tr class="text-xs bg-base-300! font-light text-base-content">
-                                <th class="w-[90px]">Level</th>
-                                <th>Message</th>
-                                <th class="w-[190px] text-right">Origin</th>
+                                <th class="w-[90px]">{{ $t('level') }}</th>
+                                <th>{{ $t('message') }}</th>
+                                <th class="w-[190px] text-right">{{ $t('origin') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -676,7 +676,7 @@ const canCopyToMarkdown = computed(() => {
                                                 <div
                                                     class="text-[10px] uppercase tracking-widest text-base-content/50 mb-1"
                                                 >
-                                                    Origin
+                                                    {{ $t('origin') }}
                                                 </div>
                                                 <a
                                                     :href="generateLink(log.ide_handle)"
@@ -698,7 +698,7 @@ const canCopyToMarkdown = computed(() => {
                                                 <button
                                                     @click.stop="copyToMarkdown(log)"
                                                     class="btn btn-sm btn-soft gap-2"
-                                                    data-tippy-content="Copy to Markdown"
+                                                    :data-tippy-content="$t('copy_to_markdown')"
                                                 >
                                                     <CheckIcon
                                                         v-if="copiedLogId === log.log_id"
@@ -708,7 +708,7 @@ const canCopyToMarkdown = computed(() => {
                                                         v-else
                                                         class="w-4"
                                                     />
-                                                    Copy to Markdown
+                                                    {{ $t('copy_to_markdown') }}
                                                 </button>
                                             </div>
 
@@ -866,7 +866,7 @@ const canCopyToMarkdown = computed(() => {
                 >
                     <SvgEmpty class="opacity-25 w-30" />
                     <div class="text-base-content/70">
-                        <h1 class="mb-2 text-lg font-semibold">Empty</h1>
+                        <h1 class="mb-2 text-lg font-semibold">{{ $t('empty') }}</h1>
                     </div>
                 </div>
             </div>
