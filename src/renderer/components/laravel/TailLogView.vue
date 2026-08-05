@@ -94,7 +94,11 @@ const logs = computed(() => {
 });
 
 const isAnyLogExpanded = computed(() => {
-    return expandedLogId.value !== null && (logs.value?.some((log) => log.log_id === expandedLogId.value) ?? false);
+    if (expandedLogId.value === null) return false;
+    const focused = logs.value?.find((log) => log.log_id === expandedLogId.value);
+    if (!focused) return false;
+    const timeKey = dayjs(focused.created_at).fromNow();
+    return !collapsedGroups.value[timeKey];
 });
 
 watch(
@@ -452,10 +456,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                 <!-- Time Group Header -->
                                 <tr
                                     class="bg-base-200/60"
-                                    :class="{
-                                        'blur-sm opacity-40':
-                                            isAnyLogExpanded && !logsOnTime?.some((log) => log.log_id === expandedLogId)
-                                    }"
+                                    :class="{ 'blur-sm opacity-40': isAnyLogExpanded }"
                                 >
                                     <td
                                         colspan="3"
@@ -497,7 +498,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                         @click="toggleLogExpand(log.log_id)"
                                         class="hover:bg-base-100 cursor-pointer transition-all duration-200"
                                         :class="[
-                                            { 'bg-base-300': expandedLogId === log.log_id },
+                                            { 'ld-focus-row relative z-10': expandedLogId === log.log_id },
                                             {
                                                 'blur-xs opacity-40': isAnyLogExpanded && expandedLogId !== log.log_id
                                             }
@@ -524,7 +525,9 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                                     :title="log.message"
                                                     >{{ log.message }}</span
                                                 >
-                                                <span class="font-mono text-[10px] text-base-content/50 whitespace-nowrap shrink-0">
+                                                <span
+                                                    class="font-mono text-[10px] text-base-content/50 whitespace-nowrap shrink-0"
+                                                >
                                                     {{ dayjs(log.created_at).format('HH:mm:ss') }}
                                                 </span>
                                             </div>
@@ -552,7 +555,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                     <!-- Expanded Content -->
                                     <tr
                                         v-if="expandedLogId === log.log_id"
-                                        class="bg-base-200/60"
+                                        class="ld-focus-detail relative z-10"
                                     >
                                         <td
                                             colspan="3"
@@ -654,5 +657,36 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
 
 :deep(.log-table > tbody > tr > :where(th, td)) {
     @apply p-1.5 px-2;
+}
+
+/* Focused log renders as a floating card above the blurred background */
+:deep(.log-table) {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+:deep(.log-table tr.ld-focus-row > td),
+:deep(.log-table tr.ld-focus-detail > td) {
+    background-color: var(--color-base-100);
+}
+
+:deep(.log-table tr.ld-focus-row > td) {
+    box-shadow: 0 -12px 28px -14px rgba(0, 0, 0, 0.4);
+}
+
+:deep(.log-table tr.ld-focus-row > td:first-child) {
+    border-top-left-radius: 0.6rem;
+    box-shadow: -10px -12px 28px -14px rgba(0, 0, 0, 0.4);
+}
+
+:deep(.log-table tr.ld-focus-row > td:last-child) {
+    border-top-right-radius: 0.6rem;
+    box-shadow: 10px -12px 28px -14px rgba(0, 0, 0, 0.4);
+}
+
+:deep(.log-table tr.ld-focus-detail > td) {
+    border-bottom-left-radius: 0.6rem;
+    border-bottom-right-radius: 0.6rem;
+    box-shadow: 0 14px 28px -14px rgba(0, 0, 0, 0.4);
 }
 </style>
