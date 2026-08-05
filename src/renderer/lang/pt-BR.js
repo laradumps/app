@@ -179,7 +179,15 @@ export default {
         timeline: 'Linha do tempo',
         hotspots: 'Hotspots',
         flame: 'Flame',
-        no_profiles: 'Nenhum profile',
-        empty_hint: 'Use ds()->startProfile() e ds()->stopProfile()'
+        setup: {
+            title: 'Configurar o profiler',
+            subtitle: 'Instale estes para começar a capturar profiles.',
+            required: 'Obrigatório',
+            optional: 'Opcional',
+            xhprof_name: 'extensão xhprof',
+            xhprof_hint: 'hotspots de CPU e memória',
+            note: 'O profiling fica desligado até o SDK ser instalado.',
+            recheck: 'Verificar novamente'
+        }
     }
 };
