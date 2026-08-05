@@ -11,6 +11,7 @@ import {
     CheckIcon,
     CogIcon,
     ChevronDownIcon,
+    ClockIcon,
     ArrowTopRightOnSquareIcon
 } from '@heroicons/vue/24/outline';
 
@@ -43,6 +44,11 @@ const expandedLogId = ref<string | null>(null);
 const levelFilter = ref<string[]>([]);
 const copiedLogId = ref<string | null>(null);
 const expandedRequestLogIds = ref<Set<string>>(new Set());
+const collapsedGroups = ref<Record<string, boolean>>({});
+
+const toggleGroup = (timeKey: string) => {
+    collapsedGroups.value[timeKey] = !collapsedGroups.value[timeKey];
+};
 
 const toggleRequestSection = (logId: string) => {
     const s = expandedRequestLogIds.value;
@@ -535,7 +541,7 @@ const canCopyToMarkdown = computed(() => {
                             >
                                 <!-- Time Group Header -->
                                 <tr
-                                    class="bg-base-200 text-xs font-semibold"
+                                    class="bg-base-200/60"
                                     :class="{
                                         'blur-sm opacity-40':
                                             isAnyLogExpanded && !logsOnTime?.some((log) => log.log_id === expandedLogId)
@@ -543,15 +549,36 @@ const canCopyToMarkdown = computed(() => {
                                 >
                                     <td
                                         colspan="3"
-                                        class="select-none text-base-content/60"
+                                        class="p-0!"
                                     >
-                                        {{ timeKey }}
+                                        <div
+                                            class="group flex items-center gap-2.5 px-3 py-2 cursor-pointer select-none"
+                                            @click="toggleGroup(timeKey)"
+                                        >
+                                            <ClockIcon class="w-3.5 h-3.5 text-base-content/40 shrink-0" />
+                                            <span
+                                                class="text-xs tracking-wider text-base-content/70 group-hover:text-base-content whitespace-nowrap transition-colors"
+                                            >
+                                                {{ timeKey }}
+                                            </span>
+                                            <span class="h-px flex-1 bg-base-content/10"></span>
+                                            <span
+                                                class="font-mono text-[10px] text-base-content/50 bg-base-content/10 rounded-full px-2 py-0.5 shrink-0"
+                                            >
+                                                {{ logsOnTime.length }}
+                                            </span>
+                                            <ChevronDownIcon
+                                                class="w-3.5 h-3.5 text-base-content/40 shrink-0 transition-transform duration-200"
+                                                :class="{ '-rotate-90': collapsedGroups[timeKey] }"
+                                            />
+                                        </div>
                                     </td>
                                 </tr>
 
                                 <!-- Logs -->
                                 <template
                                     v-for="log in logsOnTime"
+                                    v-if="!collapsedGroups[timeKey]"
                                     :key="`log-group-${log.log_id}`"
                                 >
                                     <!-- Log Row -->
