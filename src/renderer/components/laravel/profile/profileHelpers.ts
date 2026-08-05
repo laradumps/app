@@ -39,8 +39,8 @@ export const legendDotColor = (type: string): string => {
     return typeColors[type] || 'bg-gray-400';
 };
 
-export const formatDuration = (ms: number | null): string => {
-    if (ms === null) return '-';
+export const formatDuration = (ms: number | null | undefined): string => {
+    if (ms == null || Number.isNaN(ms)) return '-';
     if (ms < 1) return `${(ms * 1000).toFixed(0)}µs`;
     if (ms < 1000) return `${ms.toFixed(2)}ms`;
     return `${(ms / 1000).toFixed(2)}s`;
@@ -90,6 +90,7 @@ export const entryMethodName = (entry: ProfileEntry): string => {
 
 // Split a profile label like "POST /track-ads" into an HTTP method + path.
 export const parseLabel = (label: string): { method: string | null; path: string } => {
+    if (!label) return { method: null, path: '' };
     const m = label.match(/^(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)\s+(.+)$/i);
     if (m) return { method: m[1].toUpperCase(), path: m[2] };
     return { method: null, path: label };

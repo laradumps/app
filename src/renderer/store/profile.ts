@@ -61,7 +61,7 @@ export const useProfileStore = defineStore('profile', {
 
     actions: {
         addProfile(payload: any) {
-            const profileData = payload.profile || payload.content || payload;
+            const profileData = payload.profiler || payload.profile || payload.content || payload;
 
             const profile: Profile = {
                 id: payload.id,
