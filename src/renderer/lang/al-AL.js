@@ -150,19 +150,19 @@ export default {
     installing: 'Installing',
     installing_wait_message: 'This may take a few moments...',
     no_project_selected: 'No Project selected',
-    level: 'Niveli',
-    message: 'Mesazhi',
-    origin: 'Origjina',
-    empty: 'Bosh',
-    copy_to_markdown: 'Kopjo si Markdown',
-    filter_levels: 'Filtro nivelet',
+    level: 'Level',
+    message: 'Message',
+    origin: 'Origin',
+    empty: 'Empty',
+    copy_to_markdown: 'Copy to Markdown',
+    filter_levels: 'Filter Levels',
     tail_log: {
-        select_log_file: 'Zgjidh skedarin e log-ut',
-        log_files: 'Skedarët e log-ut',
-        rescan: 'Rikontrollo',
-        no_log_files_found: 'Nuk u gjet asnjë skedar .log.',
-        choose_another_file: 'Zgjidh një skedar tjetër…',
-        clear_log_file_contents: 'Pastro përmbajtjen e skedarit të log-ut'
+        select_log_file: 'Select log file',
+        log_files: 'Log files',
+        rescan: 'Rescan',
+        no_log_files_found: 'No .log files found.',
+        choose_another_file: 'Choose another file…',
+        clear_log_file_contents: 'Clear log file contents'
     },
     no_records_found: 'No records found.'
 };

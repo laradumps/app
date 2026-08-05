@@ -151,18 +151,18 @@ export default {
     installing_wait_message: 'This may take a few moments...',
     no_project_selected: 'No Project selected',
     level: 'Level',
-    message: 'Pesan',
-    origin: 'Asal',
-    empty: 'Kosong',
-    copy_to_markdown: 'Salin sebagai Markdown',
-    filter_levels: 'Filter level',
+    message: 'Message',
+    origin: 'Origin',
+    empty: 'Empty',
+    copy_to_markdown: 'Copy to Markdown',
+    filter_levels: 'Filter Levels',
     tail_log: {
-        select_log_file: 'Pilih berkas log',
-        log_files: 'Berkas log',
-        rescan: 'Pindai ulang',
-        no_log_files_found: 'Tidak ada berkas .log ditemukan.',
-        choose_another_file: 'Pilih berkas lain…',
-        clear_log_file_contents: 'Kosongkan isi berkas log'
+        select_log_file: 'Select log file',
+        log_files: 'Log files',
+        rescan: 'Rescan',
+        no_log_files_found: 'No .log files found.',
+        choose_another_file: 'Choose another file…',
+        clear_log_file_contents: 'Clear log file contents'
     },
     no_records_found: 'No records found.'
 };

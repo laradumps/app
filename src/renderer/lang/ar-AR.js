@@ -151,19 +151,19 @@ export default {
     installing: 'Installing',
     installing_wait_message: 'This may take a few moments...',
     no_project_selected: 'No Project selected',
-    level: 'المستوى',
-    message: 'الرسالة',
-    origin: 'المصدر',
-    empty: 'فارغ',
-    copy_to_markdown: 'نسخ بصيغة Markdown',
-    filter_levels: 'تصفية المستويات',
+    level: 'Level',
+    message: 'Message',
+    origin: 'Origin',
+    empty: 'Empty',
+    copy_to_markdown: 'Copy to Markdown',
+    filter_levels: 'Filter Levels',
     tail_log: {
-        select_log_file: 'اختر ملف السجل',
-        log_files: 'ملفات السجل',
-        rescan: 'إعادة الفحص',
-        no_log_files_found: 'لم يتم العثور على ملفات .log.',
-        choose_another_file: 'اختر ملفًا آخر…',
-        clear_log_file_contents: 'مسح محتويات ملف السجل'
+        select_log_file: 'Select log file',
+        log_files: 'Log files',
+        rescan: 'Rescan',
+        no_log_files_found: 'No .log files found.',
+        choose_another_file: 'Choose another file…',
+        clear_log_file_contents: 'Clear log file contents'
     },
     no_records_found: 'No records found.'
 };
