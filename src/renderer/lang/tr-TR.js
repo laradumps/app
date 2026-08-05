@@ -151,5 +151,19 @@ export default {
     installing: 'Installing',
     installing_wait_message: 'This may take a few moments...',
     no_project_selected: 'No Project selected',
+    level: 'Seviye',
+    message: 'Mesaj',
+    origin: 'Kaynak',
+    empty: 'Boş',
+    copy_to_markdown: 'Markdown olarak kopyala',
+    filter_levels: 'Seviyeleri filtrele',
+    tail_log: {
+        select_log_file: 'Günlük dosyası seç',
+        log_files: 'Günlük dosyaları',
+        rescan: 'Yeniden tara',
+        no_log_files_found: '.log dosyası bulunamadı.',
+        choose_another_file: 'Başka bir dosya seç…',
+        clear_log_file_contents: 'Günlük dosyasının içeriğini temizle'
+    },
     no_records_found: 'No records found.'
 };

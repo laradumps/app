@@ -355,7 +355,7 @@ const setOrder = (order: string) => {
                                 <a
                                     href="#"
                                     class="!text-xs text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
-                                    >Origin</a
+                                    >{{ $t('origin') }}</a
                                 >
                                 <ul tabindex="0">
                                     <li
@@ -791,7 +791,7 @@ const setOrder = (order: string) => {
             >
                 <SvgEmpty class="w-30 opacity-25" />
                 <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
+                    <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
                 </div>
             </div>
         </div>

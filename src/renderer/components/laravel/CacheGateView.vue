@@ -313,7 +313,7 @@ const clear = () => {
                             <th class="w-[130px]">Type</th>
                             <th>{{ columnLabels[0] }}</th>
                             <th>{{ columnLabels[1] }}</th>
-                            <th class="w-[160px]">Origin</th>
+                            <th class="w-[160px]">{{ $t('origin') }}</th>
                             <th class="w-[80px] text-right">Time</th>
                         </tr>
                     </thead>
@@ -439,7 +439,7 @@ const clear = () => {
             >
                 <SvgEmpty class="w-30 opacity-25" />
                 <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
+                    <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
                 </div>
             </div>
         </div>

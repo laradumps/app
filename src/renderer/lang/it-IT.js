@@ -150,5 +150,19 @@ export default {
     installing: 'Installing',
     installing_wait_message: 'This may take a few moments...',
     no_project_selected: 'No Project selected',
+    level: 'Livello',
+    message: 'Messaggio',
+    origin: 'Origine',
+    empty: 'Vuoto',
+    copy_to_markdown: 'Copia come Markdown',
+    filter_levels: 'Filtra livelli',
+    tail_log: {
+        select_log_file: 'Seleziona file di log',
+        log_files: 'File di log',
+        rescan: 'Ripeti scansione',
+        no_log_files_found: 'Nessun file .log trovato.',
+        choose_another_file: 'Scegli un altro file…',
+        clear_log_file_contents: 'Svuota il contenuto del file di log'
+    },
     no_records_found: 'No records found.'
 };
