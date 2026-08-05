@@ -10,6 +10,8 @@ const props = defineProps<{
     showIcon?: boolean;
     breakpoint?: boolean;
     truncate?: boolean;
+    middleTruncate?: boolean;
+    maxLength?: number;
 }>();
 
 const emit = defineEmits();
@@ -33,6 +35,19 @@ const label = computed(() => {
     return '';
 });
 
+const middleTruncated = (str: string, max: number): string => {
+    if (str.length <= max) return str;
+    const keep = max - 1;
+    const front = Math.ceil(keep / 2);
+    const back = Math.floor(keep / 2);
+    return `${str.slice(0, front)}…${str.slice(str.length - back)}`;
+};
+
+const displayLabel = computed(() => {
+    if (!props.middleTruncate) return label.value;
+    return middleTruncated(label.value, props.maxLength ?? 30);
+});
+
 const toggleBreakpoint = () => {
     emit('toggleBreakpoint', {
         file: props.ideHandler.real_path,
@@ -49,20 +64,28 @@ const toggleBreakpoint = () => {
             :title="label"
             :class="{
                 'cursor-pointer': link && label !== 'Tinker',
-                'whitespace-pre-line': !truncate,
-                truncate: truncate
+                'whitespace-pre-line': !truncate && !middleTruncate,
+                'whitespace-nowrap': middleTruncate,
+                truncate: truncate && !middleTruncate
             }"
             class="flex items-center group"
             @click.stop
         >
             <span
-                :class="{ 'break-all': !truncate, truncate: truncate }"
+                :class="{
+                    'break-all': !truncate && !middleTruncate,
+                    'whitespace-nowrap': middleTruncate,
+                    truncate: truncate && !middleTruncate
+                }"
                 class="tracking-wider hover:opacity-90 flex items-center"
             >
                 <span
-                    class="truncate"
-                    :class="{ '!text-gray-400': props.label }"
-                    >{{ label }}</span
+                    :class="{
+                        '!text-gray-400': props.label,
+                        truncate: !middleTruncate,
+                        'whitespace-nowrap': middleTruncate
+                    }"
+                    >{{ displayLabel }}</span
                 >
             </span>
         </a>

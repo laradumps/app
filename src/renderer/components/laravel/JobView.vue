@@ -15,7 +15,7 @@ import CodeSnippet from '@/components/CodeSnippet.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { FunnelIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon as FunnelSolidIcon } from '@heroicons/vue/24/solid';
-import { generateLink } from '@/utils/ideHandler';
+import DumpLink from '@/components/dumps/DumpLink.vue';
 import { useCurrentProject } from '@/store/current-project';
 import IconHorizon from '@/components/Icons/IconHorizon.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
@@ -602,11 +602,12 @@ const toggleMessageLimit = () => {
                             </th>
                             <th
                                 @click="toggleSort('duration')"
-                                class="space-x-1.5 cursor-pointer text-right"
+                                class="space-x-1.5 cursor-pointer text-right w-[100px]"
                             >
                                 <span>Duration</span>
                                 <span v-if="sortBy === 'duration'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             </th>
+                            <th class="w-[190px] text-right">Origin</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -616,7 +617,7 @@ const toggleMessageLimit = () => {
                         >
                             <tr class="bg-base-200/60">
                                 <td
-                                    colspan="3"
+                                    colspan="4"
                                     class="p-0!"
                                 >
                                     <div
@@ -678,18 +679,37 @@ const toggleMessageLimit = () => {
                                         />
                                     </div>
                                 </td>
-                                <td class="break-all">
-                                    <div>{{ job.display_name }}</div>
-                                    <a
-                                        v-if="job.ide_handle.class_name !== 'empty'"
-                                        :href="generateLink(job.ide_handle)"
-                                        class="link text-xs link-hover opacity-60"
-                                    >
-                                        {{ job.ide_handle.class_name }}:{{ job.ide_handle.line }}
-                                    </a>
+                                <td>
+                                    <div class="flex items-center justify-between gap-2 min-w-0">
+                                        <span
+                                            class="break-all min-w-0"
+                                            :title="job.display_name"
+                                            >{{ job.display_name }}</span
+                                        >
+                                        <span class="font-mono text-[10px] text-base-content/50 whitespace-nowrap shrink-0">
+                                            {{ dayjs(job.pushed_time ?? job.start_time).format('HH:mm:ss') }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="whitespace-nowrap text-right">
                                     {{ duration(job.start_time, job.end_time) }}
+                                </td>
+                                <td class="text-xs truncate text-right">
+                                    <div class="flex justify-end min-w-0">
+                                        <DumpLink
+                                            v-if="job.ide_handle.class_name !== 'empty'"
+                                            :ide-handler="job.ide_handle"
+                                            truncate
+                                            middle-truncate
+                                            :max-length="24"
+                                            class="opacity-70 hover:opacity-100"
+                                        />
+                                        <span
+                                            v-else
+                                            class="opacity-40"
+                                            >—</span
+                                        >
+                                    </div>
                                 </td>
                             </tr>
                         </template>

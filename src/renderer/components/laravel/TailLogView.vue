@@ -439,9 +439,9 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                     <table class="table table-pin-rows table-fixed w-full log-table">
                         <thead>
                             <tr class="text-xs bg-base-300! font-light text-base-content">
-                                <th class="w-[120px]">Level</th>
+                                <th class="w-[90px]">Level</th>
                                 <th>Message</th>
-                                <th class="w-[190px]">Origin</th>
+                                <th class="w-[190px] text-right">Origin</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -517,22 +517,35 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                             </span>
                                         </td>
                                         <!-- Message (single line) -->
-                                        <td class="text-xs truncate">
-                                            <span :title="log.message">{{ log.message }}</span>
+                                        <td class="text-xs">
+                                            <div class="flex items-center justify-between gap-2 min-w-0">
+                                                <span
+                                                    class="truncate min-w-0"
+                                                    :title="log.message"
+                                                    >{{ log.message }}</span
+                                                >
+                                                <span class="font-mono text-[10px] text-base-content/50 whitespace-nowrap shrink-0">
+                                                    {{ dayjs(log.created_at).format('HH:mm:ss') }}
+                                                </span>
+                                            </div>
                                         </td>
                                         <!-- Origin -->
-                                        <td class="text-xs truncate">
-                                            <DumpLink
-                                                v-if="showOrigin(log)"
-                                                :ide-handler="log.ide_handle"
-                                                truncate
-                                                class="opacity-70 hover:opacity-100"
-                                            />
-                                            <span
-                                                v-else
-                                                class="opacity-40"
-                                                >—</span
-                                            >
+                                        <td class="text-xs truncate text-right">
+                                            <div class="flex justify-end min-w-0">
+                                                <DumpLink
+                                                    v-if="showOrigin(log)"
+                                                    :ide-handler="log.ide_handle"
+                                                    truncate
+                                                    middle-truncate
+                                                    :max-length="24"
+                                                    class="opacity-70 hover:opacity-100"
+                                                />
+                                                <span
+                                                    v-else
+                                                    class="opacity-40"
+                                                    >—</span
+                                                >
+                                            </div>
                                         </td>
                                     </tr>
 
@@ -545,20 +558,12 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                             colspan="3"
                                             class="!py-3"
                                         >
-                                            <!-- Full message + timestamp -->
+                                            <!-- Full message -->
                                             <div class="mb-3">
-                                                <div
-                                                    class="text-[10px] uppercase tracking-widest text-base-content/50 mb-1"
-                                                >
-                                                    Message
-                                                </div>
                                                 <div
                                                     class="text-xs bg-base-100 border border-base-content/10 rounded-lg p-2.5 leading-relaxed font-mono break-words whitespace-pre-wrap"
                                                 >
                                                     {{ log.message }}
-                                                </div>
-                                                <div class="text-[10px] text-base-content/50 mt-1.5 font-mono">
-                                                    {{ dayjs(log.created_at).format('YYYY-MM-DD HH:mm:ss') }}
                                                 </div>
                                             </div>
 
