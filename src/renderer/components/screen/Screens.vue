@@ -5,11 +5,12 @@ import { usePayloadStore } from '@/store/payload';
 import { useJobStore } from '@/store/jobs';
 import { useMailStore } from '@/store/mail';
 import { useLogStore } from '@/store/logs.js';
-import { useTailLogStore } from '@/store/tail-logs';
+import { useTailLogStore } from '@/store/tail-log';
 import { useQueriesPayloadStore } from '@/store/queries.js';
 import { useSplitPanesStore } from '@/store/split-panes';
 import { useBrainStore } from '@/store/brains.ts';
 import { useProfileStore } from '@/store/profile';
+import { useGlobalSearchStore } from '@/store/global-search';
 import EnvironmentDropdown from './EnvironmentDropdown.vue';
 import type { Environment } from '../../../main/storage';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
@@ -37,6 +38,7 @@ const brainStore = useBrainStore();
 const queriesStore = useQueriesPayloadStore();
 const profileStore = useProfileStore();
 const splitPanesStore = useSplitPanesStore();
+const globalSearchStore = useGlobalSearchStore();
 
 const showTooltip = ref(false);
 const isDraggingIndex = ref(null);
@@ -152,6 +154,67 @@ window.ipcRenderer.on('screen-window:closed', (event, args) => {
     }, 200);
 });
 
+const matchesSearch = (screenName: string, item: any, term: string): boolean => {
+    if (!term) return true;
+
+    switch (screenName) {
+        case 'logs':
+        case 'tail_logs':
+            return (
+                String(item.message ?? '')
+                    .toLowerCase()
+                    .includes(term) ||
+                String(item.level ?? '')
+                    .toLowerCase()
+                    .includes(term) ||
+                String(Array.isArray(item.context) ? (item.context[0] ?? '') : (item.context ?? ''))
+                    .toLowerCase()
+                    .includes(term)
+            );
+        case 'jobs':
+            return (
+                String(item.display_name ?? '')
+                    .toLowerCase()
+                    .includes(term) ||
+                String(item.job_id ?? '')
+                    .toLowerCase()
+                    .includes(term) ||
+                String(Array.isArray(item.job) ? (item.job[0] ?? '') : (item.job ?? ''))
+                    .toLowerCase()
+                    .includes(term)
+            );
+        case 'mail':
+            return JSON.stringify(item).toLowerCase().includes(term);
+        case 'queries':
+            return (
+                String(item?.with_label?.label ?? '')
+                    .toLowerCase()
+                    .includes(term) ||
+                String(item?.queries?.query?.sql ?? '')
+                    .toLowerCase()
+                    .includes(term)
+            );
+        case 'brain':
+            return (
+                String(item.className ?? '')
+                    .toLowerCase()
+                    .includes(term) ||
+                String(item.run_workflow_id ?? '')
+                    .toLowerCase()
+                    .includes(term)
+            );
+        default: {
+            const content = item?.[item.type] ?? '';
+            return (
+                JSON.stringify(content).toLowerCase().includes(term) ||
+                JSON.stringify(item?.with_label ?? '')
+                    .toLowerCase()
+                    .includes(term)
+            );
+        }
+    }
+};
+
 const getPayloadScreenCount = (screenName) => {
     const stores = {
         jobs: jobStore.jobs,
@@ -164,14 +227,17 @@ const getPayloadScreenCount = (screenName) => {
     };
 
     const items = stores[screenName] || payloadStore.get(screenName);
+    const term = globalSearchStore.search.toLowerCase();
 
-    let count = 0;
+    let list: any[] = [];
 
     if (Array.isArray(items)) {
-        count = items.length;
+        list = items;
     } else if (items && typeof items === 'object') {
-        count = Object.keys(items).length;
+        list = Object.values(items);
     }
+
+    const count = list.filter((item) => matchesSearch(screenName, item, term)).length;
 
     return count > 0 ? `(${count})` : '';
 };

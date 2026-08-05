@@ -1,10 +1,50 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onBeforeUnmount, ref } from 'vue';
+import { CheckIcon } from '@heroicons/vue/20/solid';
+import { Square2StackIcon } from '@heroicons/vue/24/outline';
 import { Payload } from '@/types/Payload';
 import DumpDump from '@/components/dumps/DumpDump.vue';
 
 const items = ref<Payload[]>([]);
 const root = ref<HTMLElement | null>(null);
+const copiedKey = ref<string | null>(null);
+let copiedTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const itemKey = (item: Payload, index: number) => `${item.sf_dump_id ?? index}-${index}`;
+
+const resolveCopyValue = (payload: Payload): string => {
+    const original = payload.dump?.original_content;
+    if (original !== undefined && original !== null && original !== '') {
+        return typeof original === 'string' ? original : JSON.stringify(original);
+    }
+
+    if (payload.dump?.variable_type === 'string' && payload.dump.dump != null) {
+        return String(payload.dump.dump);
+    }
+
+    if (payload.sf_dump_id) {
+        const el = document.getElementById(`dump-content-${payload.sf_dump_id}`);
+        if (el?.innerText) {
+            return el.innerText;
+        }
+    }
+
+    return String(payload.dump?.dump ?? '');
+};
+
+const copyValue = (payload: Payload, index: number) => {
+    const value = resolveCopyValue(payload);
+    navigator.clipboard.writeText(value).then(() => {
+        if (copiedTimeout) {
+            clearTimeout(copiedTimeout);
+        }
+        copiedKey.value = itemKey(payload, index);
+        copiedTimeout = setTimeout(() => {
+            copiedKey.value = null;
+            copiedTimeout = null;
+        }, 2000);
+    });
+};
 
 const initSfDumps = () => {
     items.value.forEach((item) => {
@@ -53,6 +93,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     window.ipcRenderer.removeListener?.('notification:items', onItems);
+    if (copiedTimeout) {
+        clearTimeout(copiedTimeout);
+    }
 });
 </script>
 
@@ -84,11 +127,28 @@ onBeforeUnmount(() => {
         <div class="flex flex-col divide-y divide-base-content/10">
             <div
                 v-for="(item, index) in items"
-                :key="`${item.sf_dump_id ?? index}-${index}`"
+                :key="itemKey(item, index)"
                 class="px-3 py-2 text-sm cursor-pointer hover:bg-base-content/5 sf-dump-inline"
                 @click="openMain"
             >
-                <DumpDump :payload="item" />
+                <DumpDump :payload="item">
+                    <template #label>
+                        <button
+                            class="shrink-0 p-0.5 rounded cursor-pointer hover:bg-base-content/10 transition-colors"
+                            aria-label="Copy"
+                            @click.stop="copyValue(item, index)"
+                        >
+                            <CheckIcon
+                                v-if="copiedKey === itemKey(item, index)"
+                                class="w-3.5 h-3.5 text-success"
+                            />
+                            <Square2StackIcon
+                                v-else
+                                class="w-3.5 h-3.5 opacity-60 -scale-x-100 -scale-y-100 rotate-90"
+                            />
+                        </button>
+                    </template>
+                </DumpDump>
             </div>
         </div>
     </div>

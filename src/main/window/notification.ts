@@ -58,6 +58,17 @@ const sendItems = (win: BrowserWindow): void => {
     }
 };
 
+const isMainWindowVisible = (): boolean => {
+    return !!mainWindowRef && !mainWindowRef.isDestroyed() && mainWindowRef.isVisible();
+};
+
+const dismiss = (): void => {
+    items = [];
+    if (notificationWindow && !notificationWindow.isDestroyed()) {
+        notificationWindow.hide();
+    }
+};
+
 const createWindow = (): BrowserWindow => {
     const win = new BrowserWindow({
         width: WINDOW_WIDTH,
@@ -107,6 +118,10 @@ const createWindow = (): BrowserWindow => {
 export const init = async (mainWindow: BrowserWindow): Promise<void> => {
     mainWindowRef = mainWindow;
 
+    mainWindow.on('show', () => {
+        dismiss();
+    });
+
     // Renderer signals it has mounted and registered its listener; replay the current buffer so the
     // first dump is never lost to a load race.
     ipcMain.on('notification:ready', () => {
@@ -116,10 +131,7 @@ export const init = async (mainWindow: BrowserWindow): Promise<void> => {
     });
 
     ipcMain.on('notification:close', () => {
-        items = [];
-        if (notificationWindow && !notificationWindow.isDestroyed()) {
-            notificationWindow.hide();
-        }
+        dismiss();
     });
 
     ipcMain.on('notification:open-main', () => {
@@ -140,6 +152,10 @@ export const init = async (mainWindow: BrowserWindow): Promise<void> => {
 };
 
 export const push = (arg: { content: unknown }): void => {
+    if (isMainWindowVisible()) {
+        return;
+    }
+
     items.unshift(arg.content);
     items = items.slice(0, MAX_ITEMS);
 

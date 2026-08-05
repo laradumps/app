@@ -23,7 +23,7 @@ import MailView from '@/components/laravel/MailView.vue';
 import { useLogStore } from '@/store/logs';
 import LogView from '@/components/laravel/LogView.vue';
 import TailLogView from '@/components/laravel/TailLogView.vue';
-import { useTailLogStore } from '@/store/tail-logs';
+import { useTailLogStore } from '@/store/tail-log';
 import CacheGateView from '@/components/laravel/CacheGateView.vue';
 import { useQueriesPayloadStore } from '@/store/queries';
 import { useBrainStore } from '@/store/brains';
@@ -316,7 +316,7 @@ const handleRemoveEnvironmentScreen = async (screenName: string) => {
         case 'brain':
             brainStore.clear();
             break;
-        case 'profile':
+        case 'profiler':
             profileStore.clear();
             break;
     }
@@ -477,7 +477,7 @@ const handleMail = (_: any, { content }: any) => {
         applicationPath.value = content.application_path;
     }
 
-    mailStore.addOrUpdateMail(content.mail, content.ide_handle, content.context);
+    mailStore.addOrUpdateMail(content.mail, content.ide_handle, content.context, content.related_job);
 };
 
 const handleLabel = (_: any, { content }: any) => {
@@ -777,7 +777,7 @@ const dumpListeners = () => {
     window.ipcRenderer.on('tail-log:meta', handleTailMeta);
     window.ipcRenderer.on('tail-log:error', handleTailError);
     window.ipcRenderer.on('tail-log:file-picked', handleTailFilePicked);
-    window.ipcRenderer.on('profile', handleProfile);
+    window.ipcRenderer.on('profiler', handleProfile);
 };
 
 const handleProfile = (_: any, { content }: any) => {
@@ -850,16 +850,26 @@ const clearDumpListeners = () => {
     window.ipcRenderer.off('tail-log:meta', handleTailMeta);
     window.ipcRenderer.off('tail-log:error', handleTailError);
     window.ipcRenderer.off('tail-log:file-picked', handleTailFilePicked);
-    window.ipcRenderer.off('profile', handleProfile);
+    window.ipcRenderer.off('profiler', handleProfile);
 };
 
 const dumpsBagFiltered = computed((): Payload[] => {
+    const search = globalSearchStore.search.toLowerCase();
+
     return payloadStore.filteredPayload
-        .filter(
-            (dump: Payload) =>
-                dump.content?.toLowerCase().includes(globalSearchStore.search.toLowerCase()) ||
-                JSON.stringify(dump.with_label)?.toLowerCase().includes(globalSearchStore.search.toLowerCase())
-        )
+        .filter((dump: Payload) => {
+            if (!search) {
+                return true;
+            }
+
+            const content = dump[dump.type] ?? '';
+            const contentMatch = JSON.stringify(content).toLowerCase().includes(search);
+            const labelMatch = JSON.stringify(dump.with_label ?? '')
+                .toLowerCase()
+                .includes(search);
+
+            return contentMatch || labelMatch;
+        })
         .filter((dump: Payload) => {
             if (colorStore.colors.length > 0 && dump.color) {
                 return colorStore.colors.includes(dump.color);
@@ -1115,7 +1125,9 @@ const handleDragEnd = () => {
             class="mt-3 h-[calc(100vh-50px)] w-screen text-base"
         >
             <ScreenWindow
-                v-if="!['jobs', 'mail', 'logs', 'queries', 'brain', 'cache', 'gate', 'profile'].includes(inScreenWindow)"
+                v-if="
+                    !['jobs', 'mail', 'logs', 'queries', 'brain', 'cache', 'gate', 'profiler'].includes(inScreenWindow)
+                "
                 v-model:dumps="payloadScreen"
                 v-model:screen="inScreenWindow"
             />
@@ -1148,7 +1160,8 @@ const handleDragEnd = () => {
 
             <ProfileView
                 :in-screen-window="inScreenWindow.length > 0"
-                v-if="inScreenWindow === 'profile'"
+                v-if="inScreenWindow === 'profiler'"
+                :yaml-config="yamlConfig"
             />
 
             <MailView
@@ -1202,8 +1215,8 @@ const handleDragEnd = () => {
                                         <BrainView />
                                     </div>
 
-                                    <div v-else-if="screenStore.screen === 'profile'">
-                                        <ProfileView />
+                                    <div v-else-if="screenStore.screen === 'profiler'">
+                                        <ProfileView :yaml-config="yamlConfig" />
                                     </div>
 
                                     <div v-else-if="screenStore.screen === 'mail'">
@@ -1301,7 +1314,7 @@ const handleDragEnd = () => {
                                                         'queries',
                                                         'home',
                                                         'brain',
-                                                        'profile',
+                                                        'profiler',
                                                         'tail_logs'
                                                     ].includes(screenStore.screen)
                                                 "
@@ -1369,8 +1382,12 @@ const handleDragEnd = () => {
                                         />
                                     </div>
 
-                                    <div v-else-if="splitPanesStore.splitConfig.screenName === 'profile'">
-                                        <ProfileView @open-screen-window="openScreenWindow" />
+                                    <div v-else-if="splitPanesStore.splitConfig.screenName === 'profiler'">
+                                        <ProfileView
+                                            hide-header
+                                            :yaml-config="yamlConfig"
+                                            @open-screen-window="openScreenWindow"
+                                        />
                                     </div>
 
                                     <div v-else-if="splitPanesStore.splitConfig.screenName === 'mail'">
@@ -1554,9 +1571,10 @@ const handleDragEnd = () => {
                                 />
                             </div>
 
-                            <div v-if="screenStore.screen === 'profile'">
+                            <div v-if="screenStore.screen === 'profiler'">
                                 <ProfileView
                                     class="w-screen text-base"
+                                    :yaml-config="yamlConfig"
                                     @open-screen-window="openScreenWindow"
                                 />
                             </div>
@@ -1638,9 +1656,15 @@ const handleDragEnd = () => {
                                     <div
                                         v-if="
                                             dumpsBagFiltered.length === 0 &&
-                                            !['jobs', 'mail', 'logs', 'queries', 'home', 'tail_logs', 'profile'].includes(
-                                                screenStore.screen
-                                            )
+                                            ![
+                                                'jobs',
+                                                'mail',
+                                                'logs',
+                                                'queries',
+                                                'home',
+                                                'tail_logs',
+                                                'profiler'
+                                            ].includes(screenStore.screen)
                                         "
                                         class="-mt-22.5 -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                                         style="height: -webkit-fill-available"

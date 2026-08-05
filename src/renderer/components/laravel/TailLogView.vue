@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -11,6 +11,7 @@ import {
     ExclamationTriangleIcon,
     DocumentMinusIcon,
     ChevronDownIcon,
+    ClockIcon,
     DocumentTextIcon,
     ArrowPathIcon,
     ArrowTopRightOnSquareIcon
@@ -18,23 +19,32 @@ import {
 
 import { Log } from '@/store/logs';
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import FilterChip from '@/components/common/FilterChip.vue';
 import { useColorStore } from '@/store/colors';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
-import { useTailLogStore, DiscoveredLogFile } from '@/store/tail-logs';
+import { useTailLogStore, DiscoveredLogFile } from '@/store/tail-log';
 import { useCurrentProject } from '@/store/current-project';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import { generateLink } from '@/utils/ideHandler';
 import { copyLogToMarkdown } from '@/utils/logToMarkdown';
+import { useSettingsStore } from '@/store/settings';
 
 const tailLogStore = useTailLogStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
 const currentProjectStore = useCurrentProject();
+const settingsStore = useSettingsStore();
 
 const expandedLogId = ref<string | null>(null);
 const levelFilter = ref<string[]>([]);
 const copiedLogId = ref<string | null>(null);
+const collapsedGroups = ref<Record<string, boolean>>({});
+
+const toggleGroup = (timeKey: string) => {
+    collapsedGroups.value[timeKey] = !collapsedGroups.value[timeKey];
+};
 
 defineProps<{
     inScreenWindow?: boolean;
@@ -82,6 +92,35 @@ const logs = computed(() => {
             return dateB - dateA;
         });
 });
+
+const isAnyLogExpanded = computed(() => {
+    if (expandedLogId.value === null) return false;
+    const focused = logs.value?.find((log) => log.log_id === expandedLogId.value);
+    if (!focused) return false;
+    const timeKey = dayjs(focused.created_at).fromNow();
+    return !collapsedGroups.value[timeKey];
+});
+
+watch(
+    logs,
+    (newLogs, oldLogs) => {
+        if (newLogs && newLogs.length > 0) {
+            const newestLogId = newLogs[0].log_id;
+
+            const shouldDisplayLast = settingsStore.settings?.display_last_log ?? false;
+            if (shouldDisplayLast) {
+                if (!oldLogs || oldLogs.length === 0 || (oldLogs.length > 0 && newestLogId !== oldLogs[0].log_id)) {
+                    expandedLogId.value = newestLogId;
+                }
+            }
+        }
+
+        if (expandedLogId.value && (!newLogs || !newLogs.some((log) => log.log_id === expandedLogId.value))) {
+            expandedLogId.value = null;
+        }
+    },
+    { immediate: true }
+);
 
 const selectedLevel = (level: string) => {
     const index = levelFilter.value.indexOf(level);
@@ -209,40 +248,30 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
     <div>
         <div>
             <!-- Actions Bar -->
-            <div
+            <ViewToolbar
                 v-if="!hideHeader"
-                class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3 gap-2"
+                :count="logs.length"
+                noun="log"
             >
-                <!-- Left: title + file -->
-                <div class="flex items-center gap-2 min-w-0">
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none"
-                        >Tail Log</span
-                    >
+                <template #chips>
+                    <FilterChip
+                        v-for="lvl in levelFilter"
+                        :key="lvl"
+                        :label="lvl"
+                        @remove="selectedLevel(lvl)"
+                    />
+                </template>
 
-                    <span
-                        v-if="fileName"
-                        class="flex items-center gap-1.5 text-[11px] font-mono text-base-content/60 bg-base-content/5 border border-base-content/10 rounded px-2 py-0.5 truncate max-w-[220px]"
-                        :data-tippy-content="tailLogStore.filePath"
-                    >
-                        <span
-                            class="w-1.5 h-1.5 rounded-full shrink-0"
-                            :class="tailLogStore.watching ? 'bg-success' : 'bg-base-content/30'"
-                        ></span>
-                        <span class="truncate">{{ fileName }}</span>
-                    </span>
-                </div>
-
-                <!-- Right: actions -->
-                <div class="flex items-center gap-1">
+                <template #filter>
                     <!-- Filter Levels -->
-                    <div class="dropdown dropdown-bottom dropdown-end">
+                    <div class="dropdown dropdown-bottom dropdown-start">
                         <button
                             tabindex="0"
                             role="button"
                             class="btn btn-ghost btn-circle btn-sm"
                             data-tippy-content="Filter Levels"
                         >
-                            <FunnelIcon :class="levelFilter.length === 0 ? 'w-4' : 'w-5 text-primary'" />
+                            <FunnelIcon :class="levelFilter.length === 0 ? 'w-4' : 'w-4 text-primary'" />
                         </button>
                         <div
                             tabindex="0"
@@ -287,6 +316,21 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                             </div>
                         </div>
                     </div>
+                </template>
+
+                <template #right>
+                    <!-- Watched file chip -->
+                    <span
+                        v-if="fileName"
+                        class="flex items-center gap-1.5 text-[11px] font-mono text-base-content/60 bg-base-content/5 border border-base-content/10 rounded px-2 py-0.5 truncate max-w-[220px]"
+                        :data-tippy-content="tailLogStore.filePath"
+                    >
+                        <span
+                            class="w-1.5 h-1.5 rounded-full shrink-0"
+                            :class="tailLogStore.watching ? 'bg-success' : 'bg-base-content/30'"
+                        ></span>
+                        <span class="truncate">{{ fileName }}</span>
+                    </span>
 
                     <!-- Choose log file (dropdown of discovered *.log files) -->
                     <div class="dropdown dropdown-bottom dropdown-end">
@@ -378,8 +422,8 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                     >
                         <DocumentMinusIcon class="w-4" />
                     </button>
-                </div>
-            </div>
+                </template>
+            </ViewToolbar>
 
             <!-- Error banner -->
             <div
@@ -390,18 +434,18 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                 <span class="truncate">{{ tailLogStore.error.message }}</span>
             </div>
 
-            <div class="h-[calc(100vh-140px)]">
+            <div class="h-[calc(100vh-140px)] pt-3">
                 <div
                     v-if="logs.length > 0"
-                    class="overflow-auto"
+                    class="overflow-y-auto overflow-x-hidden px-3"
                     style="height: -webkit-fill-available"
                 >
                     <table class="table table-pin-rows table-fixed w-full log-table">
                         <thead>
                             <tr class="text-xs bg-base-300! font-light text-base-content">
-                                <th class="w-[120px]">Level</th>
+                                <th class="w-[90px]">Level</th>
                                 <th>Message</th>
-                                <th class="w-[190px]">Origin</th>
+                                <th class="w-[190px] text-right">Origin</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -411,24 +455,41 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                             >
                                 <!-- Time Group Header -->
                                 <tr
-                                    class="bg-base-200 text-xs font-semibold"
-                                    :class="{
-                                        'blur-sm opacity-40':
-                                            expandedLogId !== null &&
-                                            !logsOnTime.some((log) => log.log_id === expandedLogId)
-                                    }"
+                                    class="bg-base-200/60"
+                                    :class="{ 'blur-sm opacity-40': isAnyLogExpanded }"
                                 >
                                     <td
                                         colspan="3"
-                                        class="select-none text-base-content/60"
+                                        class="p-0!"
                                     >
-                                        {{ timeKey }}
+                                        <div
+                                            class="group flex items-center gap-2.5 px-3 py-2 cursor-pointer select-none"
+                                            @click="toggleGroup(timeKey)"
+                                        >
+                                            <ClockIcon class="w-3.5 h-3.5 text-base-content/40 shrink-0" />
+                                            <span
+                                                class="text-xs tracking-wider text-base-content/70 group-hover:text-base-content whitespace-nowrap transition-colors"
+                                            >
+                                                {{ timeKey }}
+                                            </span>
+                                            <span class="h-px flex-1 bg-base-content/10"></span>
+                                            <span
+                                                class="font-mono text-[10px] text-base-content/50 bg-base-content/10 rounded-full px-2 py-0.5 shrink-0"
+                                            >
+                                                {{ logsOnTime.length }}
+                                            </span>
+                                            <ChevronDownIcon
+                                                class="w-3.5 h-3.5 text-base-content/40 shrink-0 transition-transform duration-200"
+                                                :class="{ '-rotate-90': collapsedGroups[timeKey] }"
+                                            />
+                                        </div>
                                     </td>
                                 </tr>
 
                                 <!-- Logs -->
                                 <template
                                     v-for="log in logsOnTime"
+                                    v-if="!collapsedGroups[timeKey]"
                                     :key="`tail-log-${log.log_id}`"
                                 >
                                     <!-- Log Row -->
@@ -437,10 +498,9 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                         @click="toggleLogExpand(log.log_id)"
                                         class="hover:bg-base-100 cursor-pointer transition-all duration-200"
                                         :class="[
-                                            { 'bg-base-300': expandedLogId === log.log_id },
+                                            { 'ld-focus-row relative z-10': expandedLogId === log.log_id },
                                             {
-                                                'blur-xs opacity-40':
-                                                    expandedLogId !== null && expandedLogId !== log.log_id
+                                                'blur-xs opacity-40': isAnyLogExpanded && expandedLogId !== log.log_id
                                             }
                                         ]"
                                     >
@@ -458,45 +518,55 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                             </span>
                                         </td>
                                         <!-- Message (single line) -->
-                                        <td class="text-xs truncate">
-                                            <span :title="log.message">{{ log.message }}</span>
+                                        <td class="text-xs">
+                                            <div class="flex items-center justify-between gap-2 min-w-0">
+                                                <span
+                                                    class="truncate min-w-0"
+                                                    :title="log.message"
+                                                    >{{ log.message }}</span
+                                                >
+                                                <span
+                                                    class="font-mono text-[10px] text-base-content/50 whitespace-nowrap shrink-0"
+                                                >
+                                                    {{ dayjs(log.created_at).format('HH:mm:ss') }}
+                                                </span>
+                                            </div>
                                         </td>
                                         <!-- Origin -->
-                                        <td class="text-xs truncate">
-                                            <DumpLink
-                                                v-if="showOrigin(log)"
-                                                :ide-handler="log.ide_handle"
-                                                truncate
-                                                class="opacity-70 hover:opacity-100"
-                                            />
-                                            <span
-                                                v-else
-                                                class="opacity-40"
-                                                >—</span
-                                            >
+                                        <td class="text-xs truncate text-right">
+                                            <div class="flex justify-end min-w-0">
+                                                <DumpLink
+                                                    v-if="showOrigin(log)"
+                                                    :ide-handler="log.ide_handle"
+                                                    truncate
+                                                    middle-truncate
+                                                    :max-length="24"
+                                                    class="opacity-70 hover:opacity-100"
+                                                />
+                                                <span
+                                                    v-else
+                                                    class="opacity-40"
+                                                    >—</span
+                                                >
+                                            </div>
                                         </td>
                                     </tr>
 
                                     <!-- Expanded Content -->
                                     <tr
                                         v-if="expandedLogId === log.log_id"
-                                        class="bg-base-200/60"
+                                        class="ld-focus-detail relative z-10"
                                     >
-                                        <td colspan="3">
-                                            <!-- Full message + timestamp -->
+                                        <td
+                                            colspan="3"
+                                            class="!py-3"
+                                        >
+                                            <!-- Full message -->
                                             <div class="mb-3">
-                                                <div
-                                                    class="text-[10px] uppercase tracking-widest text-base-content/50 mb-1"
-                                                >
-                                                    Message
-                                                </div>
                                                 <div
                                                     class="text-xs bg-base-100 border border-base-content/10 rounded-lg p-2.5 leading-relaxed font-mono break-words whitespace-pre-wrap"
                                                 >
                                                     {{ log.message }}
-                                                </div>
-                                                <div class="text-[10px] text-base-content/50 mt-1.5 font-mono">
-                                                    {{ dayjs(log.created_at).format('YYYY-MM-DD HH:mm:ss') }}
                                                 </div>
                                             </div>
 
@@ -587,5 +657,36 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
 
 :deep(.log-table > tbody > tr > :where(th, td)) {
     @apply p-1.5 px-2;
+}
+
+/* Focused log renders as a floating card above the blurred background */
+:deep(.log-table) {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+:deep(.log-table tr.ld-focus-row > td),
+:deep(.log-table tr.ld-focus-detail > td) {
+    background-color: var(--color-base-100);
+}
+
+:deep(.log-table tr.ld-focus-row > td) {
+    box-shadow: 0 -12px 28px -14px rgba(0, 0, 0, 0.4);
+}
+
+:deep(.log-table tr.ld-focus-row > td:first-child) {
+    border-top-left-radius: 0.6rem;
+    box-shadow: -10px -12px 28px -14px rgba(0, 0, 0, 0.4);
+}
+
+:deep(.log-table tr.ld-focus-row > td:last-child) {
+    border-top-right-radius: 0.6rem;
+    box-shadow: 10px -12px 28px -14px rgba(0, 0, 0, 0.4);
+}
+
+:deep(.log-table tr.ld-focus-detail > td) {
+    border-bottom-left-radius: 0.6rem;
+    border-bottom-right-radius: 0.6rem;
+    box-shadow: 0 14px 28px -14px rgba(0, 0, 0, 0.4);
 }
 </style>

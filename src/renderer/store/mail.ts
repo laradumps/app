@@ -16,6 +16,7 @@ export type Mail = {
     attachments: Attachment[];
     ide_handle: IdeHandle;
     context: ContextPayload;
+    related_job?: { job_id: string; display_name: string };
     original_content?: string;
 };
 
@@ -44,10 +45,15 @@ export const useMailStore = defineStore('mailStore', {
         mails: JSON.parse(localStorage.getItem('emails') || '[]')
     }),
     actions: {
-        addOrUpdateMail(payload: MailPayload, ide_handle: IdeHandle, context: ContextPayload) {
+        addOrUpdateMail(
+            payload: MailPayload,
+            ide_handle: IdeHandle,
+            context: ContextPayload,
+            related_job?: { job_id: string; display_name: string }
+        ) {
             const existingMailIndex = this.mails.findIndex((mail) => mail.message_id === payload.messageId);
             if (existingMailIndex === -1) {
-                this._initialize(payload, ide_handle, context);
+                this._initialize(payload, ide_handle, context, related_job);
                 this.store();
 
                 return;
@@ -69,7 +75,12 @@ export const useMailStore = defineStore('mailStore', {
                 this.store();
             }
         },
-        _initialize(payload: MailPayload, ide_handle: IdeHandle, context: ContextPayload) {
+        _initialize(
+            payload: MailPayload,
+            ide_handle: IdeHandle,
+            context: ContextPayload,
+            related_job?: { job_id: string; display_name: string }
+        ) {
             const date = new Date();
             const fromHeader = payload.headers.find((header: any) => header.startsWith('From:')) ?? '';
             const subjectHeader = payload.headers.find((header: any) => header.startsWith('Subject:')) ?? '';
@@ -107,6 +118,7 @@ export const useMailStore = defineStore('mailStore', {
                 ...payload,
                 ide_handle,
                 context,
+                related_job,
                 original_content: payload.original_content
             });
         },

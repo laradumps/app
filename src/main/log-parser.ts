@@ -101,11 +101,7 @@ function parseColor(level: string): string {
 }
 
 function escapeHtml(value: string): string {
-    return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function toIso(ts: string): string {
@@ -114,7 +110,12 @@ function toIso(ts: string): string {
         .replace(',', '.')
         .replace(' ', 'T')
         .replace(/\s+(?=[+-]\d)/, '');
-    const date = new Date(normalized);
+    // Laravel writes log timestamps in the app timezone (UTC by default) without
+    // an offset. JS parses an offset-less date-time as *local* time, so on a
+    // machine behind UTC the instant is pushed into the future (relative times
+    // like "in 2 hours"). Treat an offset-less timestamp as UTC to avoid the shift.
+    const hasTz = /(?:[+-]\d{2}:?\d{2}|Z)$/.test(normalized);
+    const date = new Date(hasTz ? normalized : `${normalized}Z`);
     return isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
 }
 
@@ -211,10 +212,7 @@ function resolveFile(file: string, projectPath: string): string | null {
     return null;
 }
 
-async function readSourceLines(
-    absFile: string,
-    cache: Map<string, string[] | null>
-): Promise<string[] | null> {
+async function readSourceLines(absFile: string, cache: Map<string, string[] | null>): Promise<string[] | null> {
     if (cache.has(absFile)) {
         return cache.get(absFile) ?? null;
     }

@@ -139,7 +139,8 @@ export default {
         restart: 'Reiniciar',
         version: 'Versão',
         release_date: 'Data de lançamento',
-        ready_to_install: 'Pronto para Instalar'
+        ready_to_install: 'Pronto para Instalar',
+        whats_new: 'Ver novidades'
     },
     pause: 'Pausar',
     remove: 'Remover',
@@ -168,5 +169,17 @@ export default {
     installing: 'Instalando',
     installing_wait_message: 'Isso pode levar alguns instantes...',
     no_project_selected: 'Nenhum projeto selecionado',
-    no_records_found: 'Nenhum registro encontrado.'
+    no_records_found: 'Nenhum registro encontrado.',
+    profiler: {
+        yaml_configuration: 'Configuração YAML',
+        enable_profiling: 'Ativar Profiling',
+        options: 'Opções',
+        capture: 'Captura',
+        no_configuration: 'Nenhuma configuração de profiler disponível',
+        timeline: 'Linha do tempo',
+        hotspots: 'Hotspots',
+        flame: 'Flame',
+        no_profiles: 'Nenhum profile',
+        empty_hint: 'Use ds()->startProfile() e ds()->stopProfile()'
+    }
 };

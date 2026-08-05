@@ -119,7 +119,8 @@ export default {
         not_now: 'ليس الآن',
         install: 'ثبت',
         version: 'النسخة',
-        release_date: 'تاريخ الإصدار'
+        release_date: 'تاريخ الإصدار',
+        whats_new: 'ما الجديد'
     },
     pause: 'Pause',
     remove: 'Remove',

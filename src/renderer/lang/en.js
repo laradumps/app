@@ -141,7 +141,8 @@ export default {
         restart: 'Restart',
         version: 'Version',
         release_date: 'Release Date',
-        ready_to_install: 'Ready to Install'
+        ready_to_install: 'Ready to Install',
+        whats_new: "What's new"
     },
     pause: 'Pause',
     remove: 'Remove',
@@ -176,5 +177,17 @@ export default {
     install_failed: 'Setup Failed',
     install_failed_message: 'An error occurred during the project setup.',
     retry: 'Retry',
-    finish: 'Finish'
+    finish: 'Finish',
+    profiler: {
+        yaml_configuration: 'YAML Configuration',
+        enable_profiling: 'Enable Profiling',
+        options: 'Options',
+        capture: 'Capture',
+        no_configuration: 'No profile configuration available',
+        timeline: 'Timeline',
+        hotspots: 'Hotspots',
+        flame: 'Flame',
+        no_profiles: 'No profiles',
+        empty_hint: 'Use ds()->startProfile() and ds()->stopProfile()'
+    }
 };

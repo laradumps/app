@@ -30,7 +30,7 @@ const rawDumpContent = computed(() => {
 </script>
 
 <template>
-    <div class="flex items-start gap-2">
+    <div class="flex items-center gap-2">
         <div class="sf-dump-inline flex-1">
             <div v-if="payload.hasOwnProperty('cols')">
                 <div class="flex gap-2 w-full">

@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useBrainStore, BrainWorkflow, BrainAction } from '@/store/brains';
 import { CheckIcon, NoSymbolIcon, XMarkIcon, ArrowPathIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
@@ -297,15 +298,12 @@ const toggleActionExpanded = (action: any) => {
 <template>
     <div>
         <!-- Actions bar -->
-        <div
+        <ViewToolbar
             v-if="!hideHeader"
-            class="flex items-center justify-between w-full border-b border-base-content/10 h-9 px-3"
+            :count="filteredAndSortedProcesses.length"
+            noun="workflow"
         >
-            <!-- Left: title -->
-            <span class="text-[10px] font-bold uppercase tracking-widest text-base-content/70 select-none">Brain</span>
-
-            <!-- Right: actions -->
-            <div class="flex items-center gap-1">
+            <template #right>
                 <button
                     v-if="totalProcesses > 0"
                     @click="clearAll"
@@ -314,8 +312,8 @@ const toggleActionExpanded = (action: any) => {
                 >
                     <TrashIcon class="size-4" />
                 </button>
-            </div>
-        </div>
+            </template>
+        </ViewToolbar>
 
         <div>
             <div class="drawer drawer-end">
@@ -460,7 +458,10 @@ const toggleActionExpanded = (action: any) => {
                 </div>
             </div>
 
-            <div :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'">
+            <div
+                class="pt-3"
+                :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"
+            >
                 <div
                     v-if="filteredAndSortedProcesses.length > 0"
                     class="overflow-auto"

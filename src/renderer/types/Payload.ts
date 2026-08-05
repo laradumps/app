@@ -212,6 +212,7 @@ export interface Payload {
     with_label: LabelPayload;
     code_snippet: CodeSnippet[];
     jobs: JobPayload;
+    related_job?: { job_id: string; display_name: string } | null;
     show_badge_count: boolean;
     extra: Record<string, any>;
     context?: ContextPayload;
