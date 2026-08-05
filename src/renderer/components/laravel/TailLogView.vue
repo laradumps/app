@@ -323,7 +323,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                         <div
                             tabindex="0"
                             role="button"
-                            class="flex items-center font-mono truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-7 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/20 rounded-lg transition-colors"
+                            class="flex items-center font-medium truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-7 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/20 rounded-lg transition-colors"
                             :data-tippy-content="tailLogStore.filePath"
                             @click="openFileDropdown()"
                         >
