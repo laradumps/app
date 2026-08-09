@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { Profile, ProfileEntry } from '@/store/profile';
 import { EyeIcon, EyeSlashIcon, FunnelIcon } from '@heroicons/vue/24/outline';
 import {
@@ -20,13 +20,39 @@ const emit = defineEmits<{
     (e: 'select', entry: ProfileEntry): void;
 }>();
 
-// Persisted filter state, owned by the parent (survives view-mode switches).
 const showAllEntries = defineModel<boolean>('showAll', { default: false });
 const noiseThresholdMs = defineModel<number>('threshold', { default: 1 });
 
+const NAME_COLUMN_MIN = 120;
+const NAME_COLUMN_MAX = 720;
+const nameWidth = ref(208);
+
+let resizeStartX = 0;
+let resizeStartWidth = 0;
+
+const onResizeMove = (event: MouseEvent): void => {
+    const next = resizeStartWidth + (event.clientX - resizeStartX);
+    nameWidth.value = Math.min(NAME_COLUMN_MAX, Math.max(NAME_COLUMN_MIN, next));
+};
+
+const onResizeEnd = (): void => {
+    window.removeEventListener('mousemove', onResizeMove);
+    window.removeEventListener('mouseup', onResizeEnd);
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+};
+
+const startResize = (event: MouseEvent): void => {
+    resizeStartX = event.clientX;
+    resizeStartWidth = nameWidth.value;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+    window.addEventListener('mousemove', onResizeMove);
+    window.addEventListener('mouseup', onResizeEnd);
+};
+
 const methodCount = computed(() => props.profile.entries.filter((e) => e.type === 'method').length);
 
-// A `method` entry is "noise" when faster than the threshold.
 const isNoise = (entry: ProfileEntry): boolean =>
     entry.type === 'method' && (entry.duration_ms ?? 0) < noiseThresholdMs.value;
 
@@ -62,10 +88,6 @@ const getBarStyle = (entry: ProfileEntry) => {
     };
 };
 
-// Visible entries: type filters always apply; on top of that, fast `method`
-// entries are dropped unless they are an ancestor of a kept entry (so the tree
-// never loses a needed branch node). Non-method types are never dropped by the
-// noise filter.
 const sortedEntries = computed(() => {
     const all = props.profile.entries;
     const byId = new Map(all.map((e) => [e.id, e] as const));
@@ -77,7 +99,6 @@ const sortedEntries = computed(() => {
         if (showAllEntries.value || !isNoise(e)) kept.add(e.id);
     }
 
-    // Promote ancestors of kept entries so the tree stays connected.
     if (!showAllEntries.value) {
         for (const e of all) {
             if (!kept.has(e.id)) continue;
@@ -96,16 +117,12 @@ const sortedEntries = computed(() => {
     return all.filter((e) => kept.has(e.id)).sort((a, b) => a.start_ms - b.start_ms);
 });
 
-// How many type-allowed entries are currently hidden by the noise filter.
 const hiddenCount = computed(() => {
     if (showAllEntries.value) return 0;
     const visibleIds = new Set(sortedEntries.value.map((e) => e.id));
     return props.profile.entries.filter((e) => !props.hiddenTypes.has(e.type) && !visibleIds.has(e.id)).length;
 });
 
-// Build a depth map for the visible entries. Depth counts only ancestors that
-// are themselves visible, so filtered branch nodes don't leave indentation gaps
-// (an orphaned child re-parents to its nearest visible ancestor).
 const entryDepthMap = computed((): Map<string, number> => {
     const allById = new Map<string, ProfileEntry>();
     for (const e of props.profile.entries) {
@@ -152,10 +169,6 @@ const entryDepthMap = computed((): Map<string, number> => {
     return depthMap;
 });
 
-// Build grouped timeline: non-method entries stay flat; method entries are
-// grouped under a class header (inserted at first occurrence). Strict
-// chronological order is preserved — the header is injected right before the
-// first method of each new class.
 type TimelineGroup =
     | {
           type: 'entry';
@@ -178,8 +191,6 @@ const itemDepth = (item: TimelineGroup): number => item.depth;
 const timelineItems = computed((): TimelineGroup[] => {
     const items: TimelineGroup[] = [];
 
-    // Build contiguous run segments: consecutive method entries from the same
-    // class form a "run". Pre-scan to compute total duration per run.
     type Run = { cls: string; entries: ProfileEntry[] };
     const runs: Run[] = [];
     for (const entry of sortedEntries.value) {
@@ -279,7 +290,20 @@ const timelineItems = computed((): TimelineGroup[] => {
 </script>
 
 <template>
-    <div class="flex-1 flex flex-col overflow-hidden min-h-0">
+    <div class="flex-1 flex flex-col overflow-hidden min-h-0 relative">
+        <!-- Draggable divider to resize the name column (horizontal splitter).
+             px-3 (0.75rem) left padding + current name width. -->
+        <div
+            class="absolute top-0 bottom-0 z-20 w-2 -translate-x-1/2 cursor-col-resize group/resize"
+            :style="{ left: `calc(0.75rem + ${nameWidth}px)` }"
+            title="Drag to resize the name column"
+            @mousedown.prevent="startResize"
+        >
+            <div
+                class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-base-content/15 transition-colors group-hover/resize:w-0.5 group-hover/resize:bg-primary"
+            ></div>
+        </div>
+
         <!-- Noise filter bar (when the profile has method entries) -->
         <div
             v-if="methodCount > 0"
@@ -328,7 +352,10 @@ const timelineItems = computed((): TimelineGroup[] => {
         <!-- Time scale ruler (fixed, outside scroll area) -->
         <div class="shrink-0 relative h-7 border-b border-base-content/20 bg-base-100 px-3">
             <div class="absolute inset-0 flex">
-                <div class="w-52 flex-shrink-0"></div>
+                <div
+                    class="flex-shrink-0"
+                    :style="{ width: nameWidth + 'px' }"
+                ></div>
                 <div class="flex-1 relative">
                     <div
                         v-for="marker in timeMarkers"
@@ -355,7 +382,10 @@ const timelineItems = computed((): TimelineGroup[] => {
                         v-if="item.type === 'class-header'"
                         class="flex items-center first:mt-0"
                     >
-                        <div class="w-52 pr-2 flex-shrink-0 flex items-center">
+                        <div
+                            class="pr-2 flex-shrink-0 flex items-center"
+                            :style="{ width: nameWidth + 'px' }"
+                        >
                             <template v-if="item.depth > 0">
                                 <span
                                     v-for="(c, ci) in item.connectors"
@@ -369,7 +399,10 @@ const timelineItems = computed((): TimelineGroup[] => {
                                     }"
                                 ></span>
                             </template>
-                            <span class="flex-1 text-[11px] tracking-widest text-base-content/40 select-none">
+                            <span
+                                class="flex-1 truncate text-[11px] tracking-widest text-base-content/40 select-none"
+                                :title="item.className"
+                            >
                                 {{ item.className }}
                             </span>
                         </div>
@@ -386,7 +419,8 @@ const timelineItems = computed((): TimelineGroup[] => {
                         @click="emit('select', item.entry)"
                     >
                         <div
-                            class="w-52 pr-2 text-xs text-base-content/70 flex-shrink-0 leading-tight flex items-center"
+                            class="pr-2 text-xs text-base-content/70 flex-shrink-0 leading-tight flex items-center"
+                            :style="{ width: nameWidth + 'px' }"
                         >
                             <template v-if="item.depth > 0">
                                 <span
@@ -401,9 +435,11 @@ const timelineItems = computed((): TimelineGroup[] => {
                                     }"
                                 ></span>
                             </template>
-                            <span class="flex-1 text-left break-all truncate">{{
-                                item.indented ? entryMethodName(item.entry) : entryLabel(item.entry)
-                            }}</span>
+                            <span
+                                class="flex-1 text-left break-all truncate"
+                                :title="item.indented ? entryMethodName(item.entry) : entryLabel(item.entry)"
+                                >{{ item.indented ? entryMethodName(item.entry) : entryLabel(item.entry) }}</span
+                            >
                         </div>
 
                         <!-- Bar container -->
