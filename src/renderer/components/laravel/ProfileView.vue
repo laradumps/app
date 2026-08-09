@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useProfileStore, type ProfileEntry } from '@/store/profile';
 import { useCurrentProject } from '@/store/current-project';
 import {
-    ArrowPathIcon,
     ArrowsRightLeftIcon,
-    BoltIcon,
-    CheckIcon,
-    ClipboardDocumentIcon,
     ClockIcon,
     CogIcon,
     FireIcon,
@@ -106,44 +102,6 @@ const hasProfileConfig = computed(
 );
 const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOptions.value.some((c) => c.enabled));
 
-const otelInstalled = ref<boolean | null>(null);
-
-const checkProfilerDeps = () => {
-    const projectPath = currentProjectStore.projectInfo?.path;
-    if (!projectPath) {
-        otelInstalled.value = false;
-        return;
-    }
-    window.ipcRenderer.send('profiler.check-deps', projectPath);
-};
-
-const handleProfilerDepsReply = (_: any, data: { otelInstalled: boolean }) => {
-    otelInstalled.value = !!data?.otelInstalled;
-};
-
-const copiedCommand = ref<string | null>(null);
-let copyResetTimer: ReturnType<typeof setTimeout> | null = null;
-const copyCommand = (command: string) => {
-    navigator.clipboard?.writeText(command);
-    copiedCommand.value = command;
-    if (copyResetTimer) clearTimeout(copyResetTimer);
-    copyResetTimer = setTimeout(() => (copiedCommand.value = null), 1500);
-};
-
-onMounted(() => {
-    window.ipcRenderer.on('profiler.check-deps.reply', handleProfilerDepsReply);
-    checkProfilerDeps();
-});
-
-onBeforeUnmount(() => {
-    window.ipcRenderer.off('profiler.check-deps.reply', handleProfilerDepsReply);
-    if (copyResetTimer) clearTimeout(copyResetTimer);
-});
-
-watch(
-    () => currentProjectStore.projectInfo?.path,
-    () => checkProfilerDeps()
-);
 </script>
 
 <template>
@@ -388,103 +346,8 @@ watch(
             v-else
             class="flex-1 flex items-center justify-center p-6"
         >
-            <!-- Setup guide: open-telemetry/sdk missing -->
-            <div
-                v-if="otelInstalled === false"
-                class="w-full max-w-sm"
-            >
-                <div class="text-center mb-8">
-                    <div
-                        class="w-11 h-11 mx-auto mb-3 rounded-xl bg-primary/10 text-primary flex items-center justify-center"
-                    >
-                        <BoltIcon class="w-5" />
-                    </div>
-                    <h1 class="text-base font-semibold text-base-content/80">{{ $t('profiler.setup.title') }}</h1>
-                    <p class="text-sm text-base-content/50 mt-1">{{ $t('profiler.setup.subtitle') }}</p>
-                </div>
-
-                <!-- Required: OpenTelemetry SDK -->
-                <div class="mb-5">
-                    <div class="flex items-baseline gap-1.5 mb-1.5">
-                        <span class="text-[10px] uppercase tracking-wider text-warning">{{
-                            $t('profiler.setup.required')
-                        }}</span>
-                        <span class="text-xs text-base-content/50">OpenTelemetry SDK</span>
-                    </div>
-                    <div
-                        class="flex items-center gap-2 bg-base-300 border border-base-content/10 rounded-lg px-2.5 py-1.5"
-                    >
-                        <code class="flex-1 font-mono text-xs text-base-content overflow-x-auto whitespace-nowrap"
-                            >composer require open-telemetry/sdk --dev</code
-                        >
-                        <button
-                            @click="copyCommand('composer require open-telemetry/sdk --dev')"
-                            class="btn btn-ghost btn-xs btn-square"
-                            aria-label="Copy command"
-                        >
-                            <CheckIcon
-                                v-if="copiedCommand === 'composer require open-telemetry/sdk --dev'"
-                                class="w-4 text-success"
-                            />
-                            <ClipboardDocumentIcon
-                                v-else
-                                class="w-4"
-                            />
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Optional: xhprof -->
-                <div class="mb-8">
-                    <div class="flex items-baseline gap-1.5 mb-1.5">
-                        <span class="text-[10px] uppercase tracking-wider text-base-content/40">{{
-                            $t('profiler.setup.optional')
-                        }}</span>
-                        <span class="text-xs text-base-content/50"
-                            >{{ $t('profiler.setup.xhprof_name') }} &middot;
-                            {{ $t('profiler.setup.xhprof_hint') }}</span
-                        >
-                    </div>
-                    <div
-                        class="flex items-center gap-2 bg-base-300 border border-base-content/10 rounded-lg px-2.5 py-1.5"
-                    >
-                        <code class="flex-1 font-mono text-xs text-base-content overflow-x-auto whitespace-nowrap"
-                            >pecl install xhprof</code
-                        >
-                        <button
-                            @click="copyCommand('pecl install xhprof')"
-                            class="btn btn-ghost btn-xs btn-square"
-                            aria-label="Copy command"
-                        >
-                            <CheckIcon
-                                v-if="copiedCommand === 'pecl install xhprof'"
-                                class="w-4 text-success"
-                            />
-                            <ClipboardDocumentIcon
-                                v-else
-                                class="w-4"
-                            />
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between gap-3">
-                    <span class="text-[11px] text-base-content/40">{{ $t('profiler.setup.note') }}</span>
-                    <button
-                        @click="checkProfilerDeps"
-                        class="btn btn-xs btn-ghost border border-base-content/15 gap-1.5"
-                    >
-                        <ArrowPathIcon class="w-3.5" />
-                        {{ $t('profiler.setup.recheck') }}
-                    </button>
-                </div>
-            </div>
-
-            <!-- Ready: SDK present, no profiles captured yet -->
-            <div
-                v-else
-                class="flex items-center justify-center"
-            >
+            <!-- No profiles captured yet -->
+            <div class="flex items-center justify-center">
                 <SvgEmpty class="w-30 opacity-25" />
                 <div class="text-base-content/70">
                     <h1 class="text-lg font-semibold mb-2">Empty</h1>

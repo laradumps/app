@@ -53,8 +53,6 @@ const CHANNELS = {
     STORAGE_GET_PROJECTS_ORDER: 'storage.get-projects-order',
     STORAGE_GET_APP_URL: 'storage.get-app-url',
     STORAGE_GET_APP_URL_REPLY: 'storage.get-app-url.reply',
-    STORAGE_CHECK_PROFILER_DEPS: 'profiler.check-deps',
-    STORAGE_CHECK_PROFILER_DEPS_REPLY: 'profiler.check-deps.reply',
 
     APP_SETTING_PROJECT_ADDED: 'app-setting:project-added',
     STORAGE_SET_ACTIVE_REPLY: 'storage.set-active.reply'
@@ -72,7 +70,6 @@ export const init = async () => {
     ipcMain.on(CHANNELS.STORAGE_SET_PROJECTS_ORDER, setProjectsOrder);
     ipcMain.on(CHANNELS.STORAGE_GET_PROJECTS_ORDER, getProjectsOrder);
     ipcMain.on(CHANNELS.STORAGE_GET_APP_URL, getAppUrl);
-    ipcMain.on(CHANNELS.STORAGE_CHECK_PROFILER_DEPS, checkProfilerDeps);
 };
 
 const getEnvironments = (event: IpcMainEvent) => {
@@ -329,11 +326,3 @@ const getAppUrl = (event: IpcMainEvent, projectPath: string) => {
     }
 };
 
-const checkProfilerDeps = (event: IpcMainEvent, projectPath: string) => {
-    try {
-        const otelInstalled = !!projectPath && fs.existsSync(path.join(projectPath, 'vendor', 'open-telemetry', 'sdk'));
-        event.reply(CHANNELS.STORAGE_CHECK_PROFILER_DEPS_REPLY, { otelInstalled });
-    } catch (e) {
-        event.reply(CHANNELS.STORAGE_CHECK_PROFILER_DEPS_REPLY, { otelInstalled: false });
-    }
-};
