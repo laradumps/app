@@ -101,7 +101,6 @@ const hasProfileConfig = computed(
         yamlCaptureOptions.value.length > 0
 );
 const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOptions.value.some((c) => c.enabled));
-
 </script>
 
 <template>

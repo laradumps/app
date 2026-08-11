@@ -325,4 +325,3 @@ const getAppUrl = (event: IpcMainEvent, projectPath: string) => {
         event.reply(CHANNELS.STORAGE_GET_APP_URL_REPLY, null);
     }
 };
-

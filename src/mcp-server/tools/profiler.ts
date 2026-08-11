@@ -55,9 +55,7 @@ export function registerProfilerTools(server: McpServer) {
                 }
                 for (const entry of profile.slowest_entries || []) {
                     const cost =
-                        entry.self_duration_ms != null
-                            ? `self=${entry.self_duration_ms}ms`
-                            : `${entry.duration_ms}ms`;
+                        entry.self_duration_ms != null ? `self=${entry.self_duration_ms}ms` : `${entry.duration_ms}ms`;
                     lines.push(
                         `  [${cost}] ${entry.source === 'xhprof' ? 'XHPROF' : entry.type} ${entry.name}${entry.origin ? ` @ ${entry.origin}` : ''}`
                     );
