@@ -17,6 +17,7 @@ if (!window.LaraDumps) {
         currentProjectStore: null,
         mailStore: null,
         livewireStore: null,
+        profileStore: null,
         clearAll: null,
         confetti: null
     };
@@ -318,6 +319,78 @@ app.get('/api/mcp/livewire', (req, res) => {
     } catch (e) {
         console.error('[MCP Livewire Error]', e);
         res.status(503).send({ error: 'Store not initialized or error retrieving livewire' });
+    }
+});
+
+const PROFILER_TOP_ENTRIES = 10;
+
+app.get('/api/mcp/profiler', (req, res) => {
+    try {
+        const profiles = Object.values(window.LaraDumps?.profileStore?.profiles || {});
+        const routeFilter = (req.query.route || '').toString().toLowerCase().trim();
+        const minTotalMs = parseFloat(req.query.min_total_ms) || 0;
+        const limit = parseInt(req.query.limit) || profiles.length;
+
+        const matched = profiles
+            .filter((profile) => {
+                if (routeFilter && !(profile.label || '').toLowerCase().includes(routeFilter)) {
+                    return false;
+                }
+                if (minTotalMs > 0 && (profile.total_duration_ms || 0) < minTotalMs) {
+                    return false;
+                }
+                return true;
+            })
+            .sort((a, b) => (b.total_duration_ms || 0) - (a.total_duration_ms || 0));
+
+        const slimmed = matched.slice(0, limit).map((profile) => {
+            const entries = (profile.entries || []).filter((entry) => entry.duration_ms != null);
+
+            const sources = {};
+            for (const entry of entries) {
+                const source = entry.metadata?.source || 'otel';
+                sources[source] = (sources[source] || 0) + 1;
+            }
+
+            const selfMs = (entry) => entry.self_duration_ms ?? entry.duration_ms;
+
+            const slowest = [...entries]
+                .sort((a, b) => selfMs(b) - selfMs(a))
+                .slice(0, PROFILER_TOP_ENTRIES)
+                .map((entry) => ({
+                    type: entry.type,
+                    name: entry.name,
+                    start_ms: entry.start_ms,
+                    duration_ms: entry.duration_ms,
+                    self_duration_ms: entry.self_duration_ms ?? null,
+                    source: entry.metadata?.source || 'otel',
+                    origin: entry.origin
+                        ? `${entry.origin.class ? entry.origin.class + '::' : ''}${entry.origin.method || ''} ${entry.origin.file || ''}:${entry.origin.line || ''}`
+                        : null
+                }));
+
+            return {
+                id: profile.id,
+                label: profile.label,
+                date_time: profile.date_time,
+                total_duration_ms: profile.total_duration_ms,
+                by_type: profile.summary?.by_type || {},
+                by_source: sources,
+                slowest_entries: slowest
+            };
+        });
+
+        res.send({
+            count: matched.length,
+            applied_filters: {
+                route: req.query.route || null,
+                min_total_ms: minTotalMs
+            },
+            profiles: slimmed
+        });
+    } catch (e) {
+        console.error('[MCP Profiler Error]', e);
+        res.status(503).send({ error: 'Store not initialized or error retrieving profiler data' });
     }
 });
 

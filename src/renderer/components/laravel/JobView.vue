@@ -686,7 +686,9 @@ const toggleMessageLimit = () => {
                                             :title="job.display_name"
                                             >{{ job.display_name }}</span
                                         >
-                                        <span class="font-mono text-[10px] text-base-content/50 whitespace-nowrap shrink-0">
+                                        <span
+                                            class="font-mono text-[10px] text-base-content/50 whitespace-nowrap shrink-0"
+                                        >
                                             {{ dayjs(job.pushed_time ?? job.start_time).format('HH:mm:ss') }}
                                         </span>
                                     </div>

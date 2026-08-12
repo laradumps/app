@@ -9,6 +9,7 @@ import { useTailLogStore } from '@/store/tail-log';
 import { useQueriesPayloadStore } from '@/store/queries.js';
 import { useSplitPanesStore } from '@/store/split-panes';
 import { useBrainStore } from '@/store/brains.ts';
+import { useProfileStore } from '@/store/profile';
 import { useGlobalSearchStore } from '@/store/global-search';
 import EnvironmentDropdown from './EnvironmentDropdown.vue';
 import type { Environment } from '../../../main/storage';
@@ -35,6 +36,7 @@ const logStore = useLogStore();
 const tailLogStore = useTailLogStore();
 const brainStore = useBrainStore();
 const queriesStore = useQueriesPayloadStore();
+const profileStore = useProfileStore();
 const splitPanesStore = useSplitPanesStore();
 const globalSearchStore = useGlobalSearchStore();
 
@@ -220,7 +222,8 @@ const getPayloadScreenCount = (screenName) => {
         logs: logStore.logs,
         tail_logs: tailLogStore.entries,
         queries: queriesStore.payload,
-        brain: brainStore.brains
+        brain: brainStore.brains,
+        profile: profileStore.profiles
     };
 
     const items = stores[screenName] || payloadStore.get(screenName);

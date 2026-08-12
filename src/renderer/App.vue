@@ -12,6 +12,7 @@ import { useCurrentProject } from '@/store/current-project';
 import { useMailStore } from '@/store/mail';
 import { useLivewireStore } from '@/store/livewire';
 import { useMcpStore } from '@/store/mcp';
+import { useProfileStore } from '@/store/profile';
 import { useClearAll } from '@/composables/useClearAll';
 import JSConfetti from 'js-confetti';
 
@@ -30,6 +31,7 @@ const currentProjectStore = useCurrentProject();
 const mailStore = useMailStore();
 const livewireStore = useLivewireStore();
 const mcpStore = useMcpStore();
+const profileStore = useProfileStore();
 
 const { clear } = useClearAll();
 const fireConfetti = () => new JSConfetti().addConfetti();
@@ -46,6 +48,7 @@ const exposeMcp = () => {
             currentProjectStore,
             mailStore,
             livewireStore,
+            profileStore,
             clearAll: () => clear(),
             confetti: () => fireConfetti()
         };

@@ -191,5 +191,25 @@ export default {
     install_failed: 'Setup Failed',
     install_failed_message: 'An error occurred during the project setup.',
     retry: 'Retry',
-    finish: 'Finish'
+    finish: 'Finish',
+    profiler: {
+        yaml_configuration: 'YAML Configuration',
+        enable_profiling: 'Enable Profiling',
+        options: 'Options',
+        capture: 'Capture',
+        no_configuration: 'No profile configuration available',
+        timeline: 'Timeline',
+        hotspots: 'Hotspots',
+        flame: 'Flame',
+        setup: {
+            title: 'Set up the profiler',
+            subtitle: 'Install these to start capturing profiles.',
+            required: 'Required',
+            optional: 'Optional',
+            xhprof_name: 'xhprof extension',
+            xhprof_hint: 'CPU and memory hotspots',
+            note: 'Profiling stays off until the SDK is installed.',
+            recheck: 'Recheck'
+        }
+    }
 };

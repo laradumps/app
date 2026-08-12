@@ -183,5 +183,25 @@ export default {
         choose_another_file: 'Escolher outro arquivo…',
         clear_log_file_contents: 'Limpar conteúdo do arquivo de log'
     },
-    no_records_found: 'Nenhum registro encontrado.'
+    no_records_found: 'Nenhum registro encontrado.',
+    profiler: {
+        yaml_configuration: 'Configuração YAML',
+        enable_profiling: 'Ativar Profiling',
+        options: 'Opções',
+        capture: 'Captura',
+        no_configuration: 'Nenhuma configuração de profiler disponível',
+        timeline: 'Linha do tempo',
+        hotspots: 'Hotspots',
+        flame: 'Flame',
+        setup: {
+            title: 'Configurar o profiler',
+            subtitle: 'Instale estes para começar a capturar profiles.',
+            required: 'Obrigatório',
+            optional: 'Opcional',
+            xhprof_name: 'extensão xhprof',
+            xhprof_hint: 'hotspots de CPU e memória',
+            note: 'O profiling fica desligado até o SDK ser instalado.',
+            recheck: 'Verificar novamente'
+        }
+    }
 };

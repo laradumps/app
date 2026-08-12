@@ -478,8 +478,7 @@ onUnmounted(() => {
                     <div
                         v-if="
                             (payload.dump.variable_name && payload.dump.variable_name !== 'arg0') ||
-                            (settingsStore.settings.show_variable_type &&
-                                payload.dump.variable_type !== undefined)
+                            (settingsStore.settings.show_variable_type && payload.dump.variable_type !== undefined)
                         "
                         class="flex items-center gap-1.5 mb-2"
                     >
@@ -489,10 +488,7 @@ onUnmounted(() => {
                             >${{ payload.dump.variable_name }}</span
                         >
                         <span
-                            v-if="
-                                settingsStore.settings.show_variable_type &&
-                                payload.dump.variable_type !== undefined
-                            "
+                            v-if="settingsStore.settings.show_variable_type && payload.dump.variable_type !== undefined"
                             class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded"
                             >{{ payload.dump.variable_type }}</span
                         >
@@ -606,9 +602,7 @@ onUnmounted(() => {
                                 {{ payload.queries.query.time.toFixed(2) }}ms
                             </span>
                             <button
-                                v-if="
-                                    payload.queries?.explain_nodes && payload.queries.explain_nodes.length > 0
-                                "
+                                v-if="payload.queries?.explain_nodes && payload.queries.explain_nodes.length > 0"
                                 @click.stop="openExplainModal()"
                                 class="badge badge-warning hover:opacity-80 badge-xs p-1.5 font-mono"
                                 title="This query has problematic nodes in the EXPLAIN plan."
