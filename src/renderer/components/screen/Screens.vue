@@ -112,6 +112,7 @@ const BUILT_IN_SCREENS = [
     'mail',
     'brain',
     'livewire',
+    'profiler',
     'xdebug_inspector'
 ];
 
@@ -194,6 +195,10 @@ const matchesSearch = (screenName: string, item: any, term: string): boolean => 
                     .toLowerCase()
                     .includes(term)
             );
+        case 'profiler':
+            return String(item.label ?? '')
+                .toLowerCase()
+                .includes(term);
         case 'brain':
             return (
                 String(item.className ?? '')
@@ -223,7 +228,7 @@ const getPayloadScreenCount = (screenName) => {
         tail_logs: tailLogStore.entries,
         queries: queriesStore.payload,
         brain: brainStore.brains,
-        profile: profileStore.profiles
+        profiler: profileStore.profiles
     };
 
     const items = stores[screenName] || payloadStore.get(screenName);

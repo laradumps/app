@@ -311,7 +311,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                     @click="selectorModal?.open()"
                 >
                     <ArrowsRightLeftIcon class="w-4 inline-block" />
-                    <span class="opacity-80"> ({{ profiles.length }}) </span>
+                    <span class="badge badge-ghost badge-sm font-mono">{{ profiles.length }}</span>
                     <span class="truncate">{{ selectedProfile.label }}</span>
                 </button>
 

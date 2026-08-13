@@ -13,7 +13,8 @@ import {
     AdjustmentsHorizontalIcon,
     TrashIcon,
     ArrowDownTrayIcon,
-    CogIcon
+    CogIcon,
+    MagnifyingGlassIcon
 } from '@heroicons/vue/24/outline';
 import tippy from 'tippy.js';
 import { usePendingRequestsStore } from '@/store/pending-requests';
@@ -28,6 +29,7 @@ import { useQueriesChart } from '@/store/queries-chart';
 import QueriesChart from '@/components/laravel/QueriesChart.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import DumpQueries from '@/components/laravel/DumpQueries.vue';
+import BaseDrawer from '@/components/common/BaseDrawer.vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -48,6 +50,8 @@ const duplicatesStore = useQueryDuplicated();
 const formattedQueriesStore = useFormattedQueriesStore();
 const settingsStore = useSettingsStore();
 const currentProjectStore = useCurrentProject();
+
+const isRequestsDrawerOpen = ref(false);
 
 const props = defineProps<{
     items?: [];
@@ -88,6 +92,28 @@ const availableOrigins = computed(() => {
                 .filter((o): o is string => !!o)
         )
     ];
+});
+
+const filteredRequestsCount = computed(() => {
+    let requests = timeStore.groups.map((requestId: string) => ({
+        label: timeStore.getUri(requestId),
+        method: timeStore.getMethod(requestId),
+        count: queriesStore.payload.filter((payload: Payload) => payload.request_id == requestId).length,
+        time: timeStore.getTotal(requestId)
+    }));
+
+    if (timeStore.search?.trim()) {
+        const searchLower = timeStore.search.toLowerCase();
+        requests = requests.filter(
+            (req) =>
+                req.label?.toLowerCase().includes(searchLower) ||
+                req.method?.toLowerCase().includes(searchLower) ||
+                String(req.count).includes(searchLower) ||
+                req.time.toString().includes(searchLower)
+        );
+    }
+
+    return requests.length;
 });
 
 const sourceItems = computed<Payload[]>(() => props.items ?? queriesStore.payload);
@@ -206,7 +232,7 @@ function toggleChartType(type: string) {
 }
 
 const openRequestsModal = () => {
-    request_dialog.showModal();
+    isRequestsDrawerOpen.value = true;
 };
 
 const handleConfigChanged = (section: string, key: string, value: boolean) => {
@@ -657,29 +683,32 @@ const setOrder = (order: string) => {
         </div>
  
         <div>
-            <dialog
-                id="request_dialog"
-                ref="modalRef"
-                class="modal"
+            <BaseDrawer
+                id="queries-requests-drawer"
+                v-model="isRequestsDrawerOpen"
+                title="Requests"
+                width="600px"
             >
-                <div class="modal-box min-w-80 max-w-2xl p-4 py-0">
-                    <div class="py-4 space-y-4 text-sm overflow-auto">
-                        <div class="font-semibold px-2">
-                            <span class="text-lg">Requests</span>
-                        </div>
+                <div class="flex flex-col h-full">
+                    <!-- Search bar -->
+                    <div class="flex items-center gap-2 px-4 py-3 border-b border-base-content/10">
+                        <label class="input input-sm input-bordered flex items-center gap-2 h-8 grow rounded-lg">
+                            <MagnifyingGlassIcon class="w-3.5 opacity-50" />
+                            <input
+                                v-model="timeStore.search"
+                                type="text"
+                                class="grow text-xs"
+                                :placeholder="$t('profiler.filter')"
+                            />
+                        </label>
+                        <span class="badge badge-ghost badge-sm font-mono">{{ filteredRequestsCount }}</span>
+                    </div>
 
-                        <div class="max-h-[calc(100vh-22rem)] overflow-auto">
-                            <QueriesRequests />
-                        </div>
+                    <div class="flex-1 overflow-auto">
+                        <QueriesRequests />
                     </div>
                 </div>
-                <form
-                    method="dialog"
-                    class="modal-backdrop"
-                >
-                    <button>close</button>
-                </form>
-            </dialog>
+            </BaseDrawer>
 
             <!-- Chart Modal -->
             <dialog
