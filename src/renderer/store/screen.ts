@@ -39,11 +39,18 @@ export const useScreenStore = defineStore('screen', {
                     ...screen,
                     original_content: screen.original_content
                 };
+
+                if (screen.screen_name === 'home') {
+                    this.screens.unshift(screenData);
+                    return;
+                }
+
                 this.screens.push(screenData);
             }
         },
         clearAll() {
             this.screens = [];
+            this.screen = 'home';
         },
         allVisible() {
             return this.screens.filter((screen: ScreenPayload) => screen.visible);

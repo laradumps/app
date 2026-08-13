@@ -118,11 +118,6 @@ watch(
             environments.value = [];
 
             window.ipcRenderer.send('storage.get-yaml', newProject.path);
-
-            if (settingsStore.settings.tail_log_enabled) {
-                tailLogStore.reset();
-                startTailLog();
-            }
         }
     }
 );

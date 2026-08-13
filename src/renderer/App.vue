@@ -65,6 +65,15 @@ watch(
     }
 );
 
+watch(
+    () => currentProjectStore.projectInfo?.path,
+    (newPath, oldPath) => {
+        if (oldPath && newPath !== oldPath) {
+            clear();
+        }
+    }
+);
+
 const readyToLoad = ref(false);
 const screen = ref<string | null>('');
 const isNotification = ref(new URLSearchParams(window.location.search).get('notification') === '1');
