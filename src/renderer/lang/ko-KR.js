@@ -163,5 +163,8 @@ export default {
         choose_another_file: 'Choose another file…',
         clear_log_file_contents: 'Clear log file contents'
     },
-    no_records_found: 'No records found.'
+    no_records_found: 'No records found.',
+    app: {
+        inactive_banner: 'Disabled, but LaraDumps still continues capturing which may leave it a bit slow.'
+    }
 };

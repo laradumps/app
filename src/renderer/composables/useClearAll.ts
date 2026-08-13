@@ -12,6 +12,15 @@ import { useScreenStore } from '@/store/screen';
 import { useLivewireStore } from '@/store/livewire';
 import { useBrainStore } from '@/store/brains';
 import { useProfileStore } from '@/store/profile';
+import { useTailLogStore } from '@/store/tail-log';
+import { useMcpStore } from '@/store/mcp';
+import { useSettingsStore } from '@/store/settings';
+import { useCurrentProject } from '@/store/current-project';
+import { usePausePayloadStore } from '@/store/pause';
+import { usePauseQueriesStore } from '@/store/pause-queries';
+import { usePauseLogsStore } from '@/store/pause-logs';
+import { usePauseJobsStore } from '@/store/pause-jobs';
+import { usePauseProfileStore } from '@/store/pause-profile';
 
 export function useClearAll() {
     const timeStore = useTimeStore();
@@ -28,6 +37,15 @@ export function useClearAll() {
     const livewireStore = useLivewireStore();
     const brainStore = useBrainStore();
     const profileStore = useProfileStore();
+    const tailLogStore = useTailLogStore();
+    const mcpStore = useMcpStore();
+    const settingsStore = useSettingsStore();
+    const currentProjectStore = useCurrentProject();
+    const pausePayloadStore = usePausePayloadStore();
+    const pauseQueriesStore = usePauseQueriesStore();
+    const pauseLogsStore = usePauseLogsStore();
+    const pauseJobsStore = usePauseJobsStore();
+    const pauseProfileStore = usePauseProfileStore();
 
     const clear = (): void => {
         // store
@@ -44,18 +62,40 @@ export function useClearAll() {
         livewireStore.clear();
         brainStore.clear();
         profileStore.clear();
+        tailLogStore.clearAll();
+        mcpStore.clearLogs();
         pendingRequestsStore.clear('queries');
 
-        setTimeout(() => {
+        // pause
+        pausePayloadStore.setPause(false);
+        pauseQueriesStore.setPause(false);
+        pauseLogsStore.setPause(false);
+        pauseJobsStore.setPause(false);
+        pauseProfileStore.setPause(false);
+
+        screenStore.add({
+            screen_name: 'home',
+            raise_in: 0,
+            visible: true,
+            pinned: false,
+            new_window: false
+        });
+
+        if (settingsStore.settings.tail_log_enabled) {
             screenStore.add({
-                screen_name: 'home',
+                screen_name: 'tail_logs',
                 raise_in: 0,
                 visible: true,
                 pinned: false,
                 new_window: false
             });
-            window.ipcRenderer.send('storage.get');
-        }, 10);
+
+            window.ipcRenderer.send('tail-log:start', {
+                projectPath: currentProjectStore.projectInfo?.path
+            });
+        }
+
+        window.ipcRenderer.send('storage.get');
 
         window.ipcRenderer.send('badge-icon.increment', {
             reset: true

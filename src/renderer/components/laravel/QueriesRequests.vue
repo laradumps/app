@@ -1,27 +1,30 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import { Payload } from '@/types/Payload';
 import { useTimeStore } from '@/store/time';
 import { useQueriesPayloadStore } from '@/store/queries';
 import { BoltIcon, ExclamationTriangleIcon } from '@heroicons/vue/20/solid';
 import { useQueryDuplicated } from '@/store/query-duplicated';
+import { httpMethodColor, formatDuration } from './profile/profileHelpers';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
 
 const timeStore = useTimeStore();
 const queriesStore = useQueriesPayloadStore();
 const duplicatesStore = useQueryDuplicated();
-
-const searchInput = ref<HTMLInputElement | null>(null);
 
 const allRequests = computed(() => {
     let requests = timeStore.groups.map((requestId: string, index: number) => ({
         index: index + 1,
         id: requestId,
         label: timeStore.getUri(requestId),
-        time: timeStore.getTotal(requestId).toFixed(2),
+        time: timeStore.getTotal(requestId),
         method: timeStore.getMethod(requestId),
         origin: timeStore.getOrigin(requestId),
         count: queriesStore.payload.filter((payload: Payload) => payload.request_id == requestId).length,
-        date: timeStore.getDate(requestId).format('HH:mm:ss')
+        date: timeStore.getDate(requestId)
     }));
 
     if (timeStore.search?.trim()) {
@@ -44,132 +47,75 @@ const display = (id: string) => {
     duplicatesStore.showOnlyDuplicated = false;
     timeStore.setSelectedRequest(id);
 };
-
-const handleShortcut = (event: KeyboardEvent) => {
-    const isMac = navigator.platform.toUpperCase().includes('MAC');
-    if (
-        (isMac && event.metaKey && event.key.toLowerCase() === 'k') ||
-        (!isMac && event.ctrlKey && event.key.toLowerCase() === 'k')
-    ) {
-        event.preventDefault();
-        searchInput.value?.focus();
-    }
-};
-
-onMounted(() => {
-    window.addEventListener('keydown', handleShortcut);
-});
-
-onBeforeUnmount(() => {
-    window.removeEventListener('keydown', handleShortcut);
-});
 </script>
 
 <template>
-    <div
-        class="flex flex-col"
-        style="height: -webkit-fill-available"
-    >
-        <label class="input input-sm w-full mb-2">
-            <svg
-                class="h-[1em] opacity-50"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
+    <div class="flex flex-col h-full">
+        <div class="p-2 overflow-auto flex flex-col gap-1">
+            <button
+                v-for="request in allRequests"
+                :key="request.id"
+                type="button"
+                @click="display(request.id)"
+                class="w-full text-left flex items-center gap-3 px-2.5 py-2 rounded-lg border transition-colors"
+                :class="
+                    request.id === timeStore.selected
+                        ? 'border-primary/40 bg-primary/10'
+                        : 'border-transparent hover:bg-base-200'
+                "
             >
-                <g
-                    stroke-linejoin="round"
-                    stroke-linecap="round"
-                    stroke-width="2.5"
-                    fill="none"
-                    stroke="currentColor"
+                <span
+                    class="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded flex-shrink-0 w-14 text-center"
+                    :class="httpMethodColor(request.method || 'GET')"
                 >
-                    <circle
-                        cx="11"
-                        cy="11"
-                        r="8"
-                    ></circle>
-                    <path d="m21 21-4.3-4.3"></path>
-                </g>
-            </svg>
-            <input
-                ref="searchInput"
-                v-model="timeStore.search"
-                type="search"
-                class="grow"
-                placeholder="Search"
-            />
-            <kbd class="kbd kbd-sm">⌘</kbd>
-            <kbd class="kbd kbd-sm">K</kbd>
-        </label>
+                    {{ request.method || 'GET' }}
+                </span>
 
-        <table class="table table-sm w-full">
-            <thead>
-                <tr>
-                    <th class="w-12">#</th>
-                    <th>Date</th>
-                    <th>Request</th>
-                    <th class="text-right">Time</th>
-                    <th class="text-right">Total Queries</th>
-                    <th class="text-right">Icons</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr
-                    v-for="request in allRequests"
-                    :key="request.id"
-                    :class="{
-                        'hover:bg-base-300': request.id !== timeStore.selected,
-                        'bg-neutral text-neutral-content': request.id === timeStore.selected
-                    }"
-                    class="cursor-pointer"
-                    @click="display(request.id)"
-                >
-                    <td class="font-mono text-left">{{ request.index }}</td>
+                <span class="flex-1 min-w-0">
+                    <span
+                        class="block text-xs font-medium truncate"
+                        v-html="request.label ? request.label : 'Tinker'"
+                    >
+                    </span>
+                    <span class="block text-[10px] text-base-content/40 mt-0.5">
+                        {{ dayjs(request.date).fromNow() }}
+                    </span>
+                </span>
 
-                    <td class="font-mono text-left">{{ request.date }}</td>
-
-                    <td class="max-w-[250px] truncate">
-                        <span v-html="request.label ? request.label : 'Tinker'"></span>
-                        <span
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <div class="flex gap-1">
+                        <BoltIcon
+                            class="w-3.5"
                             :class="{
-                                '!badge-ghost': request.id == timeStore.selected,
-                                'badge-soft': request.id !== timeStore.selected
+                                'text-warning': queriesStore.hasExplainNodes(request.id),
+                                'text-base-content/10': !queriesStore.hasExplainNodes(request.id)
                             }"
-                            class="badge badge-xs ml-2"
-                        >
-                            {{ request.method }}
-                        </span>
-                    </td>
+                        />
+                        <ExclamationTriangleIcon
+                            class="w-3.5"
+                            :class="{
+                                'text-error': duplicatesStore.requestsWithDuplicates.has(request.id),
+                                'text-base-content/10': !duplicatesStore.requestsWithDuplicates.has(request.id)
+                            }"
+                        />
+                    </div>
+                    <span
+                        class="badge badge-ghost badge-sm font-mono text-[10px] gap-1"
+                        :class="{ 'badge-warning': request.time >= 100 }"
+                    >
+                        <span class="opacity-50 font-sans">{{ request.count }}q</span>
+                        <span>{{ formatDuration(request.time) }}</span>
+                    </span>
+                </div>
+            </button>
 
-                    <td class="text-right">{{ request.time }}ms</td>
-
-                    <td class="text-right">
-                        {{ request.count }}
-                    </td>
-
-                    <td class="text-right">
-                        <div class="flex justify-end gap-2">
-                            <BoltIcon
-                                class="w-4"
-                                :class="{
-                                    'text-warning': queriesStore.hasExplainNodes(request.id),
-                                    'text-base-content/30': !queriesStore.hasExplainNodes(request.id)
-                                }"
-                                title="This query has problematic nodes in the EXPLAIN plan."
-                            />
-                            <ExclamationTriangleIcon
-                                class="w-4"
-                                :class="{
-                                    'text-error': duplicatesStore.requestsWithDuplicates.has(request.id),
-                                    'text-base-content/30': !duplicatesStore.requestsWithDuplicates.has(request.id)
-                                }"
-                                title="This request has duplicates"
-                            />
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+            <div
+                v-if="allRequests.length === 0"
+                class="text-center text-xs text-base-content/40 py-6"
+            >
+                {{ $t('no_records_found') }}
+            </div>
+        </div>
     </div>
 </template>
 

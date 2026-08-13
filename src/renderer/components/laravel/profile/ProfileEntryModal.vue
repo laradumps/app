@@ -39,7 +39,7 @@ const close = () => {
                 <span class="flex-1 font-medium truncate">{{ entryLabel(entry) }}</span>
                 <button
                     class="btn btn-ghost btn-circle btn-sm"
-                    aria-label="Close"
+                    :aria-label="$t('settings.close')"
                     @click="close"
                 >
                     <XMarkIcon class="w-4" />
@@ -54,9 +54,9 @@ const close = () => {
                 >
                     {{ typeLabels[entry.type] || entry.type }}
                 </span>
-                <span class="badge badge-ghost badge-sm font-mono"> start {{ formatDuration(entry.start_ms) }} </span>
+                <span class="badge badge-ghost badge-sm font-mono"> {{ $t('profiler.start') }} {{ formatDuration(entry.start_ms) }} </span>
                 <span class="badge badge-ghost badge-sm font-mono">
-                    end {{ formatDuration((entry.start_ms || 0) + (entry.duration_ms || 0)) }}
+                    {{ $t('profiler.end') }} {{ formatDuration((entry.start_ms || 0) + (entry.duration_ms || 0)) }}
                 </span>
                 <span class="badge badge-primary badge-sm font-mono">
                     {{ formatDuration(entry.duration_ms) }}
@@ -66,12 +66,12 @@ const close = () => {
             <!-- Body -->
             <div class="p-4 space-y-3">
                 <div v-if="entry.name !== entryLabel(entry)">
-                    <div class="text-xs text-base-content/50 mb-1">Name</div>
+                    <div class="text-xs text-base-content/50 mb-1">{{ $t('profiler.name') }}</div>
                     <div class="text-sm font-medium break-all">{{ entry.name }}</div>
                 </div>
 
                 <div v-if="entry.origin?.class">
-                    <div class="text-xs text-base-content/50 mb-1">Origin</div>
+                    <div class="text-xs text-base-content/50 mb-1">{{ $t('origin') }}</div>
                     <div class="text-sm font-mono text-xs break-all">
                         {{ entry.origin.class }}<span v-if="entry.origin.method">::{{ entry.origin.method }}()</span>
                     </div>
@@ -84,7 +84,7 @@ const close = () => {
                 </div>
 
                 <div v-if="entry.metadata && Object.keys(entry.metadata).length > 0">
-                    <div class="text-xs text-base-content/50 mb-1">Metadata</div>
+                    <div class="text-xs text-base-content/50 mb-1">{{ $t('profiler.metadata') }}</div>
                     <div class="bg-base-200 rounded-lg p-3 text-xs font-mono overflow-auto max-h-40">
                         <pre>{{ JSON.stringify(entry.metadata, null, 2) }}</pre>
                     </div>
@@ -97,7 +97,7 @@ const close = () => {
                     class="btn btn-sm"
                     @click="close"
                 >
-                    Close
+                    {{ $t('settings.close') }}
                 </button>
             </div>
         </div>
@@ -105,7 +105,7 @@ const close = () => {
             method="dialog"
             class="modal-backdrop"
         >
-            <button>close</button>
+            <button>{{ $t('settings.close') }}</button>
         </form>
     </dialog>
 </template>

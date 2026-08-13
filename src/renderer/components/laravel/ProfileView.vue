@@ -8,10 +8,13 @@ import {
     CogIcon,
     FireIcon,
     Square3Stack3DIcon,
-    TrashIcon
+    TrashIcon,
+    PlayIcon
 } from '@heroicons/vue/24/outline';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import IconPause from '@/components/Icons/IconPause.vue';
+import { usePauseProfileStore } from '@/store/pause-profile';
 import { formatDuration } from './profile/profileHelpers';
 import ProfileLegend from './profile/ProfileLegend.vue';
 import ProfileTimeline from './profile/ProfileTimeline.vue';
@@ -27,6 +30,7 @@ const props = defineProps<{
 }>();
 
 const profileStore = useProfileStore();
+const pauseProfile = usePauseProfileStore();
 const currentProjectStore = useCurrentProject();
 
 const selectedProfile = computed(() => profileStore.selectedProfile);
@@ -48,7 +52,12 @@ const viewMode = ref<'timeline' | 'hotspots' | 'flame'>('hotspots');
 const showAllEntries = ref(false);
 const noiseThresholdMs = ref(1);
 
-const clear = () => profileStore.clear();
+const clear = () => {
+    if (pauseProfile.is_paused) {
+        pauseProfile.toggle();
+    }
+    profileStore.clear();
+};
 
 const selectProfile = (id: string) => profileStore.selectProfile(id);
 
@@ -250,6 +259,25 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                     </div>
                 </div>
 
+                <!-- Pause -->
+                <button
+                    @click="pauseProfile.toggle()"
+                    class="btn btn-ghost btn-circle btn-sm"
+                    :class="{
+                        'text-primary': pauseProfile.is_paused
+                    }"
+                    :data-tippy-content="$t('pause')"
+                >
+                    <PlayIcon
+                        v-if="pauseProfile.is_paused"
+                        class="w-4 text-warning"
+                    />
+                    <IconPause
+                        v-else
+                        class="w-4"
+                    />
+                </button>
+
                 <!-- Clear -->
                 <button
                     v-if="profiles.length > 0"
@@ -261,6 +289,15 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                 </button>
             </template>
         </ViewToolbar>
+
+        <!-- Pause Banner -->
+        <div
+            v-if="pauseProfile.is_paused"
+            class="bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20 shrink-0"
+        >
+            <PlayIcon class="w-3 h-3" />
+            <span>{{ $t('app.inactive_banner') }}</span>
+        </div>
 
         <!-- Profile Content -->
         <div
@@ -274,14 +311,14 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                     @click="selectorModal?.open()"
                 >
                     <ArrowsRightLeftIcon class="w-4 inline-block" />
-                    <span class="opacity-80"> ({{ profiles.length }}) </span>
+                    <span class="badge badge-ghost badge-sm font-mono">{{ profiles.length }}</span>
                     <span class="truncate">{{ selectedProfile.label }}</span>
                 </button>
 
                 <div class="flex items-center gap-2">
                     <div class="join">
                         <button
-                            class="btn btn-xs join-item gap-1"
+                            class="btn btn-soft btn-xs join-item gap-1"
                             :class="viewMode === 'timeline' ? 'btn-active' : 'btn-ghost'"
                             @click="viewMode = 'timeline'"
                         >
@@ -289,7 +326,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                             {{ $t('profiler.timeline') }}
                         </button>
                         <button
-                            class="btn btn-xs join-item gap-1"
+                            class="btn btn-soft btn-xs join-item gap-1"
                             :class="viewMode === 'hotspots' ? 'btn-active' : 'btn-ghost'"
                             @click="viewMode = 'hotspots'"
                         >
@@ -297,7 +334,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                             {{ $t('profiler.hotspots') }}
                         </button>
                         <button
-                            class="btn btn-xs join-item gap-1"
+                            class="btn btn-soft btn-xs join-item gap-1"
                             :class="viewMode === 'flame' ? 'btn-active' : 'btn-ghost'"
                             @click="viewMode = 'flame'"
                         >
@@ -349,7 +386,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
             <div class="flex items-center justify-center">
                 <SvgEmpty class="w-30 opacity-25" />
                 <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">Empty</h1>
+                    <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
                 </div>
             </div>
         </div>

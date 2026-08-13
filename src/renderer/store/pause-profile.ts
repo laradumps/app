@@ -4,7 +4,7 @@ type State = {
     is_paused: boolean;
 };
 
-export const usePauseLogsStore = defineStore('pauseLogs', {
+export const usePauseProfileStore = defineStore('pauseProfile', {
     state: (): State => ({
         is_paused: false
     }),

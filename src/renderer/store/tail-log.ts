@@ -61,6 +61,13 @@ export const useTailLogStore = defineStore('tailLogStore', {
         clear() {
             this.entries = {};
         },
+        clearAll() {
+            this.entries = {};
+            this.filePath = '';
+            this.watching = false;
+            this.availableFiles = [];
+            this.error = null;
+        },
         reset() {
             this.entries = {};
         },

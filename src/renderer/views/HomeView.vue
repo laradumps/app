@@ -30,6 +30,7 @@ import { useBrainStore } from '@/store/brains';
 import { useLivewireStore } from '@/store/livewire';
 import { useQueriesBlockedStore } from '@/store/queries-blocked';
 import { usePauseQueriesStore } from '@/store/pause-queries';
+import { usePauseProfileStore } from '@/store/pause-profile';
 import QueriesView from '@/components/laravel/QueriesView.vue';
 import { deepClone } from '@/lib/deep_clone';
 import { useSavedDumpsStore } from '@/store/saved-dumps';
@@ -46,7 +47,7 @@ import SplitPanes from '@/components/split/SplitPanes.vue';
 import { useSplitPanesStore } from '@/store/split-panes';
 import BrainView from '@/components/laravel/BrainView.vue';
 import ProfileView from '@/components/laravel/ProfileView.vue';
-import { ClockIcon } from '@heroicons/vue/24/outline';
+import { ClockIcon, PlayIcon } from '@heroicons/vue/24/outline';
 import { isSpecialEnvironment } from '@/constants';
 import { useProfileStore } from '@/store/profile';
 
@@ -74,6 +75,7 @@ const mailStore = useMailStore();
 const pendingRequestsStore = usePendingRequestsStore();
 const blockedStore = useQueriesBlockedStore();
 const pauseQueries = usePauseQueriesStore();
+const pauseProfileStore = usePauseProfileStore();
 const currentProjectStore = useCurrentProject();
 const pauseJobsStore = usePauseJobsStore();
 const savedStore = useSavedDumpsStore();
@@ -116,11 +118,6 @@ watch(
             environments.value = [];
 
             window.ipcRenderer.send('storage.get-yaml', newProject.path);
-
-            if (settingsStore.settings.tail_log_enabled) {
-                tailLogStore.reset();
-                startTailLog();
-            }
         }
     }
 );
@@ -375,7 +372,7 @@ const handleLivewire = (_: any, { content }: any) => {
 };
 
 const handleJobs = (_: any, { content }: any) => {
-    if (pauseJobsStore.is_paused) {
+    if (pausePayloadStore.is_paused || pauseJobsStore.is_paused) {
         return;
     }
 
@@ -580,7 +577,7 @@ let lastPayloadTimeout: NodeJS.Timeout | null = null;
 let lastPayloadReceivedTime = 0;
 
 const handleDumpBatches = (_, args) => {
-    if (pauseQueries.is_paused) {
+    if (pausePayloadStore.is_paused || pauseQueries.is_paused) {
         return;
     }
 
@@ -781,9 +778,7 @@ const dumpListeners = () => {
 };
 
 const handleProfile = (_: any, { content }: any) => {
-    console.log('Profile payload received:', content);
-
-    if (pausePayloadStore.is_paused) {
+    if (pausePayloadStore.is_paused || pauseProfileStore.is_paused) {
         return;
     }
 
@@ -795,8 +790,6 @@ const handleProfile = (_: any, { content }: any) => {
     }
 
     profileStore.addProfile(content);
-
-    console.log('Profile store after add:', profileStore.profiles, 'selected:', profileStore.selectedProfileId);
 
     if (content.to_screen) {
         addScreen(content.to_screen);
@@ -1124,6 +1117,15 @@ const handleDragEnd = () => {
             v-if="inScreenWindow"
             class="mt-3 h-[calc(100vh-50px)] w-screen text-base"
         >
+            <!-- Pause Banner -->
+            <div
+                v-if="pausePayloadStore.is_paused"
+                class="bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20 shrink-0"
+            >
+                <PlayIcon class="w-3 h-3" />
+                <span>{{ $t('app.inactive_banner') }}</span>
+            </div>
+
             <ScreenWindow
                 v-if="
                     !['jobs', 'mail', 'logs', 'queries', 'brain', 'cache', 'gate', 'profiler'].includes(inScreenWindow)
@@ -1205,7 +1207,16 @@ const handleDragEnd = () => {
                                         />
                                     </div>
                                 </div>
-
+ 
+                                <!-- Pause Banner -->
+                                <div
+                                    v-if="pausePayloadStore.is_paused"
+                                    class="bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20 shrink-0"
+                                >
+                                    <PlayIcon class="w-3 h-3" />
+                                    <span>{{ $t('app.inactive_banner') }}</span>
+                                </div>
+ 
                                 <div class="flex-1 overflow-auto min-h-0">
                                     <div v-if="screenStore.screen === 'jobs'">
                                         <JobView />
@@ -1515,7 +1526,16 @@ const handleDragEnd = () => {
                                     />
                                 </div>
                             </div>
-
+ 
+                            <!-- Pause Banner -->
+                            <div
+                                v-if="pausePayloadStore.is_paused"
+                                class="bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20 shrink-0"
+                            >
+                                <PlayIcon class="w-3 h-3" />
+                                <span>{{ $t('app.inactive_banner') }}</span>
+                            </div>
+ 
                             <div v-if="screenStore.screen === 'cache'">
                                 <CacheGateView
                                     screen="cache"
@@ -1523,28 +1543,28 @@ const handleDragEnd = () => {
                                 />
                             </div>
 
-                            <div v-if="screenStore.screen === 'gate'">
+                            <div v-else-if="screenStore.screen === 'gate'">
                                 <CacheGateView
                                     screen="gate"
                                     class="w-screen text-base"
                                 />
                             </div>
 
-                            <div v-if="screenStore.screen === 'jobs'">
+                            <div v-else-if="screenStore.screen === 'jobs'">
                                 <JobView
                                     class="w-screen text-base"
                                     @open-screen-window="openScreenWindow"
                                 />
                             </div>
 
-                            <div v-if="screenStore.screen === 'mail'">
+                            <div v-else-if="screenStore.screen === 'mail'">
                                 <MailView
                                     class="w-screen text-base"
                                     @open-screen-window="openScreenWindow"
                                 />
                             </div>
 
-                            <div v-if="screenStore.screen === 'logs'">
+                            <div v-else-if="screenStore.screen === 'logs'">
                                 <LogView
                                     class="w-screen text-base"
                                     :yaml-config="yamlConfig"
@@ -1552,11 +1572,11 @@ const handleDragEnd = () => {
                                 />
                             </div>
 
-                            <div v-if="screenStore.screen === 'tail_logs'">
+                            <div v-else-if="screenStore.screen === 'tail_logs'">
                                 <TailLogView class="w-screen text-base" />
                             </div>
 
-                            <div v-if="screenStore.screen === 'queries'">
+                            <div v-else-if="screenStore.screen === 'queries'">
                                 <QueriesView
                                     class="text-base"
                                     :yaml-config="yamlConfig"
@@ -1564,14 +1584,14 @@ const handleDragEnd = () => {
                                 />
                             </div>
 
-                            <div v-if="screenStore.screen === 'brain'">
+                            <div v-else-if="screenStore.screen === 'brain'">
                                 <BrainView
                                     class="w-screen text-base"
                                     @open-screen-window="openScreenWindow"
                                 />
                             </div>
 
-                            <div v-if="screenStore.screen === 'profiler'">
+                            <div v-else-if="screenStore.screen === 'profiler'">
                                 <ProfileView
                                     class="w-screen text-base"
                                     :yaml-config="yamlConfig"
@@ -1580,7 +1600,19 @@ const handleDragEnd = () => {
                             </div>
 
                             <div
-                                v-else-if="!['cache', 'gate'].includes(screenStore.screen)"
+                                v-else-if="
+                                    ![
+                                        'cache',
+                                        'gate',
+                                        'jobs',
+                                        'mail',
+                                        'logs',
+                                        'queries',
+                                        'tail_logs',
+                                        'brain',
+                                        'profiler'
+                                    ].includes(screenStore.screen)
+                                "
                                 :class="{
                                     'items-center': payloadStore.payload.length === 0,
                                     'h-[calc(100vh-90px)]': true
@@ -1663,7 +1695,8 @@ const handleDragEnd = () => {
                                                 'queries',
                                                 'home',
                                                 'tail_logs',
-                                                'profiler'
+                                                'profiler',
+                                                'brain'
                                             ].includes(screenStore.screen)
                                         "
                                         class="-mt-22.5 -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
