@@ -646,7 +646,16 @@ const setOrder = (order: string) => {
                 </button>
             </template>
         </ViewToolbar>
-
+ 
+        <!-- Pause Banner -->
+        <div
+            v-if="pauseQueries.is_paused"
+            class="bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20 shrink-0"
+        >
+            <PlayIcon class="w-3 h-3" />
+            <span>{{ $t('app.inactive_banner') }}</span>
+        </div>
+ 
         <div>
             <dialog
                 id="request_dialog"

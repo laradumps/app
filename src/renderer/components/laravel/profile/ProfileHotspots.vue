@@ -86,7 +86,7 @@ const maxHotspotMs = computed(() => hotspots.value[0]?.totalMs || 1);
         <div
             class="absolute top-0 bottom-0 z-20 w-2 -translate-x-1/2 cursor-col-resize group/resize"
             :style="{ left: `${NAME_COLUMN_OFFSET + nameWidth}px` }"
-            title="Drag to resize the name column"
+            :title="$t('profiler.drag_to_resize')"
             @mousedown.prevent="startResize"
         >
             <div

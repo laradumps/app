@@ -26,8 +26,8 @@ const emit = defineEmits<{
                 ]"
                 :title="
                     hiddenTypes.has(type as string)
-                        ? `Show ${typeLabels[type] || type}`
-                        : `Hide ${typeLabels[type] || type}`
+                        ? `${$t('profiler.show')} ${typeLabels[type] || type}`
+                        : `${$t('profiler.hide')} ${typeLabels[type] || type}`
                 "
             >
                 <span

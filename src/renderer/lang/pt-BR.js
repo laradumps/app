@@ -184,6 +184,9 @@ export default {
         clear_log_file_contents: 'Limpar conteúdo do arquivo de log'
     },
     no_records_found: 'Nenhum registro encontrado.',
+    app: {
+        inactive_banner: 'Desativado, mas o LaraDumps continua capturando, o que pode deixá-lo um pouco lento.'
+    },
     profiler: {
         yaml_configuration: 'Configuração YAML',
         enable_profiling: 'Ativar Profiling',
@@ -202,6 +205,29 @@ export default {
             xhprof_hint: 'hotspots de CPU e memória',
             note: 'O profiling fica desligado até o SDK ser instalado.',
             recheck: 'Verificar novamente'
-        }
+        },
+        profiles: 'Perfis',
+        filter: 'Filtrar…',
+        entries: 'entradas',
+        no_profiles_found_matching: 'Nenhum perfil corresponde a “{search}”',
+        hiding_fast_methods: 'Ocultando métodos rápidos —',
+        hidden: 'ocultos',
+        showing_all_entries: 'Mostrando todas as entradas',
+        no_fast_methods_to_hide: 'Nenhum método rápido para ocultar',
+        hide_less_than: 'Ocultar <',
+        show_all: 'Mostrar tudo',
+        hide_noise: 'Ocultar ruídos',
+        start: 'início',
+        end: 'fim',
+        metadata: 'Metadados',
+        name: 'Nome',
+        drag_to_resize: 'Arraste para redimensionar a coluna de nome',
+        root: 'Raiz',
+        reset_zoom: 'Redefinir zoom',
+        no_call_stack_to_display: 'Nenhuma pilha de chamadas para exibir',
+        self: 'Próprio',
+        type: 'Tipo',
+        show: 'Mostrar',
+        hide: 'Ocultar'
     }
 };

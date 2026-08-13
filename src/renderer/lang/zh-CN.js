@@ -169,5 +169,8 @@ export default {
     install_failed: '设置失败',
     install_failed_message: '项目设置过程中出现错误。',
     retry: '重试',
-    finish: '完成'
+    finish: '完成',
+    app: {
+        inactive_banner: 'Disabled, but LaraDumps still continues capturing which may leave it a bit slow.'
+    }
 };

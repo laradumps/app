@@ -18,7 +18,7 @@ export default {
         tips: 'Tips',
         support: 'Support LaraDumps!',
         buy_me_a_coffee: 'Buy me a coffee',
-        give_us_start: 'Give us stars',
+        give_us_stars: 'Give us stars',
         contribute_code: 'Contribute code and help us grow',
         install_php_extension: 'Install PHP extension',
         in_any_line_of_code: 'in any line of code',
@@ -186,6 +186,9 @@ export default {
         clear_log_file_contents: 'Clear log file contents'
     },
     no_records_found: 'No records found.',
+    app: {
+        inactive_banner: 'Disabled, but LaraDumps still continues capturing which may leave it a bit slow.'
+    },
     install_success: 'Setup Success',
     install_success_message: 'Project has been set up successfully.',
     install_failed: 'Setup Failed',
@@ -210,6 +213,29 @@ export default {
             xhprof_hint: 'CPU and memory hotspots',
             note: 'Profiling stays off until the SDK is installed.',
             recheck: 'Recheck'
-        }
+        },
+        profiles: 'Profiles',
+        filter: 'Filter…',
+        entries: 'entries',
+        no_profiles_found_matching: 'No profiles match “{search}”',
+        hiding_fast_methods: 'Hiding fast methods —',
+        hidden: 'hidden',
+        showing_all_entries: 'Showing all entries',
+        no_fast_methods_to_hide: 'No fast methods to hide',
+        hide_less_than: 'Hide <',
+        show_all: 'Show all',
+        hide_noise: 'Hide noise',
+        start: 'start',
+        end: 'end',
+        metadata: 'Metadata',
+        name: 'Name',
+        drag_to_resize: 'Drag to resize the name column',
+        root: 'Root',
+        reset_zoom: 'Reset zoom',
+        no_call_stack_to_display: 'No call stack to display',
+        self: 'Self',
+        type: 'Type',
+        show: 'Show',
+        hide: 'Hide'
     }
 };

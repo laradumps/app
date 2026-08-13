@@ -297,7 +297,7 @@ const clear = () => {
                 </button>
             </template>
         </ViewToolbar>
-
+ 
         <div
             class="pt-3"
             :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"

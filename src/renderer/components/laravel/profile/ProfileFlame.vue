@@ -150,7 +150,7 @@ const resetFlameZoom = () => {
                 class="text-base-content/50 hover:text-base-content shrink-0"
                 @click="resetFlameZoom"
             >
-                Root
+                {{ $t('profiler.root') }}
             </button>
             <template
                 v-for="(node, bi) in flameBreadcrumb"
@@ -174,7 +174,7 @@ const resetFlameZoom = () => {
                 @click="resetFlameZoom"
             >
                 <XMarkIcon class="w-3" />
-                Reset zoom
+                {{ $t('profiler.reset_zoom') }}
             </button>
         </div>
 
@@ -224,7 +224,7 @@ const resetFlameZoom = () => {
                 v-else
                 class="h-full flex items-center justify-center text-xs text-base-content/40"
             >
-                No call stack to display
+                {{ $t('profiler.no_call_stack_to_display') }}
             </div>
         </div>
 
@@ -243,15 +243,15 @@ const resetFlameZoom = () => {
                     <span class="truncate">{{ entryLabel(hovered.node.entry) }}</span>
                 </div>
                 <div class="mt-1 grid grid-cols-[auto_1fr] gap-x-2 text-base-content/70 font-mono">
-                    <span class="text-base-content/40">Type</span>
+                    <span class="text-base-content/40">{{ $t('profiler.type') }}</span>
                     <span>{{ typeLabels[hovered.node.entry.type] || hovered.node.entry.type }}</span>
-                    <span class="text-base-content/40">Total</span>
+                    <span class="text-base-content/40">{{ $t('total') }}</span>
                     <span
                         >{{ formatDuration(hovered.node.entry.duration_ms) }} ({{
                             hovered.node.width.toFixed(1)
                         }}%)</span
                     >
-                    <span class="text-base-content/40">Self</span>
+                    <span class="text-base-content/40">{{ $t('profiler.self') }}</span>
                     <span>{{ formatDuration(hovered.node.self) }}</span>
                 </div>
             </div>

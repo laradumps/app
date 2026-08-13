@@ -47,7 +47,7 @@ defineExpose({ open });
         <div class="modal-box rounded-xl min-w-80 max-w-2xl p-0 overflow-hidden">
             <!-- Header -->
             <div class="flex items-center justify-between gap-3 px-4 pt-4 pb-3 border-b border-base-content/10">
-                <span class="text-base font-semibold">Profiles</span>
+                <span class="text-base font-semibold">{{ $t('profiler.profiles') }}</span>
                 <div class="flex items-center gap-2">
                     <label class="input input-sm input-bordered flex items-center gap-2 h-8 w-44 rounded-lg">
                         <MagnifyingGlassIcon class="w-3.5 opacity-50" />
@@ -55,7 +55,7 @@ defineExpose({ open });
                             v-model="search"
                             type="text"
                             class="grow text-xs"
-                            placeholder="Filter…"
+                            :placeholder="$t('profiler.filter')"
                         />
                     </label>
                     <span class="badge badge-ghost badge-sm font-mono">{{ filteredProfiles.length }}</span>
@@ -93,7 +93,7 @@ defineExpose({ open });
                             {{ parseLabel(profile.label).path }}
                         </span>
                         <span class="block text-[10px] text-base-content/40 mt-0.5">
-                            {{ profile.summary.total_entries }} entries · {{ dayjs(profile.date_time).fromNow() }}
+                            {{ profile.summary.total_entries }} {{ $t('profiler.entries') }} · {{ dayjs(profile.date_time).fromNow() }}
                         </span>
                     </span>
 
@@ -109,7 +109,7 @@ defineExpose({ open });
                     v-if="filteredProfiles.length === 0"
                     class="text-center text-xs text-base-content/40 py-6"
                 >
-                    No profiles match “{{ search }}”
+                    {{ $t('profiler.no_profiles_found_matching', { search: search }) }}
                 </div>
             </div>
         </div>
@@ -117,7 +117,7 @@ defineExpose({ open });
             method="dialog"
             class="modal-backdrop"
         >
-            <button>close</button>
+            <button>{{ $t('settings.close') }}</button>
         </form>
     </dialog>
 </template>

@@ -296,7 +296,7 @@ const timelineItems = computed((): TimelineGroup[] => {
         <div
             class="absolute top-0 bottom-0 z-20 w-2 -translate-x-1/2 cursor-col-resize group/resize"
             :style="{ left: `calc(0.75rem + ${nameWidth}px)` }"
-            title="Drag to resize the name column"
+            :title="$t('profiler.drag_to_resize')"
             @mousedown.prevent="startResize"
         >
             <div
@@ -312,18 +312,18 @@ const timelineItems = computed((): TimelineGroup[] => {
             <span class="flex items-center gap-1.5">
                 <FunnelIcon class="w-3 flex-shrink-0" />
                 <template v-if="!showAllEntries && hiddenCount > 0">
-                    Hiding fast methods —
-                    <span class="font-medium text-base-content/80">{{ hiddenCount }} hidden</span>
+                    {{ $t('profiler.hiding_fast_methods') }}
+                    <span class="font-medium text-base-content/80">{{ hiddenCount }} {{ $t('profiler.hidden') }}</span>
                 </template>
-                <template v-else-if="showAllEntries">Showing all entries</template>
-                <template v-else>No fast methods to hide</template>
+                <template v-else-if="showAllEntries">{{ $t('profiler.showing_all_entries') }}</template>
+                <template v-else>{{ $t('profiler.no_fast_methods_to_hide') }}</template>
             </span>
             <span class="flex items-center gap-2">
                 <span
                     v-if="!showAllEntries"
                     class="flex items-center gap-1.5"
                 >
-                    <span class="text-base-content/50">Hide &lt;</span>
+                    <span class="text-base-content/50">{{ $t('profiler.hide_less_than') }}</span>
                     <div class="join">
                         <button
                             v-for="opt in [0.5, 1, 5]"
@@ -344,7 +344,7 @@ const timelineItems = computed((): TimelineGroup[] => {
                         :is="showAllEntries ? EyeSlashIcon : EyeIcon"
                         class="w-3"
                     />
-                    {{ showAllEntries ? 'Hide noise' : 'Show all' }}
+                    {{ showAllEntries ? $t('profiler.hide_noise') : $t('profiler.show_all') }}
                 </button>
             </span>
         </div>
