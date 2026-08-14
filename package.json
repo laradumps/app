@@ -71,7 +71,7 @@
         "daisyui": "^5.5.23",
         "electron": "^41.2.0",
         "electron-builder": "26.15.3",
-        "esbuild": "^0.28.1",
+        "esbuild": "^0.28.2",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "5.5.6",
         "postcss": "8.5.25",
