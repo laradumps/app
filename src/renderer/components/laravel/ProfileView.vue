@@ -14,7 +14,7 @@ import {
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
-import { usePauseProfileStore } from '@/store/pause-profile';
+import { usePauseProfileStore } from '@/store/pauses';
 import { formatDuration } from './profile/profileHelpers';
 import ProfileLegend from './profile/ProfileLegend.vue';
 import ProfileTimeline from './profile/ProfileTimeline.vue';

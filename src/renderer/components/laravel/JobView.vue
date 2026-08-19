@@ -9,7 +9,7 @@ import { PlayIcon, TrashIcon, ClockIcon, ChevronDownIcon } from '@heroicons/vue/
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
 
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
-import { usePauseJobsStore } from '@/store/pause-jobs';
+import { usePauseJobsStore } from '@/store/pauses';
 import IconPause from '@/components/Icons/IconPause.vue';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import { useGlobalSearchStore } from '@/store/global-search';

@@ -22,7 +22,7 @@ import QueriesRequests from '@/components/laravel/QueriesRequests.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
-import { usePauseQueriesStore } from '@/store/pause-queries';
+import { usePauseQueriesStore } from '@/store/pauses';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useQueriesChart } from '@/store/queries-chart';

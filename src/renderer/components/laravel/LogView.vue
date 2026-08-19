@@ -24,7 +24,7 @@ import { useColorStore } from '@/store/colors';
 import SvgEmpty from '@/components/svg/SvgEmpty.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import IconPause from '@/components/Icons/IconPause.vue';
-import { usePauseLogsStore } from '@/store/pause-logs';
+import { usePauseLogsStore } from '@/store/pauses';
 import DumpQuery from '@/components/laravel/DumpQuery.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import { generateLink } from '@/utils/ideHandler';

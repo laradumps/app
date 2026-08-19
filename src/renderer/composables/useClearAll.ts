@@ -16,11 +16,13 @@ import { useTailLogStore } from '@/store/tail-log';
 import { useMcpStore } from '@/store/mcp';
 import { useSettingsStore } from '@/store/settings';
 import { useCurrentProject } from '@/store/current-project';
-import { usePausePayloadStore } from '@/store/pause';
-import { usePauseQueriesStore } from '@/store/pause-queries';
-import { usePauseLogsStore } from '@/store/pause-logs';
-import { usePauseJobsStore } from '@/store/pause-jobs';
-import { usePauseProfileStore } from '@/store/pause-profile';
+import {
+    usePausePayloadStore,
+    usePauseQueriesStore,
+    usePauseLogsStore,
+    usePauseJobsStore,
+    usePauseProfileStore
+} from '@/store/pauses';
 
 export function useClearAll() {
     const timeStore = useTimeStore();

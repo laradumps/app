@@ -7,7 +7,7 @@ import VueJsonPretty from 'vue-json-pretty';
 
 import { Payload } from '@/types/Payload';
 import { usePayloadStore } from '@/store/payload';
-import { usePausePayloadStore } from '@/store/pause';
+import { usePausePayloadStore } from '@/store/pauses';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
