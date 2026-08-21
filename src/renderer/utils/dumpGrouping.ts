@@ -4,7 +4,10 @@ import dayjs from 'dayjs';
 export function groupByTime(payloads: Payload[]): Record<string, Payload[]> {
     return payloads.reduce(
         (groups, payload) => {
-            const groupKey = dayjs(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
+            if (!(payload as any)._formatted_date_time) {
+                (payload as any)._formatted_date_time = dayjs(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
+            }
+            const groupKey = (payload as any)._formatted_date_time;
             if (!groups[groupKey]) {
                 groups[groupKey] = [];
             }

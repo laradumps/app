@@ -23,10 +23,11 @@ import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
 import { usePauseQueriesStore } from '@/store/pauses';
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useQueriesChart } from '@/store/queries-chart';
-import QueriesChart from '@/components/laravel/QueriesChart.vue';
+import { defineAsyncComponent } from 'vue';
+const QueriesChart = defineAsyncComponent(() => import('@/components/laravel/QueriesChart.vue'));
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import DumpQueries from '@/components/laravel/DumpQueries.vue';
 import BaseDrawer from '@/components/common/BaseDrawer.vue';
@@ -35,6 +36,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 import { useFormattedQueriesStore } from '@/store/formatted-queries';
 import { convertMsToHumanReadable, exportQueriesToSQL } from '@/utils/queriesUtils';
+import { groupByTime } from '@/utils/dumpGrouping';
 import { useSettingsStore } from '@/store/settings';
 import { useCurrentProject } from '@/store/current-project';
 
@@ -123,7 +125,7 @@ watch(
     (items) => {
         duplicatesStore.rebuild(items);
     },
-    { immediate: true, deep: true }
+    { immediate: true }
 );
 
 watch(
@@ -149,7 +151,7 @@ const queries = computed<Payload[]>(() => {
         }
 
         if (isSearchActive) {
-            const labelMatch = dump.with_label.label?.toLowerCase().includes(search) ?? false;
+            const labelMatch = dump.with_label?.label?.toLowerCase().includes(search) ?? false;
             const queryMatch = (dump.queries?.query?.sql || '').toLowerCase().includes(search);
             if (!labelMatch && !queryMatch) {
                 return false;
@@ -207,20 +209,11 @@ const handlePointClick = (point) => {
 
 const groupedQueries = computed(() => {
     const isSearchActive = globalSearchStore.search.length > 0;
-    return queries.value.reduce(
-        (groups, payload) => {
-            if (!isSearchActive && payload.request_id !== timeStore.selected) {
-                return groups;
-            }
-            const groupKey = dayjs(payload.date_time).format('YYYY-MM-DD HH:mm:ss');
-            if (!groups[groupKey]) {
-                groups[groupKey] = [];
-            }
-            groups[groupKey].push(payload);
-            return groups;
-        },
-        {} as Record<string, Payload[]>
-    );
+    const visible = isSearchActive
+        ? queries.value
+        : queries.value.filter((payload) => payload.request_id === timeStore.selected);
+
+    return groupByTime(visible);
 });
 
 function toggleChartType(type: string) {
@@ -672,7 +665,7 @@ const setOrder = (order: string) => {
                 </button>
             </template>
         </ViewToolbar>
- 
+
         <!-- Pause Banner -->
         <div
             v-if="pauseQueries.is_paused"
@@ -681,7 +674,7 @@ const setOrder = (order: string) => {
             <PlayIcon class="w-3 h-3" />
             <span>{{ $t('app.inactive_banner') }}</span>
         </div>
- 
+
         <div>
             <BaseDrawer
                 id="queries-requests-drawer"
@@ -805,7 +798,7 @@ const setOrder = (order: string) => {
                             <div v-show="!collapsedGroups[groupKey]">
                                 <div
                                     v-for="payload in group"
-                                    :key="payload.sf_dump_id"
+                                    :key="payload.id || payload.sf_dump_id"
                                     :id="payload.id"
                                     class="w-full"
                                 >
@@ -827,10 +820,7 @@ const setOrder = (order: string) => {
                 class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                 style="height: -webkit-fill-available"
             >
-                <SvgEmpty class="w-30 opacity-25" />
-                <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
-                </div>
+                <EmptyState />
             </div>
         </div>
     </div>

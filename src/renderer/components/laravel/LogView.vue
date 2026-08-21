@@ -21,7 +21,7 @@ import FilterChip from '@/components/common/FilterChip.vue';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import { useColorStore } from '@/store/colors';
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import IconPause from '@/components/Icons/IconPause.vue';
 import { usePauseLogsStore } from '@/store/pauses';
@@ -99,11 +99,17 @@ const logs = computed(() => {
         })
         .filter((log: Log) => {
             const searchTerm = globalSearchStore.search.toLowerCase();
-            return (
-                log.message.toLowerCase().includes(searchTerm) ||
-                log.level.includes(searchTerm) ||
-                log.context[0].includes(searchTerm)
-            );
+            const messageMatch = log.message ? String(log.message).toLowerCase().includes(searchTerm) : false;
+            const levelMatch = log.level ? String(log.level).toLowerCase().includes(searchTerm) : false;
+            const contextZero =
+                Array.isArray(log.context) && log.context.length > 0
+                    ? String(log.context[0])
+                    : typeof log.context === 'string'
+                      ? log.context
+                      : '';
+            const contextMatch = contextZero.toLowerCase().includes(searchTerm);
+
+            return messageMatch || levelMatch || contextMatch;
         })
         .filter((log: Log) => {
             return levelFilter.value.length === 0 || levelFilter.value.includes(log.level);
@@ -523,7 +529,7 @@ const canCopyToMarkdown = computed(() => {
                     </button>
                 </template>
             </ViewToolbar>
- 
+
             <!-- Pause Banner -->
             <div
                 v-if="pauseLogsStore.is_paused"
@@ -532,7 +538,7 @@ const canCopyToMarkdown = computed(() => {
                 <PlayIcon class="w-3 h-3" />
                 <span>{{ $t('app.inactive_banner') }}</span>
             </div>
- 
+
             <div class="h-[calc(100vh-140px)] pt-3">
                 <div
                     v-if="logs.length > 0"
@@ -873,10 +879,7 @@ const canCopyToMarkdown = computed(() => {
                     class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                     style="height: -webkit-fill-available"
                 >
-                    <SvgEmpty class="opacity-25 w-30" />
-                    <div class="text-base-content/70">
-                        <h1 class="mb-2 text-lg font-semibold">{{ $t('empty') }}</h1>
-                    </div>
+                    <EmptyState />
                 </div>
             </div>
         </div>

@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia';
 import { Payload, ScreenPayload, TimeTrackPayload, ValidatePayload } from '@/types/Payload';
-import * as Helper from '@/helpers';
+import { useGlobalSearchStore } from '@/store/global-search';
+import { useColorStore } from '@/store/colors';
+import * as Helper from '@/utils/helpers';
+import { matchesDumpSearch } from '@/utils/searchMatchers';
 import dayjs from 'dayjs';
 import humanizeDuration from 'humanize-duration';
 
@@ -10,27 +13,53 @@ export const usePayloadStore = defineStore('payload', {
         payload: [] as Payload[],
         filteredPayload: [] as Payload[]
     }),
+    getters: {
+        dumpsBagFiltered(state): Payload[] {
+            const search = useGlobalSearchStore().search.toLowerCase();
+            const colorStore = useColorStore();
+
+            return state.filteredPayload
+                .filter((dump) => !search || matchesDumpSearch(dump, search))
+                .filter((dump) => {
+                    if (colorStore.colors.length > 0 && dump.color) {
+                        return colorStore.colors.includes(dump.color);
+                    }
+                    return true;
+                });
+        }
+    },
     actions: {
         findPayloadIndex(id: string): number {
             return this.filteredPayload.findIndex((payload) => payload.id === id);
         },
-        add(object: Payload) {
+        add(object: Payload, activeScreen?: string, limit = 500) {
             if (!object.index) {
                 object.index = String(payloadIds.length + 1);
                 payloadIds.push(object.index);
             }
 
+            if (this.payload.length >= limit) {
+                this.payload.shift();
+            }
+
             this.payload.push(object);
+
+            if (object.type !== 'screen' && activeScreen && object.to_screen?.screen_name === activeScreen) {
+                if (this.filteredPayload.length >= limit) {
+                    this.filteredPayload.shift();
+                }
+                this.filteredPayload.push(object);
+            }
         },
         get(screen: String) {
-            return this.payload.filter((payload) => payload.to_screen.screen_name === screen);
+            return this.payload.filter((payload) => payload.to_screen?.screen_name === screen);
         },
         findById(id: string) {
             return this.payload.findIndex((payload) => payload.id === id);
         },
         clear(screen: String) {
-            this.payload = this.payload.filter((payload) => payload.to_screen.screen_name !== screen);
-            this.filteredPayload = this.filteredPayload.filter((payload) => payload.to_screen.screen_name !== screen);
+            this.payload = this.payload.filter((payload) => payload.to_screen?.screen_name !== screen);
+            this.filteredPayload = this.filteredPayload.filter((payload) => payload.to_screen?.screen_name !== screen);
         },
         clearAll() {
             payloadIds = [];
@@ -110,7 +139,7 @@ export const usePayloadStore = defineStore('payload', {
             }
         },
         updateTimeTrackPayload(content: { id: string; with_label: { label: string }; time_track: TimeTrackPayload }) {
-            const exist = this.payload.find((payload) => payload.with_label.label === content.with_label.label);
+            const exist = this.payload.find((payload) => payload.with_label?.label === content.with_label?.label);
 
             if (exist) {
                 const indexPayload = this.findById(exist.id);
@@ -135,8 +164,8 @@ export const usePayloadStore = defineStore('payload', {
             this.updatePayload(content, 'with_label');
         },
         clearCache() {
-            this.payload = this.payload.filter((payload) => payload.to_screen.screen_name !== 'cache');
-            this.filteredPayload = this.filteredPayload.filter((payload) => payload.to_screen.screen_name !== 'cache');
+            this.payload = this.payload.filter((payload) => payload.to_screen?.screen_name !== 'cache');
+            this.filteredPayload = this.filteredPayload.filter((payload) => payload.to_screen?.screen_name !== 'cache');
         },
         removePayload(id: string) {
             const indexPayload = this.findById(id);

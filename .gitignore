@@ -28,3 +28,6 @@ pnpm-debug.log*
 *.sw?
 .env
 yarn.lock
+
+.junie/
+workspace/

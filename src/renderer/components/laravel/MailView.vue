@@ -14,8 +14,9 @@ import {
 import IconExternalLink from '@/components/Icons/IconExternalLink.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
-import { modifyHtml } from './../utils';
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import { modifyHtml } from '@/utils/helpers';
+import { matchesMailSearch } from '@/utils/searchMatchers';
+import EmptyState from '@/components/common/EmptyState.vue';
 import { useCurrentProject } from '@/store/current-project';
 import VueJsonPretty from 'vue-json-pretty';
 import { useGlobalSearchStore } from '@/store/global-search';
@@ -65,10 +66,11 @@ const removeMail = (messageId: string) => {
 
 const mails = computed(() => {
     const items = props.items ? props.items : mailStore.mails;
+    const search = globalSearchStore.search.toLowerCase().trim();
 
-    return items.filter((mail) => {
-        return JSON.stringify(mail).toLowerCase().includes(globalSearchStore.search.toLowerCase());
-    });
+    if (!search) return items;
+
+    return items.filter((mail) => matchesMailSearch(mail, search));
 });
 
 const openContext = () => {
@@ -432,10 +434,7 @@ const setPreviewMode = (mode: string) => {
                     class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                     style="height: -webkit-fill-available"
                 >
-                    <SvgEmpty class="w-30 opacity-25" />
-                    <div class="text-base-content/70">
-                        <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
-                    </div>
+                    <EmptyState />
                 </div>
             </div>
         </div>

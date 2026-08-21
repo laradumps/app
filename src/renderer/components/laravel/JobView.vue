@@ -8,7 +8,7 @@ dayjs.extend(relativeTime);
 import { PlayIcon, TrashIcon, ClockIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
 
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
 import { usePauseJobsStore } from '@/store/pauses';
 import IconPause from '@/components/Icons/IconPause.vue';
 import CodeSnippet from '@/components/CodeSnippet.vue';
@@ -578,7 +578,7 @@ const toggleMessageLimit = () => {
                 </button>
             </template>
         </ViewToolbar>
- 
+
         <!-- Pause Banner -->
         <div
             v-if="pauseJobsStore.is_paused"
@@ -587,7 +587,7 @@ const toggleMessageLimit = () => {
             <PlayIcon class="w-3 h-3" />
             <span>{{ $t('app.inactive_banner') }}</span>
         </div>
- 
+
         <!-- Content -->
         <div
             class="pt-3"
@@ -733,10 +733,7 @@ const toggleMessageLimit = () => {
                 class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                 style="height: -webkit-fill-available"
             >
-                <SvgEmpty class="w-30 opacity-25" />
-                <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
-                </div>
+                <EmptyState />
             </div>
         </div>
     </div>

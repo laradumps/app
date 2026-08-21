@@ -36,7 +36,7 @@ onUpdated(async () => {
                     class="w-full"
                     :id="payload.id"
                     v-for="(payload, index) in dumps"
-                    :key="payload.sf_dump_id"
+                    :key="payload.id || payload.sf_dump_id"
                 >
                     <DumpItem
                         class="w-full px-2 group text-sm mb-2"

@@ -8,6 +8,13 @@ import { useJobStore } from '@/store/jobs';
 import { useMailStore } from '@/store/mail';
 import { useQueriesPayloadStore } from '@/store/queries';
 import { useScreenStore } from '@/store/screen';
+import {
+    matchesDumpSearch,
+    matchesLogSearch,
+    matchesJobSearch,
+    matchesMailSearch,
+    matchesQuerySearch
+} from '@/utils/searchMatchers';
 
 const globalSearch = useGlobalSearchStore();
 
@@ -99,49 +106,17 @@ const handleClickOutside = (event) => {
 const searchTerm = computed(() => globalSearch.search.toLowerCase());
 
 const counts = computed(() => {
-    const term = searchTerm.value;
+    const term = searchTerm.value.trim();
 
-    // Dumps (generic payload screens)
-    const dumps = payloadStore.payload.filter((dump) => {
-        const content = (dump && dump[dump.type]) || '';
-        const contentStr = JSON.stringify(content).toLowerCase();
-        const labelStr = JSON.stringify(dump?.with_label || '').toLowerCase();
-        return contentStr.includes(term) || labelStr.includes(term);
-    }).length;
+    if (!term) {
+        return { dumps: 0, logs: 0, jobs: 0, mail: 0, queries: 0 };
+    }
 
-    // Logs
-    const logs = Object.values(logStore.logs).filter((log) => {
-        const msg = String(log.message ?? '').toLowerCase();
-        const level = String(log.level ?? '').toLowerCase();
-        const ctxFirst = Array.isArray(log.context)
-            ? String(log.context[0] ?? '').toLowerCase()
-            : String(log.context ?? '').toLowerCase();
-        return msg.includes(term) || level.includes(term) || ctxFirst.includes(term);
-    }).length;
-
-    // Jobs
-    const jobs = Object.values(jobStore.jobs).filter((job) => {
-        const display = String(job.display_name ?? '').toLowerCase();
-        const jobId = String(job.job_id ?? '').toLowerCase();
-        const job0 = Array.isArray(job.job)
-            ? String(job.job[0] ?? '').toLowerCase()
-            : String(job.job ?? '').toLowerCase();
-        return display.includes(term) || jobId.includes(term) || job0.includes(term);
-    }).length;
-
-    // Mail
-    const mail = mailStore.mails.filter((m) => JSON.stringify(m).toLowerCase().includes(term)).length;
-
-    // Queries
-    const queries = queriesStore.payload.filter((q) => {
-        const labelMatch = String(q?.with_label?.label ?? '')
-            .toLowerCase()
-            .includes(term);
-        const sqlMatch = String(q?.queries?.query?.sql ?? '')
-            .toLowerCase()
-            .includes(term);
-        return labelMatch || sqlMatch;
-    }).length;
+    const dumps = payloadStore.payload.filter((dump) => matchesDumpSearch(dump, term)).length;
+    const logs = Object.values(logStore.logs).filter((log) => matchesLogSearch(log, term)).length;
+    const jobs = Object.values(jobStore.jobs).filter((job) => matchesJobSearch(job, term)).length;
+    const mail = mailStore.mails.filter((m) => matchesMailSearch(m, term)).length;
+    const queries = queriesStore.payload.filter((q) => matchesQuerySearch(q, term)).length;
 
     return { dumps, logs, jobs, mail, queries };
 });

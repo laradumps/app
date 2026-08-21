@@ -1,25 +1,15 @@
 import type { Ref } from 'vue';
+import { ipc } from '@/ipc/client';
 
-export function checkApplicationPath(
-    content: { application_path?: string },
-    currentPath: Ref<string>
-): void {
+export function checkApplicationPath(content: { application_path?: string }, currentPath: Ref<string>): void {
     if (content.application_path && currentPath.value !== content.application_path) {
-        window.ipcRenderer.send('storage.check', {
-            applicationPath: content.application_path
-        });
+        ipc.send('storage.check', { applicationPath: content.application_path });
         currentPath.value = content.application_path;
     }
 }
 
-export function sendToScreenWindow(
-    screen: string,
-    data: Record<string, any>
-): void {
-    window.ipcRenderer.send('send-screen-window-update', {
-        screen,
-        ...data
-    });
+export function sendToScreenWindow(screen: string, data: Record<string, any>): void {
+    ipc.send('send-screen-window-update', { screen, ...data });
 }
 
 export function openNewScreenWindow(
@@ -28,10 +18,5 @@ export function openNewScreenWindow(
     data: Record<string, any>
 ): void {
     screenStore.hidden(screen);
-
-    window.ipcRenderer.send('screen-window:show', {
-        screen,
-        ...data,
-        position: {}
-    });
+    ipc.send('screen-window:show', { screen, ...data, position: {} });
 }

@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, defineEmits, watch, computed } from 'vue';
-import { Chart, LineController, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js';
+import type { Chart as ChartType } from 'chart.js';
 import { useTimeStore } from '@/store/time';
 import { useQueriesChart } from '@/store/queries-chart';
 import { useQueriesPayloadStore } from '@/store/queries';
-
-Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
 interface QueryPayload {
     id: string;
@@ -33,7 +31,7 @@ const emit = defineEmits<{
 }>();
 
 const chartCanvas = ref<HTMLCanvasElement | null>(null);
-let chartInstance: Chart<'line'> | null = null;
+let chartInstance: ChartType<'line'> | null = null;
 
 const chartDataPoints = computed<ChartPoint[]>(() => {
     const payloads = queriesStore.payload as QueryPayload[];
@@ -73,17 +71,22 @@ watch(
     { immediate: true }
 );
 
-onMounted(() => {
+onMounted(async () => {
     if (!chartCanvas.value) return;
+
+    const { Chart, LineController, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } =
+        await import('chart.js');
+
+    Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
     chartInstance = new Chart(chartCanvas.value, {
         type: 'line',
         data: {
-            labels: [],
+            labels: chartDataPoints.value.map((p) => new Date(p.time).toLocaleString()),
             datasets: [
                 {
                     label: 'Duration (ms)',
-                    data: [],
+                    data: chartDataPoints.value.map((p) => p.value),
                     borderColor: 'orange',
                     borderWidth: 1.5,
                     pointRadius: 4,

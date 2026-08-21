@@ -14,7 +14,6 @@ import { useLivewireStore } from '@/store/livewire';
 import { useMcpStore } from '@/store/mcp';
 import { useProfileStore } from '@/store/profile';
 import { useClearAll } from '@/composables/useClearAll';
-import JSConfetti from 'js-confetti';
 
 import Toasters from '@/components/common/Toasters.vue';
 import TheUpdateNotification from '@/components/app/TheUpdateNotification.vue';
@@ -34,7 +33,10 @@ const mcpStore = useMcpStore();
 const profileStore = useProfileStore();
 
 const { clear } = useClearAll();
-const fireConfetti = () => new JSConfetti().addConfetti();
+const fireConfetti = async () => {
+    const { default: JSConfetti } = await import('js-confetti');
+    new JSConfetti().addConfetti();
+};
 
 const exposeMcp = () => {
     if (settingsStore.settings.mcp_enabled) {
@@ -53,7 +55,7 @@ const exposeMcp = () => {
             confetti: () => fireConfetti()
         };
     } else {
-        // @ts-ignore
+        // @ts-expect-error intentional deletion of global
         delete window.LaraDumps;
     }
 };

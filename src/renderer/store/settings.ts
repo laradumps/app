@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
 import { Settings } from '@/types/settings.type';
 import { DEFAULT_SETTINGS } from '@/default-settings';
-import { deepClone } from '@/lib/deep_clone';
+import { deepClone } from '@/utils/deep_clone';
 
 const themeColors = {
     system: 'System',

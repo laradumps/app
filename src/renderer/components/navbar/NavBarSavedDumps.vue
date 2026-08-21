@@ -1,7 +1,7 @@
 <script setup>
 import { computed, watch } from 'vue';
 import { useSavedDumpsStore } from '@/store/saved-dumps';
-import { deepClone } from '@/lib/deep_clone';
+import { deepClone } from '@/utils/deep_clone';
 import { BookmarkIcon } from '@heroicons/vue/24/outline';
 
 const savedStore = useSavedDumpsStore();

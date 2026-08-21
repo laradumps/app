@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps } from 'vue';
 import { Payload } from '@/types/Payload';
-import * as Helper from '@/helpers';
+import * as Helper from '@/utils/helpers';
 
 const containsStyle = computed(() => (props.payload.str_contains?.success ? 'bg-green-500' : 'bg-red-500'));
 

@@ -35,6 +35,9 @@ import VueJsonPretty from 'vue-json-pretty';
 import { useSavedDumpsStore } from '@/store/saved-dumps';
 import { useToastStore } from '@/store/toast';
 import { useI18n } from 'vue-i18n';
+import { scheduleSfDump } from '@/utils/sfdump';
+
+defineOptions({ name: 'DumpItem' });
 
 const collapseStore = useCollapse();
 const payloadStore = usePayloadStore();
@@ -167,29 +170,28 @@ onMounted(() => {
     window.addEventListener('click', onGlobalClick, { capture: true });
 
     if (props.payload.dump?.dump && typeof props.payload.dump.dump === 'string' && props.payload.sf_dump_id) {
-        const sfDump = document.getElementById(`sf-dump-${props.payload.sf_dump_id}`);
-        if (sfDump && !sfDump?.hasAttribute('has-dump-js')) {
-            sfDump?.setAttribute('has-dump-js', 'true');
-            window.Sfdump(`sf-dump-${props.payload.sf_dump_id}`);
-        }
+        scheduleSfDump(props.payload.sf_dump_id);
     }
 
     if (
         props.payload.show_badge_count &&
-        props.payload.to_screen.screen_name === 'home' &&
+        props.payload.to_screen?.screen_name === 'home' &&
         settingsStore.settings.show_badge_count
     ) {
         window.ipcRenderer.send('badge-icon.increment');
     }
 });
 
-watch(collapseStore, (value) => {
-    open.value = value.open;
-});
+watch(
+    () => collapseStore.open,
+    (value) => {
+        open.value = value;
+    }
+);
 
 const indicatorColorClass = computed(() => {
     const { color } = props.payload;
-    const { label } = props.payload.with_label;
+    const label = props.payload.with_label?.label;
 
     if (['error', 'emergency'].includes(label) || color === 'red')
         return 'border-l-4 border-b-0 bg-error/10 border-error';
@@ -202,7 +204,7 @@ const indicatorColorClass = computed(() => {
 
 const indicatorDotClass = computed(() => {
     const { color } = props.payload;
-    const { label } = props.payload.with_label;
+    const label = props.payload.with_label?.label;
 
     if (['error', 'emergency'].includes(label) || color === 'red') return 'bg-error';
     if (label === 'info' || color === 'blue') return 'bg-info';
@@ -214,12 +216,16 @@ const indicatorDotClass = computed(() => {
 
 const hasColorLabel = computed(() => {
     const { color } = props.payload;
-    const { label } = props.payload.with_label;
+    const label = props.payload.with_label?.label;
     return !!label || !!color;
 });
 
 const getLabel = computed(() => {
-    if (Object.values(props.payload.with_label).length > 0 && props.payload.with_label.label !== '') {
+    if (
+        props.payload.with_label &&
+        Object.values(props.payload.with_label).length > 0 &&
+        props.payload.with_label.label !== ''
+    ) {
         return props.payload.with_label.label;
     }
 
@@ -284,7 +290,7 @@ const handleDuplicatedClick = (event: MouseEvent) => {
 };
 
 const decrementBadgeCount = () => {
-    if (shouldDisplayBadge) {
+    if (shouldDisplayBadge.value) {
         window.ipcRenderer.send('badge-icon.decrement');
 
         payloadStore.updatePayload(props.payload, 'show_badge_count', () => false);
@@ -295,7 +301,7 @@ const decrementBadgeCount = () => {
 const shouldDisplayBadge = computed(() => {
     return (
         props.payload.show_badge_count &&
-        props.payload.to_screen.screen_name === 'home' &&
+        props.payload.to_screen?.screen_name === 'home' &&
         settingsStore.settings.show_badge_count
     );
 });
@@ -578,7 +584,7 @@ onUnmounted(() => {
                 <div class="flex items-center gap-3 text-[0.73rem] font-medium">
                     <div class="hover:opacity-100 transition-opacity">
                         <DumpLink
-                            v-if="payload.ide_handle.real_path"
+                            v-if="payload.ide_handle?.real_path"
                             :ide-handler="payload.ide_handle"
                             :truncate="true"
                             class="underline p-0!"

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ChevronDownIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import JSConfetti from 'js-confetti';
 import { useCurrentProject } from '@/store/current-project';
 import { IpcRendererEvent } from 'electron';
 import ProjectInstall from '@/components/navbar/ProjectInstall.vue';
@@ -72,8 +71,9 @@ const updateHeight = () => {
 
 const formattedName = (name: string): string => name?.replace(/[-_.]/g, ' ') || '';
 
-const handleProjectAdded = (_: IpcRendererEvent, project: Project) => {
+const handleProjectAdded = async (_: IpcRendererEvent, project: Project) => {
     window.ipcRenderer.send(IPC_EVENTS.STORAGE_GET);
+    const { default: JSConfetti } = await import('js-confetti');
     new JSConfetti().addConfetti();
     isNewProject.value = true;
     setActiveProject(project);
