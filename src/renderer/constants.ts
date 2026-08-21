@@ -1,5 +1,18 @@
 export const SPECIAL_ENVIRONMENTS = ['dump', 'enabled_in_testing', 'original_dump', 'auto_invoke_app'] as const;
 
+// Screens rendered by a dedicated view component (everything else is a generic dump list).
+export const KNOWN_SCREENS = [
+    'cache',
+    'gate',
+    'jobs',
+    'mail',
+    'logs',
+    'tail_logs',
+    'queries',
+    'brain',
+    'profiler'
+] as const;
+
 export const isSpecialEnvironment = (value: string): boolean =>
     (SPECIAL_ENVIRONMENTS as readonly string[]).includes(value);
 

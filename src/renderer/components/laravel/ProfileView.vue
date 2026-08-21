@@ -11,10 +11,10 @@ import {
     TrashIcon,
     PlayIcon
 } from '@heroicons/vue/24/outline';
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
-import { usePauseProfileStore } from '@/store/pause-profile';
+import { usePauseProfileStore } from '@/store/pauses';
 import { formatDuration } from './profile/profileHelpers';
 import ProfileLegend from './profile/ProfileLegend.vue';
 import ProfileTimeline from './profile/ProfileTimeline.vue';
@@ -382,13 +382,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
             v-else
             class="flex-1 flex items-center justify-center p-6"
         >
-            <!-- No profiles captured yet -->
-            <div class="flex items-center justify-center">
-                <SvgEmpty class="w-30 opacity-25" />
-                <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
-                </div>
-            </div>
+            <EmptyState />
         </div>
 
         <!-- Modals -->

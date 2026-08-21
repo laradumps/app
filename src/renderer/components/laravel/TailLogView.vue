@@ -21,7 +21,7 @@ import CodeSnippet from '@/components/CodeSnippet.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import { useColorStore } from '@/store/colors';
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useTailLogStore, DiscoveredLogFile } from '@/store/tail-log';
 import { useCurrentProject } from '@/store/current-project';
@@ -645,10 +645,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                     class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                     style="height: -webkit-fill-available"
                 >
-                    <SvgEmpty class="opacity-25 w-30" />
-                    <div class="text-base-content/70">
-                        <h1 class="mb-2 text-lg font-semibold">{{ $t('empty') }}</h1>
-                    </div>
+                    <EmptyState />
                 </div>
             </div>
         </div>

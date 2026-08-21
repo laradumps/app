@@ -54,7 +54,9 @@ const close = () => {
                 >
                     {{ typeLabels[entry.type] || entry.type }}
                 </span>
-                <span class="badge badge-ghost badge-sm font-mono"> {{ $t('profiler.start') }} {{ formatDuration(entry.start_ms) }} </span>
+                <span class="badge badge-ghost badge-sm font-mono">
+                    {{ $t('profiler.start') }} {{ formatDuration(entry.start_ms) }}
+                </span>
                 <span class="badge badge-ghost badge-sm font-mono">
                     {{ $t('profiler.end') }} {{ formatDuration((entry.start_ms || 0) + (entry.duration_ms || 0)) }}
                 </span>

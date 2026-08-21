@@ -7,7 +7,7 @@ import VueJsonPretty from 'vue-json-pretty';
 
 import { Payload } from '@/types/Payload';
 import { usePayloadStore } from '@/store/payload';
-import { usePausePayloadStore } from '@/store/pause';
+import { usePausePayloadStore } from '@/store/pauses';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
@@ -18,7 +18,7 @@ import { FunnelIcon as FunnelSolidIcon } from '@heroicons/vue/24/solid';
 import IconPause from '@/components/Icons/IconPause.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
 
 const props = defineProps<{
     screen: 'cache' | 'gate';
@@ -297,7 +297,7 @@ const clear = () => {
                 </button>
             </template>
         </ViewToolbar>
- 
+
         <div
             class="pt-3"
             :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"
@@ -437,10 +437,7 @@ const clear = () => {
                 class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                 style="height: -webkit-fill-available"
             >
-                <SvgEmpty class="w-30 opacity-25" />
-                <div class="text-base-content/70">
-                    <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
-                </div>
+                <EmptyState />
             </div>
         </div>
     </div>

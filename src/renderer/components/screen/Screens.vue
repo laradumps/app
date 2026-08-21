@@ -15,6 +15,7 @@ import EnvironmentDropdown from './EnvironmentDropdown.vue';
 import type { Environment } from '../../../main/storage';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
 import { isSpecialEnvironment } from '@/constants';
+import { matchesScreenSearch } from '@/utils/searchMatchers';
 
 const props = defineProps<{
     environments?: Environment[];
@@ -155,73 +156,8 @@ window.ipcRenderer.on('screen-window:closed', (event, args) => {
     }, 200);
 });
 
-const matchesSearch = (screenName: string, item: any, term: string): boolean => {
-    if (!term) return true;
-
-    switch (screenName) {
-        case 'logs':
-        case 'tail_logs':
-            return (
-                String(item.message ?? '')
-                    .toLowerCase()
-                    .includes(term) ||
-                String(item.level ?? '')
-                    .toLowerCase()
-                    .includes(term) ||
-                String(Array.isArray(item.context) ? (item.context[0] ?? '') : (item.context ?? ''))
-                    .toLowerCase()
-                    .includes(term)
-            );
-        case 'jobs':
-            return (
-                String(item.display_name ?? '')
-                    .toLowerCase()
-                    .includes(term) ||
-                String(item.job_id ?? '')
-                    .toLowerCase()
-                    .includes(term) ||
-                String(Array.isArray(item.job) ? (item.job[0] ?? '') : (item.job ?? ''))
-                    .toLowerCase()
-                    .includes(term)
-            );
-        case 'mail':
-            return JSON.stringify(item).toLowerCase().includes(term);
-        case 'queries':
-            return (
-                String(item?.with_label?.label ?? '')
-                    .toLowerCase()
-                    .includes(term) ||
-                String(item?.queries?.query?.sql ?? '')
-                    .toLowerCase()
-                    .includes(term)
-            );
-        case 'profiler':
-            return String(item.label ?? '')
-                .toLowerCase()
-                .includes(term);
-        case 'brain':
-            return (
-                String(item.className ?? '')
-                    .toLowerCase()
-                    .includes(term) ||
-                String(item.run_workflow_id ?? '')
-                    .toLowerCase()
-                    .includes(term)
-            );
-        default: {
-            const content = item?.[item.type] ?? '';
-            return (
-                JSON.stringify(content).toLowerCase().includes(term) ||
-                JSON.stringify(item?.with_label ?? '')
-                    .toLowerCase()
-                    .includes(term)
-            );
-        }
-    }
-};
-
-const getPayloadScreenCount = (screenName) => {
-    const stores = {
+const screenCounts = computed(() => {
+    const stores: Record<string, any> = {
         jobs: jobStore.jobs,
         mail: mailStore.mails,
         logs: logStore.logs,
@@ -231,21 +167,36 @@ const getPayloadScreenCount = (screenName) => {
         profiler: profileStore.profiles
     };
 
-    const items = stores[screenName] || payloadStore.get(screenName);
-    const term = globalSearchStore.search.toLowerCase();
+    const term = globalSearchStore.search.toLowerCase().trim();
+    const result: Record<string, string> = {};
 
-    let list: any[] = [];
+    for (const screen of screenStore.allVisible()) {
+        const name = screen.screen_name;
+        const items = stores[name] || payloadStore.get(name);
+        let list: any[] = [];
 
-    if (Array.isArray(items)) {
-        list = items;
-    } else if (items && typeof items === 'object') {
-        list = Object.values(items);
+        if (Array.isArray(items)) {
+            list = items;
+        } else if (items && typeof items === 'object') {
+            list = Object.values(items);
+        }
+
+        if (list.length === 0) {
+            result[name] = '';
+            continue;
+        }
+
+        if (!term) {
+            result[name] = `(${list.length})`;
+            continue;
+        }
+
+        const count = list.filter((item) => matchesScreenSearch(name, item, term)).length;
+        result[name] = count > 0 ? `(${count})` : '';
     }
 
-    const count = list.filter((item) => matchesSearch(screenName, item, term)).length;
-
-    return count > 0 ? `(${count})` : '';
-};
+    return result;
+});
 
 const splitScreenName = computed(() =>
     splitPanesStore.splitConfig?.active ? splitPanesStore.splitConfig.screenName : null
@@ -298,10 +249,10 @@ const formattedScreenName = (name: string) => {
 
                     <span class="inline-flex items-center gap-1 shrink-0">
                         <span
-                            v-if="getPayloadScreenCount(screen.screen_name).length > 0"
+                            v-if="screenCounts[screen.screen_name]"
                             class="text-[0.7rem] text-base-content/70 leading-none"
                         >
-                            {{ getPayloadScreenCount(screen.screen_name) }}
+                            {{ screenCounts[screen.screen_name] }}
                         </span>
 
                         <button

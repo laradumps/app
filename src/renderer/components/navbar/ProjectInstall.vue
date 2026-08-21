@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import JSConfetti from 'js-confetti';
 import { IpcRendererEvent } from 'electron';
 import { LogEntry } from '../../../main/logger/logger';
 
@@ -117,6 +116,7 @@ onMounted(() => {
         if (payload.step === 'finish' && payload.done) {
             await sleep(500);
             installFinished.value = true;
+            const { default: JSConfetti } = await import('js-confetti');
             await new JSConfetti().addConfetti();
             emit('projectAdded');
         }

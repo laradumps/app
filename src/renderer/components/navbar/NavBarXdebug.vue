@@ -39,9 +39,12 @@ watch(isXdebugActive, (active) => {
     }
 });
 
-watch(xDebugStore, (store) => {
-    isXdebugActive.value = Boolean(store.current.project_path);
-});
+watch(
+    () => xDebugStore.current.project_path,
+    (path) => {
+        isXdebugActive.value = Boolean(path);
+    }
+);
 
 onMounted(() => {
     isXdebugActive.value = Boolean(xDebugStore.current.project_path);

@@ -25,7 +25,6 @@
         "@highlightjs/vue-plugin": "^2.1.0",
         "@modelcontextprotocol/sdk": "^1.30.0",
         "@tailwindcss/postcss": "^4.3.0",
-        "@tailwindcss/typography": "^0.5.20",
         "@tailwindcss/vite": "^4.3.3",
         "auto-launch": "^5.0.6",
         "body-parser": "^2.3.0",

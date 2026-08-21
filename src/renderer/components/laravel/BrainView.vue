@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'v
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
-import SvgEmpty from '@/components/svg/SvgEmpty.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useBrainStore, BrainWorkflow, BrainAction } from '@/store/brains';
@@ -573,10 +573,7 @@ const toggleActionExpanded = (action: any) => {
                     class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
                     style="height: -webkit-fill-available"
                 >
-                    <SvgEmpty class="w-30 opacity-25" />
-                    <div class="text-base-content/70">
-                        <h1 class="text-lg font-semibold mb-2">{{ $t('empty') }}</h1>
-                    </div>
+                    <EmptyState />
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@ import { onMounted } from 'vue';
 import { Payload } from '@/types/Payload';
 import { IdeHandle } from '@/types/IdeHandle';
 import DumpLink from '@/components/dumps/DumpLink.vue';
+import { scheduleSfDump } from '@/utils/sfdump';
 
 const props = defineProps<{
     payload: Payload;
@@ -15,12 +16,7 @@ const ideHandlerForItem = (line: number): IdeHandle => ({
 
 onMounted(() => {
     props.payload.dump_group?.items.forEach((item) => {
-        if (item.sf_dump_id) {
-            const el = document.getElementById(`sf-dump-${item.sf_dump_id}`);
-            if (el) {
-                window.Sfdump(`sf-dump-${item.sf_dump_id}`);
-            }
-        }
+        scheduleSfDump(item.sf_dump_id);
     });
 });
 </script>

@@ -13,10 +13,8 @@ const isJson = (str: string | undefined): boolean => {
     return true;
 };
 
-// @ts-ignore
-const escapeHtml = (content: string | undefined) =>
-    content
-        .toString()
+const escapeHtml = (content: string | undefined): string =>
+    (content ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -53,4 +51,21 @@ const strContains = (content: string, searchString: string, searchSettings: Sear
     };
 };
 
-export { isJson, strContains, escapeHtml };
+const modifyHtml = (html: string, id: string): string => {
+    const script = String.raw`
+        <script type="module">
+        document.addEventListener("DOMContentLoaded", function () {
+            document.body.addEventListener("click", function (event) {
+                const target = event.target.closest("a");
+                if (target && target.href.startsWith("http")) {
+                    event.preventDefault();
+                    window.parent.postMessage({ type: "open-external-link-${id}", url: target.href }, "*");
+                }
+            });
+        });
+        </script>`;
+
+    return html.replace('</body>', script + '</body>');
+};
+
+export { isJson, strContains, escapeHtml, modifyHtml };
