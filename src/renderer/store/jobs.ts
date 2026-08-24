@@ -25,16 +25,43 @@ export type JobOrigin = {
 
 type State = {
     jobs: Record<string, Job>;
+    incoming: Record<string, Job>;
     focusJobId: string | null;
     origin: JobOrigin | null;
+};
+
+const MAX_LOADED_PAGES = 5;
+const MAX_BUFFERED_PAGES = 5;
+
+const oldestKey = (items: Record<string, Job>): string =>
+    Object.keys(items).reduce(
+        (oldest, current) => (items[current].pushed_time < items[oldest].pushed_time ? current : oldest),
+        Object.keys(items)[0]
+    );
+
+const trim = (items: Record<string, Job>, max: number) => {
+    while (Object.keys(items).length > max) {
+        delete items[oldestKey(items)];
+    }
 };
 
 export const useJobStore = defineStore('jobStore', {
     state: (): State => ({
         jobs: {},
+        incoming: {},
         focusJobId: null,
         origin: null
     }),
+    getters: {
+        pageSize(): number {
+            const settingsStore = useSettingsStore();
+
+            return settingsStore.settings.limit_laravel_jobs || 100;
+        },
+        incomingCount(): number {
+            return Object.keys(this.incoming).length;
+        }
+    },
     actions: {
         requestFocus(job_id: string, origin?: JobOrigin) {
             this.focusJobId = job_id;
@@ -51,31 +78,56 @@ export const useJobStore = defineStore('jobStore', {
             const ide_handle: IdeHandle = payload.ide_handle;
             const code_snippet: null | CodeSnippet[] = payload.code_snippet ? payload.code_snippet.slice(0, 10) : null;
 
-            this._removeOldestIfExceedsLimit();
+            const bucket = this.jobs[job.job_id]
+                ? this.jobs
+                : this.incoming[job.job_id]
+                  ? this.incoming
+                  : this._bucketForNewJob();
 
-            if (!this.jobs[job.job_id]) {
-                this._initializeJob(job, ide_handle);
+            if (!bucket[job.job_id]) {
+                this._initializeJob(bucket, job, ide_handle);
+
+                if (bucket === this.incoming) {
+                    trim(this.incoming, this.pageSize * MAX_BUFFERED_PAGES);
+                }
             }
 
-            if (this.jobs[job.job_id]) {
-                this.jobs[job.job_id].status = this.jobs[job.job_id].status !== 'Failed' ? job.status : 'Failed';
+            if (!bucket[job.job_id]) {
+                return;
+            }
 
-                if (job.status === 'Processing') {
-                    this.jobs[job.job_id].start_time = new Date();
-                }
+            bucket[job.job_id].status = bucket[job.job_id].status !== 'Failed' ? job.status : 'Failed';
 
-                if (['Processed', 'Failed'].includes(job.status)) {
-                    this.jobs[job.job_id].end_time = new Date();
-                }
+            if (job.status === 'Processing') {
+                bucket[job.job_id].start_time = new Date();
+            }
 
-                if (job.status === 'Failed' && code_snippet) {
-                    this.jobs[job.job_id].code_snippet = code_snippet;
-                    this.jobs[job.job_id].exception_message = job.exception_message ?? '';
-                }
+            if (['Processed', 'Failed'].includes(job.status)) {
+                bucket[job.job_id].end_time = new Date();
+            }
+
+            if (job.status === 'Failed' && code_snippet) {
+                bucket[job.job_id].code_snippet = code_snippet;
+                bucket[job.job_id].exception_message = job.exception_message ?? '';
             }
         },
-        _initializeJob(jobs: JobPayload, ide_handle: IdeHandle) {
-            this.jobs[jobs.job_id] = {
+        _bucketForNewJob(): Record<string, Job> {
+            return Object.keys(this.jobs).length >= this.pageSize ? this.incoming : this.jobs;
+        },
+        loadIncoming() {
+            const page = Object.values(this.incoming)
+                .sort((a, b) => new Date(a.pushed_time).getTime() - new Date(b.pushed_time).getTime())
+                .slice(0, this.pageSize);
+
+            for (const job of page) {
+                this.jobs[job.job_id] = job;
+                delete this.incoming[job.job_id];
+            }
+
+            trim(this.jobs, this.pageSize * MAX_LOADED_PAGES);
+        },
+        _initializeJob(bucket: Record<string, Job>, jobs: JobPayload, ide_handle: IdeHandle) {
+            bucket[jobs.job_id] = {
                 job_id: jobs.job_id,
                 status: jobs.status ?? jobs.status === 'Queued',
                 duration: '0s',
@@ -89,21 +141,9 @@ export const useJobStore = defineStore('jobStore', {
                 original_content: jobs.original_content
             };
         },
-        _removeOldestIfExceedsLimit() {
-            const settingsStore = useSettingsStore();
-
-            if (Object.keys(this.jobs).length == settingsStore.settings.limit_laravel_jobs + 1) {
-                const oldestLogKey = Object.keys(this.jobs).reduce((oldestKey, currentKey) => {
-                    return this.jobs[currentKey].pushed_time < this.jobs[oldestKey].pushed_time
-                        ? currentKey
-                        : oldestKey;
-                }, Object.keys(this.jobs)[0]);
-
-                delete this.jobs[oldestLogKey];
-            }
-        },
         clear() {
             this.jobs = {};
+            this.incoming = {};
         }
     }
 });

@@ -60,7 +60,6 @@ export function useClearAll() {
         mailStore.clear();
         queryStore.clear();
         duplicatesStore.clear();
-        screenStore.clearAll();
         livewireStore.clear();
         brainStore.clear();
         profileStore.clear();

@@ -97,10 +97,29 @@ const jobs = computed(() => {
         });
 });
 
+const visibleLimit = ref(jobStore.pageSize);
+
+const visibleJobs = computed(() => jobs.value.slice(0, visibleLimit.value));
+
+const hasMore = computed(() => jobs.value.length > visibleLimit.value);
+
+const loadMore = () => {
+    visibleLimit.value += jobStore.pageSize;
+};
+
+const loadNewEntries = () => {
+    jobStore.loadIncoming();
+    visibleLimit.value = jobStore.pageSize;
+};
+
+watch([statusFilter, () => globalSearchStore.search], () => {
+    visibleLimit.value = jobStore.pageSize;
+});
+
 const groupedJobsByRelativeTime = computed(() => {
     const groups: Record<string, Job[]> = {};
 
-    for (const job of jobs.value) {
+    for (const job of visibleJobs.value) {
         const timeKey = dayjs(job.pushed_time ?? job.start_time).fromNow();
         if (!groups[timeKey]) {
             groups[timeKey] = [];
@@ -216,6 +235,17 @@ const focusJob = async (id: string) => {
     statusFilter.value = null;
     collapsedGroups.value = {};
 
+    while (!jobStore.jobs[id] && jobStore.incomingCount > 0) {
+        jobStore.loadIncoming();
+    }
+
+    await nextTick();
+
+    const index = jobs.value.findIndex((job) => job.job_id === id);
+    if (index >= visibleLimit.value) {
+        visibleLimit.value = (Math.floor(index / jobStore.pageSize) + 1) * jobStore.pageSize;
+    }
+
     await nextTick();
 
     const row = document.querySelector(`[data-job-id="${id}"]`);
@@ -280,7 +310,8 @@ const clear = () => {
     }
 
     selected.value = '';
-    jobStore.jobs = {};
+    jobStore.clear();
+    visibleLimit.value = jobStore.pageSize;
 };
 
 const duration = (startTime: any, endTime: any) => {
@@ -588,6 +619,16 @@ const toggleMessageLimit = () => {
             <span>{{ $t('app.inactive_banner') }}</span>
         </div>
 
+        <!-- New entries banner -->
+        <button
+            v-if="jobStore.incomingCount > 0"
+            @click="loadNewEntries"
+            class="w-full bg-primary/10 text-primary text-[11px] px-3 py-1.5 flex items-center justify-center gap-2 border-b border-primary/20 shrink-0 hover:bg-primary/20 transition-colors"
+        >
+            <ArrowPathIcon class="w-3 h-3" />
+            <span>{{ $t('jobs.load_new_entries', { count: jobStore.incomingCount }) }}</span>
+        </button>
+
         <!-- Content -->
         <div
             class="pt-3"
@@ -726,6 +767,18 @@ const toggleMessageLimit = () => {
                         </template>
                     </tbody>
                 </table>
+
+                <div
+                    v-if="hasMore"
+                    class="py-3 flex justify-center"
+                >
+                    <button
+                        @click="loadMore"
+                        class="btn btn-ghost btn-xs text-base-content/70"
+                    >
+                        {{ $t('jobs.load_more', { count: jobs.length - visibleJobs.length }) }}
+                    </button>
+                </div>
             </div>
 
             <div

@@ -69,6 +69,8 @@ export default {
         theme: 'Theme',
         select_theme: 'Select a theme',
         scroll_direction: 'Scroll Direction',
+        screen_layout: 'Screen Layout',
+        show_screen_icons: 'Display Icons',
         dump_order: 'Dump Order',
         show_context: 'Show context (Laravel)',
         laravel_docs: 'Laravel Docs',
@@ -174,6 +176,10 @@ export default {
     level: 'Level',
     message: 'Message',
     origin: 'Origin',
+    jobs: {
+        load_new_entries: 'Load new entries ({count})',
+        load_more: 'Load more ({count})'
+    },
     empty: 'Empty',
     copy_to_markdown: 'Copy to Markdown',
     filter_levels: 'Filter Levels',
