@@ -58,10 +58,18 @@ const selectedStatus = (status: string) => {
     statusFilter.value = status;
 };
 
+const sourceJobs = computed(() => {
+    if (props.inScreenWindow) {
+        return props.items || {};
+    }
+
+    return jobStore.jobs;
+});
+
 const jobs = computed(() => {
     forceUpdate.value;
 
-    const items = props.items || jobStore.jobs;
+    const items = sourceJobs.value;
 
     return Object.values(items)
         .filter((job) => {
@@ -98,18 +106,35 @@ const jobs = computed(() => {
 });
 
 const visibleLimit = ref(jobStore.pageSize);
+const listRef = ref<HTMLElement | null>(null);
+const listTopRef = ref<HTMLElement | null>(null);
+const listBottomRef = ref<HTMLElement | null>(null);
 
 const visibleJobs = computed(() => jobs.value.slice(0, visibleLimit.value));
 
 const hasMore = computed(() => jobs.value.length > visibleLimit.value);
 
-const loadMore = () => {
-    visibleLimit.value += jobStore.pageSize;
+const scrollListTo = (el: HTMLElement | null, block: 'start' | 'end') => {
+    const scroller = listRef.value;
+    if (!scroller || !el) {
+        return;
+    }
+
+    const top = block === 'start' ? 0 : scroller.scrollHeight - scroller.clientHeight;
+    scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 };
 
-const loadNewEntries = () => {
+const loadMore = async () => {
+    visibleLimit.value += jobStore.pageSize;
+    await nextTick();
+    scrollListTo(listBottomRef.value, 'end');
+};
+
+const loadNewEntries = async () => {
     jobStore.loadIncoming();
     visibleLimit.value = jobStore.pageSize;
+    await nextTick();
+    scrollListTo(listTopRef.value, 'start');
 };
 
 watch([statusFilter, () => globalSearchStore.search], () => {
@@ -142,7 +167,7 @@ const toggleSort = (field: typeof sortBy.value) => {
 };
 
 const statusCounts = computed(() => {
-    const items = props.items || jobStore.jobs;
+    const items = sourceJobs.value;
     return Object.values(items).reduce(
         (acc, job) => {
             acc[job.status] = (acc[job.status] || 0) + 1;
@@ -354,7 +379,7 @@ const toggleMessageLimit = () => {
 </script>
 
 <template>
-    <div>
+    <div class="flex flex-col h-full max-h-full min-h-0 min-w-0 overflow-hidden">
         <!-- Drawer for job details -->
         <div class="drawer drawer-end">
             <input
@@ -514,6 +539,7 @@ const toggleMessageLimit = () => {
         <!-- Actions Bar -->
         <ViewToolbar
             v-if="!hideHeader"
+            class="relative z-20 shrink-0 bg-base-200"
             :count="jobs.length"
             noun="job"
         >
@@ -613,36 +639,36 @@ const toggleMessageLimit = () => {
         <!-- Pause Banner -->
         <div
             v-if="pauseJobsStore.is_paused"
-            class="bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20 shrink-0"
+            class="relative z-20 shrink-0 bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20"
         >
             <PlayIcon class="w-3 h-3" />
             <span>{{ $t('app.inactive_banner') }}</span>
         </div>
 
-        <!-- New entries banner -->
+        <!-- New entries -->
         <button
-            v-if="jobStore.incomingCount > 0"
+            v-if="!inScreenWindow && jobStore.incomingCount > 0"
             @click="loadNewEntries"
-            class="w-full bg-primary/10 text-primary text-[11px] px-3 py-1.5 flex items-center justify-center gap-2 border-b border-primary/20 shrink-0 hover:bg-primary/20 transition-colors"
+            class="w-full shrink-0 text-[11px] text-primary px-3 py-1.5 flex items-center justify-center gap-1.5 hover:underline"
         >
             <ArrowPathIcon class="w-3 h-3" />
-            <span>{{ $t('jobs.load_new_entries', { count: jobStore.incomingCount }) }}</span>
+            <span>{{ $t('load_new_entries', { count: jobStore.incomingCount }) }}</span>
         </button>
 
         <!-- Content -->
         <div
-            class="pt-3"
-            :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"
+            ref="listRef"
+            class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
         >
             <div
                 v-if="jobs.length > 0"
-                class="overflow-y-auto overflow-x-hidden px-3"
-                style="height: -webkit-fill-available"
+                class="px-3 pb-3"
             >
-                <table class="table table-pin-rows table-zebra">
+                <div ref="listTopRef"></div>
+                <table class="table table-zebra w-full">
                     <thead>
-                        <tr class="text-xs bg-base-300! font-light text-base-content">
-                            <th class="w-4">#</th>
+                        <tr class="text-xs font-light text-base-content">
+                            <th class="w-10">#</th>
                             <th
                                 @click="toggleSort('display_name')"
                                 class="space-x-1.5 cursor-pointer"
@@ -705,26 +731,26 @@ const toggleMessageLimit = () => {
                                     'ld-job-focus': focusedJobId === job.job_id
                                 }"
                             >
-                                <td>
+                                <td class="w-10">
                                     <div class="flex items-center justify-center">
                                         <ArrowPathIcon
                                             v-if="job.status === 'Processing'"
-                                            class="w-6 text-primary"
+                                            class="w-6 h-6 shrink-0 text-primary"
                                             title="Processing"
                                         />
                                         <CheckIcon
                                             v-if="job.status === 'Processed'"
-                                            class="w-6 text-success"
+                                            class="w-6 h-6 shrink-0 text-success"
                                             title="Processed"
                                         />
                                         <XMarkIcon
                                             v-if="job.status === 'Failed'"
-                                            class="w-6 text-error"
+                                            class="w-6 h-6 shrink-0 text-error"
                                             title="Failed"
                                         />
                                         <InformationCircleIcon
                                             v-if="job.status === 'Queued'"
-                                            class="w-6 text-warning"
+                                            class="w-6 h-6 shrink-0 text-warning"
                                             title="Queued"
                                         />
                                     </div>
@@ -776,15 +802,15 @@ const toggleMessageLimit = () => {
                         @click="loadMore"
                         class="btn btn-ghost btn-xs text-base-content/70"
                     >
-                        {{ $t('jobs.load_more', { count: jobs.length - visibleJobs.length }) }}
+                        {{ $t('load_more', { count: jobs.length - visibleJobs.length }) }}
                     </button>
                 </div>
+                <div ref="listBottomRef"></div>
             </div>
 
             <div
                 v-else
-                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
-                style="height: -webkit-fill-available"
+                class="flex items-center justify-center h-full min-h-[12rem] pointer-events-none"
             >
                 <EmptyState />
             </div>
@@ -797,6 +823,13 @@ const toggleMessageLimit = () => {
 
 :deep(.table thead) :where(th, td) {
     @apply p-2;
+}
+
+:deep(.table thead th) {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--color-base-300);
 }
 
 :deep(.table tbody) {

@@ -176,10 +176,8 @@ export default {
     level: 'Level',
     message: 'Message',
     origin: 'Origin',
-    jobs: {
-        load_new_entries: 'Load new entries ({count})',
-        load_more: 'Load more ({count})'
-    },
+    load_new_entries: 'Load new entries ({count})',
+    load_more: 'Load more ({count})',
     empty: 'Empty',
     copy_to_markdown: 'Copy to Markdown',
     filter_levels: 'Filter Levels',

@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { defineEmits, ref, computed, onMounted, onUnmounted } from 'vue';
+import { defineEmits, ref, computed, onMounted, onUnmounted, useAttrs } from 'vue';
+
+defineOptions({ inheritAttrs: false });
+
+const attrs = useAttrs();
 import { useScreenStore } from '@/store/screen';
 import { usePayloadStore } from '@/store/payload';
 import { useJobStore } from '@/store/jobs';
@@ -197,9 +201,9 @@ window.ipcRenderer.on('screen-window:closed', (event, args) => {
 
 const screenCounts = computed(() => {
     const stores: Record<string, any> = {
-        jobs: jobStore.jobs,
+        jobs: { ...jobStore.jobs, ...jobStore.incoming },
         mail: mailStore.mails,
-        logs: logStore.logs,
+        logs: { ...logStore.logs, ...logStore.incoming },
         tail_logs: tailLogStore.entries,
         queries: queriesStore.payload,
         brain: brainStore.brains,
@@ -256,7 +260,7 @@ const formattedScreenName = (name: string) => {
 <template>
     <div
         class="flex min-w-0"
-        :class="isVertical ? 'flex-col h-full w-full' : 'items-center w-full'"
+        :class="[isVertical ? 'flex-col h-full w-full' : 'items-center w-full', attrs.class]"
         @wheel="onWheelScroll"
     >
         <div
@@ -264,9 +268,7 @@ const formattedScreenName = (name: string) => {
             role="tablist"
             class="tabs tabs-box flex no-scrollbar flex-nowrap flex-1 min-w-0"
             :class="
-                isVertical
-                    ? 'flex-col items-stretch overflow-y-auto w-full gap-0.5'
-                    : 'items-center overflow-x-auto'
+                isVertical ? 'flex-col items-stretch overflow-y-auto w-full gap-0.5' : 'items-center overflow-x-auto'
             "
         >
             <template

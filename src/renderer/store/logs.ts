@@ -25,12 +25,48 @@ export type Log = {
 
 type State = {
     logs: Record<string, Log>;
+    incoming: Record<string, Log>;
+};
+
+const PAGE_SIZE = 25;
+const MAX_LOADED_PAGES = 5;
+const MAX_BUFFERED_PAGES = 5;
+
+const oldestKey = (items: Record<string, Log>): string =>
+    Object.keys(items).reduce(
+        (oldest, current) => (items[current].created_at < items[oldest].created_at ? current : oldest),
+        Object.keys(items)[0]
+    );
+
+const trim = (items: Record<string, Log>, max: number) => {
+    while (Object.keys(items).length > max) {
+        delete items[oldestKey(items)];
+    }
 };
 
 export const useLogStore = defineStore('logStore', {
     state: (): State => ({
-        logs: JSON.parse(localStorage.getItem('logs') || '{}')
+        logs: JSON.parse(localStorage.getItem('logs') || '{}'),
+        incoming: {}
     }),
+    getters: {
+        pageSize(): number {
+            return PAGE_SIZE;
+        },
+        incomingCount(): number {
+            return Object.keys(this.incoming).length;
+        },
+        maxItems(): number {
+            const settingsStore = useSettingsStore();
+            const limit = Number(settingsStore.settings.limit_laravel_logs);
+
+            if (Number.isFinite(limit) && limit > 0) {
+                return Math.max(PAGE_SIZE, limit);
+            }
+
+            return PAGE_SIZE * MAX_LOADED_PAGES;
+        }
+    },
     actions: {
         add(content: Payload) {
             if (!content.log_application) {
@@ -40,38 +76,61 @@ export const useLogStore = defineStore('logStore', {
             const rawId = content.log_application.context[1];
             const log_id = `log_${rawId}`;
 
-            this._removeOldestIfExceedsLimit();
+            const bucket = this.logs[log_id]
+                ? this.logs
+                : this.incoming[log_id]
+                  ? this.incoming
+                  : this._bucketForNewLog();
 
-            if (!this.logs[log_id]) {
-                this._initialize(content);
+            if (!bucket[log_id]) {
+                this._initialize(bucket, content);
+
+                if (bucket === this.incoming) {
+                    trim(this.incoming, this.pageSize * MAX_BUFFERED_PAGES);
+                }
             }
+        },
+        _bucketForNewLog(): Record<string, Log> {
+            return Object.keys(this.logs).length >= this.pageSize ? this.incoming : this.logs;
+        },
+        loadIncoming() {
+            const page = Object.values(this.incoming)
+                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                .slice(0, this.pageSize);
+
+            for (const log of page) {
+                this.logs[log.log_id] = log;
+                delete this.incoming[log.log_id];
+            }
+
+            trim(this.logs, this.maxItems);
+            this.store();
         },
         store() {
             localStorage.setItem('logs', JSON.stringify(this.logs));
         },
         clear() {
             this.logs = {};
+            this.incoming = {};
             localStorage.removeItem('logs');
             this.store();
         },
-        _initialize(payload: Payload) {
+        _initialize(bucket: Record<string, Log>, payload: Payload) {
             const { log_application, code_snippet, ide_handle } = payload;
 
             if (!log_application) {
                 return;
             }
 
-            const date = new Date();
-
             const log_id = `log_${log_application.context[1]}`;
 
-            this.logs[log_id] = {
+            bucket[log_id] = {
                 log_id,
                 level: log_application.level,
                 context: log_application.context,
                 original_content: log_application.original_content,
                 message: log_application.message,
-                created_at: date,
+                created_at: new Date(),
                 code_snippet,
                 ide_handle,
                 color: this._parseColor(log_application.level),
@@ -96,17 +155,6 @@ export const useLogStore = defineStore('logStore', {
                     return 'green';
                 default:
                     return 'gray';
-            }
-        },
-        _removeOldestIfExceedsLimit() {
-            const settingsStore = useSettingsStore();
-
-            if (Object.keys(this.logs).length == settingsStore.settings.limit_laravel_logs + 1) {
-                const oldestLogKey = Object.keys(this.logs).reduce((oldestKey, currentKey) => {
-                    return this.logs[currentKey].created_at < this.logs[oldestKey].created_at ? currentKey : oldestKey;
-                }, Object.keys(this.logs)[0]);
-
-                delete this.logs[oldestLogKey];
             }
         }
     }

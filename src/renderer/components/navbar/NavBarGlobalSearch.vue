@@ -113,8 +113,12 @@ const counts = computed(() => {
     }
 
     const dumps = payloadStore.payload.filter((dump) => matchesDumpSearch(dump, term)).length;
-    const logs = Object.values(logStore.logs).filter((log) => matchesLogSearch(log, term)).length;
-    const jobs = Object.values(jobStore.jobs).filter((job) => matchesJobSearch(job, term)).length;
+    const logs = Object.values({ ...logStore.logs, ...logStore.incoming }).filter((log) =>
+        matchesLogSearch(log, term)
+    ).length;
+    const jobs = Object.values({ ...jobStore.jobs, ...jobStore.incoming }).filter((job) =>
+        matchesJobSearch(job, term)
+    ).length;
     const mail = mailStore.mails.filter((m) => matchesMailSearch(m, term)).length;
     const queries = queriesStore.payload.filter((q) => matchesQuerySearch(q, term)).length;
 

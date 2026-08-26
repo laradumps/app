@@ -47,7 +47,9 @@ const hasPayload = computed(() => {
     return (
         payloadStore.payload.length > 0 ||
         Object.values(logStore.logs).length > 0 ||
+        logStore.incomingCount > 0 ||
         Object.values(jobStore.jobs).length > 0 ||
+        jobStore.incomingCount > 0 ||
         Object.values(mailStore.mails).length > 0 ||
         Object.values(queryStore.payload).length > 0
     );

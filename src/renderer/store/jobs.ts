@@ -30,6 +30,7 @@ type State = {
     origin: JobOrigin | null;
 };
 
+const PAGE_SIZE = 25;
 const MAX_LOADED_PAGES = 5;
 const MAX_BUFFERED_PAGES = 5;
 
@@ -54,12 +55,20 @@ export const useJobStore = defineStore('jobStore', {
     }),
     getters: {
         pageSize(): number {
-            const settingsStore = useSettingsStore();
-
-            return settingsStore.settings.limit_laravel_jobs || 100;
+            return PAGE_SIZE;
         },
         incomingCount(): number {
             return Object.keys(this.incoming).length;
+        },
+        maxItems(): number {
+            const settingsStore = useSettingsStore();
+            const limit = Number(settingsStore.settings.limit_laravel_jobs);
+
+            if (Number.isFinite(limit) && limit > 0) {
+                return Math.max(PAGE_SIZE, limit);
+            }
+
+            return PAGE_SIZE * MAX_LOADED_PAGES;
         }
     },
     actions: {
@@ -124,7 +133,7 @@ export const useJobStore = defineStore('jobStore', {
                 delete this.incoming[job.job_id];
             }
 
-            trim(this.jobs, this.pageSize * MAX_LOADED_PAGES);
+            trim(this.jobs, this.maxItems);
         },
         _initializeJob(bucket: Record<string, Job>, jobs: JobPayload, ide_handle: IdeHandle) {
             bucket[jobs.job_id] = {
