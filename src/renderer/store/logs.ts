@@ -93,10 +93,11 @@ export const useLogStore = defineStore('logStore', {
         _bucketForNewLog(): Record<string, Log> {
             return Object.keys(this.logs).length >= this.pageSize ? this.incoming : this.logs;
         },
-        loadIncoming() {
-            const page = Object.values(this.incoming)
-                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-                .slice(0, this.pageSize);
+        loadIncoming(loadAll = false) {
+            const values = Object.values(this.incoming).sort(
+                (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            );
+            const page = loadAll ? values : values.slice(0, this.pageSize);
 
             for (const log of page) {
                 this.logs[log.log_id] = log;

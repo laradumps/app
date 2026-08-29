@@ -123,10 +123,11 @@ export const useJobStore = defineStore('jobStore', {
         _bucketForNewJob(): Record<string, Job> {
             return Object.keys(this.jobs).length >= this.pageSize ? this.incoming : this.jobs;
         },
-        loadIncoming() {
-            const page = Object.values(this.incoming)
-                .sort((a, b) => new Date(a.pushed_time).getTime() - new Date(b.pushed_time).getTime())
-                .slice(0, this.pageSize);
+        loadIncoming(loadAll = false) {
+            const values = Object.values(this.incoming).sort(
+                (a, b) => new Date(a.pushed_time).getTime() - new Date(b.pushed_time).getTime()
+            );
+            const page = loadAll ? values : values.slice(0, this.pageSize);
 
             for (const job of page) {
                 this.jobs[job.job_id] = job;

@@ -131,7 +131,7 @@ const loadMore = async () => {
 };
 
 const loadNewEntries = async () => {
-    jobStore.loadIncoming();
+    jobStore.loadIncoming(true);
     visibleLimit.value = jobStore.pageSize;
     await nextTick();
     scrollListTo(listTopRef.value, 'start');
@@ -260,8 +260,8 @@ const focusJob = async (id: string) => {
     statusFilter.value = null;
     collapsedGroups.value = {};
 
-    while (!jobStore.jobs[id] && jobStore.incomingCount > 0) {
-        jobStore.loadIncoming();
+    if (!jobStore.jobs[id] && jobStore.incoming[id]) {
+        jobStore.loadIncoming(true);
     }
 
     await nextTick();

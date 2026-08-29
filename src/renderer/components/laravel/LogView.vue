@@ -152,7 +152,7 @@ const loadMore = async () => {
 };
 
 const loadNewEntries = async () => {
-    logStore.loadIncoming();
+    logStore.loadIncoming(true);
     visibleLimit.value = logStore.pageSize;
     await nextTick();
     scrollListTo(listTopRef.value, 'start');
