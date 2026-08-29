@@ -51,6 +51,8 @@ const {
 const isDraggingScreen = ref(false);
 const draggedScreenName = ref('');
 
+const isVerticalLayout = computed(() => settingsStore.settings.screen_layout === 'vertical');
+
 watch(
     () => currentProjectStore.projectInfo,
     (newProject, oldProject) => {
@@ -175,10 +177,14 @@ const handleDragEnd = () => {
             class="mt-3 h-[calc(100vh-50px)] w-screen text-base flex flex-col"
         >
             <PauseBanner />
-            <div class="flex-1 overflow-y-auto min-h-0">
+            <div
+                class="flex-1 min-h-0"
+                :class="['jobs', 'logs'].includes(inScreenWindow) ? 'overflow-hidden' : 'overflow-y-auto'"
+            >
                 <ScreenContent
                     :screen-name="inScreenWindow"
                     mode="screen-window"
+                    extra-class="w-full h-full min-h-0 text-base"
                     :yaml-config="yamlConfig"
                     :screen-window-items="screenWindowItems"
                 />
@@ -212,10 +218,16 @@ const handleDragEnd = () => {
                                 </div>
                             </div>
                             <PauseBanner />
-                            <div class="flex-1 overflow-auto min-h-0">
+                            <div
+                                class="flex-1 min-h-0"
+                                :class="
+                                    ['jobs', 'logs'].includes(screenStore.screen) ? 'overflow-hidden' : 'overflow-auto'
+                                "
+                            >
                                 <ScreenContent
                                     :screen-name="screenStore.screen"
                                     mode="split-pane"
+                                    extra-class="w-full h-full min-h-0 text-base"
                                     :yaml-config="yamlConfig"
                                     :dumps-bag-filtered="dumpsBagFiltered"
                                     :grouped-dumps="groupedDumps"
@@ -259,10 +271,18 @@ const handleDragEnd = () => {
                                     </svg>
                                 </button>
                             </div>
-                            <div class="flex-1 overflow-auto min-h-0">
+                            <div
+                                class="flex-1 min-h-0"
+                                :class="
+                                    ['jobs', 'logs'].includes(splitPanesStore.splitConfig.screenName)
+                                        ? 'overflow-hidden'
+                                        : 'overflow-auto'
+                                "
+                            >
                                 <ScreenContent
                                     :screen-name="splitPanesStore.splitConfig.screenName"
                                     mode="split-pane"
+                                    extra-class="w-full h-full min-h-0 text-base"
                                     :yaml-config="yamlConfig"
                                     :hide-header="true"
                                     :open-screen-window="openScreenWindow"
@@ -277,9 +297,20 @@ const handleDragEnd = () => {
 
             <div v-else>
                 <div class="flex flex-col flex-1 absolute inset-0 overflow-hidden">
-                    <main class="flex flex-col flex-1 h-full min-h-0">
-                        <div class="shrink-0 z-50">
-                            <div class="flex h-12 px-1.5 items-center justify-between w-full">
+                    <main
+                        class="flex flex-1 h-full min-h-0"
+                        :class="isVerticalLayout ? 'flex-row' : 'flex-col'"
+                    >
+                        <div
+                            class="shrink-0 z-50"
+                            :class="isVerticalLayout ? 'h-full w-48 border-r border-base-content/5' : ''"
+                        >
+                            <div
+                                class="flex px-1.5 w-full"
+                                :class="
+                                    isVerticalLayout ? 'flex-col h-full py-1.5' : 'h-12 items-center justify-between'
+                                "
+                            >
                                 <Screens
                                     class="flex-1 min-w-0"
                                     :environments="environments"
@@ -291,26 +322,35 @@ const handleDragEnd = () => {
                                 />
                             </div>
                         </div>
-                        <PauseBanner />
-                        <div class="flex-1 overflow-y-auto min-h-0">
-                            <ScreenContent
-                                :screen-name="screenStore.screen"
-                                mode="normal"
-                                :yaml-config="yamlConfig"
-                                :extra-class="'w-screen text-base'"
-                                :open-screen-window="openScreenWindow"
-                                :dumps-bag-filtered="dumpsBagFiltered"
-                                :grouped-dumps="groupedDumps"
-                                :empty-screen-exclude="[
-                                    'jobs',
-                                    'mail',
-                                    'logs',
-                                    'queries',
-                                    'tail_logs',
-                                    'profiler',
-                                    'brain'
-                                ]"
-                            />
+                        <div class="flex flex-col flex-1 min-w-0 min-h-0">
+                            <PauseBanner />
+                            <div
+                                class="flex flex-col flex-1 min-h-0"
+                                :class="
+                                    ['jobs', 'logs'].includes(screenStore.screen)
+                                        ? 'overflow-hidden'
+                                        : 'overflow-y-auto'
+                                "
+                            >
+                                <ScreenContent
+                                    :screen-name="screenStore.screen"
+                                    mode="normal"
+                                    :yaml-config="yamlConfig"
+                                    extra-class="w-full h-full min-h-0 text-base"
+                                    :open-screen-window="openScreenWindow"
+                                    :dumps-bag-filtered="dumpsBagFiltered"
+                                    :grouped-dumps="groupedDumps"
+                                    :empty-screen-exclude="[
+                                        'jobs',
+                                        'mail',
+                                        'logs',
+                                        'queries',
+                                        'tail_logs',
+                                        'profiler',
+                                        'brain'
+                                    ]"
+                                />
+                            </div>
                         </div>
                     </main>
                 </div>

@@ -20,6 +20,8 @@ export interface Settings {
     ide_handler: string;
     shortcuts: Shortcuts;
     dump_order: 'normal' | 'reversed';
+    screen_layout: 'horizontal' | 'vertical';
+    show_screen_icons: boolean;
     window_width: number;
     window_height: number;
     show_pause_button: boolean;

@@ -54,7 +54,11 @@ const activeView = computed(() => VIEW_MAP[props.screenName] ?? null);
 // Each known view takes a different slice of props; build only what it declares
 // so nothing leaks onto the root element as a stray attribute.
 const viewProps = computed<Record<string, any>>(() => {
-    const base = { class: props.extraClass, hideHeader: props.hideHeader };
+    const fillClass = ['jobs', 'logs'].includes(props.screenName) ? 'h-full min-h-0 flex-1' : '';
+    const base = {
+        class: [props.extraClass, fillClass].filter(Boolean).join(' '),
+        hideHeader: props.hideHeader
+    };
 
     switch (props.screenName) {
         case 'cache':

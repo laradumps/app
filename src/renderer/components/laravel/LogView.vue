@@ -12,7 +12,8 @@ import {
     CogIcon,
     ChevronDownIcon,
     ClockIcon,
-    ArrowTopRightOnSquareIcon
+    ArrowTopRightOnSquareIcon,
+    ArrowPathIcon
 } from '@heroicons/vue/24/outline';
 
 import { Log, useLogStore } from '@/store/logs';
@@ -69,14 +70,18 @@ const props = defineProps<{
     hideHeader?: boolean;
 }>();
 
-const totalLogs = computed(() => {
-    const items = props.items ? props.items : logStore.logs;
-    return Object.values(items).length;
+const sourceLogs = computed(() => {
+    if (props.inScreenWindow) {
+        return props.items || {};
+    }
+
+    return logStore.logs;
 });
 
+const totalLogs = computed(() => Object.values(sourceLogs.value).length);
+
 const levelCounts = computed(() => {
-    const items = props.items ? props.items : logStore.logs;
-    return Object.values(items).reduce(
+    return Object.values(sourceLogs.value).reduce(
         (acc, log) => {
             acc[log.level] = (acc[log.level] || 0) + 1;
             return acc;
@@ -88,7 +93,7 @@ const levelCounts = computed(() => {
 const logs = computed(() => {
     forceUpdate.value;
 
-    const items = props.items ? props.items : logStore.logs;
+    const items = sourceLogs.value;
 
     return Object.values(items)
         .filter((log: Log) => {
@@ -120,6 +125,46 @@ const logs = computed(() => {
             return dateB - dateA;
         });
 });
+
+const visibleLimit = ref(logStore.pageSize);
+const listRef = ref<HTMLElement | null>(null);
+const listTopRef = ref<HTMLElement | null>(null);
+const listBottomRef = ref<HTMLElement | null>(null);
+
+const visibleLogs = computed(() => logs.value.slice(0, visibleLimit.value));
+
+const hasMore = computed(() => logs.value.length > visibleLimit.value);
+
+const scrollListTo = (el: HTMLElement | null, block: 'start' | 'end') => {
+    const scroller = listRef.value;
+    if (!scroller || !el) {
+        return;
+    }
+
+    const top = block === 'start' ? 0 : scroller.scrollHeight - scroller.clientHeight;
+    scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+};
+
+const loadMore = async () => {
+    visibleLimit.value += logStore.pageSize;
+    await nextTick();
+    scrollListTo(listBottomRef.value, 'end');
+};
+
+const loadNewEntries = async () => {
+    logStore.loadIncoming(true);
+    visibleLimit.value = logStore.pageSize;
+    await nextTick();
+    scrollListTo(listTopRef.value, 'start');
+};
+
+watch(
+    [levelFilter, () => globalSearchStore.search],
+    () => {
+        visibleLimit.value = logStore.pageSize;
+    },
+    { deep: true }
+);
 
 const displayLastLog = computed<boolean>({
     get: () => {
@@ -238,7 +283,7 @@ const toggleYamlControl = (section: string, key: string, currentValue: boolean) 
 
 const groupedLogsByRelativeTime = computed(() => {
     const groups: Record<string, Log[]> = {};
-    for (const log of logs.value) {
+    for (const log of visibleLogs.value) {
         const timeKey = dayjs(log.created_at).fromNow();
         if (!groups[timeKey]) {
             groups[timeKey] = [];
@@ -294,6 +339,7 @@ const clear = () => {
     expandedLogId.value = null;
     expandedRequestLogIds.value = new Set();
     logStore.clear();
+    visibleLimit.value = logStore.pageSize;
 };
 
 type LevelColor = 'success' | 'warning' | 'info' | 'error' | 'neutral';
@@ -339,11 +385,12 @@ const canCopyToMarkdown = computed(() => {
 </script>
 
 <template>
-    <div>
-        <div>
+    <div class="flex flex-col h-full max-h-full min-h-0 min-w-0 overflow-hidden">
+        <div class="flex flex-col h-full min-h-0">
             <!-- Actions Bar -->
             <ViewToolbar
                 v-if="!hideHeader"
+                class="relative z-20 shrink-0 bg-base-200"
                 :count="logs.length"
                 noun="log"
             >
@@ -533,21 +580,34 @@ const canCopyToMarkdown = computed(() => {
             <!-- Pause Banner -->
             <div
                 v-if="pauseLogsStore.is_paused"
-                class="bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20 shrink-0"
+                class="relative z-20 shrink-0 bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20"
             >
                 <PlayIcon class="w-3 h-3" />
                 <span>{{ $t('app.inactive_banner') }}</span>
             </div>
 
-            <div class="h-[calc(100vh-140px)] pt-3">
+            <!-- New entries -->
+            <button
+                v-if="!inScreenWindow && logStore.incomingCount > 0"
+                @click="loadNewEntries"
+                class="w-full shrink-0 text-[11px] text-primary px-3 py-1.5 flex items-center justify-center gap-1.5 hover:underline"
+            >
+                <ArrowPathIcon class="w-3 h-3" />
+                <span>{{ $t('load_new_entries', { count: logStore.incomingCount }) }}</span>
+            </button>
+
+            <div
+                ref="listRef"
+                class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+            >
                 <div
                     v-if="logs.length > 0"
-                    class="overflow-y-auto overflow-x-hidden px-3"
-                    style="height: -webkit-fill-available"
+                    class="px-3 pb-3"
                 >
-                    <table class="table table-pin-rows table-fixed w-full log-table">
+                    <div ref="listTopRef"></div>
+                    <table class="table table-zebra table-fixed w-full log-table">
                         <thead>
-                            <tr class="text-xs bg-base-300! font-light text-base-content">
+                            <tr class="text-xs font-light text-base-content">
                                 <th class="w-[90px]">{{ $t('level') }}</th>
                                 <th>{{ $t('message') }}</th>
                                 <th class="w-[190px] text-right">{{ $t('origin') }}</th>
@@ -872,12 +932,24 @@ const canCopyToMarkdown = computed(() => {
                             </template>
                         </tbody>
                     </table>
+
+                    <div
+                        v-if="hasMore"
+                        class="py-3 flex justify-center"
+                    >
+                        <button
+                            @click="loadMore"
+                            class="btn btn-ghost btn-xs text-base-content/70"
+                        >
+                            {{ $t('load_more', { count: logs.length - visibleLogs.length }) }}
+                        </button>
+                    </div>
+                    <div ref="listBottomRef"></div>
                 </div>
 
                 <div
                     v-else
-                    class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
-                    style="height: -webkit-fill-available"
+                    class="flex items-center justify-center h-full min-h-[12rem] pointer-events-none"
                 >
                     <EmptyState />
                 </div>
@@ -891,6 +963,13 @@ const canCopyToMarkdown = computed(() => {
 
 :deep(.log-table > thead) :where(th, td) {
     @apply p-2;
+}
+
+:deep(.log-table thead th) {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--color-base-300);
 }
 
 :deep(.log-table > tbody > tr > :where(th, td)) {

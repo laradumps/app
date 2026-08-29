@@ -77,6 +77,11 @@ const dumpOrder = {
     reversed: 'Reversed'
 };
 
+const screenLayout = {
+    horizontal: 'Horizontal',
+    vertical: 'Vertical (left)'
+};
+
 export const useSettingsStore = defineStore('settings', () => {
     const themes = ref(themeColors);
 
@@ -203,6 +208,7 @@ export const useSettingsStore = defineStore('settings', () => {
         ideHandlerOptions,
         autoLaunchOptions,
         dumpOrder,
+        screenLayout,
         scrollDirection,
         checkForUpdateOptions,
         setSettings,

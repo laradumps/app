@@ -9,6 +9,8 @@ export const DEFAULT_SETTINGS: Settings = {
     auto_launch: 'disabled',
     scroll_direction: 'top',
     dump_order: 'normal',
+    screen_layout: 'horizontal',
+    show_screen_icons: true,
     shortcuts: {
         always_on_top: {
             originalValue: process.platform === 'darwin' ? '⌥+⇧+T' : 'Ctrl+Shift+T',

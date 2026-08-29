@@ -121,6 +121,31 @@ const saveWindowOpacity = async () => {
             </div>
         </SettingsRow>
 
+        <SettingsRow :label="$t('settings.screen_layout')">
+            <div class="w-52">
+                <SelectInput
+                    v-model="settingsStore.settings.screen_layout"
+                    @change="save()"
+                >
+                    <option
+                        v-for="(value, key) in settingsStore.screenLayout"
+                        :value="key"
+                    >
+                        {{ value }}
+                    </option>
+                </SelectInput>
+            </div>
+        </SettingsRow>
+
+        <SettingsRow :label="$t('settings.show_screen_icons')">
+            <input
+                type="checkbox"
+                class="toggle toggle-sm toggle-accent"
+                v-model="settingsStore.settings.show_screen_icons"
+                @change="save()"
+            />
+        </SettingsRow>
+
         <SettingsRow :label="$t('settings.grouped_by_time')">
             <input
                 type="checkbox"

@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { defineEmits, ref, computed, onMounted, onUnmounted } from 'vue';
+import { defineEmits, ref, computed, onMounted, onUnmounted, useAttrs } from 'vue';
+
+defineOptions({ inheritAttrs: false });
+
+const attrs = useAttrs();
 import { useScreenStore } from '@/store/screen';
 import { usePayloadStore } from '@/store/payload';
 import { useJobStore } from '@/store/jobs';
@@ -11,9 +15,23 @@ import { useSplitPanesStore } from '@/store/split-panes';
 import { useBrainStore } from '@/store/brains.ts';
 import { useProfileStore } from '@/store/profile';
 import { useGlobalSearchStore } from '@/store/global-search';
+import { useSettingsStore } from '@/store/settings';
 import EnvironmentDropdown from './EnvironmentDropdown.vue';
 import type { Environment } from '../../../main/storage';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
+import {
+    HomeIcon,
+    CircleStackIcon,
+    DocumentTextIcon,
+    DocumentMagnifyingGlassIcon,
+    BriefcaseIcon,
+    EnvelopeIcon,
+    CpuChipIcon,
+    BoltIcon,
+    ChartBarIcon,
+    BugAntIcon,
+    WindowIcon
+} from '@heroicons/vue/24/outline';
 import { isSpecialEnvironment } from '@/constants';
 import { matchesScreenSearch } from '@/utils/searchMatchers';
 
@@ -40,6 +58,30 @@ const queriesStore = useQueriesPayloadStore();
 const profileStore = useProfileStore();
 const splitPanesStore = useSplitPanesStore();
 const globalSearchStore = useGlobalSearchStore();
+const settingsStore = useSettingsStore();
+
+const isVertical = computed(() => settingsStore.settings.screen_layout === 'vertical');
+const showIcons = computed(() => settingsStore.settings.show_screen_icons !== false);
+
+const SCREEN_ICONS: Record<string, any> = {
+    home: HomeIcon,
+    queries: CircleStackIcon,
+    logs: DocumentTextIcon,
+    tail_logs: DocumentMagnifyingGlassIcon,
+    jobs: BriefcaseIcon,
+    mail: EnvelopeIcon,
+    brain: CpuChipIcon,
+    livewire: BoltIcon,
+    profiler: ChartBarIcon,
+    xdebug_inspector: BugAntIcon
+};
+
+const screenIcon = (screenName: string) => SCREEN_ICONS[screenName] ?? WindowIcon;
+
+const disableTailLog = () => {
+    settingsStore.settings.tail_log_enabled = false;
+    settingsStore.update();
+};
 
 const showTooltip = ref(false);
 const isDraggingIndex = ref(null);
@@ -81,7 +123,8 @@ onMounted(() => document.addEventListener('click', handleClickOutside));
 onUnmounted(() => document.removeEventListener('click', handleClickOutside));
 
 const onWheelScroll = (e: WheelEvent) => {
-    if (!tablistRef.value) return;
+    if (!tablistRef.value || isVertical.value) return;
+    e.preventDefault();
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     tablistRef.value.scrollLeft += delta;
 };
@@ -158,9 +201,9 @@ window.ipcRenderer.on('screen-window:closed', (event, args) => {
 
 const screenCounts = computed(() => {
     const stores: Record<string, any> = {
-        jobs: jobStore.jobs,
+        jobs: { ...jobStore.jobs, ...jobStore.incoming },
         mail: mailStore.mails,
-        logs: logStore.logs,
+        logs: { ...logStore.logs, ...logStore.incoming },
         tail_logs: tailLogStore.entries,
         queries: queriesStore.payload,
         brain: brainStore.brains,
@@ -216,13 +259,17 @@ const formattedScreenName = (name: string) => {
 
 <template>
     <div
-        class="flex items-center w-full min-w-0"
-        @wheel.prevent="onWheelScroll"
+        class="flex min-w-0"
+        :class="[isVertical ? 'flex-col h-full w-full' : 'items-center w-full', attrs.class]"
+        @wheel="onWheelScroll"
     >
         <div
             ref="tablistRef"
             role="tablist"
-            class="tabs tabs-box flex items-center overflow-x-auto no-scrollbar flex-nowrap flex-1 min-w-0"
+            class="tabs tabs-box flex no-scrollbar flex-nowrap flex-1 min-w-0"
+            :class="
+                isVertical ? 'flex-col items-stretch overflow-y-auto w-full gap-0.5' : 'items-center overflow-x-auto'
+            "
         >
             <template
                 v-for="(screen, index) in screenStore.allVisible()"
@@ -235,7 +282,8 @@ const formattedScreenName = (name: string) => {
                     class="tab cursor-default! flex! flex-row! items-center! gap-2 select-none transition-all duration-200 whitespace-nowrap! group h-full"
                     :class="{
                         'tab-active font-semibold': screen.screen_name === screenStore.screen,
-                        dragging: isDraggingIndex === index
+                        dragging: isDraggingIndex === index,
+                        'tab-vertical': isVertical
                     }"
                     @click="$emit('toggleScreen', screen.screen_name, true)"
                     @contextmenu="onTabContextMenu($event, screen.screen_name)"
@@ -243,8 +291,15 @@ const formattedScreenName = (name: string) => {
                     @dragover.prevent
                     @dragend="onDragEnd($event, screen)"
                 >
-                    <span class="text-[0.85rem] leading-none whitespace-nowrap">
-                        {{ formattedScreenName(screen.screen_name) }}
+                    <span class="inline-flex items-center gap-2 min-w-0">
+                        <component
+                            :is="screenIcon(screen.screen_name)"
+                            v-if="showIcons"
+                            class="w-4 h-4 shrink-0"
+                        />
+                        <span class="text-[0.85rem] leading-none whitespace-nowrap">
+                            {{ formattedScreenName(screen.screen_name) }}
+                        </span>
                     </span>
 
                     <span class="inline-flex items-center gap-1 shrink-0">
@@ -260,6 +315,15 @@ const formattedScreenName = (name: string) => {
                             @click.stop="removeEnvironmentScreen(screen.screen_name)"
                             class="text-base-content/40 hover:text-error text-[10px] w-4 h-4 rounded-full hover:bg-error/10 transition-all flex items-center justify-center shrink-0"
                             title="Remove screen"
+                        >
+                            <XMarkIcon />
+                        </button>
+
+                        <button
+                            v-if="screen.screen_name === 'tail_logs'"
+                            @click.stop="disableTailLog"
+                            class="text-base-content/40 hover:text-error text-[10px] w-4 h-4 rounded-full hover:bg-error/10 transition-all flex items-center justify-center shrink-0"
+                            title="Disable tail log"
                         >
                             <XMarkIcon />
                         </button>
@@ -318,6 +382,10 @@ const formattedScreenName = (name: string) => {
 
 .tab {
     @apply px-4 flex! flex-row! flex-nowrap! items-center! justify-center! gap-2! whitespace-nowrap! h-8 min-h-8;
+}
+
+.tab-vertical {
+    @apply w-full! justify-between! text-left!;
 }
 
 [draggable='true'] {
