@@ -120,7 +120,7 @@ const searchableTable = (search, id) => {
             </div>
 
             <div
-                class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 dstable rounded-lg max-h-[429px]"
+                class="overflow-x-auto rounded-box border border-base-content/10 bg-base-100 dstable rounded-lg max-h-[429px]"
                 v-html="table"
             ></div>
         </div>

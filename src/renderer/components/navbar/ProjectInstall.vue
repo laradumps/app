@@ -158,7 +158,7 @@ onUnmounted(() => {
                 <div class="flex-1 flex flex-col relative bg-base-100 overflow-y-auto w-full">
                     <div class="p-8 flex flex-col h-full gap-4">
                         <div
-                            class="flex-1 flex flex-col items-center justify-center p-4 bg-base-200/50 rounded-lg border border-base-content/5 overflow-hidden"
+                            class="flex-1 flex flex-col items-center justify-center p-4 bg-base-200/50 rounded-lg border border-base-content/10 overflow-hidden"
                         >
                             <div class="text-center space-y-2 mb-4 w-full px-4">
                                 <h2

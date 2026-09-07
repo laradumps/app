@@ -350,7 +350,7 @@ const timelineItems = computed((): TimelineGroup[] => {
         </div>
 
         <!-- Time scale ruler (fixed, outside scroll area) -->
-        <div class="shrink-0 relative h-7 border-b border-base-content/20 bg-base-100 px-3">
+        <div class="shrink-0 relative h-7 border-b border-base-content/10 bg-base-100 px-3">
             <div class="absolute inset-0 flex">
                 <div
                     class="flex-shrink-0"

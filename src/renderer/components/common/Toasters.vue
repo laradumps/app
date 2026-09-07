@@ -15,7 +15,7 @@ const typeClasses = (type: string) => {
         case 'error':
             return 'bg-error text-error-content border-error/30';
         default:
-            return 'bg-base-200 text-base-content border-base-content/20';
+            return 'bg-base-200 text-base-content border-base-content/10';
     }
 };
 </script>

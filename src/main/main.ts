@@ -47,9 +47,6 @@ let downloadCompleted = false;
 
 const electronLocalShortcut = require('electron-localshortcut');
 
-// Map a 0–100 window-opacity value to a window alpha, clamped to [0.3, 1] so the window can never
-// become fully invisible (and lost). NOTE: on macOS any alpha < 1 turns OFF the native vibrancy
-// blur (the OS only blurs behind a fully opaque window) — this is surfaced to the user in the UI.
 function setWindowOpacity(win: BrowserWindow, pct: number): void {
     if (!win || win.isDestroyed()) return;
     win.setOpacity(Math.min(1, Math.max(0.3, (pct ?? 100) / 100)));
@@ -57,9 +54,6 @@ function setWindowOpacity(win: BrowserWindow, pct: number): void {
 
 function applyWindowOpacity(win: BrowserWindow): void {
     const currentSettings = settings.getSettings();
-    // Keep window alpha at 100% when native blur is disabled. The opacity slider lives under
-    // the blur section in Settings, so if users turn blur off we should not leave stale window
-    // alpha values from previous sessions.
     const pct = currentSettings.window_blur ? (currentSettings.window_opacity ?? 100) : 100;
     setWindowOpacity(win, pct);
 }
@@ -88,7 +82,7 @@ function createWindow(): BrowserWindow {
     }
 
     if (isMac) {
-        browserWindowOptions.trafficLightPosition = { x: 12, y: 11 };
+        browserWindowOptions.trafficLightPosition = { x: 14, y: 14 };
     }
 
     blurActive = !!settings.getSettings().window_blur && (isMac || process.platform === 'win32');
@@ -243,7 +237,6 @@ ipcMain.on('send-screen-window-update', (event, args) => {
     sendScreenWindowUpdate(args.screen, payload, jobs, mails, logs, queries);
 });
 
-// Relay saved-dumps removal requests from any renderer to the main window (HomeView listener)
 ipcMain.on('saved-dumps:remove', (event, args) => {
     try {
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -447,8 +440,6 @@ ipcMain.on('main:toggle-always-on-top', (event, arg) => {
     setTimeout(() => mainWindow.setAlwaysOnTop(arg), 200);
 });
 
-// Live window-opacity updates from the Appearance slider (0–100). Applied directly from the
-// message so it never races the separate settings.store persistence round-trip.
 ipcMain.on('main:set-window-opacity', (_event, value: number): void => {
     setWindowOpacity(mainWindow, value);
 });

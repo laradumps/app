@@ -252,12 +252,12 @@ const removeProject = (project: Project) => {
         <div
             tabindex="0"
             role="button"
-            class="flex items-center font-medium capitalize truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-7 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/20 rounded-lg transition-colors"
+            class="flex items-center font-medium capitalize truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-8 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/10 rounded-lg transition-colors"
         >
             <div class="flex items-center gap-2">
                 <div
                     v-if="selectedProject.project"
-                    class="size-2 rounded-full bg-success shadow-[0_0_8px_rgba(0,180,0,0.6)]"
+                    class="size-2 rounded-full bg-success"
                 ></div>
                 <div
                     v-else
@@ -275,7 +275,7 @@ const removeProject = (project: Project) => {
 
         <ul
             tabindex="0"
-            class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-64"
+            class="dropdown-content mt-2 z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 w-64"
         >
             <li class="mb-1">
                 <a
@@ -313,11 +313,7 @@ const removeProject = (project: Project) => {
                         ></span>
                         <span
                             class="relative inline-flex rounded-full size-2"
-                            :class="
-                                selectedProject.path === project.path
-                                    ? 'bg-success shadow-[0_0_6px_rgba(0,255,0,0.8)]'
-                                    : 'bg-transparent'
-                            "
+                            :class="selectedProject.path === project.path ? 'bg-success' : 'bg-transparent'"
                         ></span>
                     </div>
                     <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>

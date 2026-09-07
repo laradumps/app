@@ -254,7 +254,7 @@ const clear = () => {
 
                     <ul
                         tabindex="0"
-                        class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-52"
+                        class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 z-[100] w-52"
                     >
                         <li
                             v-for="(count, label) in typeCounts"
