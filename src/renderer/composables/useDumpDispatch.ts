@@ -16,6 +16,7 @@ import { useQueriesBlockedStore } from '@/store/queries-blocked';
 import { usePendingRequestsStore } from '@/store/pending-requests';
 import { useCurrentProject } from '@/store/current-project';
 import { useSplitPanesStore } from '@/store/split-panes';
+import { useToastStore } from '@/store/toast';
 import {
     usePausePayloadStore,
     usePauseJobsStore,
@@ -56,6 +57,7 @@ export function useDumpDispatch(nav: ScreenNavigation) {
     const pendingRequestsStore = usePendingRequestsStore();
     const currentProjectStore = useCurrentProject();
     const splitPanesStore = useSplitPanesStore();
+    const toastStore = useToastStore();
     const pausePayloadStore = usePausePayloadStore();
     const pauseJobsStore = usePauseJobsStore();
     const pauseLogsStore = usePauseLogsStore();
@@ -76,8 +78,8 @@ export function useDumpDispatch(nav: ScreenNavigation) {
         checkApplicationPath(content, applicationPath);
 
         if (!content.hasOwnProperty('to_screen')) {
-            alert('An error occurred, please update the app and laradumps-core and try again.');
-            window.location.reload();
+            toastStore.show('Received a malformed payload. Please update the app and laradumps-core.', 'error', 4000);
+            return;
         }
 
         if (content.to_screen && typeof content.to_screen.screen_name == 'string') {
