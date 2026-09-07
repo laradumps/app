@@ -40,6 +40,8 @@ export interface Settings {
     show_context: boolean;
     show_tips: boolean;
     split_pane_screen?: string | null;
+    split_pane_orientation?: 'vertical' | 'horizontal';
+    split_pane_size?: number;
     grouped_by_time: boolean;
     display_last_log: boolean;
     mcp_limit_payload_objects?: number;

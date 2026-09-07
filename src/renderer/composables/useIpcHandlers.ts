@@ -68,7 +68,10 @@ export function useIpcHandlers() {
         nav.toggleScreen('home');
 
         if (settingsStore.settings.split_pane_screen) {
-            splitPanesStore.setSplit(settingsStore.settings.split_pane_screen, 'vertical');
+            splitPanesStore.setSplit(
+                settingsStore.settings.split_pane_screen,
+                settingsStore.settings.split_pane_orientation ?? 'vertical'
+            );
         }
 
         window.addEventListener('add-screen', nav.handleAddScreen);

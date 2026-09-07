@@ -85,6 +85,12 @@ onUnmounted(() => {
         <div
             ref="splitter"
             class="divider"
+            role="separator"
+            :aria-orientation="orientation === 'horizontal' ? 'horizontal' : 'vertical'"
+            :aria-valuenow="Math.round(splitPosition)"
+            aria-valuemin="10"
+            aria-valuemax="90"
+            aria-label="Resize panes"
             @mousedown="startDrag"
         ></div>
         <div
@@ -140,5 +146,13 @@ onUnmounted(() => {
 
 .divider:hover::after {
     @apply bg-blue-500/40;
+}
+
+.split-root.horizontal .divider {
+    @apply w-full h-1.5 cursor-row-resize border-l-0 border-r-0 border-t border-b border-base-100;
+}
+
+.split-root.horizontal .divider::after {
+    @apply w-[50px] h-0.5;
 }
 </style>

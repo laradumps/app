@@ -32,6 +32,8 @@ const handleDrop = (zone) => {
         <div
             class="drop-zone drop-zone-right"
             :class="{ 'drop-zone-active': activeZone === 'right' }"
+            role="button"
+            aria-label="Split screen to the right"
             @dragenter.prevent="handleDragEnter('right')"
             @dragleave.prevent="handleDragLeave"
             @dragover.prevent
@@ -41,8 +43,22 @@ const handleDrop = (zone) => {
         </div>
 
         <div
+            class="drop-zone drop-zone-bottom"
+            :class="{ 'drop-zone-active': activeZone === 'bottom' }"
+            role="button"
+            aria-label="Split screen at the bottom"
+            @dragenter.prevent="handleDragEnter('bottom')"
+            @dragleave.prevent="handleDragLeave"
+            @dragover.prevent
+            @drop.prevent="handleDrop('bottom')"
+        >
+            <span class="drop-zone-indicator"> Drop to split bottom </span>
+        </div>
+
+        <div
             v-if="activeZone"
             class="split-preview"
+            :class="{ 'split-preview-vertical': activeZone === 'bottom' }"
         >
             <div class="preview-pane preview-main"></div>
             <div class="preview-pane preview-new"></div>
@@ -66,6 +82,12 @@ const handleDrop = (zone) => {
     width: 45%;
 }
 
+.drop-zone-bottom {
+    @apply left-0 bottom-0;
+    width: 55%;
+    height: 45%;
+}
+
 .drop-zone-indicator {
     @apply opacity-0 transition-opacity duration-200 ease-in-out pointer-events-none;
     color: rgba(59, 130, 246, 0.4);
@@ -85,8 +107,12 @@ const handleDrop = (zone) => {
     top: 44px;
 }
 
+.split-preview-vertical {
+    @apply flex-col;
+}
+
 .preview-pane {
-    @apply border-2 border-base-content/30 rounded-lg transition-all duration-200 ease-in-out;
+    @apply border-2 border-base-content/10 rounded-lg transition-all duration-200 ease-in-out;
 }
 
 .preview-main {

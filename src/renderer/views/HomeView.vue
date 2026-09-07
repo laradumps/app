@@ -14,6 +14,8 @@ import { useSplitPanesStore } from '@/store/split-panes';
 import { isSpecialEnvironment } from '@/constants';
 import DropZones from '@/components/split/DropZones.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
+import IconButton from '@/components/common/IconButton.vue';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
 import { useCurrentProject } from '@/store/current-project';
 import { useIpcHandlers } from '@/composables/useIpcHandlers';
 import { groupByTime } from '@/utils/dumpGrouping';
@@ -127,9 +129,15 @@ const handleDragScreen = ({ screen, _ }) => {
 
 const handleDropZone = (zone: 'right' | 'bottom') => {
     if (!draggedScreenName.value) return;
+
+    const previousSplitScreen = splitPanesStore.splitConfig?.screenName;
+    if (previousSplitScreen && previousSplitScreen !== draggedScreenName.value) {
+        screenStore.toggleVisible(previousSplitScreen);
+    }
+
     const orientation = zone === 'right' ? 'vertical' : 'horizontal';
     splitPanesStore.setSplit(draggedScreenName.value, orientation);
-    settingsStore.setSplitPaneScreen(draggedScreenName.value);
+    settingsStore.setSplitPaneScreen(draggedScreenName.value, orientation);
     screenStore.hidden(draggedScreenName.value);
     if (screenStore.screen === draggedScreenName.value) {
         const nextScreen = screenStore.getNext(draggedScreenName.value);
@@ -139,6 +147,10 @@ const handleDropZone = (zone: 'right' | 'bottom') => {
     }
     isDraggingScreen.value = false;
     draggedScreenName.value = '';
+};
+
+const handleSplitResize = ({ splitPosition }: { splitPosition: number }) => {
+    settingsStore.setSplitPaneSize(splitPosition);
 };
 
 const handleCloseSplit = () => {
@@ -179,7 +191,11 @@ const handleDragEnd = () => {
             <PauseBanner />
             <div
                 class="flex-1 min-h-0"
-                :class="['jobs', 'logs'].includes(inScreenWindow) ? 'overflow-hidden' : 'overflow-y-auto'"
+                :class="
+                    ['jobs', 'logs', 'tail_logs', 'profiler', 'brain', 'mail', 'queries'].includes(inScreenWindow)
+                        ? 'overflow-hidden'
+                        : 'overflow-y-auto'
+                "
             >
                 <ScreenContent
                     :screen-name="inScreenWindow"
@@ -200,7 +216,9 @@ const handleDragEnd = () => {
             >
                 <SplitPanes
                     :orientation="splitPanesStore.splitConfig.orientation"
+                    :initial-split="settingsStore.settings.split_pane_size ?? 50"
                     @close="handleCloseSplit"
+                    @resize="handleSplitResize"
                 >
                     <template #pane-a>
                         <div class="flex flex-col h-full">
@@ -221,7 +239,11 @@ const handleDragEnd = () => {
                             <div
                                 class="flex-1 min-h-0"
                                 :class="
-                                    ['jobs', 'logs'].includes(screenStore.screen) ? 'overflow-hidden' : 'overflow-auto'
+                                    ['jobs', 'logs', 'tail_logs', 'profiler', 'brain', 'mail', 'queries'].includes(
+                                        screenStore.screen
+                                    )
+                                        ? 'overflow-hidden'
+                                        : 'overflow-auto'
                                 "
                             >
                                 <ScreenContent
@@ -248,33 +270,22 @@ const handleDragEnd = () => {
                     <template #pane-b>
                         <div class="flex flex-col h-full overflow-hidden">
                             <div
-                                class="shrink-0 h-12 flex items-center justify-end px-3 border-b border-base-content/5"
+                                class="shrink-0 h-12 flex items-center justify-end px-3 border-b border-base-content/10"
                             >
-                                <button
+                                <IconButton
+                                    label="Close split"
+                                    variant="danger"
                                     @click="handleCloseSplit"
-                                    class="btn border border-base-content/5 btn-sm p-2 btn-circle btn-soft"
-                                    aria-label="Close split"
-                                    title="Close split"
                                 >
-                                    <svg
-                                        class="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12"
-                                        ></path>
-                                    </svg>
-                                </button>
+                                    <XMarkIcon class="w-4 h-4" />
+                                </IconButton>
                             </div>
                             <div
                                 class="flex-1 min-h-0"
                                 :class="
-                                    ['jobs', 'logs'].includes(splitPanesStore.splitConfig.screenName)
+                                    ['jobs', 'logs', 'tail_logs', 'profiler', 'brain', 'mail', 'queries'].includes(
+                                        splitPanesStore.splitConfig.screenName
+                                    )
                                         ? 'overflow-hidden'
                                         : 'overflow-auto'
                                 "
@@ -284,7 +295,6 @@ const handleDragEnd = () => {
                                     mode="split-pane"
                                     extra-class="w-full h-full min-h-0 text-base"
                                     :yaml-config="yamlConfig"
-                                    :hide-header="true"
                                     :open-screen-window="openScreenWindow"
                                     :dumps-bag-filtered="dumpsBagFiltered"
                                     :grouped-dumps="groupedSplitDumps"
@@ -303,7 +313,7 @@ const handleDragEnd = () => {
                     >
                         <div
                             class="shrink-0 z-50"
-                            :class="isVerticalLayout ? 'h-full w-48 border-r border-base-content/5' : ''"
+                            :class="isVerticalLayout ? 'h-full w-48 border-r border-base-content/10' : ''"
                         >
                             <div
                                 class="flex px-1.5 w-full"
@@ -327,7 +337,9 @@ const handleDragEnd = () => {
                             <div
                                 class="flex flex-col flex-1 min-h-0"
                                 :class="
-                                    ['jobs', 'logs'].includes(screenStore.screen)
+                                    ['jobs', 'logs', 'tail_logs', 'profiler', 'brain', 'mail', 'queries'].includes(
+                                        screenStore.screen
+                                    )
                                         ? 'overflow-hidden'
                                         : 'overflow-y-auto'
                                 "

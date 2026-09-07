@@ -39,6 +39,8 @@ export const DEFAULT_SETTINGS: Settings = {
     mcp_port: 3002,
     limit_laravel_logs: 100,
     limit_laravel_jobs: 100,
+    split_pane_orientation: 'vertical',
+    split_pane_size: 50,
     tail_log_enabled: false,
     tail_log_max_size_mb: 25,
     custom_css: '/* // Example: \n [data-theme="custom"] .header { \n    background-color: red; \n } \n */',
