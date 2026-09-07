@@ -32,17 +32,21 @@ const PAGE_SIZE = 25;
 const MAX_LOADED_PAGES = 5;
 const MAX_BUFFERED_PAGES = 5;
 
-const oldestKey = (items: Record<string, Log>): string =>
-    Object.keys(items).reduce(
-        (oldest, current) => (items[current].created_at < items[oldest].created_at ? current : oldest),
-        Object.keys(items)[0]
-    );
-
 const trim = (items: Record<string, Log>, max: number) => {
-    while (Object.keys(items).length > max) {
-        delete items[oldestKey(items)];
+    const keys = Object.keys(items);
+    if (keys.length <= max) {
+        return;
+    }
+
+    keys.sort((a, b) => (items[a].created_at < items[b].created_at ? -1 : 1));
+
+    const toRemove = keys.length - max;
+    for (let i = 0; i < toRemove; i++) {
+        delete items[keys[i]];
     }
 };
+
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const useLogStore = defineStore('logStore', {
     state: (): State => ({
@@ -108,7 +112,10 @@ export const useLogStore = defineStore('logStore', {
             this.store();
         },
         store() {
-            localStorage.setItem('logs', JSON.stringify(this.logs));
+            if (persistTimer) clearTimeout(persistTimer);
+            persistTimer = setTimeout(() => {
+                localStorage.setItem('logs', JSON.stringify(this.logs));
+            }, 300);
         },
         clear() {
             this.logs = {};

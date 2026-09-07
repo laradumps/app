@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { markRaw } from 'vue';
 import { Payload, ScreenPayload, TimeTrackPayload, ValidatePayload } from '@/types/Payload';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useColorStore } from '@/store/colors';
@@ -38,17 +39,19 @@ export const usePayloadStore = defineStore('payload', {
                 payloadIds.push(object.index);
             }
 
+            const rawObject = markRaw(object);
+
             if (this.payload.length >= limit) {
                 this.payload.shift();
             }
 
-            this.payload.push(object);
+            this.payload.push(rawObject);
 
-            if (object.type !== 'screen' && activeScreen && object.to_screen?.screen_name === activeScreen) {
+            if (rawObject.type !== 'screen' && activeScreen && rawObject.to_screen?.screen_name === activeScreen) {
                 if (this.filteredPayload.length >= limit) {
                     this.filteredPayload.shift();
                 }
-                this.filteredPayload.push(object);
+                this.filteredPayload.push(rawObject);
             }
         },
         get(screen: String) {
@@ -91,73 +94,75 @@ export const usePayloadStore = defineStore('payload', {
             this.updatePayload(content, 'to_screen');
         },
         updateJSONValidatePayload(content: { id: string; json_validate: any }) {
-            this.updatePayload(content, 'validate_json', () => true);
+            const apply = (item: Payload): Payload => {
+                const toValidate = item?.dump?.original_content || item?.json?.original_content;
+                return markRaw({
+                    ...item,
+                    validate_json: true,
+                    is_json: toValidate ? Helper.isJson(toValidate) : false
+                });
+            };
 
             const indexPayload = this.findById(content.id);
             const indexFiltered = this.findPayloadIndex(content.id);
 
             if (indexPayload !== -1) {
-                const toValidate =
-                    this.payload[indexPayload]?.dump?.original_content ||
-                    this.payload[indexPayload]?.json?.original_content;
-                this.payload[indexPayload].is_json = toValidate ? Helper.isJson(toValidate) : false;
+                this.payload[indexPayload] = apply(this.payload[indexPayload]);
             }
 
             if (indexFiltered !== -1) {
-                const toValidate =
-                    this.filteredPayload[indexFiltered]?.dump?.original_content ||
-                    this.filteredPayload[indexFiltered]?.json?.original_content;
-                this.filteredPayload[indexFiltered].is_json = toValidate ? Helper.isJson(toValidate) : false;
+                this.filteredPayload[indexFiltered] = apply(this.filteredPayload[indexFiltered]);
             }
         },
         updateValidatePayload(content: { id: string; validate: ValidatePayload }) {
+            const apply = (item: Payload): Payload => {
+                const textContent = item?.json?.original_content || item?.dump?.original_content;
+                return markRaw({
+                    ...item,
+                    str_contains: Helper.strContains(textContent, content.validate.content, {
+                        is_case_sensitive: content.validate.is_case_sensitive,
+                        is_whole_word: content.validate.is_whole_word
+                    })
+                });
+            };
+
             const indexPayload = this.findById(content.id);
             const indexFiltered = this.findPayloadIndex(content.id);
 
             if (indexPayload !== -1) {
-                const textContent =
-                    this.payload[indexPayload]?.json?.original_content ||
-                    this.payload[indexPayload]?.dump?.original_content;
-                this.payload[indexPayload].str_contains = Helper.strContains(textContent, content.validate.content, {
-                    is_case_sensitive: content.validate.is_case_sensitive,
-                    is_whole_word: content.validate.is_whole_word
-                });
+                this.payload[indexPayload] = apply(this.payload[indexPayload]);
             }
 
             if (indexFiltered !== -1) {
-                const textContent =
-                    this.filteredPayload[indexFiltered]?.json?.original_content ||
-                    this.filteredPayload[indexFiltered]?.dump?.original_content;
-                this.filteredPayload[indexFiltered].str_contains = Helper.strContains(
-                    textContent,
-                    content.validate.content,
-                    {
-                        is_case_sensitive: content.validate.is_case_sensitive,
-                        is_whole_word: content.validate.is_whole_word
-                    }
-                );
+                this.filteredPayload[indexFiltered] = apply(this.filteredPayload[indexFiltered]);
             }
         },
         updateTimeTrackPayload(content: { id: string; with_label: { label: string }; time_track: TimeTrackPayload }) {
             const exist = this.payload.find((payload) => payload.with_label?.label === content.with_label?.label);
 
-            if (exist) {
-                const indexPayload = this.findById(exist.id);
-                const indexFiltered = this.findPayloadIndex(exist.id);
+            if (!exist) {
+                return;
+            }
 
-                if (indexPayload !== -1) {
-                    const _end = dayjs.unix(Number(content.time_track.end_time));
-                    const _start = dayjs.unix(Number(exist.time_track?.time));
-                    const duration = _end.diff(_start);
-                    this.payload[indexPayload].time_track.elapsed_time = humanizeDuration(Math.abs(duration));
-                }
+            const _end = dayjs.unix(Number(content.time_track.end_time));
+            const _start = dayjs.unix(Number(exist.time_track?.time));
+            const elapsed = humanizeDuration(Math.abs(_end.diff(_start)));
 
-                if (indexFiltered !== -1) {
-                    const _end = dayjs.unix(Number(content.time_track.end_time));
-                    const _start = dayjs.unix(Number(exist.time_track?.time));
-                    const duration = _end.diff(_start);
-                    this.filteredPayload[indexFiltered].time_track.elapsed_time = humanizeDuration(Math.abs(duration));
-                }
+            const apply = (item: Payload): Payload =>
+                markRaw({
+                    ...item,
+                    time_track: { ...item.time_track, elapsed_time: elapsed }
+                });
+
+            const indexPayload = this.findById(exist.id);
+            const indexFiltered = this.findPayloadIndex(exist.id);
+
+            if (indexPayload !== -1) {
+                this.payload[indexPayload] = apply(this.payload[indexPayload]);
+            }
+
+            if (indexFiltered !== -1) {
+                this.filteredPayload[indexFiltered] = apply(this.filteredPayload[indexFiltered]);
             }
         },
         updateLabelPayload(content: { id: string; label: any }) {

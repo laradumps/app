@@ -41,6 +41,8 @@ export const mimeTypeMap: { [key: string]: string } = {
     html: 'text/html'
 };
 
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
 export const useMailStore = defineStore('mailStore', {
     state: (): State => ({
         mails: JSON.parse(localStorage.getItem('emails') || '[]')
@@ -63,7 +65,10 @@ export const useMailStore = defineStore('mailStore', {
             this.mails[existingMailIndex] = { ...this.mails[existingMailIndex], ...payload };
         },
         store() {
-            localStorage.setItem('emails', JSON.stringify(this.mails));
+            if (persistTimer) clearTimeout(persistTimer);
+            persistTimer = setTimeout(() => {
+                localStorage.setItem('emails', JSON.stringify(this.mails));
+            }, 300);
         },
         clear() {
             this.mails = [];

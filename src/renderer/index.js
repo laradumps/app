@@ -37,6 +37,8 @@ const i18n = createI18n({
     fallbackLocale: 'en',
     fallbackWarn: false,
     silentFallbackWarn: true,
+    missingWarn: false,
+    silentTranslationWarn: true,
     messages: {
         en,
         pt_BR: ptBR,

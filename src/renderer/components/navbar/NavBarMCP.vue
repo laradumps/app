@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useSettingsStore } from '@/store/settings';
 import { CpuChipIcon } from '@heroicons/vue/24/outline';
 
@@ -11,11 +11,11 @@ const mcpMessage = ref('');
 const statusIndicatorColor = computed(() => {
     switch (mcpStatus.value) {
         case 'connected':
-            return 'bg-success shadow-[0_0_6px_rgba(0,255,0,0.8)]';
+            return 'bg-success';
         case 'error':
-            return 'bg-error shadow-[0_0_6px_rgba(255,0,0,0.8)]';
+            return 'bg-error';
         case 'loading':
-            return 'bg-warning shadow-[0_0_6px_rgba(255,165,0,0.8)]';
+            return 'bg-warning';
         default:
             return 'bg-base-content/30';
     }
@@ -38,20 +38,23 @@ const title = computed(() => {
     }
 });
 
-const listenToMcpLogs = () => {
-    window.ipcRenderer?.on('mcp:log', (event, message) => {
-        if (message.includes('[error]') || message.includes('Error') || message.includes('failed')) {
-            mcpStatus.value = 'error';
-            mcpMessage.value = message.split('] ')[1] || message;
-        } else if (message.includes('running on')) {
-            mcpStatus.value = 'connected';
-            mcpMessage.value = '';
-        }
-    });
+const onMcpLog = (_event: unknown, message: string) => {
+    if (message.includes('[error]') || message.includes('Error') || message.includes('failed')) {
+        mcpStatus.value = 'error';
+        mcpMessage.value = message.split('] ')[1] || message;
+    } else if (message.includes('running on')) {
+        mcpStatus.value = 'connected';
+        mcpMessage.value = '';
+    }
+};
 
-    window.ipcRenderer?.on('mcp:status', (event, status) => {
-        mcpStatus.value = status as 'connected' | 'error' | 'loading' | 'disabled';
-    });
+const onMcpStatus = (_event: unknown, status: string) => {
+    mcpStatus.value = status as 'connected' | 'error' | 'loading' | 'disabled';
+};
+
+const listenToMcpLogs = () => {
+    window.ipcRenderer?.on('mcp:log', onMcpLog);
+    window.ipcRenderer?.on('mcp:status', onMcpStatus);
 };
 
 const checkMcpStatus = () => {
@@ -64,12 +67,22 @@ const checkMcpStatus = () => {
     window.ipcRenderer?.send('mcp:check-status');
 };
 
+let statusInterval: ReturnType<typeof setInterval> | null = null;
+
 onMounted(() => {
     listenToMcpLogs();
     checkMcpStatus();
 
-    const interval = setInterval(checkMcpStatus, 30000);
-    return () => clearInterval(interval);
+    statusInterval = setInterval(checkMcpStatus, 30000);
+});
+
+onUnmounted(() => {
+    if (statusInterval) {
+        clearInterval(statusInterval);
+        statusInterval = null;
+    }
+    window.ipcRenderer?.removeListener('mcp:log', onMcpLog);
+    window.ipcRenderer?.removeListener('mcp:status', onMcpStatus);
 });
 
 const navigate = () => {
@@ -103,22 +116,6 @@ const navigate = () => {
         </span>
     </a>
 </template>
-
-<style scoped>
-.animate-pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-    0%,
-    100% {
-        opacity: 0.75;
-    }
-    50% {
-        opacity: 0.25;
-    }
-}
-</style>
 
 <style scoped>
 .animate-pulse {

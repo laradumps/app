@@ -75,7 +75,7 @@ const listScreen = computed(() => props.screenName ?? screenStore.screen);
                             : group"
                         :key="payload.id || payload.sf_dump_id"
                         :id="payload.id"
-                        class="w-full"
+                        class="w-full dump-cv"
                         :class="{
                             'mb-3': !groupMarginClass,
                             '-mt-3': groupMarginClass && settingsStore.settings.grouped_by_time && index === 0
@@ -114,3 +114,10 @@ const listScreen = computed(() => props.screenName ?? screenStore.screen);
         />
     </div>
 </template>
+
+<style scoped>
+.dump-cv {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 120px;
+}
+</style>
