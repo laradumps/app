@@ -98,17 +98,20 @@ export function useDumpDispatch(nav: ScreenNavigation) {
 
         maximizeApp(content.auto_invoke_app);
 
-        if (content.to_screen?.screen_name) {
-            const serializablePayload = deepClone(
-                payloadStore.payload.filter(
-                    (payload: Payload) => payload.to_screen?.screen_name === content.to_screen.screen_name
-                )
-            );
+        const targetScreen = content.to_screen?.screen_name;
+        if (targetScreen) {
+            const newWindow = content.to_screen.new_window;
 
-            if (content.to_screen.new_window) {
-                openNewScreenWindow(screenStore, content.to_screen.screen_name, { payload: serializablePayload });
-            } else {
-                sendToScreenWindow(content.to_screen.screen_name, { payload: serializablePayload });
+            if (newWindow || screenStore.hasDetachedWindow(targetScreen)) {
+                const serializablePayload = deepClone(
+                    payloadStore.payload.filter((payload: Payload) => payload.to_screen?.screen_name === targetScreen)
+                );
+
+                if (newWindow) {
+                    openNewScreenWindow(screenStore, targetScreen, { payload: serializablePayload });
+                } else {
+                    sendToScreenWindow(targetScreen, { payload: serializablePayload });
+                }
             }
         }
 
@@ -151,11 +154,16 @@ export function useDumpDispatch(nav: ScreenNavigation) {
 
             if (!content.to_screen) return;
 
+            const targetScreen = content.to_screen.screen_name;
+            const newWindow = content.to_screen.new_window;
+
+            if (!newWindow && !screenStore.hasDetachedWindow(targetScreen)) return;
+
             const data = { payload: {}, [opts.key]: deepClone(opts.snapshot()) };
-            if (content.to_screen.new_window) {
-                openNewScreenWindow(screenStore, content.to_screen.screen_name, data);
+            if (newWindow) {
+                openNewScreenWindow(screenStore, targetScreen, data);
             } else {
-                sendToScreenWindow(content.to_screen.screen_name, data);
+                sendToScreenWindow(targetScreen, data);
             }
         };
     };

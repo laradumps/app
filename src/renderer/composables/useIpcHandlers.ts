@@ -37,6 +37,7 @@ export function useIpcHandlers() {
         'main:app-version.reply': handleAppVersionReply,
         'app:screen-window-enable': nav.handleAppScreenWindowEnable,
         'app:screen-window-update': nav.handleAppScreenWindowUpdate,
+        'screen-window:closed': nav.handleScreenWindowClosed,
         'xdebug-connected': nav.handleXdebugConnected,
         'xdebug-disconnected': nav.handleXdebugDisconnected,
         xdebug: dumps.handleXdebug,

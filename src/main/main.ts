@@ -314,6 +314,11 @@ ipcMain.on('screen-window:show', (event, arg) => {
 
     screenWindow.on('closed', () => {
         windowsMap.delete(arg.screen);
+        try {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('screen-window:closed', arg.screen);
+            }
+        } catch (e) {}
     });
 });
 

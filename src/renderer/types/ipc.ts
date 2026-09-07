@@ -47,6 +47,7 @@ export interface IpcReceiveEvents {
     'main:app-version.reply': { version: string };
     'app:screen-window-enable': ScreenWindowPayload;
     'app:screen-window-update': Omit<ScreenWindowPayload, 'screen'>;
+    'screen-window:closed': string;
 
     // Xdebug channels
     'xdebug-connected': void;
