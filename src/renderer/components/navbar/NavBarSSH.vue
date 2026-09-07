@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { ArrowPathIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { ServerIcon } from '@heroicons/vue/24/solid';
 import { ServerIcon as ServerIconOutline } from '@heroicons/vue/24/outline';
+import IconButton from '@/components/common/IconButton.vue';
 
 import { useSSHStore } from '@/store/ssh';
 import { Ref } from 'vue';
@@ -160,23 +161,25 @@ window.ipcRenderer.on('choose-file-response', (_, filePath) => {
 
 <template>
     <div class="dropdown dropdown-left">
-        <button
-            :title="$t('menu.ssh')"
-            class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+        <IconButton
+            tabindex="0"
+            role="button"
+            :label="$t('menu.ssh')"
+            :active="connected"
         >
             <ServerIcon
                 v-if="connected"
-                class="w-4 text-primary"
+                class="size-4"
             />
             <ServerIconOutline
                 v-else
-                class="w-4"
+                class="size-4"
             />
-        </button>
+        </IconButton>
 
         <ul
             tabindex="0"
-            class="dropdown-content min-w-80 overflow-y-auto z-[350] menu p-3 bg-base-200 border border-base-content/20 shadow-lg rounded-md w-auto mt-[44px] !-right-[4.8rem]"
+            class="dropdown-content min-w-80 overflow-y-auto z-[350] menu p-3 bg-base-200 border border-base-content/10 shadow-lg rounded-md w-auto mt-[44px] !-right-[4.8rem]"
         >
             <div class="flex justify-between items-center">
                 <span class="font-semibold">SSH</span>

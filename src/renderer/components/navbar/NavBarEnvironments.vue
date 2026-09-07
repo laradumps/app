@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline';
+import IconButton from '@/components/common/IconButton.vue';
 import { useCurrentProject } from '@/store/current-project';
 import { useSettingsStore } from '@/store/settings';
 import { SPECIAL_ENVIRONMENTS_LIST } from '@/constants';
@@ -53,18 +54,21 @@ const toggleEnvironment = (envValue: string) => {
     window.ipcRenderer.send('storage.get-environments', currentProjectStore.projectInfo.path);
 };
 
+const handlePlatformReply = (_event: unknown, args: any) => {
+    platform.value = args;
+};
+
 onMounted(() => {
     loadEnvironmentState();
     window.ipcRenderer.on('storage.get-yaml.reply', handleYamlReply);
 
     window.ipcRenderer.send('platform');
-    window.ipcRenderer.on('platform.reply', (_event, args) => {
-        platform.value = args;
-    });
+    window.ipcRenderer.on('platform.reply', handlePlatformReply);
 });
 
 onUnmounted(() => {
     window.ipcRenderer.off('storage.get-yaml.reply', handleYamlReply);
+    window.ipcRenderer.off('platform.reply', handlePlatformReply);
 });
 
 currentProjectStore.$subscribe(() => {
@@ -74,18 +78,17 @@ currentProjectStore.$subscribe(() => {
 
 <template>
     <div class="dropdown dropdown-end">
-        <button
+        <IconButton
             tabindex="0"
             role="button"
-            title="Environments"
-            class="btn btn-ghost btn-circle btn-sm"
+            label="Environments"
         >
-            <AdjustmentsHorizontalIcon class="w-4" />
-        </button>
+            <AdjustmentsHorizontalIcon class="size-4" />
+        </IconButton>
 
         <div
             tabindex="0"
-            class="dropdown-content mt-2 z-[400] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
+            class="dropdown-content mt-2 z-[400] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10"
         >
             <div class="flex flex-col gap-1.5">
                 <button
@@ -106,11 +109,7 @@ currentProjectStore.$subscribe(() => {
                         ></span>
                         <span
                             class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                            :class="
-                                envState[env.value]
-                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                    : 'bg-base-content/20'
-                            "
+                            :class="envState[env.value] ? 'bg-success' : 'bg-base-content/20'"
                         ></span>
                     </div>
                     <span class="truncate capitalize text-xs whitespace-nowrap">{{ env.label }}</span>
@@ -134,11 +133,7 @@ currentProjectStore.$subscribe(() => {
                         ></span>
                         <span
                             class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                            :class="
-                                settingsStore.settings.tail_log_enabled
-                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                    : 'bg-base-content/20'
-                            "
+                            :class="settingsStore.settings.tail_log_enabled ? 'bg-success' : 'bg-base-content/20'"
                         ></span>
                     </div>
                     <span class="truncate text-xs whitespace-nowrap">Tail Log</span>
@@ -162,9 +157,7 @@ currentProjectStore.$subscribe(() => {
                         <span
                             class="relative inline-flex rounded-full size-2 transition-all duration-200"
                             :class="
-                                settingsStore.settings.show_dump_notifications
-                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                    : 'bg-base-content/20'
+                                settingsStore.settings.show_dump_notifications ? 'bg-success' : 'bg-base-content/20'
                             "
                         ></span>
                     </div>

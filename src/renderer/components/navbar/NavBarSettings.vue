@@ -1,5 +1,6 @@
 <script setup>
 import { CogIcon } from '@heroicons/vue/24/outline';
+import IconButton from '@/components/common/IconButton.vue';
 
 const openSettings = () => {
     const modal = document.getElementById('settings_modal');
@@ -8,14 +9,12 @@ const openSettings = () => {
 </script>
 
 <template>
-    <div class="-mr-2">
-        <div class="px-1 border-l border-base-content/20 flex items-center justify-center">
-            <button
-                @click="openSettings"
-                class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
-            >
-                <CogIcon class="w-5" />
-            </button>
-        </div>
+    <div class="border-l border-base-content/10 pl-2 ml-1 flex items-center">
+        <IconButton
+            label="Settings"
+            @click="openSettings"
+        >
+            <CogIcon class="size-4" />
+        </IconButton>
     </div>
 </template>

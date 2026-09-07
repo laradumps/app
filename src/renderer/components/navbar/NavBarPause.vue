@@ -1,6 +1,7 @@
 <script setup>
 import IconPause from '@/components/Icons/IconPause.vue';
 import IconPlay from '@/components/Icons/IconPlay.vue';
+import IconButton from '@/components/common/IconButton.vue';
 import { usePausePayloadStore } from '@/store/pauses';
 
 const pauseStore = usePausePayloadStore();
@@ -8,16 +9,19 @@ const pauseStore = usePausePayloadStore();
 
 <template>
     <div class="flex gap-3 items-center">
-        <button
-            :title="$t('pause')"
-            class="p-2 hover:bg-base-200 rounded-md"
+        <IconButton
+            :label="$t('pause')"
+            :active="pauseStore.is_paused"
             @click="pauseStore.toggle()"
         >
-            <IconPause v-if="!pauseStore.is_paused" />
+            <IconPause
+                v-if="!pauseStore.is_paused"
+                class="size-4"
+            />
             <IconPlay
                 v-else
-                class="size-4 text-warning"
+                class="size-4"
             />
-        </button>
+        </IconButton>
     </div>
 </template>

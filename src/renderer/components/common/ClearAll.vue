@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { usePayloadStore } from '@/store/payload';
 import { TrashIcon } from '@heroicons/vue/24/outline';
+import IconButton from '@/components/common/IconButton.vue';
 import { useQueriesPayloadStore } from '@/store/queries';
 import { useMailStore } from '@/store/mail';
 import { useJobStore } from '@/store/jobs';
@@ -41,23 +42,26 @@ const hasPayload = computed(() => {
     );
 });
 
+const onClear = () => clearAll();
+
 onMounted(() => {
-    window.ipcRenderer.on('clear', () => clearAll());
-    window.ipcRenderer.on('app:local-shortcut-execute::clear_all', () => clearAll());
+    window.ipcRenderer.on('clear', onClear);
+    window.ipcRenderer.on('app:local-shortcut-execute::clear_all', onClear);
+});
+
+onUnmounted(() => {
+    window.ipcRenderer.removeListener('clear', onClear);
+    window.ipcRenderer.removeListener('app:local-shortcut-execute::clear_all', onClear);
 });
 </script>
 
 <template>
-    <div>
-        <button
-            v-show="hasPayload"
-            :title="$t('clear')"
-            class="p-2 flex hover:bg-base-200 rounded-md"
-            @click="clearAll"
-        >
-            <TrashIcon class="size-4" />
-        </button>
-    </div>
+    <IconButton
+        v-show="hasPayload"
+        :label="$t('clear')"
+        variant="danger"
+        @click="clearAll"
+    >
+        <TrashIcon class="size-4" />
+    </IconButton>
 </template>
-
-<style scoped></style>
