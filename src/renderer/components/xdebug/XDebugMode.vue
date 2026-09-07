@@ -168,7 +168,15 @@ const handleContextGet = (responseElement) => {
         }
     });
 
-    nextTick(() => tippy('[data-tippy-content]', { allowHTML: true, theme: 'light-border', placement: 'right-end' }));
+    nextTick(() =>
+        tippy('.pane-code [data-tippy-content]', {
+            allowHTML: true,
+            theme: 'ld',
+            placement: 'top',
+            offset: [0, 6],
+            appendTo: () => document.body
+        })
+    );
 };
 
 const formatValue = (property) => {
@@ -567,6 +575,15 @@ onMounted(() => {
 
     window.addEventListener('keydown', handleKeyboardEvent);
 
+    nextTick(() =>
+        tippy('.xdebug-controls [data-tippy-content]', {
+            theme: 'ld',
+            placement: 'bottom',
+            delay: [150, 0],
+            appendTo: () => document.body
+        })
+    );
+
     window.ipcRenderer.on('xdebug-breakpoints', (_, args) => {
         const validBreakpoints = (args || []).filter((breakpoint) => breakpoint.enabled && breakpoint.line !== null);
         breakpoints.value = validBreakpoints;
@@ -608,63 +625,52 @@ onBeforeUnmount(() => {
 <template>
     <div>
         <div class="w-full">
-            <div class="w-full z-300 top-0 flex px-3 py-2 flex-row gap-1 items-center uppercase text-xs">
+            <div
+                class="xdebug-controls w-full z-300 top-0 flex px-3 py-2 flex-row gap-1 items-center uppercase text-xs"
+            >
                 <div class="flex w-full gap-1 items-center justify-between">
-                    <div class="flex w-full gap-1 items-center">
+                    <div class="flex w-full gap-0.5 items-center">
                         <button
-                            class="btn btn-xs !py-4"
+                            class="xdebug-btn"
                             @click="continueDebug"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Continue (F5)"
-                            :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
-                            <IconContinue :class="{ 'opacity-60': variablesNames.length === 0 }" />
+                            <IconContinue class="w-4" />
                         </button>
 
                         <button
-                            class="btn btn-xs !py-4"
+                            class="xdebug-btn"
                             @click="stepOver"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Over (F8)"
-                            :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
-                            <IconStepOver
-                                class="text-info w-4"
-                                :class="{ 'opacity-60': variablesNames.length === 0 }"
-                            />
+                            <IconStepOver class="w-4 text-info" />
                         </button>
 
                         <button
-                            class="btn btn-xs !py-4"
+                            class="xdebug-btn"
                             @click="stepInto"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Step Into (F7)"
-                            :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
-                            <IconStepInto
-                                class="w-4 text-warning"
-                                :class="{ 'opacity-60': variablesNames.length === 0 }"
-                            />
+                            <IconStepInto class="w-4 text-warning" />
                         </button>
                     </div>
 
-                    <div class="flex gap-2">
+                    <div class="flex items-center gap-2">
                         <IconLoading
-                            class="text-base-content/70 w-5"
+                            class="text-base-content/70 w-4"
                             :class="{ 'opacity-100': loading }"
                         />
 
                         <button
-                            class="btn btn-xs !px-1.5"
+                            class="xdebug-btn"
                             @click="stop"
                             :disabled="variablesNames.length === 0"
                             data-tippy-content="Stop (F2)"
-                            :class="{ '!bg-transparent': variablesNames.length === 0 }"
                         >
-                            <IconStop
-                                class="text-error w-5"
-                                :class="{ '!text-gray-500': variablesNames.length === 0 }"
-                            />
+                            <IconStop class="w-4 text-error" />
                         </button>
                     </div>
                 </div>
@@ -701,15 +707,40 @@ onBeforeUnmount(() => {
                             (unofficial feature)
                         </div>
 
-                        <div class="space-y-3 text-base-content text-sm font-normal">
-                            <li>
-                                {{ i18n.t('doc.add') }} <span class="font-semibold">xdebug_break()</span>
-                                {{ i18n.t('doc.in_any_line_of_code') }}
-                            </li>
-                            <li>
-                                Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or
-                                <strong>F7</strong>(step into)
-                            </li>
+                        <div
+                            class="w-full max-w-md space-y-3 rounded-lg border border-base-content/10 bg-base-content/5 px-6 py-5 text-left text-sm font-normal leading-relaxed text-base-content"
+                        >
+                            <p class="font-semibold text-base-content/90">How to start a debug session</p>
+
+                            <ul class="list-disc space-y-3 pl-5 text-base-content/80 marker:text-base-content/40">
+                                <li>
+                                    {{ i18n.t('doc.add') }}
+                                    <span class="font-semibold text-base-content">xdebug_break()</span>
+                                    {{ i18n.t('doc.in_any_line_of_code') }}, <span class="italic">or</span>
+                                </li>
+                                <li>
+                                    Set a <span class="font-semibold text-base-content">breakpoint in PhpStorm</span> —
+                                    LaraDumps reads them automatically from
+                                    <span class="rounded bg-base-content/10 px-1 py-0.5 font-mono text-xs"
+                                        >.idea/workspace.xml</span
+                                    >.
+                                    <span class="block mt-1 text-base-content/60">
+                                        The session still has to start on the request: append
+                                        <span class="rounded bg-base-content/10 px-1 py-0.5 font-mono text-xs"
+                                            >?XDEBUG_TRIGGER=1</span
+                                        >
+                                        to the URL, or set
+                                        <span class="rounded bg-base-content/10 px-1 py-0.5 font-mono text-xs"
+                                            >xdebug.start_with_request=yes</span
+                                        >.
+                                    </span>
+                                </li>
+                            </ul>
+
+                            <p class="border-t border-base-content/10 pt-3 text-base-content/70">
+                                Shortcuts: <strong>F5</strong> continue · <strong>F8</strong> step over ·
+                                <strong>F7</strong> step into
+                            </p>
                         </div>
 
                         <button
@@ -936,6 +967,38 @@ onBeforeUnmount(() => {
 
 :deep([data-tippy-root]) {
     @apply break-all;
+}
+
+.xdebug-btn {
+    @apply inline-flex items-center justify-center rounded-md p-1.5 text-base-content/80 transition-colors;
+}
+
+.xdebug-btn:hover:not(:disabled) {
+    @apply bg-base-content/10;
+}
+
+.xdebug-btn:disabled {
+    @apply cursor-not-allowed opacity-40;
+}
+
+/* Opaque tooltip theme so glass/vibrancy does not bleed through and wash out the text */
+.tippy-box[data-theme~='ld'] {
+    background-color: #1a1f29;
+    color: #e5e7eb;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 1px 3px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+.tippy-box[data-theme~='ld'] > .tippy-arrow {
+    color: #1a1f29;
+}
+
+.tippy-box[data-theme~='ld'] > .tippy-svg-arrow {
+    fill: #1a1f29;
 }
 
 :deep(.xdebug .hljs) {

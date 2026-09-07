@@ -11,6 +11,7 @@ class XDebugServer extends EventEmitter {
     private static instance: XDebugServer;
     private serverSocket: net.Server | null = null;
     private clientSocket: net.Socket | null = null;
+    private sockets: Set<net.Socket> = new Set();
     private mainWindow: BrowserWindow;
 
     constructor() {
@@ -26,10 +27,28 @@ class XDebugServer extends EventEmitter {
     }
 
     async startClient(mainWindow: BrowserWindow, args: XDebugYml) {
+        await this.stopServer();
+
+        this.mainWindow = mainWindow;
+
         await watcherPath(mainWindow, args.project_path);
 
+        const processIncomingData = (data) => {
+            const xmlStartIndex = data.indexOf('<?xml');
+            if (xmlStartIndex !== -1) {
+                return data.slice(xmlStartIndex);
+            }
+            return null;
+        };
+
         this.serverSocket = net.createServer((socket: Socket) => {
+            if (this.clientSocket && this.clientSocket !== socket) {
+                this.clientSocket.removeAllListeners();
+                this.clientSocket.destroy();
+            }
+
             this.clientSocket = socket;
+            this.sockets.add(socket);
             this.mainWindow = mainWindow;
 
             console.log('Connected to XDebug server');
@@ -48,17 +67,18 @@ class XDebugServer extends EventEmitter {
                 }
             });
 
-            const processIncomingData = (data) => {
-                const xmlStartIndex = data.indexOf('<?xml');
-                if (xmlStartIndex !== -1) {
-                    return data.slice(xmlStartIndex);
+            const endSession = () => {
+                socket.removeAllListeners();
+                socket.destroy();
+                this.sockets.delete(socket);
+                if (this.clientSocket === socket) {
+                    this.clientSocket = null;
                 }
-                return null;
             };
 
-            socket.on('error', (err) => {
-                this.closeClient();
-            });
+            socket.on('error', endSession);
+            socket.on('end', endSession);
+            socket.on('close', endSession);
         });
 
         this.serverSocket.listen(args.client_port, args.client_host, (): void => {
@@ -66,38 +86,33 @@ class XDebugServer extends EventEmitter {
         });
 
         this.serverSocket.on('error', (err): void => {
-            this.closeClient();
-            // mainWindow.webContents.send("xdebug-connection-status", {
-            //     connected: false,
-            //     err: err.message
-            // });
-        });
-
-        this.serverSocket.on('listening', (): void => {
-            // mainWindow.webContents.send("xdebug-connection-status", {
-            //     connected: true
-            // });
-        });
-
-        this.serverSocket.on('close', (): void => {
-            // mainWindow.webContents.send("xdebug-connection-status", {
-            //     connected: false,
-            //     err: "closed",
-            // });
+            this.stopServer();
         });
     }
 
     closeClient() {
-        if (this.clientSocket) {
-            this.clientSocket.end();
-            this.clientSocket.destroy();
-            this.clientSocket = null;
+        return this.stopServer();
+    }
+
+    private stopServer(): Promise<void> {
+        for (const socket of this.sockets) {
+            socket.removeAllListeners();
+            socket.destroy();
+        }
+        this.sockets.clear();
+        this.clientSocket = null;
+
+        const server = this.serverSocket;
+        this.serverSocket = null;
+
+        if (!server) {
+            return Promise.resolve();
         }
 
-        if (this.serverSocket) {
-            this.serverSocket.close();
-            this.serverSocket = null;
-        }
+        return new Promise((resolve) => {
+            server.removeAllListeners();
+            server.close(() => resolve());
+        });
     }
 
     sendCommand(command: string) {

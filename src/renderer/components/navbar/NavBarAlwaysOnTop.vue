@@ -46,7 +46,7 @@ const toggleAlwaysOnTop = () => {
         @click="toggleAlwaysOnTop()"
     >
         <IconPin
-            class="size-4"
+            class="size-3.5"
             :fill="isAlwaysOnTop ? 'currentColor' : 'none'"
             :stroke-width="isAlwaysOnTop ? '0' : '8'"
         />
