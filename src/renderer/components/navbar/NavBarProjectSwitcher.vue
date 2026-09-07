@@ -287,40 +287,44 @@ const removeProject = (project: Project) => {
                 </a>
             </li>
 
-            <li
-                v-for="(project, index) in orderedProjects"
-                :key="project.path + '-dropdown'"
-                draggable="true"
-                @dragstart="onProjectDragStart(index)"
-                @dragover.prevent
-                @drop="onProjectDrop(index)"
-                @click="setActiveProject(project)"
-                @contextmenu="openContextMenu($event, project)"
-                class="relative group"
-            >
-                <a
-                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
-                    :class="
-                        selectedProject.path === project.path
-                            ? 'bg-base-content/10 text-base-content font-medium'
-                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                    "
+            <div class="flex flex-col max-h-[32vh] overflow-y-auto overflow-x-hidden xdebug-projects-scroll -mr-1 pr-1">
+                <li
+                    v-for="(project, index) in orderedProjects"
+                    :key="project.path + '-dropdown'"
+                    draggable="true"
+                    @dragstart="onProjectDragStart(index)"
+                    @dragover.prevent
+                    @drop="onProjectDrop(index)"
+                    @click="setActiveProject(project)"
+                    @contextmenu="openContextMenu($event, project)"
+                    class="relative group"
                 >
-                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
-                        <span
-                            v-if="selectedProject.path === project.path"
-                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                        ></span>
-                        <span
-                            class="relative inline-flex rounded-full size-2"
-                            :class="selectedProject.path === project.path ? 'bg-success' : 'bg-transparent'"
-                        ></span>
-                    </div>
-                    <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>
-                </a>
-            </li>
+                    <a
+                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
+                        :class="
+                            selectedProject.path === project.path
+                                ? 'bg-base-content/10 text-base-content font-medium'
+                                : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
+                        "
+                    >
+                        <div class="size-2.5 rounded-full relative flex items-center justify-center">
+                            <span
+                                v-if="selectedProject.path === project.path"
+                                class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
+                            ></span>
+                            <span
+                                class="relative inline-flex rounded-full size-2"
+                                :class="selectedProject.path === project.path ? 'bg-success' : 'bg-transparent'"
+                            ></span>
+                        </div>
+                        <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>
+                    </a>
+                </li>
+            </div>
 
-            <div class="px-3 pb-1 pt-3 font-semibold text-[10px] text-base-content/40 uppercase tracking-widest">
+            <div
+                class="px-3 pb-1 pt-3 font-semibold text-[10px] text-base-content/40 uppercase tracking-widest border-t border-base-content/10 mt-1"
+            >
                 Servers & Connections
             </div>
             <li>
@@ -357,3 +361,22 @@ const removeProject = (project: Project) => {
         @project-added="onProjectAdded"
     />
 </template>
+
+<style scoped>
+.xdebug-projects-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.xdebug-projects-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.xdebug-projects-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(128, 128, 128, 0.35);
+    border-radius: 9999px;
+}
+
+.xdebug-projects-scroll:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(128, 128, 128, 0.55);
+}
+</style>
