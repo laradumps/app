@@ -13,6 +13,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import EmptyState from '@/components/common/EmptyState.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import IconButton from '@/components/common/IconButton.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
 import { usePauseProfileStore } from '@/store/pauses';
 import { formatDuration } from './profile/profileHelpers';
@@ -113,10 +114,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
 </script>
 
 <template>
-    <div
-        :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"
-        class="flex flex-col"
-    >
+    <div class="flex flex-col h-full min-h-0">
         <!-- Actions Bar -->
         <ViewToolbar
             v-if="!hideHeader"
@@ -126,15 +124,14 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
             <template #right>
                 <!-- YAML Configuration Dropdown -->
                 <div class="dropdown dropdown-bottom dropdown-end">
-                    <button
+                    <IconButton
                         tabindex="0"
                         role="button"
-                        class="btn btn-ghost btn-circle btn-xs"
-                        :class="{ 'text-primary': yamlConfigActive }"
-                        :data-tippy-content="$t('profiler.yaml_configuration')"
+                        label="Settings"
+                        variant="base"
                     >
                         <CogIcon class="w-4" />
-                    </button>
+                    </IconButton>
                     <div
                         tabindex="0"
                         class="p-2 shadow-xl dropdown-content menu bg-base-300 backdrop-blur-xl rounded-xl border-0 z-[100] w-auto min-w-44"
@@ -157,11 +154,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                                     ></span>
                                     <span
                                         class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                        :class="
-                                            profilingEnabled
-                                                ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                                : 'bg-base-content/20'
-                                        "
+                                        :class="profilingEnabled ? 'bg-success' : 'bg-base-content/20'"
                                     ></span>
                                 </span>
                                 <span class="truncate text-xs whitespace-nowrap">{{
@@ -195,11 +188,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                                             ></span>
                                             <span
                                                 class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                                :class="
-                                                    control.enabled
-                                                        ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                                        : 'bg-base-content/20'
-                                                "
+                                                :class="control.enabled ? 'bg-success' : 'bg-base-content/20'"
                                             ></span>
                                         </span>
                                         <span class="truncate capitalize text-xs whitespace-nowrap">{{
@@ -235,11 +224,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                                             ></span>
                                             <span
                                                 class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                                :class="
-                                                    control.enabled
-                                                        ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                                        : 'bg-base-content/20'
-                                                "
+                                                :class="control.enabled ? 'bg-success' : 'bg-base-content/20'"
                                             ></span>
                                         </span>
                                         <span class="truncate capitalize text-xs whitespace-nowrap">{{
@@ -260,13 +245,10 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                 </div>
 
                 <!-- Pause -->
-                <button
+                <IconButton
+                    label="Pause"
+                    variant="base"
                     @click="pauseProfile.toggle()"
-                    class="btn btn-ghost btn-circle btn-sm"
-                    :class="{
-                        'text-primary': pauseProfile.is_paused
-                    }"
-                    :data-tippy-content="$t('pause')"
                 >
                     <PlayIcon
                         v-if="pauseProfile.is_paused"
@@ -276,17 +258,17 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                         v-else
                         class="w-4"
                     />
-                </button>
+                </IconButton>
 
                 <!-- Clear -->
-                <button
+                <IconButton
                     v-if="profiles.length > 0"
+                    label="Clear all"
+                    variant="danger"
                     @click="clear"
-                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                    :data-tippy-content="$t('clear')"
                 >
                     <TrashIcon class="w-4" />
-                </button>
+                </IconButton>
             </template>
         </ViewToolbar>
 

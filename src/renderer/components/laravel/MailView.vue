@@ -4,7 +4,7 @@ import { Attachment, Mail, mimeTypeMap, useMailStore } from '@/store/mail';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import {
     CloudArrowDownIcon,
     DevicePhoneMobileIcon,
@@ -35,12 +35,15 @@ const props = defineProps<{
     hideHeader?: boolean;
 }>();
 
-window.addEventListener('message', (event) => {
+const onExternalLinkMessage = (event: MessageEvent) => {
     if (event.data && event.data.type === 'open-external-link-' + previewUrl.value) {
         window.ipcRenderer.send('main:openLink', event.data.url);
         event.preventDefault();
     }
-});
+};
+
+onMounted(() => window.addEventListener('message', onExternalLinkMessage));
+onUnmounted(() => window.removeEventListener('message', onExternalLinkMessage));
 
 const display = (mail: Mail) => {
     mailStore.visited(mail.message_id);
@@ -175,8 +178,8 @@ const setPreviewMode = (mode: string) => {
 </script>
 
 <template>
-    <div>
-        <div class="text-sm">
+    <div class="flex flex-col h-full min-h-0">
+        <div class="text-sm flex flex-col flex-1 min-h-0">
             <dialog
                 id="modal_context"
                 class="modal"
@@ -243,17 +246,14 @@ const setPreviewMode = (mode: string) => {
                 </form>
             </dialog>
 
-            <div :class="inScreenWindow ? 'space-y-3 h-[calc(100vh-140px)]' : 'space-y-3 h-[calc(100vh-180px)]'">
+            <div class="space-y-3 flex-1 min-h-0">
                 <SplitPanes
                     v-if="mails.length > 0"
                     orientation="vertical"
                     :initial-split="28"
                 >
                     <template #pane-a>
-                        <div
-                            class="overflow-auto flex flex-col gap-1 px-3"
-                            style="height: -webkit-fill-available"
-                        >
+                        <div class="h-full overflow-auto flex flex-col gap-1 px-3">
                             <div
                                 v-for="mail in mails.slice().reverse()"
                                 :key="mail.message_id"
@@ -301,7 +301,7 @@ const setPreviewMode = (mode: string) => {
                         <div class="overflow-auto ml-2 text-sm">
                             <div
                                 v-if="visited"
-                                class="flex flex-col w-full space-y-2 !h-[calc(100vh-150px)]"
+                                class="flex flex-col w-full space-y-2 h-full"
                             >
                                 <!-- header -->
                                 <div class="px-2">

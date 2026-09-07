@@ -18,6 +18,7 @@ import {
 
 import { Log, useLogStore } from '@/store/logs';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import IconButton from '@/components/common/IconButton.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
@@ -406,11 +407,11 @@ const canCopyToMarkdown = computed(() => {
                 <template #filter>
                     <!-- Filter Levels -->
                     <div class="dropdown dropdown-bottom dropdown-start">
-                        <button
+                        <IconButton
                             tabindex="0"
                             role="button"
-                            class="btn btn-ghost btn-circle btn-sm"
-                            :data-tippy-content="$t('filter_levels')"
+                            label="Filter"
+                            :active="levelFilter.length > 0"
                         >
                             <FunnelIcon
                                 v-if="levelFilter.length === 0"
@@ -420,10 +421,10 @@ const canCopyToMarkdown = computed(() => {
                                 v-else
                                 class="w-4 text-primary"
                             />
-                        </button>
+                        </IconButton>
                         <div
                             tabindex="0"
-                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
+                            class="dropdown-content z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10"
                         >
                             <div class="flex flex-col gap-1.5">
                                 <button
@@ -453,11 +454,7 @@ const canCopyToMarkdown = computed(() => {
                                         ></span>
                                         <span
                                             class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                            :class="
-                                                levelFilter.includes(level)
-                                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                                    : 'bg-base-content/20'
-                                            "
+                                            :class="levelFilter.includes(level) ? 'bg-success' : 'bg-base-content/20'"
                                         ></span>
                                     </div>
                                     <span class="truncate capitalize text-xs whitespace-nowrap">{{ level }}</span>
@@ -475,8 +472,8 @@ const canCopyToMarkdown = computed(() => {
                     <div class="flex items-center gap-1.5 px-1">
                         <label
                             for="toggle-display-last"
-                            class="text-[10px] uppercase tracking-wider font-semibold opacity-40 select-none cursor-pointer"
-                            >Auto Expand</label
+                            class="text-xs text-base-content/50 select-none cursor-pointer"
+                            >Auto expand</label
                         >
                         <input
                             id="toggle-display-last"
@@ -489,22 +486,17 @@ const canCopyToMarkdown = computed(() => {
 
                     <!-- YAML Configuration Dropdown -->
                     <div class="dropdown dropdown-bottom dropdown-end">
-                        <button
+                        <IconButton
                             tabindex="0"
                             role="button"
-                            class="btn btn-ghost btn-circle btn-xs"
-                            :class="{
-                                'text-primary':
-                                    yamlObservers.some((control) => control.enabled) ||
-                                    yamlLogLevels.some((control) => control.enabled)
-                            }"
-                            data-tippy-content="YAML Configuration"
+                            label="Settings"
+                            variant="base"
                         >
                             <CogIcon class="w-4" />
-                        </button>
+                        </IconButton>
                         <div
                             tabindex="0"
-                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
+                            class="dropdown-content z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10"
                         >
                             <div v-if="yamlLogLevels.length > 0">
                                 <div class="menu-title mb-2">
@@ -531,11 +523,7 @@ const canCopyToMarkdown = computed(() => {
                                             ></span>
                                             <span
                                                 class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                                :class="
-                                                    control.enabled
-                                                        ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                                        : 'bg-base-content/20'
-                                                "
+                                                :class="control.enabled ? 'bg-success' : 'bg-base-content/20'"
                                             ></span>
                                         </div>
                                         <span class="truncate capitalize text-xs whitespace-nowrap">{{
@@ -550,10 +538,10 @@ const canCopyToMarkdown = computed(() => {
                     <div class="w-px h-4 bg-base-content/10 mx-0.5"></div>
 
                     <!-- Pause -->
-                    <button
+                    <IconButton
+                        label="Pause"
+                        variant="base"
                         @click="pauseLogsStore.toggle()"
-                        class="btn btn-ghost btn-circle btn-sm"
-                        :data-tippy-content="$t('pause')"
                     >
                         <PlayIcon
                             v-if="pauseLogsStore.is_paused"
@@ -563,17 +551,17 @@ const canCopyToMarkdown = computed(() => {
                             v-else
                             class="w-4"
                         />
-                    </button>
+                    </IconButton>
 
                     <!-- Clear -->
-                    <button
+                    <IconButton
                         v-if="totalLogs > 0"
+                        label="Clear all"
+                        variant="danger"
                         @click="clear()"
-                        class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                        data-tippy-content="Clear"
                     >
                         <TrashIcon class="w-4" />
-                    </button>
+                    </IconButton>
                 </template>
             </ViewToolbar>
 
@@ -840,7 +828,7 @@ const canCopyToMarkdown = computed(() => {
                                                     >
                                                         <span class="font-semibold ml-1 text-xs">Headers</span>
                                                         <div
-                                                            class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
+                                                            class="overflow-x-auto rounded-md border border-base-content/10 bg-base-200"
                                                         >
                                                             <table class="table table-sm">
                                                                 <tbody>
@@ -868,7 +856,7 @@ const canCopyToMarkdown = computed(() => {
                                                     >
                                                         <span class="font-semibold ml-1 text-xs">Body</span>
                                                         <div
-                                                            class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
+                                                            class="overflow-x-auto rounded-md border border-base-content/10 bg-base-200"
                                                         >
                                                             <pre
                                                                 class="scrollbar-hidden mx-5 my-3 overflow-y-hidden text-xs lg:text-sm"
@@ -883,7 +871,7 @@ const canCopyToMarkdown = computed(() => {
                                                     >
                                                         <span class="font-semibold ml-1 text-xs">Routing</span>
                                                         <div
-                                                            class="overflow-x-auto rounded-md border border-base-content/5 bg-base-200"
+                                                            class="overflow-x-auto rounded-md border border-base-content/10 bg-base-200"
                                                         >
                                                             <table class="table table-sm">
                                                                 <tbody>
@@ -919,7 +907,7 @@ const canCopyToMarkdown = computed(() => {
                                                         <div
                                                             v-for="(query, queryIndex) in log.queries"
                                                             :key="queryIndex"
-                                                            class="border border-base-content/5 rounded p-2 bg-base-200"
+                                                            class="border border-base-content/10 rounded p-2 bg-base-200"
                                                         >
                                                             <DumpQuery :query="query" />
                                                         </div>
