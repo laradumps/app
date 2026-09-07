@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { useSettingsStore } from '@/store/settings';
 
 export interface ProfileEntry {
     id: string;
@@ -79,6 +80,28 @@ export const useProfileStore = defineStore('profile', {
             this.profiles[profile.id] = profile;
 
             this.selectedProfileId = profile.id;
+
+            this._enforceLimit();
+        },
+
+        _enforceLimit() {
+            const limit = useSettingsStore().settings.limit_dumps || 500;
+            const ids = Object.keys(this.profiles);
+
+            if (ids.length <= limit) {
+                return;
+            }
+
+            ids.sort(
+                (a, b) =>
+                    new Date(this.profiles[a].date_time).getTime() - new Date(this.profiles[b].date_time).getTime()
+            );
+
+            for (let i = 0; i < ids.length - limit; i++) {
+                if (ids[i] !== this.selectedProfileId) {
+                    delete this.profiles[ids[i]];
+                }
+            }
         },
 
         selectProfile(id: string) {

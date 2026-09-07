@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import dayjs, { Dayjs } from 'dayjs';
 import { QueriesPayload } from '@/types/Payload';
+import { useSettingsStore } from '@/store/settings';
 
 export type Request = {
     time: string;
@@ -10,7 +11,6 @@ export type Request = {
     method: string;
     origin: string;
     date: Dayjs;
-    original_content?: string;
 };
 
 type RequestsMap = Record<string, Request>;
@@ -107,8 +107,7 @@ export const useTimeStore = defineStore('timeStore', {
                 uri: queriesPayload.uri,
                 method: queriesPayload.method,
                 origin: queriesPayload.origin,
-                date: dayjs(),
-                original_content: queriesPayload.original_content
+                date: dayjs()
             };
 
             if (!this.groups.includes(requestId)) {
@@ -116,6 +115,27 @@ export const useTimeStore = defineStore('timeStore', {
             }
 
             this.dump_ids.push(dumpId);
+
+            this._enforceLimit();
+        },
+
+        _enforceLimit(): void {
+            const limit = useSettingsStore().settings.limit_dumps || 500;
+
+            while (this.groups.length > limit) {
+                const oldest = this.groups.shift();
+                if (oldest) {
+                    delete this.requests[oldest];
+                    if (this.selected === oldest) {
+                        this.selected = null;
+                    }
+                }
+            }
+
+            const maxDumpIds = limit * 50;
+            if (this.dump_ids.length > maxDumpIds) {
+                this.dump_ids.splice(0, this.dump_ids.length - maxDumpIds);
+            }
         },
 
         clear(): void {
