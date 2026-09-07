@@ -232,7 +232,7 @@ const resetFlameZoom = () => {
         <Teleport to="body">
             <div
                 v-if="hovered"
-                class="fixed z-[60] pointer-events-none rounded-lg border border-base-content/20 bg-base-100 shadow-lg px-2.5 py-2 text-[11px] leading-relaxed max-w-xs"
+                class="fixed z-[60] pointer-events-none rounded-lg border border-base-content/10 bg-base-100 shadow-lg px-2.5 py-2 text-[11px] leading-relaxed max-w-xs"
                 :style="{ left: `${hovered.x + 14}px`, top: `${hovered.y + 14}px` }"
             >
                 <div class="flex items-center gap-1.5 font-medium">

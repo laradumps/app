@@ -19,6 +19,7 @@ import DumpLink from '@/components/dumps/DumpLink.vue';
 import { useCurrentProject } from '@/store/current-project';
 import IconHorizon from '@/components/Icons/IconHorizon.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import IconButton from '@/components/common/IconButton.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 
 const jobStore = useJobStore();
@@ -35,12 +36,28 @@ const sortBy = ref<'display_name' | 'duration' | 'pushed_time'>('pushed_time');
 const sortDirection = ref<'asc' | 'desc'>('desc');
 const collapsedGroups = ref<Record<string, boolean>>({});
 const horizonUrl = ref<string | null>(null);
+const viewportWidth = ref(window.innerWidth);
+
+let refreshInterval: ReturnType<typeof setInterval> | null = null;
+
+const handleResize = () => {
+    viewportWidth.value = window.innerWidth;
+};
 
 const props = defineProps<{
     items: Record<string, Job>;
     inScreenWindow: boolean;
     hideHeader?: boolean;
+    isSplit?: boolean;
 }>();
+
+const isSplit = computed(() => props.isSplit === true);
+const hideOriginColumn = computed(() => viewportWidth.value < 650 || isSplit.value);
+const columnCount = computed(() => {
+    if (isSplit.value) return 2;
+    if (hideOriginColumn.value) return 3;
+    return 4;
+});
 
 defineEmits(['open-screen-window']);
 
@@ -361,14 +378,21 @@ onMounted(() => {
         focusJob(jobStore.focusJobId);
     }
 
-    setInterval(() => {
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('keydown', handleEscape);
+
+    refreshInterval = setInterval(() => {
         forceUpdate.value++;
-        window.addEventListener('keydown', handleEscape);
     }, 60_000);
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleEscape);
+    window.removeEventListener('resize', handleResize);
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
 });
 
 const toggleMessageLimit = () => {
@@ -429,7 +453,7 @@ const toggleMessageLimit = () => {
                                     <div class="shrink-0">
                                         <ArrowPathIcon
                                             v-if="selected.status === 'Processing'"
-                                            class="w-6 text-primary"
+                                            class="size-4 text-base-content/70 animate-spin [animation-duration:2s]"
                                         />
                                         <CheckIcon
                                             v-else-if="selected.status === 'Processed'"
@@ -553,11 +577,11 @@ const toggleMessageLimit = () => {
 
             <template #filter>
                 <div class="dropdown dropdown-bottom dropdown-start">
-                    <button
+                    <IconButton
                         tabindex="0"
                         role="button"
-                        class="btn btn-ghost btn-circle btn-sm"
-                        data-tippy-content="Filter Status"
+                        label="Filter"
+                        :active="isFiltering"
                     >
                         <FunnelIcon
                             v-if="!isFiltering"
@@ -567,11 +591,11 @@ const toggleMessageLimit = () => {
                             v-else
                             class="w-4 text-primary"
                         />
-                    </button>
+                    </IconButton>
 
                     <ul
                         tabindex="0"
-                        class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 z-[100] w-52"
+                        class="p-2 shadow-xl dropdown-content menu bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 z-[100] w-52"
                     >
                         <li
                             :class="{
@@ -611,10 +635,10 @@ const toggleMessageLimit = () => {
             </template>
 
             <template #right>
-                <button
+                <IconButton
+                    label="Pause"
+                    variant="base"
                     @click="pauseJobsStore.toggle()"
-                    class="btn btn-ghost btn-circle btn-sm"
-                    :data-tippy-content="$t('pause')"
                 >
                     <PlayIcon
                         v-if="pauseJobsStore.is_paused"
@@ -624,15 +648,15 @@ const toggleMessageLimit = () => {
                         v-else
                         class="w-4"
                     />
-                </button>
-                <button
+                </IconButton>
+                <IconButton
                     v-if="jobs.length > 0"
+                    label="Clear all"
+                    variant="danger"
                     @click="clear"
-                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                    data-tippy-content="Clear"
                 >
                     <TrashIcon class="w-4" />
-                </button>
+                </IconButton>
             </template>
         </ViewToolbar>
 
@@ -665,13 +689,18 @@ const toggleMessageLimit = () => {
                 class="px-3 pb-3"
             >
                 <div ref="listTopRef"></div>
-                <table class="table table-zebra w-full">
+                <table class="table table-zebra w-full table-fixed">
                     <thead>
                         <tr class="text-xs font-light text-base-content">
-                            <th class="w-10">#</th>
+                            <th
+                                v-if="!isSplit"
+                                class="w-10"
+                            >
+                                #
+                            </th>
                             <th
                                 @click="toggleSort('display_name')"
-                                class="space-x-1.5 cursor-pointer"
+                                class="space-x-1.5 cursor-pointer w-auto"
                             >
                                 <span>Job</span>
                                 <span v-if="sortBy === 'display_name'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
@@ -683,7 +712,12 @@ const toggleMessageLimit = () => {
                                 <span>Duration</span>
                                 <span v-if="sortBy === 'duration'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                             </th>
-                            <th class="w-[190px] text-right">{{ $t('origin') }}</th>
+                            <th
+                                v-if="!hideOriginColumn"
+                                class="w-[190px] text-right"
+                            >
+                                {{ $t('origin') }}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -693,7 +727,7 @@ const toggleMessageLimit = () => {
                         >
                             <tr class="bg-base-200/60">
                                 <td
-                                    colspan="4"
+                                    :colspan="columnCount"
                                     class="p-0!"
                                 >
                                     <div
@@ -731,26 +765,29 @@ const toggleMessageLimit = () => {
                                     'ld-job-focus': focusedJobId === job.job_id
                                 }"
                             >
-                                <td class="w-10">
+                                <td
+                                    v-if="!isSplit"
+                                    class="w-10"
+                                >
                                     <div class="flex items-center justify-center">
                                         <ArrowPathIcon
                                             v-if="job.status === 'Processing'"
-                                            class="w-6 h-6 shrink-0 text-primary"
+                                            class="size-4 shrink-0 text-base-content/70 animate-spin [animation-duration:2s]"
                                             title="Processing"
                                         />
                                         <CheckIcon
                                             v-if="job.status === 'Processed'"
-                                            class="w-6 h-6 shrink-0 text-success"
+                                            class="size-4 shrink-0 text-success"
                                             title="Processed"
                                         />
                                         <XMarkIcon
                                             v-if="job.status === 'Failed'"
-                                            class="w-6 h-6 shrink-0 text-error"
+                                            class="size-4 shrink-0 text-error"
                                             title="Failed"
                                         />
                                         <InformationCircleIcon
                                             v-if="job.status === 'Queued'"
-                                            class="w-6 h-6 shrink-0 text-warning"
+                                            class="size-4 shrink-0 text-warning"
                                             title="Queued"
                                         />
                                     </div>
@@ -758,7 +795,7 @@ const toggleMessageLimit = () => {
                                 <td>
                                     <div class="flex items-center justify-between gap-2 min-w-0">
                                         <span
-                                            class="break-all min-w-0"
+                                            class="truncate min-w-0"
                                             :title="job.display_name"
                                             >{{ job.display_name }}</span
                                         >
@@ -772,7 +809,10 @@ const toggleMessageLimit = () => {
                                 <td class="whitespace-nowrap text-right">
                                     {{ duration(job.start_time, job.end_time) }}
                                 </td>
-                                <td class="text-xs truncate text-right">
+                                <td
+                                    v-if="!hideOriginColumn"
+                                    class="text-xs truncate text-right"
+                                >
                                     <div class="flex justify-end min-w-0">
                                         <DumpLink
                                             v-if="job.ide_handle.class_name !== 'empty'"

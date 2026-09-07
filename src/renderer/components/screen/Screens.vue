@@ -19,19 +19,7 @@ import { useSettingsStore } from '@/store/settings';
 import EnvironmentDropdown from './EnvironmentDropdown.vue';
 import type { Environment } from '../../../main/storage';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
-import {
-    HomeIcon,
-    CircleStackIcon,
-    DocumentTextIcon,
-    DocumentMagnifyingGlassIcon,
-    BriefcaseIcon,
-    EnvelopeIcon,
-    CpuChipIcon,
-    BoltIcon,
-    ChartBarIcon,
-    BugAntIcon,
-    WindowIcon
-} from '@heroicons/vue/24/outline';
+import { screenIcon } from './screen-icons';
 import { isSpecialEnvironment } from '@/constants';
 import { matchesScreenSearch } from '@/utils/searchMatchers';
 
@@ -61,22 +49,7 @@ const globalSearchStore = useGlobalSearchStore();
 const settingsStore = useSettingsStore();
 
 const isVertical = computed(() => settingsStore.settings.screen_layout === 'vertical');
-const showIcons = computed(() => settingsStore.settings.show_screen_icons !== false);
-
-const SCREEN_ICONS: Record<string, any> = {
-    home: HomeIcon,
-    queries: CircleStackIcon,
-    logs: DocumentTextIcon,
-    tail_logs: DocumentMagnifyingGlassIcon,
-    jobs: BriefcaseIcon,
-    mail: EnvelopeIcon,
-    brain: CpuChipIcon,
-    livewire: BoltIcon,
-    profiler: ChartBarIcon,
-    xdebug_inspector: BugAntIcon
-};
-
-const screenIcon = (screenName: string) => SCREEN_ICONS[screenName] ?? WindowIcon;
+const showIcons = computed(() => settingsStore.settings.show_screen_icons === true);
 
 const disableTailLog = () => {
     settingsStore.settings.tail_log_enabled = false;
@@ -119,8 +92,51 @@ const handleClickOutside = (e: MouseEvent) => {
     }
 };
 
-onMounted(() => document.addEventListener('click', handleClickOutside));
-onUnmounted(() => document.removeEventListener('click', handleClickOutside));
+const navigableScreens = () => screenStore.allVisible().filter((screen) => !isScreenInSplit(screen.screen_name));
+
+const navigateScreens = (direction: 1 | -1) => {
+    const list = navigableScreens();
+    if (list.length <= 1) return;
+
+    const currentIndex = list.findIndex((screen) => screen.screen_name === screenStore.screen);
+    const nextIndex = (currentIndex + direction + list.length) % list.length;
+    emit('toggleScreen', list[nextIndex].screen_name, true);
+};
+
+const onKeydownNavigate = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable))
+    ) {
+        return;
+    }
+
+    if (isVertical.value && e.key === 'ArrowDown') {
+        e.preventDefault();
+        navigateScreens(1);
+    } else if (isVertical.value && e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateScreens(-1);
+    } else if (!isVertical.value && e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigateScreens(1);
+    } else if (!isVertical.value && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigateScreens(-1);
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+    window.addEventListener('keydown', onKeydownNavigate);
+});
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+    window.removeEventListener('keydown', onKeydownNavigate);
+});
 
 const onWheelScroll = (e: WheelEvent) => {
     if (!tablistRef.value || isVertical.value) return;
@@ -333,7 +349,8 @@ const formattedScreenName = (name: string) => {
 
             <div
                 v-if="availableEnvironments.length > 0"
-                class="sticky -right-2 flex items-center shrink-0 bg-base-200"
+                class="flex items-center shrink-0 bg-base-200"
+                :class="isVertical ? 'justify-center w-full py-1' : 'sticky -right-2'"
             >
                 <button
                     @click="toggleEnvironmentDropdown"
@@ -352,6 +369,7 @@ const formattedScreenName = (name: string) => {
         <EnvironmentDropdown
             :environments="availableEnvironments"
             :visible="showEnvironmentDropdown"
+            :show-icons="showIcons"
             @environment-selected="onEnvironmentSelected"
             @close="showEnvironmentDropdown = false"
         />
@@ -360,7 +378,7 @@ const formattedScreenName = (name: string) => {
     <Teleport to="#context-menu-portal">
         <div
             v-if="contextMenu.visible"
-            class="screen-context-menu fixed z-99999 bg-base-200 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/5 rounded-xl p-1 min-w-[160px]"
+            class="screen-context-menu fixed z-99999 bg-base-200 shadow-lg border border-base-content/10 rounded-xl p-1 min-w-[160px]"
             :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
         >
             <ul class="menu menu-compact p-0 text-xs">

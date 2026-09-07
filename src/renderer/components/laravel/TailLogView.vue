@@ -19,6 +19,7 @@ import {
 import { Log } from '@/store/logs';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import IconButton from '@/components/common/IconButton.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import { useColorStore } from '@/store/colors';
 import EmptyState from '@/components/common/EmptyState.vue';
@@ -208,6 +209,10 @@ const clearFile = () => {
     window.ipcRenderer.send('tail-log:clear-file');
 };
 
+const loadNewEntries = () => {
+    tailLogStore.loadIncoming(true);
+};
+
 onMounted(() => {
     window.addEventListener('keydown', handleKeyDown);
     refreshFiles();
@@ -244,8 +249,8 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
 </script>
 
 <template>
-    <div>
-        <div>
+    <div class="flex flex-col h-full min-h-0">
+        <div class="flex flex-col flex-1 min-h-0">
             <!-- Actions Bar -->
             <ViewToolbar
                 v-if="!hideHeader"
@@ -264,17 +269,17 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                 <template #filter>
                     <!-- Filter Levels -->
                     <div class="dropdown dropdown-bottom dropdown-start">
-                        <button
+                        <IconButton
                             tabindex="0"
                             role="button"
-                            class="btn btn-ghost btn-circle btn-sm"
-                            :data-tippy-content="$t('filter_levels')"
+                            label="Filter"
+                            :active="levelFilter.length > 0"
                         >
                             <FunnelIcon :class="levelFilter.length === 0 ? 'w-4' : 'w-4 text-primary'" />
-                        </button>
+                        </IconButton>
                         <div
                             tabindex="0"
-                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5"
+                            class="dropdown-content z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10"
                         >
                             <div class="flex flex-col gap-1.5">
                                 <button
@@ -300,11 +305,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                     <div class="size-2.5 rounded-full relative flex items-center justify-center">
                                         <span
                                             class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                            :class="
-                                                levelFilter.includes(level)
-                                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                                    : 'bg-base-content/20'
-                                            "
+                                            :class="levelFilter.includes(level) ? 'bg-success' : 'bg-base-content/20'"
                                         ></span>
                                     </div>
                                     <span class="truncate capitalize text-xs whitespace-nowrap">{{ level }}</span>
@@ -323,7 +324,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                         <div
                             tabindex="0"
                             role="button"
-                            class="flex items-center font-medium truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-7 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/20 rounded-lg transition-colors"
+                            class="flex items-center font-medium truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-7 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/10 rounded-lg transition-colors"
                             :data-tippy-content="tailLogStore.filePath"
                             @click="openFileDropdown()"
                         >
@@ -331,11 +332,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                                 <div
                                     v-if="fileName"
                                     class="size-2 rounded-full shrink-0"
-                                    :class="
-                                        tailLogStore.watching
-                                            ? 'bg-success shadow-[0_0_8px_rgba(0,180,0,0.6)]'
-                                            : 'bg-base-content/30'
-                                    "
+                                    :class="tailLogStore.watching ? 'bg-success' : 'bg-base-content/30'"
                                 ></div>
                                 <div
                                     v-else
@@ -353,7 +350,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                         </div>
                         <div
                             tabindex="0"
-                            class="dropdown-content z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-80 max-h-[60vh] flex-nowrap overflow-y-auto"
+                            class="dropdown-content z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 w-80 max-h-[60vh] flex-nowrap overflow-y-auto"
                         >
                             <!-- Header -->
                             <div
@@ -421,14 +418,14 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                     </div>
 
                     <!-- Empty log file (truncate on disk) -->
-                    <button
+                    <IconButton
                         v-if="tailLogStore.filePath"
+                        label="Empty log file"
+                        variant="danger"
                         @click="clearFile()"
-                        class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                        :data-tippy-content="$t('tail_log.clear_log_file_contents')"
                     >
                         <DocumentMinusIcon class="w-4" />
-                    </button>
+                    </IconButton>
                 </template>
             </ViewToolbar>
 
@@ -441,11 +438,20 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                 <span class="truncate">{{ tailLogStore.error.message }}</span>
             </div>
 
-            <div class="h-[calc(100vh-140px)] pt-3">
+            <!-- New entries -->
+            <button
+                v-if="tailLogStore.incomingCount > 0"
+                @click="loadNewEntries"
+                class="w-full shrink-0 text-[11px] text-primary px-3 py-1.5 flex items-center justify-center gap-1.5 hover:underline"
+            >
+                <ArrowPathIcon class="w-3 h-3" />
+                <span>{{ $t('load_new_entries', { count: tailLogStore.incomingCount }) }}</span>
+            </button>
+
+            <div class="flex-1 min-h-0 pt-3">
                 <div
                     v-if="logs.length > 0"
-                    class="overflow-y-auto overflow-x-hidden px-3"
-                    style="height: -webkit-fill-available"
+                    class="h-full overflow-y-auto overflow-x-hidden px-3"
                 >
                     <table class="table table-pin-rows table-fixed w-full log-table">
                         <thead>

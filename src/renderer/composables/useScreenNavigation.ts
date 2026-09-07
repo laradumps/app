@@ -87,6 +87,7 @@ export function useScreenNavigation() {
         const screen = targetScreen ?? screenStore.screen;
 
         screenStore.toggleVisible(screen);
+        screenStore.markDetached(screen);
 
         ipc.send('screen-window:show', {
             screen,
@@ -275,6 +276,10 @@ export function useScreenNavigation() {
         ipc.send('send-screen-window-update', { screen: 'saved', payload: deepClone(savedStore.all) });
     };
 
+    const handleScreenWindowClosed = (_: IpcRendererEvent, screen: string) => {
+        screenStore.unmarkDetached(screen);
+    };
+
     const handleTailEntries = (_: IpcRendererEvent, batch: any[]) => tailLogStore.addBatch(batch);
     const handleTailReset = () => tailLogStore.reset();
     const handleTailMeta = (_: IpcRendererEvent, meta: { filePath?: string }) => tailLogStore.setMeta(meta);
@@ -317,6 +322,7 @@ export function useScreenNavigation() {
         handleXdebugConnected,
         handleXdebugDisconnected,
         handleSavedDumpsRemove,
+        handleScreenWindowClosed,
         handleTailEntries,
         handleTailReset,
         handleTailMeta,

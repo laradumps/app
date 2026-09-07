@@ -33,6 +33,11 @@ export const useQueriesPayloadStore = defineStore('queriesPayload', {
         clear() {
             this.payload = [];
         },
+        recycle(maxItems: number) {
+            if (this.payload.length > maxItems) {
+                this.payload.splice(0, this.payload.length - maxItems);
+            }
+        },
         _removeOldestIfExceedsLimit() {
             const settingsStore = useSettingsStore();
             const limit = settingsStore.settings.limit_laravel_queries;

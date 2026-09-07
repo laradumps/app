@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import IconPin from '@/components/Icons/IconPin.vue';
+import IconButton from '@/components/common/IconButton.vue';
 
 const isAlwaysOnTop = ref(false);
 
@@ -12,16 +13,23 @@ const props = defineProps({
     }
 });
 
+const onIsAlwaysOnTop = (_event: unknown, arg: { is_always_on_top: boolean }) => {
+    isAlwaysOnTop.value = arg.is_always_on_top;
+};
+
+const onToggleShortcut = () => {
+    toggleAlwaysOnTop();
+};
+
 onMounted(() => {
     window.ipcRenderer.send(props.window + ':is-always-on-top');
+    window.ipcRenderer.on(props.window + ':is-always-on-top', onIsAlwaysOnTop);
+    window.ipcRenderer.on('app:local-shortcut-execute::always_on_top', onToggleShortcut);
+});
 
-    window.ipcRenderer.on(props.window + ':is-always-on-top', (event, arg) => {
-        isAlwaysOnTop.value = arg.is_always_on_top;
-    });
-
-    window.ipcRenderer.on('app:local-shortcut-execute::always_on_top', () => {
-        toggleAlwaysOnTop();
-    });
+onUnmounted(() => {
+    window.ipcRenderer.removeListener(props.window + ':is-always-on-top', onIsAlwaysOnTop);
+    window.ipcRenderer.removeListener('app:local-shortcut-execute::always_on_top', onToggleShortcut);
 });
 
 const toggleAlwaysOnTop = () => {
@@ -32,16 +40,15 @@ const toggleAlwaysOnTop = () => {
 </script>
 
 <template>
-    <button
-        :title="$t('always_on_top')"
-        class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+    <IconButton
+        :label="$t('always_on_top')"
+        :active="isAlwaysOnTop"
         @click="toggleAlwaysOnTop()"
     >
         <IconPin
-            class="w-3.5"
+            class="size-4"
             :fill="isAlwaysOnTop ? 'currentColor' : 'none'"
             :stroke-width="isAlwaysOnTop ? '0' : '8'"
-            :class="{ 'text-primary': isAlwaysOnTop }"
         />
-    </button>
+    </IconButton>
 </template>

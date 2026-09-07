@@ -164,11 +164,21 @@ const onGlobalClick = () => {
     openOptions.value = false;
 };
 
-onMounted(() => {
+const addMenuListeners = () => {
     window.addEventListener('keydown', onKeydown);
     window.addEventListener('ld-context-open', onOtherContextOpen as EventListener);
     window.addEventListener('click', onGlobalClick, { capture: true });
+};
 
+const removeMenuListeners = () => {
+    window.removeEventListener('keydown', onKeydown);
+    window.removeEventListener('ld-context-open', onOtherContextOpen as EventListener);
+    window.removeEventListener('click', onGlobalClick, { capture: true } as any);
+};
+
+watch(openOptions, (value) => (value ? addMenuListeners() : removeMenuListeners()));
+
+onMounted(() => {
     if (props.payload.dump?.dump && typeof props.payload.dump.dump === 'string' && props.payload.sf_dump_id) {
         scheduleSfDump(props.payload.sf_dump_id);
     }
@@ -404,9 +414,7 @@ const isHighlighted = computed(() => {
 });
 
 onUnmounted(() => {
-    window.removeEventListener('keydown', onKeydown);
-    window.removeEventListener('ld-context-open', onOtherContextOpen as EventListener);
-    window.removeEventListener('click', onGlobalClick, { capture: true } as any);
+    removeMenuListeners();
 });
 </script>
 <template>

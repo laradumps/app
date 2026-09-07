@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, nextTick, watch } from 'vue';
 import type { Environment } from '../../../main/storage';
+import { screenIcon } from './screen-icons';
 
 const props = defineProps<{
     environments: Environment[];
     visible: boolean;
+    showIcons?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -94,7 +96,7 @@ onUnmounted(() => {
     <ul
         v-if="visible"
         ref="dropdownRef"
-        class="environment-dropdown menu flex-col flex-nowrap p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-max min-w-[140px] max-h-[340px] overflow-y-auto fixed mt-1"
+        class="environment-dropdown menu flex-col flex-nowrap p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 w-max min-w-[140px] max-h-[340px] overflow-y-auto fixed mt-1"
         :style="{ ...dropdownStyle, zIndex: 99999 }"
     >
         <li
@@ -105,6 +107,11 @@ onUnmounted(() => {
                 @click="selectEnvironment(env)"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
             >
+                <component
+                    :is="screenIcon(env.value)"
+                    v-if="showIcons"
+                    class="w-4 h-4 shrink-0"
+                />
                 <span class="truncate capitalize text-xs">{{ formattedName(env.value) }}</span>
             </a>
         </li>

@@ -20,6 +20,7 @@ import tippy from 'tippy.js';
 import { usePendingRequestsStore } from '@/store/pending-requests';
 import QueriesRequests from '@/components/laravel/QueriesRequests.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import IconButton from '@/components/common/IconButton.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
 import { usePauseQueriesStore } from '@/store/pauses';
@@ -305,7 +306,7 @@ const setOrder = (order: string) => {
 </script>
 
 <template>
-    <div>
+    <div class="flex flex-col h-full min-h-0">
         <!-- Actions bar -->
         <ViewToolbar
             v-if="!hideHeader"
@@ -335,26 +336,24 @@ const setOrder = (order: string) => {
             <template #filter>
                 <!-- Filter -->
                 <div class="dropdown dropdown-bottom dropdown-start">
-                    <button
+                    <IconButton
                         tabindex="0"
                         role="button"
-                        class="btn btn-ghost btn-circle btn-sm"
+                        label="Filter"
+                        :active="
+                            filteredClasses.length > 0 ||
+                            filteredOrigins.length > 0 ||
+                            duplicatesStore.showOnlyDuplicated
+                        "
                         :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
                         @click.stop
-                        :class="{
-                            'text-primary':
-                                filteredClasses.length > 0 ||
-                                filteredOrigins.length > 0 ||
-                                duplicatesStore.showOnlyDuplicated
-                        }"
-                        data-tippy-content="Filters"
                     >
                         <FunnelIcon class="w-4" />
-                    </button>
+                    </IconButton>
 
                     <div
                         tabindex="0"
-                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-64"
+                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 w-64"
                     >
                         <ul>
                             <li
@@ -447,19 +446,14 @@ const setOrder = (order: string) => {
             <template #right>
                 <!-- YAML Configuration Dropdown -->
                 <div class="dropdown dropdown-bottom dropdown-end">
-                    <button
+                    <IconButton
                         tabindex="0"
                         role="button"
-                        class="btn btn-ghost btn-circle btn-xs"
-                        :class="{
-                            'text-primary':
-                                yamlObservers.some((control) => control.enabled) ||
-                                yamlQueryOptions.some((control) => control.enabled)
-                        }"
-                        data-tippy-content="YAML Configuration"
+                        label="Settings"
+                        variant="base"
                     >
                         <CogIcon class="w-4" />
-                    </button>
+                    </IconButton>
                     <div
                         tabindex="0"
                         class="p-2 shadow-xl dropdown-content menu bg-base-300 backdrop-blur-xl rounded-xl border-0 z-[100] w-auto min-w-35"
@@ -489,11 +483,7 @@ const setOrder = (order: string) => {
                                         ></span>
                                         <span
                                             class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                            :class="
-                                                control.enabled
-                                                    ? 'bg-success shadow-[0_0_6px_rgba(34,197,94,0.8)]'
-                                                    : 'bg-base-content/20'
-                                            "
+                                            :class="control.enabled ? 'bg-success' : 'bg-base-content/20'"
                                         ></span>
                                     </div>
                                     <span class="truncate capitalize text-xs whitespace-nowrap">{{
@@ -517,25 +507,19 @@ const setOrder = (order: string) => {
                     v-if="queries.length > 0"
                     class="dropdown dropdown-bottom dropdown-end"
                 >
-                    <button
+                    <IconButton
                         tabindex="0"
                         role="button"
-                        class="btn btn-ghost btn-circle btn-sm"
-                        data-tippy-content="Actions"
+                        label="Actions"
+                        variant="base"
                         @click.stop
-                        :class="{
-                            'text-primary':
-                                formattedQueriesStore.formatted ||
-                                ['asc', 'desc'].includes(timeStore.order) ||
-                                ['all', 'by-request', 'percentage-colors'].includes(queriesChart.type)
-                        }"
                     >
                         <AdjustmentsHorizontalIcon class="size-4" />
-                    </button>
+                    </IconButton>
 
                     <ul
                         tabindex="0"
-                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-base-200/95 backdrop-blur-xl rounded-xl border border-white/5 w-64"
+                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 w-64"
                     >
                         <li
                             @click="formattedQueriesStore.toggle()"
@@ -636,13 +620,10 @@ const setOrder = (order: string) => {
                 </div>
 
                 <!-- Pause -->
-                <button
+                <IconButton
+                    label="Pause"
+                    variant="base"
                     @click="pauseQueries.toggle()"
-                    class="btn btn-ghost btn-circle btn-sm"
-                    :class="{
-                        'text-primary': pauseQueries.is_paused
-                    }"
-                    :data-tippy-content="$t('pause')"
                 >
                     <PlayIcon
                         v-if="pauseQueries.is_paused"
@@ -652,17 +633,17 @@ const setOrder = (order: string) => {
                         v-else
                         class="w-4"
                     />
-                </button>
+                </IconButton>
 
                 <!-- Clear -->
-                <button
+                <IconButton
                     v-if="queries.length > 0"
+                    label="Clear all"
+                    variant="danger"
                     @click="clear()"
-                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                    data-tippy-content="Clear"
                 >
                     <TrashIcon class="w-4" />
-                </button>
+                </IconButton>
             </template>
         </ViewToolbar>
 
@@ -741,7 +722,7 @@ const setOrder = (order: string) => {
             </dialog>
 
             <div
-                class="space-y-2 mt-2"
+                class="space-y-2 mt-2 flex-1 min-h-0 flex flex-col"
                 v-if="queriesStore.payload.length > 0 && timeStore.selected"
             >
                 <div class="flex justify-between items-center gap-3 px-3">
@@ -775,7 +756,7 @@ const setOrder = (order: string) => {
                     />
 
                     <div
-                        class="overflow-auto h-[calc(100vh-184px)] px-3"
+                        class="overflow-auto flex-1 min-h-0 px-3"
                         v-else
                     >
                         <div

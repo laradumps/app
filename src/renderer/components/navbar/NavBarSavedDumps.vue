@@ -1,6 +1,7 @@
 <script setup>
 import { computed, watch } from 'vue';
 import { useSavedDumpsStore } from '@/store/saved-dumps';
+import IconButton from '@/components/common/IconButton.vue';
 import { deepClone } from '@/utils/deep_clone';
 import { BookmarkIcon } from '@heroicons/vue/24/outline';
 
@@ -33,12 +34,11 @@ watch(
 </script>
 
 <template>
-    <button
+    <IconButton
         v-if="hasSaved"
-        :title="$t('menu.saved_dumps')"
-        class="p-2 flex hover:bg-base-200 rounded-md"
+        :label="$t('menu.saved_dumps')"
         @click="openSavedWindow"
     >
         <BookmarkIcon class="size-4" />
-    </button>
+    </IconButton>
 </template>

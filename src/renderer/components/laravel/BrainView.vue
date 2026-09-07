@@ -5,6 +5,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 import EmptyState from '@/components/common/EmptyState.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
+import IconButton from '@/components/common/IconButton.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useBrainStore, BrainWorkflow, BrainAction } from '@/store/brains';
 import { CheckIcon, NoSymbolIcon, XMarkIcon, ArrowPathIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
@@ -296,7 +297,7 @@ const toggleActionExpanded = (action: any) => {
 </script>
 
 <template>
-    <div>
+    <div class="flex flex-col h-full min-h-0">
         <!-- Actions bar -->
         <ViewToolbar
             v-if="!hideHeader"
@@ -304,19 +305,19 @@ const toggleActionExpanded = (action: any) => {
             noun="workflow"
         >
             <template #right>
-                <button
+                <IconButton
                     v-if="totalProcesses > 0"
+                    label="Clear all"
+                    variant="danger"
                     @click="clearAll"
-                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                    data-tippy-content="Clear"
                 >
                     <TrashIcon class="size-4" />
-                </button>
+                </IconButton>
             </template>
         </ViewToolbar>
 
-        <div>
-            <div class="drawer drawer-end">
+        <div class="flex flex-col flex-1 min-h-0">
+            <div class="drawer drawer-end shrink-0">
                 <input
                     id="brain-drawer"
                     type="checkbox"
@@ -440,7 +441,7 @@ const toggleActionExpanded = (action: any) => {
                                                 v-if="action.meta"
                                                 class="space-y-1"
                                             >
-                                                <div class="border-t py-2 border-base-content/5 text-sm">Meta</div>
+                                                <div class="border-t py-2 border-base-content/10 text-sm">Meta</div>
                                                 <VueJsonPretty
                                                     :show-icon="true"
                                                     :show-length="true"
@@ -458,14 +459,10 @@ const toggleActionExpanded = (action: any) => {
                 </div>
             </div>
 
-            <div
-                class="pt-3"
-                :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"
-            >
+            <div class="pt-3 flex-1 min-h-0">
                 <div
                     v-if="filteredAndSortedProcesses.length > 0"
-                    class="overflow-auto"
-                    style="height: -webkit-fill-available"
+                    class="h-full overflow-auto"
                 >
                     <table class="table table-pin-rows table-zebra">
                         <thead>

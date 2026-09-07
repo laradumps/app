@@ -34,15 +34,17 @@ const PAGE_SIZE = 25;
 const MAX_LOADED_PAGES = 5;
 const MAX_BUFFERED_PAGES = 5;
 
-const oldestKey = (items: Record<string, Job>): string =>
-    Object.keys(items).reduce(
-        (oldest, current) => (items[current].pushed_time < items[oldest].pushed_time ? current : oldest),
-        Object.keys(items)[0]
-    );
-
 const trim = (items: Record<string, Job>, max: number) => {
-    while (Object.keys(items).length > max) {
-        delete items[oldestKey(items)];
+    const keys = Object.keys(items);
+    if (keys.length <= max) {
+        return;
+    }
+
+    keys.sort((a, b) => (items[a].pushed_time < items[b].pushed_time ? -1 : 1));
+
+    const toRemove = keys.length - max;
+    for (let i = 0; i < toRemove; i++) {
+        delete items[keys[i]];
     }
 };
 
@@ -81,6 +83,12 @@ export const useJobStore = defineStore('jobStore', {
         },
         clearOrigin() {
             this.origin = null;
+        },
+        recycle(maxItems: number, dropIncoming = false) {
+            if (dropIncoming) {
+                this.incoming = {};
+            }
+            trim(this.jobs, maxItems);
         },
         addOrUpdateJob(payload: Payload) {
             const job: JobPayload = payload.jobs;

@@ -9,15 +9,28 @@ type State = {
     screen: string;
     screens: Screen[];
     pinned: string;
+    detached: string[];
 };
 
 export const useScreenStore = defineStore('screen', {
     state: (): State => ({
         screen: 'home',
         screens: [],
-        pinned: ''
+        pinned: '',
+        detached: []
     }),
     actions: {
+        markDetached(screenName: string) {
+            if (!this.detached.includes(screenName)) {
+                this.detached.push(screenName);
+            }
+        },
+        unmarkDetached(screenName: string) {
+            this.detached = this.detached.filter((name) => name !== screenName);
+        },
+        hasDetachedWindow(screenName: string): boolean {
+            return this.detached.includes(screenName);
+        },
         activeScreen(value: string) {
             this.screen = value;
         },
@@ -51,6 +64,7 @@ export const useScreenStore = defineStore('screen', {
         clearAll() {
             this.screens = [];
             this.screen = 'home';
+            this.detached = [];
         },
         allVisible() {
             return this.screens.filter((screen: ScreenPayload) => screen.visible);

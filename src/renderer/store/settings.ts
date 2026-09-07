@@ -141,9 +141,19 @@ export const useSettingsStore = defineStore('settings', () => {
         localStorage.setItem('user-settings', JSON.stringify(newSettings));
     };
 
-    const setSplitPaneScreen = (screenName: string | null) => {
+    const setSplitPaneScreen = (screenName: string | null, orientation?: 'vertical' | 'horizontal') => {
         settings.value.split_pane_screen = screenName;
+        if (orientation) {
+            settings.value.split_pane_orientation = orientation;
+        }
         update();
+    };
+
+    let splitSizeTimer: ReturnType<typeof setTimeout> | null = null;
+    const setSplitPaneSize = (size: number) => {
+        settings.value.split_pane_size = size;
+        if (splitSizeTimer) clearTimeout(splitSizeTimer);
+        splitSizeTimer = setTimeout(() => update(), 300);
     };
 
     const blurActive = ref(false);
@@ -223,6 +233,7 @@ export const useSettingsStore = defineStore('settings', () => {
         setUpdateProgress,
         markUpdated,
         setSplitPaneScreen,
+        setSplitPaneSize,
         applyWindowBlur
     };
 });

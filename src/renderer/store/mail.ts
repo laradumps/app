@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ContextPayload, MailPayload } from '@/types/Payload';
 import { IdeHandle } from '@/types/IdeHandle';
+import { useSettingsStore } from '@/store/settings';
 
 export type Mail = {
     message_id: string;
@@ -40,6 +41,8 @@ export const mimeTypeMap: { [key: string]: string } = {
     html: 'text/html'
 };
 
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
 export const useMailStore = defineStore('mailStore', {
     state: (): State => ({
         mails: JSON.parse(localStorage.getItem('emails') || '[]')
@@ -62,11 +65,20 @@ export const useMailStore = defineStore('mailStore', {
             this.mails[existingMailIndex] = { ...this.mails[existingMailIndex], ...payload };
         },
         store() {
-            localStorage.setItem('emails', JSON.stringify(this.mails));
+            if (persistTimer) clearTimeout(persistTimer);
+            persistTimer = setTimeout(() => {
+                localStorage.setItem('emails', JSON.stringify(this.mails));
+            }, 300);
         },
         clear() {
             this.mails = [];
             this.store();
+        },
+        recycle(maxItems: number) {
+            if (this.mails.length > maxItems) {
+                this.mails.splice(0, this.mails.length - maxItems);
+                this.store();
+            }
         },
         remove(messageId: string) {
             const index = this.mails.findIndex((mail) => mail.message_id === messageId);
@@ -106,6 +118,11 @@ export const useMailStore = defineStore('mailStore', {
             const subject = decodeMimeEncodedWord(subjectEncoded);
 
             const to = toHeader.replace('To: ', '').trim();
+
+            const limit = useSettingsStore().settings.limit_dumps || 500;
+            while (this.mails.length >= limit) {
+                this.mails.shift();
+            }
 
             this.mails.push({
                 message_id: payload.messageId,

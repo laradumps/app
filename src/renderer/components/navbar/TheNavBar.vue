@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, computed, onMounted, ref } from 'vue';
+import { defineProps, computed, onMounted, onUnmounted, ref } from 'vue';
 import NavBarAlwaysOnTop from '@/components/navbar/NavBarAlwaysOnTop.vue';
 import NavBarGlobalSearch from '@/components/navbar/NavBarGlobalSearch.vue';
 import NavBarProjectSwitcher from '@/components/navbar/NavBarProjectSwitcher.vue';
@@ -34,11 +34,17 @@ defineProps({
     }
 });
 
+const onPlatformReply = (_event: unknown, args: any) => {
+    platform.value = args;
+};
+
 onMounted(() => {
     window.ipcRenderer.send('platform');
-    window.ipcRenderer.on('platform.reply', (event, args) => {
-        platform.value = args;
-    });
+    window.ipcRenderer.on('platform.reply', onPlatformReply);
+});
+
+onUnmounted(() => {
+    window.ipcRenderer.removeListener('platform.reply', onPlatformReply);
 });
 
 const payloadStore = usePayloadStore();
@@ -61,30 +67,27 @@ const modalClose = () => (isListeningModalOpen.value = false);
 
 <template>
     <div
-        class="flex text-base-content justify-between items-center px-2 text-center z-100 border-b border-base-content/10"
+        class="flex text-base-content justify-between items-center px-3 py-1 shrink-0 z-100 border-b border-base-content/10"
     >
-        <div :class="{ 'ml-[4.6rem]': platform === 'darwin' }">
-            <div class="w-auto h-full">
-                <div class="flex items-center gap-2">
-                    <!-- clear -->
-                    <ClearAll />
-                    <!-- pause -->
-                    <NavBarPause v-if="settingsStore.settings.show_pause_button" />
-                </div>
-            </div>
+        <div
+            class="flex items-center gap-1 shrink-0 h-8"
+            :class="{ 'ml-[4.6rem]': platform === 'darwin' }"
+        >
+            <!-- clear -->
+            <ClearAll />
+            <!-- pause -->
+            <NavBarPause v-if="settingsStore.settings.show_pause_button" />
         </div>
 
         <div
             @click="modalClose"
-            class="w-full select-none"
+            class="flex-1 h-8 select-none"
             :style="{
                 '-webkit-app-region': isListeningModalOpen ? 'no-drag' : 'drag'
             }"
-        >
-            &nbsp;
-        </div>
+        ></div>
 
-        <div class="flex gap-1 items-center m-0.5">
+        <div class="flex gap-1 items-center shrink-0 h-8">
             <!-- global search -->
             <NavBarGlobalSearch v-if="hasPayload" />
             <!-- ssh -->

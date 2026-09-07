@@ -732,7 +732,7 @@ onBeforeUnmount(() => {
                         <template #pane-a>
                             <div
                                 v-show="variablesNames.length > 0"
-                                class="pane-code-container mb-0 border-x border-base-content/20 overflow-auto w-full"
+                                class="pane-code-container mb-0 border-x border-base-content/10 overflow-auto w-full"
                             >
                                 <div
                                     v-for="(lineContent, lineNumber) in fileContent"
@@ -828,7 +828,7 @@ onBeforeUnmount(() => {
                     </SplitPanes>
 
                     <div
-                        class="fixed bottom-0 break-all border-b mt-1 border-base-content/20 py-1 px-3 text-base-content/60"
+                        class="fixed bottom-0 break-all border-b mt-1 border-base-content/10 py-1 px-3 text-base-content/60"
                     >
                         {{ currentFileName }}:{{ currentLine }}
                     </div>

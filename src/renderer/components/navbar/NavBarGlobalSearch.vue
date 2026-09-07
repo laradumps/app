@@ -1,6 +1,7 @@
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue';
+import { ref, nextTick, onMounted, onUnmounted, computed, watch } from 'vue';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import IconButton from '@/components/common/IconButton.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { usePayloadStore } from '@/store/payload';
 import { useLogStore } from '@/store/logs';
@@ -103,6 +104,26 @@ const handleClickOutside = (event) => {
     }
 };
 
+const searchInput = ref(globalSearch.search);
+
+let searchDebounce = null;
+
+watch(searchInput, (value) => {
+    if (searchDebounce) clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+        globalSearch.search = value;
+    }, 150);
+});
+
+watch(
+    () => globalSearch.search,
+    (value) => {
+        if (value !== searchInput.value) {
+            searchInput.value = value;
+        }
+    }
+);
+
 const searchTerm = computed(() => globalSearch.search.toLowerCase());
 
 const counts = computed(() => {
@@ -164,6 +185,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    if (searchDebounce) clearTimeout(searchDebounce);
     window.removeEventListener('keydown', handleKeydown);
     document.removeEventListener('click', handleClickOutside);
     if (onGlobalKeydown) window.removeEventListener('keydown', onGlobalKeydown, true);
@@ -174,17 +196,14 @@ onUnmounted(() => {
 
 <template>
     <div>
-        <button
+        <IconButton
             tabindex="0"
-            class="p-2 hover:bg-base-200 text-base-content cursor-pointer rounded-md"
+            label="Open global search"
+            :active="showInput || globalSearch.search.length > 0"
             @click.stop="toggleInputVisibility"
-            aria-label="Open global search"
         >
-            <MagnifyingGlassIcon
-                class="size-4"
-                :class="{ 'text-primary': showInput || globalSearch.search.length > 0 }"
-            />
-        </button>
+            <MagnifyingGlassIcon class="size-4" />
+        </IconButton>
 
         <!-- Spotlight-like full-screen overlay -->
         <div
@@ -194,13 +213,14 @@ onUnmounted(() => {
             role="dialog"
             aria-modal="true"
         >
-            <button
-                class="absolute top-0 right-0 mr-8 mt-8 btn btn-sm btn-circle btn-soft"
+            <IconButton
+                label="Close search"
+                variant="danger"
+                class="absolute top-0 right-0 mr-8 mt-8"
                 @click.stop="showInput = false"
-                aria-label="Close search"
             >
-                <XMarkIcon class="w-5 h-5" />
-            </button>
+                <XMarkIcon class="size-4" />
+            </IconButton>
             <div
                 class="global-search-content w-full max-w-2xl bg-base-300 rounded-xl shadow-xl p-4 mt-24 space-y-4 overflow-y-auto"
                 @click.stop
@@ -209,7 +229,7 @@ onUnmounted(() => {
                     <MagnifyingGlassIcon class="size-4" />
                     <input
                         ref="inputRef"
-                        v-model="globalSearch.search"
+                        v-model="searchInput"
                         type="text"
                         class="w-full font-normal font-sans p-3"
                         placeholder="Search"
@@ -227,7 +247,7 @@ onUnmounted(() => {
                         :key="badge.key"
                         type="button"
                         :ref="(el) => setBadgeRef(el, index)"
-                        class="badge badge-soft capitalize cursor-pointer select-none border border-base-content/20 hover:border-base-content/40 transition-colors"
+                        class="badge badge-soft capitalize cursor-pointer select-none border border-base-content/10 hover:border-base-content/10 transition-colors"
                         :class="keyboardFocusClasses"
                         @click="activateBadge(badge)"
                         @keydown="onBadgeKeydown($event, badge, index)"

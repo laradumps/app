@@ -10,7 +10,7 @@ export const DEFAULT_SETTINGS: Settings = {
     scroll_direction: 'top',
     dump_order: 'normal',
     screen_layout: 'horizontal',
-    show_screen_icons: true,
+    show_screen_icons: false,
     shortcuts: {
         always_on_top: {
             originalValue: process.platform === 'darwin' ? '⌥+⇧+T' : 'Ctrl+Shift+T',
@@ -39,6 +39,11 @@ export const DEFAULT_SETTINGS: Settings = {
     mcp_port: 3002,
     limit_laravel_logs: 100,
     limit_laravel_jobs: 100,
+    split_pane_orientation: 'vertical',
+    split_pane_size: 50,
+    memory_guard_enabled: true,
+    memory_soft_mb: 300,
+    memory_hard_mb: 450,
     tail_log_enabled: false,
     tail_log_max_size_mb: 25,
     custom_css: '/* // Example: \n [data-theme="custom"] .header { \n    background-color: red; \n } \n */',
