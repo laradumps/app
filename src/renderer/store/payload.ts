@@ -69,22 +69,29 @@ export const usePayloadStore = defineStore('payload', {
             this.payload = [];
             this.filteredPayload = [];
         },
+        recycle(maxItems: number) {
+            if (this.payload.length > maxItems) {
+                this.payload.splice(0, this.payload.length - maxItems);
+            }
+            const kept = new Set(this.payload.map((payload) => payload.id));
+            this.filteredPayload = this.filteredPayload.filter((payload) => kept.has(payload.id));
+        },
         updatePayload(content: { id: string; [key: string]: any }, field: string, transform?: (value: any) => any) {
             const indexPayload = this.findById(content.id);
             const indexFiltered = this.findPayloadIndex(content.id);
 
             if (indexPayload !== -1) {
-                this.payload[indexPayload] = {
+                this.payload[indexPayload] = markRaw({
                     ...this.payload[indexPayload],
                     [field]: transform ? transform(content[field]) : content[field]
-                };
+                });
             }
 
             if (indexFiltered !== -1) {
-                this.filteredPayload[indexFiltered] = {
+                this.filteredPayload[indexFiltered] = markRaw({
                     ...this.filteredPayload[indexFiltered],
                     [field]: transform ? transform(content[field]) : content[field]
-                };
+                });
             }
         },
         updateColorPayload(content: { id: string; color: { color: string } }) {

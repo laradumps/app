@@ -33,6 +33,9 @@ export interface Settings {
     mcp_port: number;
     limit_laravel_logs: number;
     limit_laravel_jobs: number;
+    memory_guard_enabled: boolean;
+    memory_soft_mb: number;
+    memory_hard_mb: number;
     tail_log_enabled: boolean;
     tail_log_max_size_mb: number;
     custom_css: string;

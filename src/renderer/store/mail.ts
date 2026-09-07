@@ -74,6 +74,12 @@ export const useMailStore = defineStore('mailStore', {
             this.mails = [];
             this.store();
         },
+        recycle(maxItems: number) {
+            if (this.mails.length > maxItems) {
+                this.mails.splice(0, this.mails.length - maxItems);
+                this.store();
+            }
+        },
         remove(messageId: string) {
             const index = this.mails.findIndex((mail) => mail.message_id === messageId);
             if (index !== -1) {

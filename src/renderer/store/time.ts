@@ -146,6 +146,23 @@ export const useTimeStore = defineStore('timeStore', {
             this.order = 'default';
         },
 
+        recycle(maxItems: number): void {
+            while (this.groups.length > maxItems) {
+                const oldest = this.groups.shift();
+                if (oldest) {
+                    delete this.requests[oldest];
+                    if (this.selected === oldest) {
+                        this.selected = null;
+                    }
+                }
+            }
+
+            const maxDumpIds = maxItems * 50;
+            if (this.dump_ids.length > maxDumpIds) {
+                this.dump_ids.splice(0, this.dump_ids.length - maxDumpIds);
+            }
+        },
+
         getRequestCount(): number {
             return Object.keys(this.requests).length;
         }

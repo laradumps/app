@@ -119,6 +119,24 @@ export const useProfileStore = defineStore('profile', {
         clear() {
             this.profiles = {};
             this.selectedProfileId = null;
+        },
+
+        recycle(maxItems: number) {
+            const ids = Object.keys(this.profiles);
+            if (ids.length <= maxItems) {
+                return;
+            }
+
+            ids.sort(
+                (a, b) =>
+                    new Date(this.profiles[a].date_time).getTime() - new Date(this.profiles[b].date_time).getTime()
+            );
+
+            for (let i = 0; i < ids.length - maxItems; i++) {
+                if (ids[i] !== this.selectedProfileId) {
+                    delete this.profiles[ids[i]];
+                }
+            }
         }
     }
 });

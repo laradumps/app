@@ -84,6 +84,12 @@ export const useJobStore = defineStore('jobStore', {
         clearOrigin() {
             this.origin = null;
         },
+        recycle(maxItems: number, dropIncoming = false) {
+            if (dropIncoming) {
+                this.incoming = {};
+            }
+            trim(this.jobs, maxItems);
+        },
         addOrUpdateJob(payload: Payload) {
             const job: JobPayload = payload.jobs;
             const ide_handle: IdeHandle = payload.ide_handle;

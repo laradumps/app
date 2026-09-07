@@ -72,6 +72,13 @@ export const useLogStore = defineStore('logStore', {
         }
     },
     actions: {
+        recycle(maxItems: number, dropIncoming = false) {
+            if (dropIncoming) {
+                this.incoming = {};
+            }
+            trim(this.logs, maxItems);
+            this.store();
+        },
         add(content: Payload) {
             if (!content.log_application) {
                 return;

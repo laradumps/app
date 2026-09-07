@@ -14,6 +14,7 @@ import { useLivewireStore } from '@/store/livewire';
 import { useMcpStore } from '@/store/mcp';
 import { useProfileStore } from '@/store/profile';
 import { useClearAll } from '@/composables/useClearAll';
+import { useMemoryGuard } from '@/composables/useMemoryGuard';
 
 import Toasters from '@/components/common/Toasters.vue';
 import TheUpdateNotification from '@/components/app/TheUpdateNotification.vue';
@@ -33,6 +34,8 @@ const mcpStore = useMcpStore();
 const profileStore = useProfileStore();
 
 const { clear } = useClearAll();
+
+useMemoryGuard();
 const fireConfetti = async () => {
     const { default: JSConfetti } = await import('js-confetti');
     new JSConfetti().addConfetti();

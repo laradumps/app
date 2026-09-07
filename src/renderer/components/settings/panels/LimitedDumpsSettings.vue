@@ -48,13 +48,49 @@ const { save } = useSettingsSave();
         <SettingsRow
             :label="$t('settings.tail_log_max_size')"
             :hint="$t('settings.tail_log_max_size_hint')"
-            :divider="false"
         >
             <input
                 type="number"
                 min="1"
                 class="input input-bordered input-sm w-52"
                 v-model.number="settingsStore.settings.tail_log_max_size_mb"
+                @change="save()"
+            />
+        </SettingsRow>
+
+        <SettingsRow
+            :label="$t('settings.memory_guard')"
+            :hint="$t('settings.memory_guard_hint')"
+        >
+            <input
+                type="checkbox"
+                class="toggle toggle-sm toggle-accent"
+                v-model="settingsStore.settings.memory_guard_enabled"
+                @change="save()"
+            />
+        </SettingsRow>
+
+        <SettingsRow :label="$t('settings.memory_soft_mb')">
+            <input
+                type="number"
+                min="50"
+                class="input input-bordered input-sm w-52"
+                :disabled="!settingsStore.settings.memory_guard_enabled"
+                v-model.number="settingsStore.settings.memory_soft_mb"
+                @change="save()"
+            />
+        </SettingsRow>
+
+        <SettingsRow
+            :label="$t('settings.memory_hard_mb')"
+            :divider="false"
+        >
+            <input
+                type="number"
+                min="50"
+                class="input input-bordered input-sm w-52"
+                :disabled="!settingsStore.settings.memory_guard_enabled"
+                v-model.number="settingsStore.settings.memory_hard_mb"
                 @change="save()"
             />
         </SettingsRow>

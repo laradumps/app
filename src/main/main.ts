@@ -39,6 +39,8 @@ import { format } from 'url';
 const isDev: boolean = process.env.NODE_ENV === 'development';
 const isMac: boolean = process.platform === 'darwin';
 
+app.commandLine.appendSwitch('js-flags', '--expose-gc');
+
 let mainWindow: BrowserWindow;
 let badgeCount = 0;
 let blurActive = false;
