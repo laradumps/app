@@ -61,7 +61,7 @@
         "@types/express": "^5.0.6",
         "@types/humanize-duration": "^3.27.4",
         "@types/node": "^26.1.1",
-        "@types/ssh2": "^1.15.5",
+        "@types/ssh2": "^1.15.6",
         "@types/xml2js": "^0.4.14",
         "@typescript-eslint/eslint-plugin": "^8.65.0",
         "@typescript-eslint/parser": "^8.64.0",
