@@ -178,7 +178,7 @@ const setPreviewMode = (mode: string) => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0">
+    <div class="flex flex-col h-full min-h-0 min-w-0 overflow-hidden">
         <div class="text-sm flex flex-col flex-1 min-h-0">
             <dialog
                 id="modal_context"
@@ -246,7 +246,7 @@ const setPreviewMode = (mode: string) => {
                 </form>
             </dialog>
 
-            <div class="space-y-3 flex-1 min-h-0">
+            <div class="flex-1 min-h-0 overflow-hidden">
                 <SplitPanes
                     v-if="mails.length > 0"
                     orientation="vertical"
@@ -298,7 +298,7 @@ const setPreviewMode = (mode: string) => {
                     </template>
 
                     <template #pane-b>
-                        <div class="overflow-auto ml-2 text-sm">
+                        <div class="h-full min-h-0 overflow-auto ml-2 text-sm">
                             <div
                                 v-if="visited"
                                 class="flex flex-col w-full space-y-2 h-full"
@@ -431,8 +431,7 @@ const setPreviewMode = (mode: string) => {
 
                 <div
                     v-else
-                    class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
-                    style="height: -webkit-fill-available"
+                    class="flex items-center justify-center h-full pointer-events-none"
                 >
                     <EmptyState />
                 </div>

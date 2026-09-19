@@ -220,9 +220,10 @@ const clear = () => {
 </script>
 
 <template>
-    <div>
+    <div class="flex flex-col h-full min-h-0 min-w-0 overflow-hidden">
         <ViewToolbar
             v-if="!hideHeader"
+            class="shrink-0"
             :count="items.length"
             noun="event"
         >
@@ -298,14 +299,10 @@ const clear = () => {
             </template>
         </ViewToolbar>
 
-        <div
-            class="pt-3"
-            :class="inScreenWindow ? 'h-[calc(100vh-100px)]' : 'h-[calc(100vh-140px)]'"
-        >
+        <div class="flex-1 min-h-0 pt-3">
             <div
                 v-if="items.length > 0"
-                class="overflow-auto px-3"
-                style="height: -webkit-fill-available"
+                class="h-full overflow-auto px-3"
             >
                 <table class="table table-pin-rows">
                     <thead>
@@ -434,8 +431,7 @@ const clear = () => {
 
             <div
                 v-else
-                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
-                style="height: -webkit-fill-available"
+                class="flex items-center justify-center h-full min-h-[12rem] pointer-events-none"
             >
                 <EmptyState />
             </div>

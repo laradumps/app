@@ -11,7 +11,7 @@ import { useSettingsStore } from '@/store/settings';
 import XDebugMode from '@/components/xdebug/XDebugMode.vue';
 import { useXDebug } from '@/store/xdebug';
 import { useSplitPanesStore } from '@/store/split-panes';
-import { isSpecialEnvironment } from '@/constants';
+import { isKnownScreen, isSpecialEnvironment } from '@/constants';
 import DropZones from '@/components/split/DropZones.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
 import IconButton from '@/components/common/IconButton.vue';
@@ -191,11 +191,7 @@ const handleDragEnd = () => {
             <PauseBanner />
             <div
                 class="flex-1 min-h-0"
-                :class="
-                    ['jobs', 'logs', 'tail_logs', 'profiler', 'brain', 'mail', 'queries'].includes(inScreenWindow)
-                        ? 'overflow-hidden'
-                        : 'overflow-y-auto'
-                "
+                :class="isKnownScreen(inScreenWindow) ? 'overflow-hidden' : 'overflow-y-auto'"
             >
                 <ScreenContent
                     :screen-name="inScreenWindow"
@@ -238,13 +234,7 @@ const handleDragEnd = () => {
                             <PauseBanner />
                             <div
                                 class="flex-1 min-h-0"
-                                :class="
-                                    ['jobs', 'logs', 'tail_logs', 'profiler', 'brain', 'mail', 'queries'].includes(
-                                        screenStore.screen
-                                    )
-                                        ? 'overflow-hidden'
-                                        : 'overflow-auto'
-                                "
+                                :class="isKnownScreen(screenStore.screen) ? 'overflow-hidden' : 'overflow-auto'"
                             >
                                 <ScreenContent
                                     :screen-name="screenStore.screen"
@@ -283,9 +273,7 @@ const handleDragEnd = () => {
                             <div
                                 class="flex-1 min-h-0"
                                 :class="
-                                    ['jobs', 'logs', 'tail_logs', 'profiler', 'brain', 'mail', 'queries'].includes(
-                                        splitPanesStore.splitConfig.screenName
-                                    )
+                                    isKnownScreen(splitPanesStore.splitConfig.screenName)
                                         ? 'overflow-hidden'
                                         : 'overflow-auto'
                                 "
@@ -336,13 +324,7 @@ const handleDragEnd = () => {
                             <PauseBanner />
                             <div
                                 class="flex flex-col flex-1 min-h-0"
-                                :class="
-                                    ['jobs', 'logs', 'tail_logs', 'profiler', 'brain', 'mail', 'queries'].includes(
-                                        screenStore.screen
-                                    )
-                                        ? 'overflow-hidden'
-                                        : 'overflow-y-auto'
-                                "
+                                :class="isKnownScreen(screenStore.screen) ? 'overflow-hidden' : 'overflow-y-auto'"
                             >
                                 <ScreenContent
                                     :screen-name="screenStore.screen"

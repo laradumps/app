@@ -306,10 +306,11 @@ const setOrder = (order: string) => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0">
+    <div class="flex flex-col h-full min-h-0 min-w-0 overflow-hidden">
         <!-- Actions bar -->
         <ViewToolbar
             v-if="!hideHeader"
+            class="shrink-0"
             :count="queries.length"
             noun="query"
         >
@@ -656,153 +657,147 @@ const setOrder = (order: string) => {
             <span>{{ $t('app.inactive_banner') }}</span>
         </div>
 
-        <div>
-            <BaseDrawer
-                id="queries-requests-drawer"
-                v-model="isRequestsDrawerOpen"
-                title="Requests"
-                width="600px"
-            >
-                <div class="flex flex-col h-full">
-                    <!-- Search bar -->
-                    <div class="flex items-center gap-2 px-4 py-3 border-b border-base-content/10">
-                        <label class="input input-sm input-bordered flex items-center gap-2 h-8 grow rounded-lg">
-                            <MagnifyingGlassIcon class="w-3.5 opacity-50" />
-                            <input
-                                v-model="timeStore.search"
-                                type="text"
-                                class="grow text-xs"
-                                :placeholder="$t('profiler.filter')"
-                            />
-                        </label>
-                        <span class="badge badge-ghost badge-sm font-mono">{{ filteredRequestsCount }}</span>
-                    </div>
-
-                    <div class="flex-1 overflow-auto">
-                        <QueriesRequests />
-                    </div>
-                </div>
-            </BaseDrawer>
-
-            <!-- Chart Modal -->
-            <dialog
-                id="chart_selected_query"
-                class="modal"
-            >
-                <div
-                    v-if="selectedChartPoint"
-                    class="modal-box relative w-full max-w-2xl"
-                >
-                    <div class="py-4 space-y-4 text-sm">
-                        <DumpLink
-                            v-if="selectedChartPoint.ide_handle"
-                            :ide-handler="selectedChartPoint.ide_handle"
+        <BaseDrawer
+            id="queries-requests-drawer"
+            v-model="isRequestsDrawerOpen"
+            title="Requests"
+            width="600px"
+        >
+            <div class="flex flex-col h-full">
+                <!-- Search bar -->
+                <div class="flex items-center gap-2 px-4 py-3 border-b border-base-content/10">
+                    <label class="input input-sm input-bordered flex items-center gap-2 h-8 grow rounded-lg">
+                        <MagnifyingGlassIcon class="w-3.5 opacity-50" />
+                        <input
+                            v-model="timeStore.search"
+                            type="text"
+                            class="grow text-xs"
+                            :placeholder="$t('profiler.filter')"
                         />
-                        <div class="flex gap-2">
-                            <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.time }}ms</div>
-                            <div class="badge badge-ghost">{{ selectedChartPoint.queries?.origin }}</div>
-                            <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.connectionName }}</div>
-                            <div class="badge badge-ghost">{{ selectedChartPoint.queries?.database }}</div>
-                        </div>
-
-                        <!-- dump queries -->
-                        <DumpQueries
-                            v-if="selectedChartPoint"
-                            class="w-full mr-"
-                            :payload="selectedChartPoint"
-                        />
-                    </div>
+                    </label>
+                    <span class="badge badge-ghost badge-sm font-mono">{{ filteredRequestsCount }}</span>
                 </div>
-                <form
-                    method="dialog"
-                    class="modal-backdrop"
-                >
-                    <button>close</button>
-                </form>
-            </dialog>
 
+                <div class="flex-1 overflow-auto">
+                    <QueriesRequests />
+                </div>
+            </div>
+        </BaseDrawer>
+
+        <!-- Chart Modal -->
+        <dialog
+            id="chart_selected_query"
+            class="modal"
+        >
             <div
-                class="space-y-2 mt-2 flex-1 min-h-0 flex flex-col"
-                v-if="queriesStore.payload.length > 0 && timeStore.selected"
+                v-if="selectedChartPoint"
+                class="modal-box relative w-full max-w-2xl"
             >
-                <div class="flex justify-between items-center gap-3 px-3">
-                    <button
-                        class="max-w-1/2 btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
-                        @click="openRequestsModal()"
-                    >
-                        <ArrowsRightLeftIcon class="w-4 shrink-0" />
-                        <span class="opacity-80 shrink-0"> ({{ timeStore.getRequestCount() }}) </span>
-                        <span class="truncate min-w-0">{{
-                            timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : 'Tinker'
-                        }}</span>
-                    </button>
-                    <div class="flex items-center gap-2">
-                        <div class="badge badge-ghost badge-sm font-mono">
-                            {{ getQueriesCount(timeStore.selected) }}
-                            {{ getQueriesCount(timeStore.selected) === 1 ? 'query' : 'queries' }}
-                        </div>
-                        <div class="badge badge-primary badge-sm font-mono">
-                            {{ getHumanReadableTime() }}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-1">
-                    <div id="query-chart-result"></div>
-
-                    <QueriesChart
-                        v-if="!['none', 'percentage-colors'].includes(queriesChart.type)"
-                        @point-click="handlePointClick"
+                <div class="py-4 space-y-4 text-sm">
+                    <DumpLink
+                        v-if="selectedChartPoint.ide_handle"
+                        :ide-handler="selectedChartPoint.ide_handle"
                     />
+                    <div class="flex gap-2">
+                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.time }}ms</div>
+                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.origin }}</div>
+                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.query.connectionName }}</div>
+                        <div class="badge badge-ghost">{{ selectedChartPoint.queries?.database }}</div>
+                    </div>
 
-                    <div
-                        class="overflow-auto flex-1 min-h-0 px-3"
-                        v-else
-                    >
-                        <div
-                            v-for="(group, groupKey) in groupedQueries"
-                            :key="groupKey"
-                            class="w-full"
-                        >
-                            <div
-                                v-if="settingsStore.settings.grouped_by_time"
-                                class="bg-base-200 flex items-center justify-between px-3 text-xs sticky top-0"
-                            >
-                                <span
-                                    :title="groupKey"
-                                    class="opacity-80"
-                                >
-                                    {{ dayjs(groupKey).fromNow() }}
-                                </span>
-                            </div>
+                    <!-- dump queries -->
+                    <DumpQueries
+                        v-if="selectedChartPoint"
+                        class="w-full mr-"
+                        :payload="selectedChartPoint"
+                    />
+                </div>
+            </div>
+            <form
+                method="dialog"
+                class="modal-backdrop"
+            >
+                <button>close</button>
+            </form>
+        </dialog>
 
-                            <div v-show="!collapsedGroups[groupKey]">
-                                <div
-                                    v-for="payload in group"
-                                    :key="payload.id || payload.sf_dump_id"
-                                    :id="payload.id"
-                                    class="w-full"
-                                >
-                                    <DumpItem
-                                        class="w-full group text-sm"
-                                        :payload="payload"
-                                        :is-prettified="formattedQueriesStore.formatted"
-                                        :show-time="!settingsStore.settings.grouped_by_time"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+        <div
+            class="flex-1 min-h-0 flex flex-col"
+            v-if="queriesStore.payload.length > 0 && timeStore.selected"
+        >
+            <div class="shrink-0 flex justify-between items-center gap-3 px-3 py-2">
+                <button
+                    class="max-w-1/2 btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
+                    @click="openRequestsModal()"
+                >
+                    <ArrowsRightLeftIcon class="w-4 shrink-0" />
+                    <span class="opacity-80 shrink-0"> ({{ timeStore.getRequestCount() }}) </span>
+                    <span class="truncate min-w-0">{{
+                        timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : 'Tinker'
+                    }}</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <div class="badge badge-ghost badge-sm font-mono">
+                        {{ getQueriesCount(timeStore.selected) }}
+                        {{ getQueriesCount(timeStore.selected) === 1 ? 'query' : 'queries' }}
+                    </div>
+                    <div class="badge badge-primary badge-sm font-mono">
+                        {{ getHumanReadableTime() }}
                     </div>
                 </div>
             </div>
+
+            <QueriesChart
+                v-if="!['none', 'percentage-colors'].includes(queriesChart.type)"
+                class="shrink-0"
+                @point-click="handlePointClick"
+            />
 
             <div
                 v-else
-                class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
-                style="height: -webkit-fill-available"
+                class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 pb-3"
             >
-                <EmptyState />
+                <div
+                    v-for="(group, groupKey) in groupedQueries"
+                    :key="groupKey"
+                    class="w-full"
+                >
+                    <div
+                        v-if="settingsStore.settings.grouped_by_time"
+                        class="bg-base-200 flex items-center justify-between px-3 text-xs sticky top-0"
+                    >
+                        <span
+                            :title="groupKey"
+                            class="opacity-80"
+                        >
+                            {{ dayjs(groupKey).fromNow() }}
+                        </span>
+                    </div>
+
+                    <div v-show="!collapsedGroups[groupKey]">
+                        <div
+                            v-for="payload in group"
+                            :key="payload.id || payload.sf_dump_id"
+                            :id="payload.id"
+                            class="w-full"
+                        >
+                            <DumpItem
+                                class="w-full group text-sm"
+                                :payload="payload"
+                                :is-prettified="formattedQueriesStore.formatted"
+                                :show-time="!settingsStore.settings.grouped_by_time"
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div
+            v-else
+            class="flex-1 min-h-0 flex items-center justify-center pointer-events-none"
+        >
+            <EmptyState />
         </div>
     </div>
 </template>

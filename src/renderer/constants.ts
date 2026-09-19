@@ -16,6 +16,8 @@ export const KNOWN_SCREENS = [
 export const isSpecialEnvironment = (value: string): boolean =>
     (SPECIAL_ENVIRONMENTS as readonly string[]).includes(value);
 
+export const isKnownScreen = (value: string): boolean => (KNOWN_SCREENS as readonly string[]).includes(value);
+
 const formatLabel = (value: string): string => value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 export const SPECIAL_ENVIRONMENTS_LIST = SPECIAL_ENVIRONMENTS.map((value) => ({
