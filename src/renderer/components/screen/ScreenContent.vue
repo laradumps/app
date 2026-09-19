@@ -11,7 +11,7 @@ import DumpList from '@/components/dumps/DumpList.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import { Payload } from '@/types/Payload';
 import { usePayloadStore } from '@/store/payload';
-import { KNOWN_SCREENS } from '@/constants';
+import { isKnownScreen } from '@/constants';
 import { computed } from 'vue';
 
 const props = withDefaults(
@@ -55,9 +55,7 @@ const activeView = computed(() => VIEW_MAP[props.screenName] ?? null);
 // Each known view takes a different slice of props; build only what it declares
 // so nothing leaks onto the root element as a stray attribute.
 const viewProps = computed<Record<string, any>>(() => {
-    const fillClass = ['jobs', 'logs', 'tail_logs', 'profiler', 'brain', 'mail', 'queries'].includes(props.screenName)
-        ? 'h-full min-h-0 flex-1'
-        : '';
+    const fillClass = isKnownScreen(props.screenName) ? 'h-full min-h-0 flex-1' : '';
     const base = {
         class: [props.extraClass, fillClass].filter(Boolean).join(' '),
         hideHeader: props.hideHeader
@@ -97,7 +95,7 @@ const viewProps = computed<Record<string, any>>(() => {
 });
 
 const isGenericDumpScreen = computed(
-    () => !KNOWN_SCREENS.includes(props.screenName as any) && Boolean(props.dumpsBagFiltered && props.groupedDumps)
+    () => !isKnownScreen(props.screenName) && Boolean(props.dumpsBagFiltered && props.groupedDumps)
 );
 </script>
 
