@@ -77,7 +77,7 @@
         "prettier": "3.9.10",
         "tailwindcss": "^4.3.3",
         "typescript": "^6.0.3",
-        "vite": "^8.2.1"
+        "vite": "^8.3.4"
     },
     "ts-standard": {
         "project": "./tsconfig.json"
