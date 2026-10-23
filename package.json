@@ -67,7 +67,7 @@
         "@typescript-eslint/parser": "^8.71.2",
         "@vitejs/plugin-vue": "6.0.9",
         "concurrently": "^10.0.6",
-        "daisyui": "^5.5.23",
+        "daisyui": "^5.7.50",
         "electron": "^41.10.7",
         "electron-builder": "26.15.3",
         "esbuild": "^0.28.1",
