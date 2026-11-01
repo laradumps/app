@@ -15,7 +15,7 @@ withDefaults(
         :class="{ 'border-b border-base-300/50': divider }"
     >
         <div class="min-w-0">
-            <span class="text-sm">
+            <span class="text-sm font-medium">
                 <slot name="label">{{ label }}</slot>
             </span>
             <p
