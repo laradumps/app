@@ -59,35 +59,15 @@ export async function exportQueriesToSQL(queries: Payload[], requestId: string):
             sqlContent += `${sql};\n\n`;
         });
 
-        // Browser fallback
-        if (typeof window.api === 'undefined' || !window.api.invoke) {
-            const blob = new Blob([sqlContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `queries-${fileTimestamp}.sql`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            return;
-        }
-
-        const result = await window.api.invoke('save-dialog', {
-            title: 'Export Queries',
-            defaultPath: `queries-${fileTimestamp}.sql`,
-            filters: [
-                { name: 'SQL Files', extensions: ['sql'] },
-                { name: 'All Files', extensions: ['*'] }
-            ]
-        });
-
-        if (!result.canceled && result.filePath) {
-            await window.api.invoke('write-file', {
-                path: result.filePath,
-                content: sqlContent
-            });
-        }
+        const blob = new Blob([sqlContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `queries-${fileTimestamp}.sql`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     } catch (error) {
         console.error('Error exporting queries:', error);
         throw error;

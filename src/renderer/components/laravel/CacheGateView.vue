@@ -411,7 +411,7 @@ const clear = () => {
                                                         :id="`sf-dump-${cell.sfDumpId}`"
                                                         class="sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line"
                                                         data-indent-pad="  "
-                                                        v-html="cell.html"
+                                                        v-safe-html="cell.html"
                                                     ></pre>
                                                     <span
                                                         v-else

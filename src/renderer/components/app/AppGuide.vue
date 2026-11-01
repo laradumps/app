@@ -16,7 +16,7 @@ const tips = ref([
         <div class="font-semibold text-base mb-4">${i18n.t('doc.guide')}</div>
         <li>${i18n.t(
             'doc.install_laradumps'
-        )}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')" class="text-info underline cursor-pointer ml-1">https://laradumps.dev</span></li>
+        )}: <a href="https://laradumps.dev" class="text-info underline cursor-pointer ml-1">https://laradumps.dev</a></li>
         <li>${i18n.t('doc.add')}
             <code class="bg-base-300 p-1 rounded">ds('Hello world!')</code>
              ${i18n.t('doc.somewhere_in_your_code')}</li>
@@ -24,20 +24,20 @@ const tips = ref([
     </div>`,
     `<div class="space-y-3 text-base-content">
       <div class="font-semibold text-base mb-4">LaraDumps JS</div>
-      <li>${i18n.t('doc.install_laradumps_js')}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/laradumps-js')" class="text-info underline cursor-pointer ml-1">https://github.com/laradumps/laradumps-js</span></li>
+      <li>${i18n.t('doc.install_laradumps_js')}: <a href="https://github.com/laradumps/laradumps-js" class="text-info underline cursor-pointer ml-1">https://github.com/laradumps/laradumps-js</a></li>
       <li><code class="bg-base-300 p-1 rounded">import { ds } from 'laradumps-js'</code></li>
       <li>${i18n.t('doc.use_ds_in_browser')}</li>
      </div>`,
     `<div class="space-y-3 text-base-content">
         <div class="font-semibold !text-base mb-4">${i18n.t('doc.support')}</div>
-        <li>⭐️ <span class="ml-2">${i18n.t('doc.give_us_start')}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/laradumps/app')" class="text-info text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</span></span></li>
+        <li>⭐️ <span class="ml-2">${i18n.t('doc.give_us_stars')}: <a href="https://github.com/laradumps/app" class="text-info text-sm underline cursor-pointer ml-1">https://github.com/laradumps/app</a></span></li>
         <li>🥷🏻 <span class="ml-2">${i18n.t('doc.contribute_code')}</span></li>
-        <li>🙌 <span onclick="window.ipcRenderer.send('main:openLink', 'https://github.com/sponsors/luanfreitasdev')" class="ml-2 text-info text-sm underline cursor-pointer">${i18n.t('doc.buy_me_a_coffee')}</span></li>
+        <li>🙌 <a href="https://github.com/sponsors/luanfreitasdev" class="ml-2 text-info text-sm underline cursor-pointer">${i18n.t('doc.buy_me_a_coffee')}</a></li>
     </div>`,
 
     `<div class="space-y-3 text-base-content">
         <div class="font-semibold text-base mb-4">Xdebug step debugging</div>
-        <li>${i18n.t('doc.install_php_extension')}: <span onclick="window.ipcRenderer.send('main:openLink', 'https://xdebug.org')" class="text-info underline cursor-pointer ml-1">download</span></li>
+        <li>${i18n.t('doc.install_php_extension')}: <a href="https://xdebug.org" class="text-info underline cursor-pointer ml-1">download</a></li>
         <li>${i18n.t('doc.in_any_project_toggle')}</li>
         <li>${i18n.t('doc.add')} <code class="bg-base-300 p-1 rounded">xdebug_break()</code> ${i18n.t('doc.in_any_line_of_code')}</li>
         <li>Shortcuts: <strong>F5</strong>(continue), <strong>F8</strong>(step over) or <strong>F7</strong>(step into)</li>
@@ -152,11 +152,11 @@ function nextRandom() {
                     />
                     <div class="flex gap-1 justify-center items-center flex-col">
                         <span>LaraDumps</span>
-                        <span
+                        <a
                             v-show="!settingsStore.settings.show_tips"
-                            onclick="window.ipcRenderer.send('main:openLink', 'https://laradumps.dev')"
+                            href="https://laradumps.dev"
                             class="text-xs underline cursor-pointer"
-                            >https://laradumps.dev</span
+                            >https://laradumps.dev</a
                         >
                     </div>
                 </div>

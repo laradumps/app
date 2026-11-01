@@ -42,7 +42,7 @@ onMounted(() => {
             <div class="sf-dump-inline pl-3 border-l-2 border-base-content/10">
                 <span
                     :id="`dump-content-${item.sf_dump_id}`"
-                    v-html="item.dump"
+                    v-safe-html="item.dump"
                 />
             </div>
         </div>

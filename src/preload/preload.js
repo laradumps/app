@@ -1,6 +1,5 @@
 import { ipcRenderer, webFrame, shell } from 'electron';
 import express from 'express';
-import bodyParser from 'body-parser';
 
 window.ipcRenderer = ipcRenderer;
 window.webFrame = webFrame;
@@ -36,21 +35,18 @@ const BATCH_SIZE = 12;
 let batchBuffer = [];
 let batchTimeout = null;
 
-app.use(cors());
+const isLocalApiCall = (req) =>
+    !req.headers.origin &&
+    [`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`].includes(req.headers.host) &&
+    ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
 
-app.use(
-    bodyParser.urlencoded({
-        limit: '50mb',
-        extended: true,
-        parameterLimit: 50000
-    })
-);
+app.use('/api/mcp', (req, res, next) => {
+    if (isLocalApiCall(req)) return next();
 
-app.use(
-    bodyParser.json({
-        limit: '50mb'
-    })
-);
+    res.status(403).send({ error: 'Forbidden' });
+});
+
+app.use(express.json({ limit: '50mb' }));
 
 app.use((err, req, res, _next) => {
     console.error('[Preload Server Error]', err);
@@ -76,7 +72,9 @@ const sendBatch = () => {
     batchTimeout = null;
 };
 
-app.post('/api/dumps', (req, res) => {
+app.options('/api/dumps', cors());
+
+app.post('/api/dumps', cors(), (req, res) => {
     const { body } = req;
     body.date_time = new Date();
 
@@ -586,6 +584,7 @@ async function startServer() {
     app.get('/temp/:id.html', (req, res) => {
         const filePath = tempFiles.get(req.params.id);
         if (filePath && fs.existsSync(filePath)) {
+            res.set('Content-Security-Policy', 'sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox');
             res.sendFile(filePath);
         } else {
             res.status(404).send('File not found');

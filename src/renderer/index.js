@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import { vSafeHtml } from '@/utils/sanitizeHtml';
 import App from '@/App.vue';
 import '@/styles.css';
 import router from './router/index';
@@ -61,6 +62,7 @@ app.use(pinia);
 app.use(i18n);
 app.use(clipboard);
 app.use(router);
+app.directive('safe-html', vSafeHtml);
 
 app.mount('#app');
 

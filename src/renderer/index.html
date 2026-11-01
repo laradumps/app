@@ -3,13 +3,11 @@
     <head>
         <meta charset="utf-8" />
         <title>LaraDumps</title>
-        <script>
-            // Apply glass-enabled immediately (before CSS loads) to prevent opaque flash.
-            // The main process passes ?blur=1 when native vibrancy/acrylic is active.
-            if (new URLSearchParams(window.location.search).has('blur')) {
-                document.documentElement.classList.add('glass-enabled');
-            }
-        </script>
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self' data: blob: http: https: ws:; script-src 'self'; style-src 'self' 'unsafe-inline' http: https:; object-src 'none'; base-uri 'self'; form-action 'none'"
+        />
+        <script src="./glass.js"></script>
         <style>
             html {
                 height: 100vh;

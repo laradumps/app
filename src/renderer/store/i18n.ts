@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 export const useI18nStore = defineStore('i18n', {
     state: () => {
         return {
-            value: localStorage.locale
+            value: localStorage.locale || 'en'
         };
     },
     actions: {

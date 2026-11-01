@@ -35,8 +35,14 @@ const props = defineProps<{
     hideHeader?: boolean;
 }>();
 
+const mailFrame = ref<HTMLIFrameElement>();
+
 const onExternalLinkMessage = (event: MessageEvent) => {
-    if (event.data && event.data.type === 'open-external-link-' + previewUrl.value) {
+    if (event.source !== mailFrame.value?.contentWindow || !/^(https?|mailto):/i.test(String(event.data?.url))) {
+        return;
+    }
+
+    if (event.data.type === 'open-external-link-' + previewUrl.value) {
         window.ipcRenderer.send('main:openLink', event.data.url);
         event.preventDefault();
     }
@@ -148,7 +154,7 @@ const openInBrowser = (attachment: Attachment) => {
 };
 
 const openTmpBrowserPreview = () => {
-    window.ipcRenderer.send('main:openLink', `http://localhost:9191/${previewUrl.value}.html`);
+    window.ipcRenderer.send('main:openLink', `http://localhost:9191/temp/${previewUrl.value}.html`);
 };
 
 const previewSize = computed(() => {
@@ -164,13 +170,6 @@ const previewStyle = computed(() => {
         overflow: hidden;
     `;
 });
-
-// const createNewWindow = () => {
-//     window.ipcRenderer.send("main:open-custom-window", {
-//         title: 1,
-//         url: `http://localhost:9191/${previewUrl.value}.html`
-//     });
-// };
 
 const setPreviewMode = (mode: string) => {
     previewMode.value = mode;
@@ -213,7 +212,7 @@ const setPreviewMode = (mode: string) => {
             >
                 <div class="modal-box max-w-2xl">
                     <div class="py-4 space-y-2">
-                        <div v-html="visited.details[0]"></div>
+                        <div v-safe-html="visited.details[0]"></div>
                     </div>
                 </div>
                 <form
@@ -390,6 +389,8 @@ const setPreviewMode = (mode: string) => {
                                     <div class="w-full flex-1 flex justify-center mb-4">
                                         <div class="group p-2 space-y-2 cursor-pointer focus:bg-primary">
                                             <iframe
+                                                ref="mailFrame"
+                                                sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
                                                 class="iframe-content"
                                                 :style="previewStyle"
                                                 allowfullscreen

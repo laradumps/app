@@ -58,7 +58,7 @@ const escapeHandler = (event: KeyboardEvent) => {
 onMounted(() => {
     nextTick(() => {
         tippy('[data-tippy-content]', {
-            allowHTML: true,
+            allowHTML: false,
             theme: 'dark',
             placement: 'bottom-end'
         });
@@ -433,7 +433,7 @@ const toggleActionExpanded = (action: any) => {
                                             <div v-if="action.payload">
                                                 <pre
                                                     class="sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line"
-                                                    v-html="action.payload[0]"
+                                                    v-safe-html="action.payload[0]"
                                                 ></pre>
                                             </div>
 

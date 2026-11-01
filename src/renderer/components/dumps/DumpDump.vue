@@ -57,7 +57,7 @@ const rawDumpContent = computed(() => {
             >
                 <template v-if="isExplainPlan">
                     <span
-                        v-html="formattedDump"
+                        v-safe-html="formattedDump"
                         style="white-space: pre-line; font-family: monospace; line-height: 1.5"
                     ></span>
                 </template>
@@ -72,7 +72,7 @@ const rawDumpContent = computed(() => {
                     <span
                         v-else
                         :id="`dump-content-${payload.sf_dump_id}`"
-                        v-html="rawDumpContent"
+                        v-safe-html="rawDumpContent"
                     ></span>
                 </template>
             </div>

@@ -553,7 +553,7 @@ const toggleMessageLimit = () => {
                         </div>
 
                         <div class="bg-base-100 border border-base-300 p-4">
-                            <div v-html="selected.html"></div>
+                            <div v-safe-html="selected.html"></div>
                         </div>
                     </div>
                 </div>

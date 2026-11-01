@@ -635,7 +635,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
 
                                             <div v-else-if="log.context && log.context.length > 0">
                                                 <div class="px-1">
-                                                    <div v-html="log.context[0]"></div>
+                                                    <div v-safe-html="log.context[0]"></div>
                                                 </div>
                                             </div>
                                         </td>
