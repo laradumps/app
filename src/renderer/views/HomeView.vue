@@ -54,6 +54,8 @@ const isDraggingScreen = ref(false);
 const draggedScreenName = ref('');
 
 const isVerticalLayout = computed(() => settingsStore.settings.screen_layout === 'vertical');
+const hasNavbar = new URLSearchParams(window.location.search).get('screen') === 'default';
+const tabsInPlace = computed(() => isVerticalLayout.value || !hasNavbar);
 
 watch(
     () => currentProjectStore.projectInfo,
@@ -94,22 +96,15 @@ onMounted(() => {
     registerListeners();
 });
 
-const groupedDumps = computed(() => {
-    if (!settingsStore.settings.grouped_by_time) {
-        return { ungrouped: dumpsBagFiltered.value };
-    }
-    return groupByTime(dumpsBagFiltered.value);
-});
+const group = (items) => (settingsStore.settings.grouped_by_time ? groupByTime(items) : { ungrouped: items });
+
+const groupedDumps = computed(() => group(dumpsBagFiltered.value));
 
 const groupedSplitDumps = computed(() => {
     if (!splitPanesStore.splitConfig?.screenName) {
         return {};
     }
-    const screenPayloads = payloadStore.get(splitPanesStore.splitConfig.screenName);
-    if (!settingsStore.settings.grouped_by_time) {
-        return { ungrouped: screenPayloads };
-    }
-    return groupByTime(screenPayloads);
+    return group(payloadStore.get(splitPanesStore.splitConfig.screenName));
 });
 
 const screenWindowItems = computed(() => {
@@ -119,8 +114,12 @@ const screenWindowItems = computed(() => {
     if (screen === 'mail') return mailScreen.value;
     if (screen === 'logs') return logScreen.value;
     if (screen === 'brain') return brainScreen.value;
-    return payloadScreen.value;
+    return payloadScreen.value ?? [];
 });
+
+const groupedScreenWindowDumps = computed(() =>
+    isKnownScreen(inScreenWindow.value ?? '') ? {} : group(screenWindowItems.value)
+);
 
 const handleDragScreen = ({ screen, _ }) => {
     draggedScreenName.value = screen;
@@ -199,6 +198,8 @@ const handleDragEnd = () => {
                     extra-class="w-full h-full min-h-0 text-base"
                     :yaml-config="yamlConfig"
                     :screen-window-items="screenWindowItems"
+                    :dumps-bag-filtered="isKnownScreen(inScreenWindow) ? undefined : screenWindowItems"
+                    :grouped-dumps="groupedScreenWindowDumps"
                 />
             </div>
         </div>
@@ -225,7 +226,7 @@ const handleDragEnd = () => {
                                 <Teleport
                                     defer
                                     to="#navbar-views"
-                                    :disabled="isVerticalLayout"
+                                    :disabled="tabsInPlace"
                                 >
                                     <Screens
                                         class="flex-1 min-w-0"
@@ -316,7 +317,7 @@ const handleDragEnd = () => {
                             <Teleport
                                 defer
                                 to="#navbar-views"
-                                :disabled="isVerticalLayout"
+                                :disabled="tabsInPlace"
                             >
                                 <Screens
                                     class="flex-1 min-w-0"

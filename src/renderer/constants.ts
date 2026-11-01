@@ -13,8 +13,10 @@ export const KNOWN_SCREENS = [
     'profiler'
 ] as const;
 
+const IN_VIEW_OBSERVERS = ['slow_queries'];
+
 export const isSpecialEnvironment = (value: string): boolean =>
-    (SPECIAL_ENVIRONMENTS as readonly string[]).includes(value);
+    (SPECIAL_ENVIRONMENTS as readonly string[]).includes(value) || IN_VIEW_OBSERVERS.includes(value);
 
 export const isKnownScreen = (value: string): boolean => (KNOWN_SCREENS as readonly string[]).includes(value);
 

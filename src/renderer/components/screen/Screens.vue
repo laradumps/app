@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineEmits, ref, computed, nextTick, onMounted, onUnmounted, useAttrs } from 'vue';
+import { defineEmits, ref, computed, nextTick, onMounted, onUnmounted, useAttrs, watch } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
@@ -106,6 +106,16 @@ const navigateScreens = (direction: 1 | -1) => {
 const focusActiveTab = () => {
     nextTick(() => tablistRef.value?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus());
 };
+
+watch(
+    () => screenStore.screen,
+    () =>
+        nextTick(() =>
+            tablistRef.value
+                ?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
+                ?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+        )
+);
 
 const onKeydownNavigate = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement | null;
