@@ -1,6 +1,6 @@
 <script setup>
 import { CogIcon } from '@heroicons/vue/24/outline';
-import IconButton from '@/components/common/IconButton.vue';
+import MenuRow from '@/components/navbar/MenuRow.vue';
 
 const openSettings = () => {
     const modal = document.getElementById('settings_modal');
@@ -9,10 +9,10 @@ const openSettings = () => {
 </script>
 
 <template>
-    <IconButton
-        label="Settings"
+    <MenuRow
+        :label="$t('settings.settings')"
         @click="openSettings"
     >
         <CogIcon class="size-4" />
-    </IconButton>
+    </MenuRow>
 </template>

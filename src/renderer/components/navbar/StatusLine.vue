@@ -11,7 +11,8 @@ import { useGlobalSearchStore } from '@/store/global-search';
 import { usePausePayloadStore } from '@/store/pauses';
 import { useSettingsStore } from '@/store/settings';
 
-provide('iconButtonRow', true);
+const menuView = ref('root');
+provide('menuView', menuView);
 
 const globalSearch = useGlobalSearchStore();
 const pauseStore = usePausePayloadStore();
@@ -19,6 +20,7 @@ const settingsStore = useSettingsStore();
 
 const rootRef = ref<HTMLElement | null>(null);
 const inputRef = ref<HTMLInputElement | null>(null);
+const menuRef = ref<HTMLElement | null>(null);
 const menuOpen = ref(false);
 const query = ref(globalSearch.search);
 
@@ -51,8 +53,28 @@ const onEscape = () => {
 };
 
 const onMenuClick = (e: MouseEvent) => {
-    if (!(e.target as HTMLElement).closest('.dropdown')) menuOpen.value = false;
+    if (!(e.target as HTMLElement).closest('[data-keep-open]')) menuOpen.value = false;
 };
+
+const onMenuEscape = (e: KeyboardEvent) => {
+    if ((e.target as HTMLElement).closest('dialog')) return;
+    if (menuView.value !== 'root') {
+        menuView.value = 'root';
+        return;
+    }
+    menuOpen.value = false;
+    inputRef.value?.focus();
+};
+
+watch(menuOpen, (open) => {
+    if (!open) menuView.value = 'root';
+});
+
+watch(menuView, async (view, previous) => {
+    if (view !== 'root') return;
+    await nextTick();
+    menuRef.value?.querySelector<HTMLElement>(`[data-opens="${previous}"]`)?.focus();
+});
 
 const onDocumentClick = (e: MouseEvent) => {
     if (!rootRef.value?.contains(e.target as Node)) menuOpen.value = false;
@@ -131,32 +153,31 @@ onUnmounted(() => {
 
         <div
             v-show="menuOpen"
+            ref="menuRef"
             role="menu"
             :aria-label="$t('status_line.commands')"
-            class="ld-menu absolute right-3 bottom-10 z-400 w-56 flex flex-col p-1 rounded-lg border border-base-content/10 bg-base-100 shadow-xl"
+            class="absolute right-3 bottom-10 z-400 w-56 flex flex-col p-1 rounded-lg border border-base-content/10 bg-base-100 shadow-xl"
             @click="onMenuClick"
+            @keydown.esc="onMenuEscape"
         >
-            <NavBarSavedDumps />
-            <NavBarAlwaysOnTop />
+            <div
+                v-show="menuView === 'root'"
+                class="contents"
+            >
+                <NavBarSavedDumps />
+                <NavBarAlwaysOnTop />
+            </div>
             <NavBarSSH v-if="settingsStore.settings.show_ssh_button" />
             <NavBarEnvironments />
-            <ClearAll />
-            <div class="my-1 h-px bg-base-content/10"></div>
-            <NavBarSettings />
+            <div
+                v-show="menuView === 'root'"
+                class="contents"
+            >
+                <ClearAll />
+                <div class="my-1 h-px bg-base-content/10"></div>
+                <NavBarSettings />
+            </div>
         </div>
     </footer>
 </template>
 
-<style>
-.ld-menu .dropdown {
-    display: block;
-}
-
-.ld-menu .dropdown-content {
-    top: auto !important;
-    bottom: 0 !important;
-    left: auto !important;
-    right: calc(100% + 0.5rem) !important;
-    margin: 0 !important;
-}
-</style>

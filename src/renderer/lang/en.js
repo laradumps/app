@@ -29,7 +29,12 @@ export default {
     clear: 'Clear',
     menu: {
         saved_dumps: 'Saved Dumps',
-        ssh: 'SSH'
+        ssh: 'SSH',
+        environments: 'Environments',
+        tail_log: 'Tail Log',
+        back: 'Back',
+        off: 'Off',
+        enabled_count: '{n} on'
     },
     settings: {
         settings: 'Settings',

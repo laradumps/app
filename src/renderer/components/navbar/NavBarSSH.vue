@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { ArrowPathIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { computed, inject, onMounted, ref } from 'vue';
+import { ArrowPathIcon } from '@heroicons/vue/24/outline';
 import { ServerIcon } from '@heroicons/vue/24/solid';
 import { ServerIcon as ServerIconOutline } from '@heroicons/vue/24/outline';
-import IconButton from '@/components/common/IconButton.vue';
+import MenuRow from '@/components/navbar/MenuRow.vue';
+import MenuSubpanel from '@/components/navbar/MenuSubpanel.vue';
 
 import { useSSHStore } from '@/store/ssh';
 import { Ref } from 'vue';
@@ -35,6 +36,9 @@ const form: Ref<ConnectionConfig> = ref({
 const editId = ref<number | null>(null);
 const emit = defineEmits(['connected']);
 const listenId = ref<number | null>();
+const view = inject<Ref<string>>('menuView', ref('root'));
+
+const listening = computed(() => sshStore.connections.find((c: ConnectionConfig) => c.id === listenId.value)?.name);
 
 onMounted(() => {
     window.ipcRenderer.on('ssh:connect-response', connectResponse);
@@ -120,6 +124,13 @@ const removeConnection = async (id: number) => {
     sshStore.remove(id);
 };
 
+const removeEditing = async () => {
+    const id = editId.value;
+    if (!id) return;
+    ssh_modal.close();
+    await removeConnection(id);
+};
+
 const addConnection = () => {
     form.value = {
         id: Date.now(),
@@ -155,251 +166,240 @@ window.ipcRenderer.on('choose-file-response', (_, filePath) => {
 </script>
 
 <template>
-    <div class="dropdown dropdown-left">
-        <IconButton
-            tabindex="0"
-            role="button"
-            :label="$t('menu.ssh')"
-            :active="connected"
-        >
-            <ServerIcon
-                v-if="connected"
-                class="size-4"
-            />
-            <ServerIconOutline
-                v-else
-                class="size-4"
-            />
-        </IconButton>
+    <MenuRow
+        v-show="view === 'root'"
+        :label="$t('menu.ssh')"
+        :value="listening ?? $t('menu.off')"
+        drill
+        data-opens="ssh"
+        @click="view = 'ssh'"
+    >
+        <ServerIcon
+            v-if="connected"
+            class="size-4 text-success"
+        />
+        <ServerIconOutline
+            v-else
+            class="size-4"
+        />
+    </MenuRow>
 
-        <ul
-            tabindex="0"
-            class="dropdown-content min-w-80 overflow-y-auto z-[350] menu p-3 bg-base-200 border border-base-content/10 shadow-lg rounded-md w-auto"
-        >
-            <div class="flex justify-between items-center">
-                <span class="font-semibold">SSH</span>
-                <button
-                    class="flex btn-sm btn btn-primary text-primary-content w-auto text-xs !px-3"
-                    @click="addConnection"
-                >
-                    <PlusIcon class="w-4" />
-                    {{ $t('ssh.add_connection') }}
-                </button>
-            </div>
-            <div
-                v-if="sshStore.connections.length > 0"
-                class="overflow-auto space-y-1 mt-2"
+    <MenuSubpanel
+        v-if="view === 'ssh'"
+        :title="$t('menu.ssh')"
+    >
+        <template #action>
+            <button
+                type="button"
+                :aria-label="$t('ssh.add_connection')"
+                :title="$t('ssh.add_connection')"
+                class="grid place-items-center size-6 rounded-md text-base-content/60 hover:bg-base-content/10 hover:text-base-content cursor-pointer"
+                @click="addConnection"
             >
-                <li
-                    v-for="connection in sshStore.connections"
-                    :key="`connection-${connection.id}`"
+                <PlusIcon class="size-4" />
+            </button>
+        </template>
+
+        <div
+            v-for="connection in sshStore.connections"
+            :key="`connection-${connection.id}`"
+            class="flex items-center w-full h-8 gap-2.5 px-2 rounded-md text-[0.8rem] text-base-content/70 hover:bg-base-content/10 hover:text-base-content"
+        >
+            <span
+                aria-hidden="true"
+                class="size-1.5 shrink-0 rounded-full"
+                :class="connected && connection.id === listenId ? 'bg-success' : 'bg-base-content/20'"
+            ></span>
+            <button
+                type="button"
+                :title="$t('ssh.edit_connection')"
+                class="flex-1 min-w-0 truncate text-left cursor-pointer"
+                @click="editConnection(connection.id)"
+            >
+                {{ connection.name }}
+            </button>
+            <ArrowPathIcon
+                v-if="sshStore.connecting && connection.id === listenId"
+                class="size-3.5 shrink-0 animate-spin"
+            />
+            <input
+                type="checkbox"
+                class="toggle toggle-xs toggle-accent shrink-0"
+                :aria-label="connection.name"
+                :checked="connection.id === listenId"
+                @change="listen(connection.id, $event)"
+            />
+        </div>
+
+        <MenuRow
+            v-if="sshStore.connections.length === 0"
+            :label="$t('ssh.add_connection')"
+            @click="addConnection"
+        >
+            <PlusIcon class="size-4" />
+        </MenuRow>
+    </MenuSubpanel>
+
+    <dialog
+        id="ssh_modal"
+        data-keep-open
+        class="modal"
+    >
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">
+                {{ editId ? $t('ssh.edit_connection') : $t('ssh.add_connection') }}
+            </h3>
+            <div class="py-4">
+                <form
+                    class="mx-auto space-y-3 text-left text-sm"
+                    @submit.prevent="connect"
                 >
-                    <div class="flex items-center justify-between px-0.5 my-1">
-                        <label class="bg-transparent gap-1 text-base-content flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                :checked="connection.id === listenId"
-                                @change="listen(connection.id, $event)"
-                                class="toggle toggle-sm toggle-primary mr-1"
-                                :value="connection.id"
-                            />
-                            <span class="text-xs whitespace-nowrap font-semibold uppercase truncate max-w-[100px]">{{
-                                connection.name
-                            }}</span>
-                        </label>
-                        <div class="flex gap-2 items-center justify-end">
-                            <template v-if="sshStore.connecting && connection.id === listenId">
-                                <button
-                                    type="button"
-                                    class="p-1"
-                                    :aria-label="$t('processing')"
-                                >
-                                    <ArrowPathIcon class="w-5 animate-spin" />
-                                </button>
-                            </template>
-                            <template v-else>
-                                <button
-                                    type="button"
-                                    class="btn btn-sm p-[0.5rem] btn-circle btn-ghost"
-                                    :aria-label="$t('settings.edit')"
-                                    @click="editConnection(connection.id)"
-                                >
-                                    <PencilIcon class="w-4" />
-                                </button>
-                                <button
-                                    type="button"
-                                    class="btn btn-sm p-[0.5rem] btn-circle btn-ghost hover:btn-error"
-                                    :aria-label="$t('remove')"
-                                    @click="removeConnection(connection.id)"
-                                >
-                                    <TrashIcon class="w-4" />
-                                </button>
-                            </template>
-                        </div>
+                    <div class="grid grid-cols-3 items-center">
+                        <div>{{ $t('ssh.name') }}</div>
+                        <input
+                            type="text"
+                            id="name"
+                            v-model="form.name"
+                            placeholder="production-server"
+                            class="input input-base w-full col-span-2"
+                        />
                     </div>
-                </li>
-            </div>
-
-            <div
-                v-else
-                class="text-xs text-base-content mt-5"
-            >
-                No connections!
-            </div>
-        </ul>
-
-        <dialog
-            id="ssh_modal"
-            class="modal"
-        >
-            <div class="modal-box">
-                <h3 class="text-lg font-bold">
-                    {{ editId ? $t('ssh.edit_connection') : $t('ssh.add_connection') }}
-                </h3>
-                <div class="py-4">
-                    <form
-                        class="mx-auto space-y-3 text-left text-sm"
-                        @submit.prevent="connect"
+                    <Divider />
+                    <div class="grid grid-cols-3 items-center">
+                        <div>{{ $t('ssh.host') }}</div>
+                        <input
+                            type="text"
+                            id="host"
+                            v-model="form.host"
+                            placeholder="1.2.3.4"
+                            class="input input-bordered input-base w-full col-span-2"
+                        />
+                    </div>
+                    <Divider />
+                    <div class="grid grid-cols-3 items-center">
+                        <div>{{ $t('ssh.port') }}</div>
+                        <input
+                            type="number"
+                            id="port"
+                            v-model="form.port"
+                            class="input input-bordered input-base w-full col-span-2"
+                        />
+                    </div>
+                    <Divider />
+                    <div class="grid grid-cols-3 items-center">
+                        <div>{{ $t('ssh.auth_type') }}</div>
+                        <select
+                            id="auth-type"
+                            v-model="form.auth_type"
+                            :placeholder="$t('ssh.auth_type')"
+                            class="grow select select-bordered select-base w-full col-span-2"
+                        >
+                            <option value="key">Private Key (Recommended)</option>
+                            <option value="password">Password</option>
+                        </select>
+                    </div>
+                    <Divider />
+                    <div class="grid grid-cols-3 items-center">
+                        <div>{{ $t('ssh.username') }}</div>
+                        <input
+                            type="text"
+                            id="username"
+                            v-model="form.username"
+                            class="input input-bordered input-base w-full col-span-2"
+                        />
+                    </div>
+                    <Divider />
+                    <div
+                        v-if="form.auth_type === 'password'"
+                        class="grid grid-cols-3 items-center"
                     >
-                        <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t('ssh.name') }}</div>
-                            <input
-                                type="text"
-                                id="name"
-                                v-model="form.name"
-                                placeholder="production-server"
-                                class="input input-base w-full col-span-2"
-                            />
-                        </div>
-                        <Divider />
-                        <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t('ssh.host') }}</div>
-                            <input
-                                type="text"
-                                id="host"
-                                v-model="form.host"
-                                placeholder="1.2.3.4"
-                                class="input input-bordered input-base w-full col-span-2"
-                            />
-                        </div>
-                        <Divider />
-                        <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t('ssh.port') }}</div>
-                            <input
-                                type="number"
-                                id="port"
-                                v-model="form.port"
-                                class="input input-bordered input-base w-full col-span-2"
-                            />
-                        </div>
-                        <Divider />
-                        <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t('ssh.auth_type') }}</div>
-                            <select
-                                id="auth-type"
-                                v-model="form.auth_type"
-                                :placeholder="$t('ssh.auth_type')"
-                                class="grow select select-bordered select-base w-full col-span-2"
-                            >
-                                <option value="key">Private Key (Recommended)</option>
-                                <option value="password">Password</option>
-                            </select>
-                        </div>
-                        <Divider />
-                        <div class="grid grid-cols-3 items-center">
-                            <div>{{ $t('ssh.username') }}</div>
-                            <input
-                                type="text"
-                                id="username"
-                                v-model="form.username"
-                                class="input input-bordered input-base w-full col-span-2"
-                            />
-                        </div>
-                        <Divider />
-                        <div
-                            v-if="form.auth_type === 'password'"
-                            class="grid grid-cols-3 items-center"
-                        >
-                            <div>{{ $t('ssh.password') }}</div>
-                            <input
-                                type="password"
-                                id="password"
-                                v-model="form.password"
-                                class="input input-bordered input-base w-full col-span-2"
-                            />
-                        </div>
-                        <div
-                            v-if="form.auth_type === 'key'"
-                            class="grid grid-cols-3 items-center"
-                        >
-                            <div>{{ $t('ssh.private_key') }}</div>
-                            <div class="join col-span-2">
-                                <div class="w-full">
-                                    <label class="input join-item input-bordered input-base">
-                                        <input
-                                            type="text"
-                                            id="key"
-                                            v-model="form.private_key"
-                                            placeholder="/Users/username/.ssh/id_rsa"
-                                            class="w-full placeholder:opacity-70"
-                                        />
-                                    </label>
-                                </div>
-                                <button
-                                    type="button"
-                                    @click="chooseFile"
-                                    class="btn btn-neutral join-item"
-                                >
-                                    <span class="text-xs">
-                                        <ArrowUpTrayIcon class="w-4" />
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                        <Divider v-if="form.auth_type === 'key'" />
-                        <div
-                            v-if="form.auth_type === 'key'"
-                            class="grid grid-cols-3 items-center"
-                        >
-                            <div>Passphrase</div>
-                            <input
-                                type="password"
-                                id="passphrase"
-                                v-model="form.passphrase"
-                                :disabled="form.private_key === ''"
-                                class="input input-bordered input-base w-full col-span-2"
-                            />
-                        </div>
-                        <Divider />
-                        <div class="grid grid-cols-3 items-center">
-                            <label>Show in new window</label>
-                            <input
-                                type="checkbox"
-                                v-model="form.new_window"
-                                class="toggle toggle-primary col-span-2"
-                            />
-                        </div>
-                        <Divider />
-                        <div class="flex items-center justify-end gap-3">
-                            <div class="modal-action">
-                                <form method="dialog">
-                                    <button class="btn">Close</button>
-                                </form>
+                        <div>{{ $t('ssh.password') }}</div>
+                        <input
+                            type="password"
+                            id="password"
+                            v-model="form.password"
+                            class="input input-bordered input-base w-full col-span-2"
+                        />
+                    </div>
+                    <div
+                        v-if="form.auth_type === 'key'"
+                        class="grid grid-cols-3 items-center"
+                    >
+                        <div>{{ $t('ssh.private_key') }}</div>
+                        <div class="join col-span-2">
+                            <div class="w-full">
+                                <label class="input join-item input-bordered input-base">
+                                    <input
+                                        type="text"
+                                        id="key"
+                                        v-model="form.private_key"
+                                        placeholder="/Users/username/.ssh/id_rsa"
+                                        class="w-full placeholder:opacity-70"
+                                    />
+                                </label>
                             </div>
                             <button
-                                class="btn btn-primary mt-6 w-[100px] text-xs"
-                                @click="connect"
+                                type="button"
+                                @click="chooseFile"
+                                class="btn btn-neutral join-item"
                             >
-                                <ArrowPathIcon
-                                    v-if="sshStore.connecting"
-                                    class="w-4 animate-spin"
-                                />
-                                <span v-else>{{ $t('ssh.connect') }}</span>
+                                <span class="text-xs">
+                                    <ArrowUpTrayIcon class="w-4" />
+                                </span>
                             </button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                    <Divider v-if="form.auth_type === 'key'" />
+                    <div
+                        v-if="form.auth_type === 'key'"
+                        class="grid grid-cols-3 items-center"
+                    >
+                        <div>Passphrase</div>
+                        <input
+                            type="password"
+                            id="passphrase"
+                            v-model="form.passphrase"
+                            :disabled="form.private_key === ''"
+                            class="input input-bordered input-base w-full col-span-2"
+                        />
+                    </div>
+                    <Divider />
+                    <div class="grid grid-cols-3 items-center">
+                        <label>Show in new window</label>
+                        <input
+                            type="checkbox"
+                            v-model="form.new_window"
+                            class="toggle toggle-primary col-span-2"
+                        />
+                    </div>
+                    <Divider />
+                    <div class="flex items-center justify-end gap-3">
+                        <button
+                            v-if="editId"
+                            type="button"
+                            class="btn btn-ghost text-error mt-6 mr-auto"
+                            @click="removeEditing"
+                        >
+                            {{ $t('remove') }}
+                        </button>
+                        <div class="modal-action">
+                            <form method="dialog">
+                                <button class="btn">Close</button>
+                            </form>
+                        </div>
+                        <button
+                            class="btn btn-primary mt-6 w-[100px] text-xs"
+                            @click="connect"
+                        >
+                            <ArrowPathIcon
+                                v-if="sshStore.connecting"
+                                class="w-4 animate-spin"
+                            />
+                            <span v-else>{{ $t('ssh.connect') }}</span>
+                        </button>
+                    </div>
+                </form>
             </div>
-        </dialog>
-    </div>
+        </div>
+    </dialog>
 </template>
