@@ -149,6 +149,22 @@ export default {
         whats_new: 'Ver novidades'
     },
     pause: 'Pausar',
+    resume: 'Retomar',
+    status_line: {
+        live: 'ao vivo',
+        paused: 'pausado',
+        paused_hint: 'Pausado: novos dumps são ignorados. Clique para retomar.',
+        live_hint: 'Capturando. Clique para pausar.',
+        filter: 'filtrar todas as views',
+        commands: 'Comandos'
+    },
+    confirm: {
+        clear_all_title: 'Limpar tudo',
+        clear_all_message:
+            'Remover todos os dumps, queries, logs, jobs, e-mails e demais dados capturados? Isso não pode ser desfeito.',
+        empty_log_title: 'Esvaziar arquivo de log',
+        empty_log_message: 'Isso apaga permanentemente o conteúdo do arquivo de log no disco. Continuar?'
+    },
     remove: 'Remover',
     collapse: 'Recolher todos os dumps',
     ssh: {
@@ -193,7 +209,7 @@ export default {
     },
     no_records_found: 'Nenhum registro encontrado.',
     app: {
-        inactive_banner: 'Desativado, mas o LaraDumps continua capturando, o que pode deixá-lo um pouco lento.'
+        inactive_banner: 'Pausado: os dados recebidos NÃO são capturados e serão perdidos até você retomar.'
     },
     profiler: {
         yaml_configuration: 'Configuração YAML',

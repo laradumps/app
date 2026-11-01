@@ -14,6 +14,7 @@ import {
 import EmptyState from '@/components/common/EmptyState.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
+import PauseBanner from '@/components/common/PauseBanner.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
 import { usePauseProfileStore } from '@/store/pauses';
 import { formatDuration } from './profile/profileHelpers';
@@ -246,7 +247,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
 
                 <!-- Pause -->
                 <IconButton
-                    label="Pause"
+                    :label="pauseProfile.is_paused ? $t('resume') : $t('pause')"
                     variant="base"
                     @click="pauseProfile.toggle()"
                 >
@@ -273,13 +274,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
         </ViewToolbar>
 
         <!-- Pause Banner -->
-        <div
-            v-if="pauseProfile.is_paused"
-            class="bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20 shrink-0"
-        >
-            <PlayIcon class="w-3 h-3" />
-            <span>{{ $t('app.inactive_banner') }}</span>
-        </div>
+        <PauseBanner :paused="pauseProfile.is_paused" />
 
         <!-- Profile Content -->
         <div

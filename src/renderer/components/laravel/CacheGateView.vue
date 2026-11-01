@@ -276,7 +276,7 @@ const clear = () => {
                 <button
                     @click="pauseStore.toggle()"
                     class="btn btn-ghost btn-circle btn-sm"
-                    :data-tippy-content="$t('pause')"
+                    :data-tippy-content="pauseStore.is_paused ? $t('resume') : $t('pause')"
                 >
                     <PlayIcon
                         v-if="pauseStore.is_paused"

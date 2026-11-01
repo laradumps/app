@@ -5,7 +5,25 @@
 @config "../../tailwind.config.js";
 
 @plugin "daisyui" {
-    themes: all;
+    themes:
+        light --default,
+        dark --prefersdark,
+        dracula,
+        dim,
+        retro,
+        halloween,
+        cyberpunk,
+        lemonade,
+        winter,
+        forest,
+        valentine,
+        aqua,
+        emerald,
+        nord,
+        silk,
+        luxury,
+        cupcake,
+        caramellatte;
 }
 
 /* Laravel 12 Dark DaisyUI Theme */

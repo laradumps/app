@@ -26,7 +26,7 @@ const props = defineProps<{
                 class="items-center w-[0.50rem] h-[0.50rem] mr-2 rounded-full"
                 :class="{ [containsStyle]: true }"
             ></div>
-            <span class="flex gap-2 dark:text-base-300"
+            <span class="flex gap-2"
                 >{{ containsText }}
                 <div class="underline">{{ containsHTML }}</div>
             </span>

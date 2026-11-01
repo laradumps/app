@@ -40,6 +40,7 @@ const onBadgeCountChange = () => {
     if (!settingsStore.settings.show_badge_count) {
         window.ipcRenderer.send('badge-icon.increment', { reset: true });
     }
+    save();
 };
 
 const saveWindowBlur = async () => {
@@ -160,6 +161,7 @@ const saveWindowOpacity = async () => {
                 type="checkbox"
                 class="toggle toggle-sm toggle-accent"
                 v-model="settingsStore.settings.show_context"
+                @change="save()"
             />
         </SettingsRow>
 
@@ -172,19 +174,12 @@ const saveWindowOpacity = async () => {
             />
         </SettingsRow>
 
-        <SettingsRow :label="$t('settings.show_pause_button')">
-            <input
-                type="checkbox"
-                class="toggle toggle-sm toggle-accent"
-                v-model="settingsStore.settings.show_pause_button"
-            />
-        </SettingsRow>
-
         <SettingsRow :label="$t('settings.show_ssh_button')">
             <input
                 type="checkbox"
                 class="toggle toggle-sm toggle-accent"
                 v-model="settingsStore.settings.show_ssh_button"
+                @change="save()"
             />
         </SettingsRow>
 
@@ -193,6 +188,7 @@ const saveWindowOpacity = async () => {
                 type="checkbox"
                 class="toggle toggle-sm toggle-accent"
                 v-model="settingsStore.settings.show_variable_type"
+                @change="save()"
             />
         </SettingsRow>
 
@@ -204,6 +200,7 @@ const saveWindowOpacity = async () => {
                 type="checkbox"
                 class="toggle toggle-sm toggle-accent"
                 v-model="settingsStore.settings.show_tips"
+                @change="save()"
             />
         </SettingsRow>
 

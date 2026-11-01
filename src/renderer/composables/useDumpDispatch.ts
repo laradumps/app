@@ -78,7 +78,7 @@ export function useDumpDispatch(nav: ScreenNavigation) {
         checkApplicationPath(content, applicationPath);
 
         if (!content.hasOwnProperty('to_screen')) {
-            toastStore.show('Received a malformed payload. Please update the app and laradumps-core.', 'error', 4000);
+            toastStore.show('Received a malformed payload. Please update the app and laradumps-core.', 'error');
             return;
         }
 

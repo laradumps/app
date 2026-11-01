@@ -19,6 +19,7 @@ import {
 import { Log, useLogStore } from '@/store/logs';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
+import PauseBanner from '@/components/common/PauseBanner.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
@@ -31,6 +32,7 @@ import DumpQuery from '@/components/laravel/DumpQuery.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import { generateLink } from '@/utils/ideHandler';
 import { copyLogToMarkdown } from '@/utils/logToMarkdown';
+import { levelClasses } from '@/utils/logLevel';
 import { useSettingsStore } from '@/store/settings';
 import { useCurrentProject } from '@/store/current-project';
 
@@ -343,29 +345,6 @@ const clear = () => {
     visibleLimit.value = logStore.pageSize;
 };
 
-type LevelColor = 'success' | 'warning' | 'info' | 'error' | 'neutral';
-
-const colorClasses: Record<LevelColor, { badge: string; dot: string }> = {
-    success: { badge: 'text-success bg-success/10', dot: 'bg-success' },
-    warning: { badge: 'text-warning bg-warning/10', dot: 'bg-warning' },
-    info: { badge: 'text-info bg-info/10', dot: 'bg-info' },
-    error: { badge: 'text-error bg-error/10', dot: 'bg-error' },
-    neutral: { badge: 'text-base-content/80 bg-base-content/10', dot: 'bg-base-content/40' }
-};
-
-const levelColorMap: Record<string, LevelColor> = {
-    error: 'error',
-    critical: 'error',
-    alert: 'error',
-    emergency: 'error',
-    warning: 'warning',
-    notice: 'success',
-    info: 'info',
-    debug: 'neutral'
-};
-
-const levelClasses = (level: string) => colorClasses[levelColorMap[level] ?? 'neutral'];
-
 const showOrigin = (log: Log) => {
     const { class_name, line } = log.ide_handle;
     return class_name !== 'empty' && !(class_name === 'unknown' && String(line) === '0');
@@ -539,7 +518,7 @@ const canCopyToMarkdown = computed(() => {
 
                     <!-- Pause -->
                     <IconButton
-                        label="Pause"
+                        :label="pauseLogsStore.is_paused ? $t('resume') : $t('pause')"
                         variant="base"
                         @click="pauseLogsStore.toggle()"
                     >
@@ -566,13 +545,10 @@ const canCopyToMarkdown = computed(() => {
             </ViewToolbar>
 
             <!-- Pause Banner -->
-            <div
-                v-if="pauseLogsStore.is_paused"
-                class="relative z-20 shrink-0 bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20"
-            >
-                <PlayIcon class="w-3 h-3" />
-                <span>{{ $t('app.inactive_banner') }}</span>
-            </div>
+            <PauseBanner
+                :paused="pauseLogsStore.is_paused"
+                class="relative z-20"
+            />
 
             <!-- New entries -->
             <button

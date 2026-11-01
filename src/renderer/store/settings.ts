@@ -19,7 +19,6 @@ const themeColors = {
     valentine: 'Valentine',
     aqua: 'Aqua',
     emerald: 'Emerald',
-    midnight: 'Midnight',
     nord: 'Nord',
     silk: 'Silk',
     luxury: 'Luxury',
@@ -88,6 +87,8 @@ export const useSettingsStore = defineStore('settings', () => {
     const savedSettings = localStorage.getItem('user-settings');
     const initial = savedSettings ? JSON.parse(savedSettings) : {};
     const settings = ref<Settings>({ ...DEFAULT_SETTINGS, ...initial });
+
+    if (settings.value.theme === 'midnight') settings.value.theme = 'light';
 
     document.documentElement.setAttribute('data-theme', settings.value.theme);
 

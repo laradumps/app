@@ -208,7 +208,7 @@ const handleDragEnd = () => {
 
             <div
                 v-else-if="splitPanesStore.splitConfig?.active"
-                class="fixed inset-0 top-10.25 flex flex-col"
+                class="absolute inset-0 flex flex-col"
             >
                 <SplitPanes
                     :orientation="splitPanesStore.splitConfig.orientation"
@@ -218,8 +218,15 @@ const handleDragEnd = () => {
                 >
                     <template #pane-a>
                         <div class="flex flex-col h-full">
-                            <div class="shrink-0 z-380">
-                                <div class="flex h-12 px-1.5 items-center justify-between w-full">
+                            <div
+                                class="shrink-0 z-380"
+                                :class="{ 'flex h-12 px-1.5 items-center': isVerticalLayout }"
+                            >
+                                <Teleport
+                                    defer
+                                    to="#navbar-views"
+                                    :disabled="isVerticalLayout"
+                                >
                                     <Screens
                                         class="flex-1 min-w-0"
                                         :environments="environments"
@@ -229,9 +236,8 @@ const handleDragEnd = () => {
                                         @removeEnvironmentScreen="handleRemoveEnvironmentScreen"
                                         @openScreenWindow="openScreenWindow"
                                     />
-                                </div>
+                                </Teleport>
                             </div>
-                            <PauseBanner />
                             <div
                                 class="flex-1 min-h-0"
                                 :class="isKnownScreen(screenStore.screen) ? 'overflow-hidden' : 'overflow-auto'"
@@ -260,8 +266,9 @@ const handleDragEnd = () => {
                     <template #pane-b>
                         <div class="flex flex-col h-full overflow-hidden">
                             <div
-                                class="shrink-0 h-12 flex items-center justify-end px-3 border-b border-base-content/10"
+                                class="shrink-0 h-9 flex items-center justify-between pl-3 pr-1 border-b border-base-content/10 text-[0.8rem] font-medium capitalize"
                             >
+                                {{ splitPanesStore.splitConfig.screenName.replace(/_/g, ' ') }}
                                 <IconButton
                                     label="Close split"
                                     variant="danger"
@@ -300,14 +307,16 @@ const handleDragEnd = () => {
                         :class="isVerticalLayout ? 'flex-row' : 'flex-col'"
                     >
                         <div
-                            class="shrink-0 z-50"
-                            :class="isVerticalLayout ? 'h-full w-48 border-r border-base-content/10' : ''"
+                            :class="
+                                isVerticalLayout
+                                    ? 'shrink-0 z-50 flex flex-col h-full w-48 px-1.5 py-1.5 border-r border-base-content/10'
+                                    : ''
+                            "
                         >
-                            <div
-                                class="flex px-1.5 w-full"
-                                :class="
-                                    isVerticalLayout ? 'flex-col h-full py-1.5' : 'h-12 items-center justify-between'
-                                "
+                            <Teleport
+                                defer
+                                to="#navbar-views"
+                                :disabled="isVerticalLayout"
                             >
                                 <Screens
                                     class="flex-1 min-w-0"
@@ -318,10 +327,9 @@ const handleDragEnd = () => {
                                     @removeEnvironmentScreen="handleRemoveEnvironmentScreen"
                                     @openScreenWindow="openScreenWindow"
                                 />
-                            </div>
+                            </Teleport>
                         </div>
                         <div class="flex flex-col flex-1 min-w-0 min-h-0">
-                            <PauseBanner />
                             <div
                                 class="flex flex-col flex-1 min-h-0"
                                 :class="isKnownScreen(screenStore.screen) ? 'overflow-hidden' : 'overflow-y-auto'"

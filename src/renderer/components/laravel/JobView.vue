@@ -20,6 +20,7 @@ import { useCurrentProject } from '@/store/current-project';
 import IconHorizon from '@/components/Icons/IconHorizon.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
+import PauseBanner from '@/components/common/PauseBanner.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 
 const jobStore = useJobStore();
@@ -636,7 +637,7 @@ const toggleMessageLimit = () => {
 
             <template #right>
                 <IconButton
-                    label="Pause"
+                    :label="pauseJobsStore.is_paused ? $t('resume') : $t('pause')"
                     variant="base"
                     @click="pauseJobsStore.toggle()"
                 >
@@ -661,13 +662,10 @@ const toggleMessageLimit = () => {
         </ViewToolbar>
 
         <!-- Pause Banner -->
-        <div
-            v-if="pauseJobsStore.is_paused"
-            class="relative z-20 shrink-0 bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20"
-        >
-            <PlayIcon class="w-3 h-3" />
-            <span>{{ $t('app.inactive_banner') }}</span>
-        </div>
+        <PauseBanner
+            :paused="pauseJobsStore.is_paused"
+            class="relative z-20"
+        />
 
         <!-- New entries -->
         <button

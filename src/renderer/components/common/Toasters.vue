@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useToastStore } from '@/store/toast';
 import { toastHost } from '@/composables/useToastHost';
+import { XMarkIcon } from '@heroicons/vue/20/solid';
 
 const toast = useToastStore();
 const items = computed(() => toast.all);
@@ -30,10 +31,20 @@ const typeClasses = (type: string) => {
                 <div
                     v-for="item in items"
                     :key="item.id"
-                    class="shadow border rounded px-3 py-2 text-sm max-w-[60vw]"
+                    role="status"
+                    :aria-live="item.type === 'error' ? 'assertive' : 'polite'"
+                    class="shadow border rounded pl-3 pr-1.5 py-2 text-sm max-w-[60vw] flex items-start gap-2"
                     :class="typeClasses(item.type)"
                 >
-                    {{ item.message }}
+                    <span class="flex-1">{{ item.message }}</span>
+                    <button
+                        type="button"
+                        class="shrink-0 rounded opacity-70 hover:opacity-100 focus-visible:opacity-100"
+                        :aria-label="$t('settings.close')"
+                        @click="toast.hide(item.id)"
+                    >
+                        <XMarkIcon class="size-4" />
+                    </button>
                 </div>
             </TransitionGroup>
         </div>

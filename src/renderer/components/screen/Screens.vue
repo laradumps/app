@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineEmits, ref, computed, onMounted, onUnmounted, useAttrs } from 'vue';
+import { defineEmits, ref, computed, nextTick, onMounted, onUnmounted, useAttrs } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
@@ -18,7 +18,7 @@ import { useGlobalSearchStore } from '@/store/global-search';
 import { useSettingsStore } from '@/store/settings';
 import EnvironmentDropdown from './EnvironmentDropdown.vue';
 import type { Environment } from '../../../main/storage';
-import { XMarkIcon } from '@heroicons/vue/20/solid';
+import { PlusIcon, XMarkIcon } from '@heroicons/vue/20/solid';
 import { screenIcon } from './screen-icons';
 import { isSpecialEnvironment } from '@/constants';
 import { matchesScreenSearch } from '@/utils/searchMatchers';
@@ -103,30 +103,30 @@ const navigateScreens = (direction: 1 | -1) => {
     emit('toggleScreen', list[nextIndex].screen_name, true);
 };
 
+const focusActiveTab = () => {
+    nextTick(() => tablistRef.value?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus());
+};
+
 const onKeydownNavigate = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement | null;
     if (
         e.metaKey ||
         e.ctrlKey ||
         e.altKey ||
-        (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable))
+        (target && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable))
     ) {
         return;
     }
 
-    if (isVertical.value && e.key === 'ArrowDown') {
-        e.preventDefault();
-        navigateScreens(1);
-    } else if (isVertical.value && e.key === 'ArrowUp') {
-        e.preventDefault();
-        navigateScreens(-1);
-    } else if (!isVertical.value && e.key === 'ArrowRight') {
-        e.preventDefault();
-        navigateScreens(1);
-    } else if (!isVertical.value && e.key === 'ArrowLeft') {
-        e.preventDefault();
-        navigateScreens(-1);
-    }
+    const keys: Record<string, 1 | -1> = isVertical.value
+        ? { ArrowDown: 1, ArrowUp: -1 }
+        : { ArrowRight: 1, ArrowLeft: -1 };
+    const direction = keys[e.key];
+    if (!direction) return;
+
+    e.preventDefault();
+    navigateScreens(direction);
+    if (target?.closest('[role="tab"]')) focusActiveTab();
 };
 
 onMounted(() => {
@@ -246,12 +246,12 @@ const screenCounts = computed(() => {
         }
 
         if (!term) {
-            result[name] = `(${list.length})`;
+            result[name] = `${list.length}`;
             continue;
         }
 
         const count = list.filter((item) => matchesScreenSearch(name, item, term)).length;
-        result[name] = count > 0 ? `(${count})` : '';
+        result[name] = count > 0 ? `${count}` : '';
     }
 
     return result;
@@ -276,30 +276,34 @@ const formattedScreenName = (name: string) => {
 <template>
     <div
         class="flex min-w-0"
-        :class="[isVertical ? 'flex-col h-full w-full' : 'items-center w-full', attrs.class]"
+        :class="[isVertical ? 'flex-col h-full w-full' : 'items-stretch self-stretch', attrs.class]"
         @wheel="onWheelScroll"
     >
         <div
             ref="tablistRef"
             role="tablist"
-            class="tabs tabs-box flex no-scrollbar flex-nowrap flex-1 min-w-0"
+            class="flex no-scrollbar flex-nowrap flex-1 min-w-0"
             :class="
-                isVertical ? 'flex-col items-stretch overflow-y-auto w-full gap-0.5' : 'items-center overflow-x-auto'
+                isVertical ? 'flex-col items-stretch overflow-y-auto w-full gap-0.5' : 'items-stretch overflow-x-auto'
             "
         >
             <template
                 v-for="(screen, index) in screenStore.allVisible()"
                 :key="screen.screen_name"
             >
-                <a
+                <button
                     v-show="!isScreenInSplit(screen.screen_name)"
+                    type="button"
                     role="tab"
+                    :aria-selected="screen.screen_name === screenStore.screen"
+                    :tabindex="screen.screen_name === screenStore.screen ? 0 : -1"
                     draggable="true"
-                    class="tab cursor-default! flex! flex-row! items-center! gap-2 select-none transition-all duration-200 whitespace-nowrap! group h-full"
+                    class="ld-tab group flex items-center gap-1.5 shrink-0 px-2 whitespace-nowrap select-none cursor-default! text-[0.8rem] transition-colors"
                     :class="{
-                        'tab-active font-semibold': screen.screen_name === screenStore.screen,
-                        dragging: isDraggingIndex === index,
-                        'tab-vertical': isVertical
+                        'is-active text-base-content font-medium': screen.screen_name === screenStore.screen,
+                        'text-base-content/60 hover:text-base-content': screen.screen_name !== screenStore.screen,
+                        'is-vertical h-8 w-full justify-between rounded-md hover:bg-base-content/5': isVertical,
+                        dragging: isDraggingIndex === index
                     }"
                     @click="$emit('toggleScreen', screen.screen_name, true)"
                     @contextmenu="onTabContextMenu($event, screen.screen_name)"
@@ -313,7 +317,7 @@ const formattedScreenName = (name: string) => {
                             v-if="showIcons"
                             class="w-4 h-4 shrink-0"
                         />
-                        <span class="text-[0.85rem] leading-none whitespace-nowrap">
+                        <span class="leading-none whitespace-nowrap">
                             {{ formattedScreenName(screen.screen_name) }}
                         </span>
                     </span>
@@ -321,7 +325,7 @@ const formattedScreenName = (name: string) => {
                     <span class="inline-flex items-center gap-1 shrink-0">
                         <span
                             v-if="screenCounts[screen.screen_name]"
-                            class="text-[0.7rem] text-base-content/70 leading-none"
+                            class="font-mono text-[0.7rem] font-normal text-base-content/50 leading-none"
                         >
                             {{ screenCounts[screen.screen_name] }}
                         </span>
@@ -329,37 +333,40 @@ const formattedScreenName = (name: string) => {
                         <button
                             v-if="isEnvironmentScreen(screen.screen_name)"
                             @click.stop="removeEnvironmentScreen(screen.screen_name)"
-                            class="text-base-content/40 hover:text-error text-[10px] w-4 h-4 rounded-full hover:bg-error/10 transition-all flex items-center justify-center shrink-0"
-                            title="Remove screen"
+                            class="ld-tab-x grid place-items-center size-4 rounded text-base-content/50 hover:text-error hover:bg-error/10 cursor-pointer"
+                            :aria-label="`Close ${formattedScreenName(screen.screen_name)}`"
+                            title="Close view · turns the observer off"
                         >
-                            <XMarkIcon />
+                            <XMarkIcon class="size-3" />
                         </button>
 
                         <button
                             v-if="screen.screen_name === 'tail_logs'"
                             @click.stop="disableTailLog"
-                            class="text-base-content/40 hover:text-error text-[10px] w-4 h-4 rounded-full hover:bg-error/10 transition-all flex items-center justify-center shrink-0"
+                            class="ld-tab-x grid place-items-center size-4 rounded text-base-content/50 hover:text-error hover:bg-error/10 cursor-pointer"
                             title="Disable tail log"
                         >
-                            <XMarkIcon />
+                            <XMarkIcon class="size-3" />
                         </button>
                     </span>
-                </a>
+                </button>
             </template>
 
             <div
                 v-if="availableEnvironments.length > 0"
-                class="flex items-center shrink-0 bg-base-200"
-                :class="isVertical ? 'justify-center w-full py-1' : 'sticky -right-2'"
+                class="flex items-center shrink-0"
+                :class="isVertical ? 'w-full pt-1' : 'sticky right-0 pl-1 bg-base-200'"
             >
                 <button
+                    type="button"
                     @click="toggleEnvironmentDropdown"
-                    class="tab px-3 text-base-content/70 hover:text-base-content flex items-center justify-center transition-all duration-200"
-                    :class="{ 'text-primary bg-base-200/50': showEnvironmentDropdown }"
-                    title="Add environment screen"
+                    class="grid place-items-center size-7 rounded-md cursor-pointer transition-colors hover:bg-base-content/10 hover:text-base-content"
+                    :class="showEnvironmentDropdown ? 'text-primary bg-base-content/10' : 'text-base-content/60'"
+                    aria-label="Add view"
+                    title="Add view · turns its observer on"
                     data-add-env-button
                 >
-                    <span class="text-xl leading-none">+</span>
+                    <PlusIcon class="size-4" />
                 </button>
             </div>
         </div>
@@ -398,12 +405,23 @@ const formattedScreenName = (name: string) => {
 <style scoped>
 @reference "./../../styles.css";
 
-.tab {
-    @apply px-4 flex! flex-row! flex-nowrap! items-center! justify-center! gap-2! whitespace-nowrap! h-8 min-h-8;
+.ld-tab:not(.is-vertical).is-active {
+    box-shadow: inset 0 -2px 0 var(--color-primary);
 }
 
-.tab-vertical {
-    @apply w-full! justify-between! text-left!;
+.ld-tab.is-vertical.is-active {
+    box-shadow: inset 2px 0 0 var(--color-primary);
+    @apply bg-base-content/5;
+}
+
+.ld-tab .ld-tab-x {
+    opacity: 0;
+}
+
+.ld-tab.is-active .ld-tab-x,
+.ld-tab:hover .ld-tab-x,
+.ld-tab:focus-within .ld-tab-x {
+    opacity: 1;
 }
 
 [draggable='true'] {

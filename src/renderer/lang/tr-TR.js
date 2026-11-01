@@ -125,6 +125,7 @@ export default {
         whats_new: 'Yenilikler'
     },
     pause: 'Duraklat',
+    resume: 'Devam et',
     remove: 'Kaldır',
     collapse: 'Collapse all dumps',
     ssh: {
@@ -167,6 +168,6 @@ export default {
     },
     no_records_found: 'No records found.',
     app: {
-        inactive_banner: 'Disabled, but LaraDumps still continues capturing which may leave it a bit slow.'
+        inactive_banner: 'Paused: incoming data is NOT captured and will be lost until you resume.'
     }
 };

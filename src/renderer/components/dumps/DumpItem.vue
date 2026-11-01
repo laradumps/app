@@ -199,36 +199,26 @@ watch(
     }
 );
 
-const indicatorColorClass = computed(() => {
+const tone = computed(() => {
     const { color } = props.payload;
     const label = props.payload.with_label?.label;
 
-    if (['error', 'emergency'].includes(label) || color === 'red')
-        return 'border-l-4 border-b-0 bg-error/10 border-error';
-    if (label === 'info' || color === 'blue') return 'border-l-4 border-b-0 bg-info/10 border-info';
-    if (label === 'warning' || color === 'orange') return 'border-l-4 border-b-0 bg-warning/10 border-warning';
-    if (color === 'green') return 'border-l-4 border-b-0 bg-success/10 border-success';
+    if (['error', 'emergency'].includes(label) || color === 'red') return 'error';
+    if (label === 'info' || color === 'blue') return 'info';
+    if (label === 'warning' || color === 'orange') return 'warning';
+    if (color === 'green') return 'success';
 
-    return 'hover:bg-base-300';
+    return null;
 });
 
-const indicatorDotClass = computed(() => {
-    const { color } = props.payload;
-    const label = props.payload.with_label?.label;
+const TICK = {
+    error: 'shadow-[inset_2px_0_0_var(--color-error)]',
+    info: 'shadow-[inset_2px_0_0_var(--color-info)]',
+    warning: 'shadow-[inset_2px_0_0_var(--color-warning)]',
+    success: 'shadow-[inset_2px_0_0_var(--color-success)]'
+};
 
-    if (['error', 'emergency'].includes(label) || color === 'red') return 'bg-error';
-    if (label === 'info' || color === 'blue') return 'bg-info';
-    if (label === 'warning' || color === 'orange') return 'bg-warning';
-    if (color === 'green') return 'bg-success';
-
-    return 'bg-base-content/20';
-});
-
-const hasColorLabel = computed(() => {
-    const { color } = props.payload;
-    const label = props.payload.with_label?.label;
-    return !!label || !!color;
-});
+const TAG = { error: 'text-error', info: 'text-info', warning: 'text-warning', success: 'text-success' };
 
 const getLabel = computed(() => {
     if (
@@ -429,7 +419,6 @@ onUnmounted(() => {
             @mouseenter="decrementBadgeCount"
             :class="[
                 { 'highlight-duplicated': isHighlighted },
-                hasColorLabel ? indicatorColorClass : '',
                 {
                     'bg-warning/20 border-warning/40':
                         payload.type === 'queries' &&
@@ -438,7 +427,7 @@ onUnmounted(() => {
                 }
             ]"
             :style="isPercentageColors ? computedBackgroundStyle : {}"
-            class="rounded-none group/item border-b border-base-content/10 transition-colors"
+            class="relative rounded-none group/item border-b border-base-content/10 hover:bg-base-content/[0.03] transition-colors"
             @contextmenu.prevent="onContextMenu($event)"
             @click="
                 handleDuplicatedClick($event);
@@ -447,173 +436,164 @@ onUnmounted(() => {
         >
             <div
                 @click="open = !open"
-                class="collapse-title p-4! min-h-0 flex flex-col gap-2.5 cursor-default overflow-hidden"
+                class="collapse-title p-0! min-h-0 grid grid-cols-[8rem_minmax(0,1fr)] cursor-default overflow-hidden"
             >
-                <!-- top row: header (dot + time + label) + badge dot -->
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-1.5">
-                        <div
-                            class="w-2 h-2 rounded-full shrink-0"
-                            :class="indicatorDotClass"
-                        ></div>
-                        <span
-                            v-if="!settingsStore.settings.grouped_by_time"
-                            class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded"
-                            >{{ dayjs(payload.date_time).format('HH:mm:ss') }}</span
-                        >
-                        <span
-                            v-if="getLabel !== payload.type"
-                            class="text-[10px] px-1.5 py-0.5 rounded bg-base-300 text-base-content/80 whitespace-nowrap"
-                            >{{ getLabel }}</span
-                        >
-                    </div>
-
-                    <!-- badge dot: top-right -->
-                    <div
+                <div
+                    class="relative flex flex-col gap-px min-w-0 py-2.5 pl-4 pr-3 font-mono text-[0.7rem] text-base-content/55"
+                    :class="tone && TICK[tone]"
+                >
+                    <span
                         v-if="open && shouldDisplayBadge"
-                        class="bg-warning w-1.5 h-1.5 rounded-full shrink-0"
-                    ></div>
-                </div>
-
-                <!-- Model: ClassName + Raw Attributes HTML -->
-                <DumpModel
-                    v-if="payload.type === 'model' && payload.model"
-                    :payload="payload"
-                />
-
-                <!-- Grouped Dump: multiple vars with individual IDE links -->
-                <DumpGrouped
-                    v-else-if="payload.type === 'dump_group' && payload.dump_group"
-                    :payload="payload"
-                />
-
-                <!-- Dump: Raw Content HTML -->
-                <div v-else-if="payload.type === 'dump' && payload.dump">
-                    <div
-                        v-if="
-                            (payload.dump.variable_name && payload.dump.variable_name !== 'arg0') ||
-                            (settingsStore.settings.show_variable_type && payload.dump.variable_type !== undefined)
-                        "
-                        class="flex items-center gap-1.5 mb-2"
-                    >
-                        <span
-                            v-if="payload.dump.variable_name && payload.dump.variable_name !== 'arg0'"
-                            class="font-mono text-[0.72rem] font-semibold text-[#9CDCFE]"
-                            >${{ payload.dump.variable_name }}</span
-                        >
-                        <span
-                            v-if="settingsStore.settings.show_variable_type && payload.dump.variable_type !== undefined"
-                            class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded"
-                            >{{ payload.dump.variable_type }}</span
-                        >
-                    </div>
-                    <DumpDump :payload="payload" />
-                </div>
-
-                <!-- Table V2 -->
-                <DumpTableV2
-                    v-else-if="payload.type === 'table_v2' && payload.table_v2"
-                    :payload="payload"
-                />
-
-                <!-- Table -->
-                <DumpTable
-                    v-else-if="payload.type === 'table' && payload.table"
-                    :payload="payload"
-                />
-
-                <!-- HTML -->
-                <DumpHTML
-                    v-else-if="payload.type === 'html'"
-                    :payload="payload"
-                />
-
-                <!-- Time Track -->
-                <DumpTimeTrack
-                    v-else-if="payload.type === 'time_track' && payload.time_track"
-                    :payload="payload"
-                />
-
-                <!-- Contains -->
-                <DumpContains
-                    v-else-if="payload.type === 'contains' && payload.contains"
-                    :payload="payload"
-                />
-
-                <!-- JSON -->
-                <DumpJson
-                    v-else-if="payload.type === 'json' && payload.json"
-                    :payload="payload"
-                />
-
-                <!-- Validate JSON -->
-                <DumpIsJson
-                    v-else-if="payload.validate_json"
-                    :payload="payload"
-                />
-
-                <!-- Mailable -->
-                <DumpMailable
-                    v-else-if="payload.type === 'mailable' && payload.mailable"
-                    :payload="payload"
-                />
-
-                <!-- Queries -->
-                <div
-                    v-else-if="payload.type === 'queries'"
-                    @click.stop
-                    @dblclick.stop="prettifyQuery"
-                    class="w-full"
-                >
-                    <DumpQueries
-                        :payload="payload"
-                        :is-prettified="isPrettified"
+                        class="absolute top-3.5 left-1.5 size-1.5 rounded-full bg-warning"
+                    ></span>
+                    <span v-if="!settingsStore.settings.grouped_by_time">{{
+                        dayjs(payload.date_time).format('HH:mm:ss')
+                    }}</span>
+                    <DumpLink
+                        v-if="payload.ide_handle?.real_path"
+                        :ide-handler="payload.ide_handle"
+                        :truncate="true"
+                        class="min-w-0 hover:text-primary"
                     />
+                    <span v-if="payload.type === 'queries' && payload.queries?.query?.time != null"
+                        >{{ payload.queries.query.time.toFixed(2) }}ms</span
+                    >
                 </div>
 
-                <!-- Individual Query -->
-                <div
-                    v-else-if="payload.type === 'query'"
-                    @click.stop
-                    class="w-full"
-                >
-                    <DumpQuery :query="payload.query" />
-                </div>
+                <div class="flex flex-col gap-1.5 min-w-0 py-2.5 pr-3">
+                    <span
+                        v-if="getLabel !== payload.type"
+                        class="font-mono text-xs font-semibold"
+                        :class="tone ? TAG[tone] : 'text-base-content/70'"
+                        >{{ getLabel }}</span
+                    >
 
-                <!-- Others -->
-                <div
-                    v-else
-                    class="font-bold text-sm truncate"
-                >
-                    {{ titleContent }}
-                </div>
+                    <!-- Model: ClassName + Raw Attributes HTML -->
+                    <DumpModel
+                        v-if="payload.type === 'model' && payload.model"
+                        :payload="payload"
+                    />
 
-                <!-- bottom row: metadata -->
-                <div class="flex items-center gap-3 text-[0.73rem] font-medium">
-                    <div class="hover:opacity-100 transition-opacity">
-                        <DumpLink
-                            v-if="payload.ide_handle?.real_path"
-                            :ide-handler="payload.ide_handle"
-                            :truncate="true"
-                            class="underline p-0!"
-                        />
-                        <span v-else> Unknown </span>
+                    <!-- Grouped Dump: multiple vars with individual IDE links -->
+                    <DumpGrouped
+                        v-else-if="payload.type === 'dump_group' && payload.dump_group"
+                        :payload="payload"
+                    />
+
+                    <!-- Dump: Raw Content HTML -->
+                    <div v-else-if="payload.type === 'dump' && payload.dump">
+                        <div
+                            v-if="
+                                (payload.dump.variable_name && payload.dump.variable_name !== 'arg0') ||
+                                (settingsStore.settings.show_variable_type && payload.dump.variable_type !== undefined)
+                            "
+                            class="flex items-center gap-1.5 mb-2"
+                        >
+                            <span
+                                v-if="payload.dump.variable_name && payload.dump.variable_name !== 'arg0'"
+                                class="font-mono text-[0.72rem] font-semibold text-[#9CDCFE]"
+                                >${{ payload.dump.variable_name }}</span
+                            >
+                            <span
+                                v-if="
+                                    settingsStore.settings.show_variable_type &&
+                                    payload.dump.variable_type !== undefined
+                                "
+                                class="font-mono text-[0.65rem] bg-base-300/60 text-base-content/55 px-1.5 py-px rounded"
+                                >{{ payload.dump.variable_type }}</span
+                            >
+                        </div>
+                        <DumpDump :payload="payload" />
                     </div>
 
-                    <!-- right-aligned badges: query info + related job -->
-                    <div class="flex items-center gap-2 ml-auto">
+                    <!-- Table V2 -->
+                    <DumpTableV2
+                        v-else-if="payload.type === 'table_v2' && payload.table_v2"
+                        :payload="payload"
+                    />
+
+                    <!-- Table -->
+                    <DumpTable
+                        v-else-if="payload.type === 'table' && payload.table"
+                        :payload="payload"
+                    />
+
+                    <!-- HTML -->
+                    <DumpHTML
+                        v-else-if="payload.type === 'html'"
+                        :payload="payload"
+                    />
+
+                    <!-- Time Track -->
+                    <DumpTimeTrack
+                        v-else-if="payload.type === 'time_track' && payload.time_track"
+                        :payload="payload"
+                    />
+
+                    <!-- Contains -->
+                    <DumpContains
+                        v-else-if="payload.type === 'contains' && payload.contains"
+                        :payload="payload"
+                    />
+
+                    <!-- JSON -->
+                    <DumpJson
+                        v-else-if="payload.type === 'json' && payload.json"
+                        :payload="payload"
+                    />
+
+                    <!-- Validate JSON -->
+                    <DumpIsJson
+                        v-else-if="payload.validate_json"
+                        :payload="payload"
+                    />
+
+                    <!-- Mailable -->
+                    <DumpMailable
+                        v-else-if="payload.type === 'mailable' && payload.mailable"
+                        :payload="payload"
+                    />
+
+                    <!-- Queries -->
+                    <div
+                        v-else-if="payload.type === 'queries'"
+                        @click.stop
+                        @dblclick.stop="prettifyQuery"
+                        class="w-full"
+                    >
+                        <DumpQueries
+                            :payload="payload"
+                            :is-prettified="isPrettified"
+                        />
+                    </div>
+
+                    <!-- Individual Query -->
+                    <div
+                        v-else-if="payload.type === 'query'"
+                        @click.stop
+                        class="w-full"
+                    >
+                        <DumpQuery :query="payload.query" />
+                    </div>
+
+                    <!-- Others -->
+                    <div
+                        v-else
+                        class="font-bold text-sm truncate"
+                    >
+                        {{ titleContent }}
+                    </div>
+
+                    <div
+                        v-if="payload.type === 'queries' || payload.related_job"
+                        class="flex flex-wrap items-center gap-2 text-[0.73rem]"
+                    >
                         <template v-if="payload.type === 'queries'">
                             <span
                                 v-if="payload.queries?.query?.connectionName"
                                 class="badge badge-ghost badge-xs p-1.5 font-mono opacity-70"
                             >
                                 {{ payload.queries.query.connectionName }}
-                            </span>
-                            <span
-                                v-if="payload.queries?.query?.time != null"
-                                class="badge badge-ghost badge-xs p-1.5 font-mono"
-                            >
-                                {{ payload.queries.query.time.toFixed(2) }}ms
                             </span>
                             <button
                                 v-if="payload.queries?.explain_nodes && payload.queries.explain_nodes.length > 0"
@@ -635,8 +615,43 @@ onUnmounted(() => {
             </div>
 
             <div
+                class="absolute top-1.5 right-2 z-10 flex gap-0.5 p-0.5 rounded-md bg-base-200 opacity-0 transition-opacity group-hover/item:opacity-100 focus-within:opacity-100"
+                @click.stop
+            >
+                <button
+                    type="button"
+                    :aria-label="$t('copy')"
+                    :title="$t('copy')"
+                    class="grid place-items-center size-6.5 rounded-md text-base-content/55 hover:bg-base-content/10 hover:text-base-content cursor-pointer"
+                    @click="deleteDump(payload.id)"
+                >
+                    <ClipboardIcon class="size-3.5" />
+                </button>
+                <button
+                    type="button"
+                    :aria-label="isSaved || inSavedWindow ? $t('remove_from_saved') : $t('save_dump')"
+                    :title="isSaved || inSavedWindow ? $t('remove_from_saved') : $t('save_dump')"
+                    class="grid place-items-center size-6.5 rounded-md hover:bg-base-content/10 hover:text-base-content cursor-pointer"
+                    :class="isSaved ? 'text-primary' : 'text-base-content/55'"
+                    @click="isSaved || inSavedWindow ? onRemoveFromSaved() : onSaveDump()"
+                >
+                    <BookmarkIcon class="size-3.5" />
+                </button>
+                <button
+                    v-if="!inSavedWindow"
+                    type="button"
+                    :aria-label="$t('delete')"
+                    :title="$t('delete')"
+                    class="grid place-items-center size-6.5 rounded-md text-base-content/55 hover:bg-error/10 hover:text-error cursor-pointer"
+                    @click="payloadStore.removePayload(payload.id)"
+                >
+                    <TrashIcon class="size-3.5" />
+                </button>
+            </div>
+
+            <div
                 v-show="open"
-                class="collapse-content !p-0 px-4 pb-4"
+                class="collapse-content p-0! pl-32! pr-3!"
             >
                 <div
                     class="relative"

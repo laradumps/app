@@ -124,6 +124,14 @@ export default {
         whats_new: 'Novedades'
     },
     pause: 'Pause',
+    resume: 'Reanudar',
+    confirm: {
+        clear_all_title: 'Limpiar todo',
+        clear_all_message:
+            '¿Eliminar todos los dumps, queries, logs, jobs, correos y demás datos capturados? Esta acción no se puede deshacer.',
+        empty_log_title: 'Vaciar archivo de log',
+        empty_log_message: 'Esto borra de forma permanente el contenido del archivo de log en el disco. ¿Continuar?'
+    },
     remove: 'Remove',
     collapse: 'Collapse all dumps',
     ssh: {
@@ -166,6 +174,6 @@ export default {
     },
     no_records_found: 'No records found.',
     app: {
-        inactive_banner: 'Deshabilitado, pero LaraDumps continúa capturando, lo que puede dejarlo un poco lento.'
+        inactive_banner: 'En pausa: los datos recibidos NO se capturan y se perderán hasta que reanudes.'
     }
 };
