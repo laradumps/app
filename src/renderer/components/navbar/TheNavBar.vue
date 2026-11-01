@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import NavBarProjectSwitcher from '@/components/navbar/NavBarProjectSwitcher.vue';
 
 const platform = ref('');

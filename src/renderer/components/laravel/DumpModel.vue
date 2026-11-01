@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { Payload } from '@/types/Payload';
 
 const props = defineProps<{

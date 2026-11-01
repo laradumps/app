@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import VueJsonPretty from 'vue-json-pretty';
-import { computed, defineProps } from 'vue';
+import { computed } from 'vue';
 import { Payload } from '@/types/Payload';
 
 const props = defineProps<{

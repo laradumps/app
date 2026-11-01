@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineEmits, ref, computed, nextTick, onMounted, onUnmounted, useAttrs, watch } from 'vue';
+import { ref, computed, nextTick, onMounted, onUnmounted, useAttrs, watch } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 

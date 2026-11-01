@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, nextTick, computed, ref } from 'vue';
+import { nextTick, computed, ref } from 'vue';
 import { Payload } from '@/types/Payload';
 import VueJsonPretty from 'vue-json-pretty';
 

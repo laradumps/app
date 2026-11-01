@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref, onUnmounted, computed } from 'vue';
+import { onMounted, ref, onUnmounted, computed } from 'vue';
 import { CodeSnippet } from '@/types/Payload';
 import hljs from 'highlight.js/lib/core';
 import DumpLink from '@/components/dumps/DumpLink.vue';

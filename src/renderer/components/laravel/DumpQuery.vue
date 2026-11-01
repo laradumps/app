@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps } from 'vue';
+import { computed } from 'vue';
 import { format } from 'sql-formatter';
 
 import hljs from 'highlight.js/lib/core';

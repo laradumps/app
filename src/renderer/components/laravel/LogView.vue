@@ -67,7 +67,7 @@ const toggleRequestSection = (logId: string) => {
 };
 
 const props = defineProps<{
-    items: Record<string, Log>;
+    items?: Record<string, Log>;
     inScreenWindow: boolean;
     yamlConfig?: Record<string, any>;
     hideHeader?: boolean;
