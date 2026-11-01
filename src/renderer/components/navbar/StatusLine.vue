@@ -77,7 +77,7 @@ watch(menuView, async (view, previous) => {
 });
 
 const onDocumentClick = (e: MouseEvent) => {
-    if (!rootRef.value?.contains(e.target as Node)) menuOpen.value = false;
+    if (!rootRef.value || !e.composedPath().includes(rootRef.value)) menuOpen.value = false;
 };
 
 onMounted(() => {
