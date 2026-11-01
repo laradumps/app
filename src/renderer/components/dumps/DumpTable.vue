@@ -106,7 +106,7 @@ const searchableTable = (search, id) => {
 
 <template>
     <div>
-        <div class="w-[calc(100vw-70px)] flex flex-col gap-3">
+        <div class="w-full flex flex-col gap-3">
             <div class="flex justify-end mt-1">
                 <label class="flex !justify-end input input-bordered input-sm gap-2 max-w-[300px]">
                     <input
