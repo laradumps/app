@@ -7,18 +7,17 @@ import DumpItem from '@/components/dumps/DumpItem.vue';
 import { useQueryDuplicated } from '@/store/query-duplicated';
 import { useQueriesBlockedStore } from '@/store/queries-blocked';
 import {
-    ArrowsRightLeftIcon,
     FunnelIcon,
     PlayIcon,
     AdjustmentsHorizontalIcon,
     TrashIcon,
     ArrowDownTrayIcon,
-    CogIcon,
-    MagnifyingGlassIcon
+    CogIcon
 } from '@heroicons/vue/24/outline';
+import { BoltIcon, DocumentDuplicateIcon } from '@heroicons/vue/20/solid';
 import tippy from 'tippy.js';
 import { usePendingRequestsStore } from '@/store/pending-requests';
-import QueriesRequests from '@/components/laravel/QueriesRequests.vue';
+import RequestSwitcher from '@/components/common/RequestSwitcher.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
 import PauseBanner from '@/components/common/PauseBanner.vue';
@@ -32,12 +31,12 @@ import { defineAsyncComponent } from 'vue';
 const QueriesChart = defineAsyncComponent(() => import('@/components/laravel/QueriesChart.vue'));
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import DumpQueries from '@/components/laravel/DumpQueries.vue';
-import BaseDrawer from '@/components/common/BaseDrawer.vue';
+import { formatDuration } from '@/components/laravel/profile/profileHelpers';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 import { useFormattedQueriesStore } from '@/store/formatted-queries';
-import { convertMsToHumanReadable, exportQueriesToSQL } from '@/utils/queriesUtils';
+import { exportQueriesToSQL } from '@/utils/queriesUtils';
 import { groupByTime } from '@/utils/dumpGrouping';
 import { useSettingsStore } from '@/store/settings';
 import { useCurrentProject } from '@/store/current-project';
@@ -54,8 +53,6 @@ const duplicatesStore = useQueryDuplicated();
 const formattedQueriesStore = useFormattedQueriesStore();
 const settingsStore = useSettingsStore();
 const currentProjectStore = useCurrentProject();
-
-const isRequestsDrawerOpen = ref(false);
 
 const props = defineProps<{
     items?: [];
@@ -98,27 +95,29 @@ const availableOrigins = computed(() => {
     ];
 });
 
-const filteredRequestsCount = computed(() => {
-    let requests = timeStore.groups.map((requestId: string) => ({
-        label: timeStore.getUri(requestId),
-        method: timeStore.getMethod(requestId),
-        count: queriesStore.payload.filter((payload: Payload) => payload.request_id == requestId).length,
-        time: timeStore.getTotal(requestId)
-    }));
-
-    if (timeStore.search?.trim()) {
-        const searchLower = timeStore.search.toLowerCase();
-        requests = requests.filter(
-            (req) =>
-                req.label?.toLowerCase().includes(searchLower) ||
-                req.method?.toLowerCase().includes(searchLower) ||
-                String(req.count).includes(searchLower) ||
-                req.time.toString().includes(searchLower)
-        );
+const queriesPerRequest = computed(() => {
+    const counts = new Map<string, number>();
+    for (const payload of queriesStore.payload as Payload[]) {
+        counts.set(payload.request_id, (counts.get(payload.request_id) ?? 0) + 1);
     }
-
-    return requests.length;
+    return counts;
 });
+
+const requestItems = computed(() =>
+    [...timeStore.groups].reverse().map((id: string) => ({
+        id,
+        method: timeStore.getMethod(id),
+        label: timeStore.getUri(id) || 'Tinker',
+        date: timeStore.getDate(id),
+        count: queriesPerRequest.value.get(id) ?? 0,
+        duration: timeStore.getTotal(id)
+    }))
+);
+
+const selectRequest = (id: string | null | undefined) => {
+    duplicatesStore.showOnlyDuplicated = false;
+    timeStore.setSelectedRequest(id ?? null);
+};
 
 const sourceItems = computed<Payload[]>(() => props.items ?? queriesStore.payload);
 
@@ -226,10 +225,6 @@ function toggleChartType(type: string) {
     }
 }
 
-const openRequestsModal = () => {
-    isRequestsDrawerOpen.value = true;
-};
-
 const handleConfigChanged = (section: string, key: string, value: boolean) => {
     if (!props.yamlConfig || !currentProjectStore.projectInfo?.path) {
         console.warn('Cannot update YAML config: missing yamlConfig or project path');
@@ -288,17 +283,8 @@ const toggleYamlControl = (section: string, key: string, currentValue: boolean) 
     handleConfigChanged(section, key, newValue);
 };
 
-const getQueriesCount = (requestId: string): number => {
-    return queriesStore.payload.filter((payload: Payload) => payload.request_id === requestId).length;
-};
-
 const handleExportQueriesToSQL = async () => {
     await exportQueriesToSQL(sourceItems.value, timeStore.selected);
-};
-
-const getHumanReadableTime = (): string => {
-    const ms = timeStore.getTotal(timeStore.selected);
-    return convertMsToHumanReadable(ms);
 };
 
 const setOrder = (order: string) => {
@@ -652,33 +638,6 @@ const setOrder = (order: string) => {
         <!-- Pause Banner -->
         <PauseBanner :paused="pauseQueries.is_paused" />
 
-        <BaseDrawer
-            id="queries-requests-drawer"
-            v-model="isRequestsDrawerOpen"
-            title="Requests"
-            width="600px"
-        >
-            <div class="flex flex-col h-full">
-                <!-- Search bar -->
-                <div class="flex items-center gap-2 px-4 py-3 border-b border-base-content/10">
-                    <label class="input input-sm input-bordered flex items-center gap-2 h-8 grow rounded-lg">
-                        <MagnifyingGlassIcon class="w-3.5 opacity-50" />
-                        <input
-                            v-model="timeStore.search"
-                            type="text"
-                            class="grow text-xs"
-                            :placeholder="$t('profiler.filter')"
-                        />
-                    </label>
-                    <span class="badge badge-ghost badge-sm font-mono">{{ filteredRequestsCount }}</span>
-                </div>
-
-                <div class="flex-1 overflow-auto">
-                    <QueriesRequests />
-                </div>
-            </div>
-        </BaseDrawer>
-
         <!-- Chart Modal -->
         <dialog
             id="chart_selected_query"
@@ -720,27 +679,56 @@ const setOrder = (order: string) => {
             class="flex-1 min-h-0 flex flex-col"
             v-if="queriesStore.payload.length > 0 && timeStore.selected"
         >
-            <div class="shrink-0 flex justify-between items-center gap-3 px-3 py-2">
+            <RequestSwitcher
+                :items="requestItems"
+                :count-label="$t('switcher.queries_column')"
+                :model-value="timeStore.selected"
+                @update:model-value="selectRequest"
+            >
+                <template #flags="{ item }">
+                    <span
+                        v-if="queriesStore.hasExplainNodes(item.id)"
+                        :title="$t('switcher.has_explain')"
+                    >
+                        <BoltIcon class="size-3.5 text-warning" />
+                    </span>
+                    <span
+                        v-if="duplicatesStore.requestsWithDuplicates.has(item.id)"
+                        :title="$t('switcher.has_duplicates')"
+                    >
+                        <DocumentDuplicateIcon class="size-3.5 text-error" />
+                    </span>
+                </template>
+
                 <button
-                    class="max-w-1/2 btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
-                    @click="openRequestsModal()"
+                    v-if="duplicatesStore.hasDuplicatesInCurrentRequest"
+                    type="button"
+                    :aria-pressed="duplicatesStore.showOnlyDuplicated"
+                    :aria-label="$t('switcher.duplicated', { n: duplicatesStore.totalForCurrentRequest })"
+                    :title="$t('switcher.duplicated', { n: duplicatesStore.totalForCurrentRequest })"
+                    class="flex items-center gap-1 h-6 px-2 rounded-full text-[0.7rem] whitespace-nowrap cursor-pointer transition-colors"
+                    :class="
+                        duplicatesStore.showOnlyDuplicated
+                            ? 'bg-error text-error-content'
+                            : 'bg-error/15 text-error hover:bg-error/25'
+                    "
+                    @click="duplicatesStore.toggleShowOnlyDuplicated()"
                 >
-                    <ArrowsRightLeftIcon class="w-4 shrink-0" />
-                    <span class="opacity-80 shrink-0"> ({{ timeStore.getRequestCount() }}) </span>
-                    <span class="truncate min-w-0">{{
-                        timeStore.getSelectedRequest().uri ? timeStore.getSelectedRequest().uri : 'Tinker'
+                    <DocumentDuplicateIcon class="size-3.5" />
+                    <span class="@max-lg:hidden">{{
+                        $t('switcher.duplicated', { n: duplicatesStore.totalForCurrentRequest })
                     }}</span>
+                    <span class="@lg:hidden">{{ duplicatesStore.totalForCurrentRequest }}</span>
                 </button>
-                <div class="flex items-center gap-2">
-                    <div class="badge badge-ghost badge-sm font-mono">
-                        {{ getQueriesCount(timeStore.selected) }}
-                        {{ getQueriesCount(timeStore.selected) === 1 ? 'query' : 'queries' }}
-                    </div>
-                    <div class="badge badge-primary badge-sm font-mono">
-                        {{ getHumanReadableTime() }}
-                    </div>
-                </div>
-            </div>
+                <span class="flex gap-1 font-mono text-xs text-base-content/60 tabular-nums whitespace-nowrap">
+                    <span class="@max-xl:hidden">
+                        {{ $t('switcher.queries', queriesPerRequest.get(timeStore.selected) ?? 0) }} ·
+                    </span>
+                    <span :class="timeStore.getTotal(timeStore.selected) >= 100 ? 'text-warning' : 'text-base-content'">
+                        {{ formatDuration(timeStore.getTotal(timeStore.selected)) }}
+                    </span>
+                </span>
+            </RequestSwitcher>
 
             <QueriesChart
                 v-if="!['none', 'percentage-colors'].includes(queriesChart.type)"

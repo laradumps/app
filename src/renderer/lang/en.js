@@ -36,6 +36,18 @@ export default {
         off: 'Off',
         enabled_count: '{n} on'
     },
+    switcher: {
+        previous: 'Previous request',
+        next: 'Next request',
+        filter: 'Filter {n} requests',
+        hint: '↑↓ navigate · Enter open · Esc close',
+        duration: 'Time',
+        queries: '{n} query | {n} queries',
+        queries_column: 'queries',
+        duplicated: '{n} duplicated',
+        has_duplicates: 'Has duplicated queries',
+        has_explain: 'Has EXPLAIN plan'
+    },
     settings: {
         settings: 'Settings',
         layout: 'Layout',
@@ -285,8 +297,6 @@ export default {
             note: 'Profiling stays off until the SDK is installed.',
             recheck: 'Recheck'
         },
-        profiles: 'Profiles',
-        filter: 'Filter…',
         entries: 'entries',
         no_profiles_found_matching: 'No profiles match “{search}”',
         hiding_fast_methods: 'Hiding fast methods —',

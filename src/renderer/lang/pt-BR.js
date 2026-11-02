@@ -36,6 +36,18 @@ export default {
         off: 'Desligado',
         enabled_count: '{n} ativos'
     },
+    switcher: {
+        previous: 'Request anterior',
+        next: 'Próximo request',
+        filter: 'Filtrar {n} requests',
+        hint: '↑↓ navegar · Enter abrir · Esc fechar',
+        duration: 'Tempo',
+        queries: '{n} query | {n} queries',
+        queries_column: 'queries',
+        duplicated: '{n} duplicadas',
+        has_duplicates: 'Tem queries duplicadas',
+        has_explain: 'Tem plano EXPLAIN'
+    },
     settings: {
         settings: 'Configurações',
         layout: 'Layout',
@@ -277,8 +289,6 @@ export default {
             note: 'O profiling fica desligado até o SDK ser instalado.',
             recheck: 'Verificar novamente'
         },
-        profiles: 'Perfis',
-        filter: 'Filtrar…',
         entries: 'entradas',
         no_profiles_found_matching: 'Nenhum perfil corresponde a “{search}”',
         hiding_fast_methods: 'Ocultando métodos rápidos —',

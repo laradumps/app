@@ -16,7 +16,6 @@ export type Request = {
 type RequestsMap = Record<string, Request>;
 
 type State = {
-    search: string;
     requests: RequestsMap;
     groups: string[];
     dump_ids: string[];
@@ -26,7 +25,6 @@ type State = {
 
 export const useTimeStore = defineStore('timeStore', {
     state: (): State => ({
-        search: '',
         requests: {},
         groups: [],
         dump_ids: [],
