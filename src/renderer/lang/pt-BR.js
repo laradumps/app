@@ -48,6 +48,28 @@ export default {
         has_duplicates: 'Tem queries duplicadas',
         has_explain: 'Tem plano EXPLAIN'
     },
+    queries_view: {
+        mode: 'Modo de exibição',
+        list: 'Lista',
+        list_title: 'Mostrar as queries deste request',
+        waterfall: 'Cascata',
+        waterfall_title: 'Destacar cada query pela fatia do tempo do request',
+        chart: 'Gráfico',
+        chart_title: 'Gráfico do tempo das queries deste request',
+        chart_all: 'Todos',
+        chart_all_title: 'Gráfico do tempo das queries de todos os requests',
+        actions: 'Ações',
+        sort: 'Ordenar por tempo da query',
+        arrival: 'Ordem de chegada',
+        slowest: 'Mais lentas primeiro',
+        fastest: 'Mais rápidas primeiro',
+        prettify: 'Formatar SQL',
+        export: 'Exportar este request',
+        filter: 'Filtrar',
+        class: 'Classe',
+        no_filters: 'Nada para filtrar neste request',
+        project_config: 'Config do projeto'
+    },
     settings: {
         settings: 'Configurações',
         layout: 'Layout',

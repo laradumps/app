@@ -9,15 +9,24 @@ import { useQueriesBlockedStore } from '@/store/queries-blocked';
 import {
     FunnelIcon,
     PlayIcon,
-    AdjustmentsHorizontalIcon,
+    EllipsisHorizontalIcon,
     TrashIcon,
     ArrowDownTrayIcon,
-    CogIcon
+    CodeBracketIcon
 } from '@heroicons/vue/24/outline';
-import { BoltIcon, DocumentDuplicateIcon } from '@heroicons/vue/20/solid';
+import {
+    Bars3BottomLeftIcon,
+    BoltIcon,
+    CheckIcon,
+    DocumentDuplicateIcon,
+    ListBulletIcon,
+    PresentationChartLineIcon,
+    Squares2X2Icon
+} from '@heroicons/vue/20/solid';
 import tippy from 'tippy.js';
 import { usePendingRequestsStore } from '@/store/pending-requests';
 import RequestSwitcher from '@/components/common/RequestSwitcher.vue';
+import MenuRow from '@/components/navbar/MenuRow.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
 import PauseBanner from '@/components/common/PauseBanner.vue';
@@ -217,13 +226,18 @@ const groupedQueries = computed(() => {
     return groupByTime(visible);
 });
 
-function toggleChartType(type: string) {
-    if (queriesChart.type === type) {
-        queriesChart.setType('none');
-    } else {
-        queriesChart.setType(type);
-    }
-}
+const viewModes = [
+    { type: 'none', icon: ListBulletIcon, key: 'list' },
+    { type: 'percentage-colors', icon: Bars3BottomLeftIcon, key: 'waterfall' },
+    { type: 'by-request', icon: PresentationChartLineIcon, key: 'chart' },
+    { type: 'all', icon: Squares2X2Icon, key: 'chart_all' }
+];
+
+const sortOrders = [
+    { order: 'default', key: 'arrival' },
+    { order: 'desc', key: 'slowest' },
+    { order: 'asc', key: 'fastest' }
+];
 
 const handleConfigChanged = (section: string, key: string, value: boolean) => {
     if (!props.yamlConfig || !currentProjectStore.projectInfo?.path) {
@@ -239,31 +253,6 @@ const handleConfigChanged = (section: string, key: string, value: boolean) => {
         values: { [key]: value }
     });
 };
-
-const yamlObservers = computed(() => {
-    const observers = props.yamlConfig?.observers;
-    if (!observers) return [];
-
-    const controls = [];
-
-    if (observers.hasOwnProperty('queries')) {
-        controls.push({
-            key: 'queries',
-            label: 'Enable Queries',
-            enabled: observers.queries === true
-        });
-    }
-
-    if (observers.hasOwnProperty('slow_queries')) {
-        controls.push({
-            key: 'slow_queries',
-            label: 'Slow Queries',
-            enabled: observers.slow_queries === true
-        });
-    }
-
-    return controls;
-});
 
 const yamlQueryOptions = computed(() => {
     const queries = props.yamlConfig?.queries;
@@ -290,6 +279,12 @@ const handleExportQueriesToSQL = async () => {
 const setOrder = (order: string) => {
     timeStore.order = order;
 };
+
+const toggleFilter = (list: string[], value: string) => {
+    const index = list.indexOf(value);
+    if (index === -1) list.push(value);
+    else list.splice(index, 1);
+};
 </script>
 
 <template>
@@ -298,41 +293,29 @@ const setOrder = (order: string) => {
         <ViewToolbar
             v-if="!hideHeader"
             class="shrink-0"
-            :count="queries.length"
-            noun="query"
         >
             <template #chips>
-                <FilterChip
-                    v-if="duplicatesStore.showOnlyDuplicated"
-                    label="Duplicated"
-                    @remove="duplicatesStore.toggleShowOnlyDuplicated()"
-                />
                 <FilterChip
                     v-for="o in filteredOrigins"
                     :key="'o-' + o"
                     :label="o"
-                    @remove="filteredOrigins = filteredOrigins.filter((x) => x !== o)"
+                    @remove="toggleFilter(filteredOrigins, o)"
                 />
                 <FilterChip
                     v-for="c in filteredClasses"
                     :key="'c-' + c"
                     :label="c.split('\\').pop() || c"
-                    @remove="filteredClasses = filteredClasses.filter((x) => x !== c)"
+                    @remove="toggleFilter(filteredClasses, c)"
                 />
             </template>
 
             <template #filter>
-                <!-- Filter -->
                 <div class="dropdown dropdown-bottom dropdown-start">
                     <IconButton
                         tabindex="0"
                         role="button"
-                        label="Filter"
-                        :active="
-                            filteredClasses.length > 0 ||
-                            filteredOrigins.length > 0 ||
-                            duplicatesStore.showOnlyDuplicated
-                        "
+                        :label="$t('queries_view.filter')"
+                        :active="filteredClasses.length > 0 || filteredOrigins.length > 0"
                         :disabled="!['none', 'percentage-colors'].includes(queriesChart.type)"
                         @click.stop
                     >
@@ -341,270 +324,130 @@ const setOrder = (order: string) => {
 
                     <div
                         tabindex="0"
-                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 w-64"
+                        role="menu"
+                        :aria-label="$t('queries_view.filter')"
+                        class="dropdown-content mt-2 z-[200] w-56 p-1 rounded-lg border border-base-content/10 bg-base-100 shadow-xl"
                     >
-                        <ul>
-                            <li
-                                v-show="duplicatesStore.hasDuplicatesInCurrentRequest"
-                                @click="duplicatesStore.toggleShowOnlyDuplicated"
-                                :class="{
-                                    'bg-base-content/10 text-base-content font-medium':
-                                        duplicatesStore.showOnlyDuplicated,
-                                    'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
-                                        !duplicatesStore.showOnlyDuplicated
-                                }"
+                        <template v-if="availableOrigins.length">
+                            <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">{{ $t('origin') }}</p>
+                            <MenuRow
+                                v-for="option in availableOrigins"
+                                :key="'o-' + option"
+                                role="menuitemcheckbox"
+                                :aria-checked="filteredOrigins.includes(option)"
+                                :label="option.charAt(0).toUpperCase() + option.slice(1)"
+                                @click="toggleFilter(filteredOrigins, option)"
                             >
-                                <a class="!text-xs">Duplicated</a>
-                            </li>
+                                <CheckIcon
+                                    class="size-4 text-primary"
+                                    :class="{ invisible: !filteredOrigins.includes(option) }"
+                                />
+                            </MenuRow>
+                        </template>
 
-                            <li>
-                                <a
-                                    href="#"
-                                    class="!text-xs text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
-                                    >{{ $t('origin') }}</a
-                                >
-                                <ul tabindex="0">
-                                    <li
-                                        v-for="option in availableOrigins"
-                                        :key="option"
-                                    >
-                                        <label class="!text-xs">
-                                            <input
-                                                type="checkbox"
-                                                :value="option"
-                                                :checked="filteredOrigins.includes(option)"
-                                                @change="
-                                                    () => {
-                                                        if (filteredOrigins.includes(option)) {
-                                                            filteredOrigins = filteredOrigins.filter(
-                                                                (o) => o !== option
-                                                            );
-                                                        } else {
-                                                            filteredOrigins.push(option);
-                                                        }
-                                                    }
-                                                "
-                                                class="checkbox checkbox-sm"
-                                            />
-                                            {{ option.charAt(0).toUpperCase() + option.slice(1) }}
-                                        </label>
-                                    </li>
-                                </ul>
-                            </li>
+                        <div
+                            v-if="availableOrigins.length && availableClasses.length"
+                            class="my-1 h-px bg-base-content/10"
+                        ></div>
 
-                            <li>
-                                <a
-                                    href="#"
-                                    class="!text-xs text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
-                                    >Class</a
-                                >
-                                <ul tabindex="0">
-                                    <li
-                                        v-for="className in availableClasses"
-                                        :key="className"
-                                    >
-                                        <label class="!text-xs">
-                                            <input
-                                                type="checkbox"
-                                                :value="className"
-                                                :checked="filteredClasses.includes(className)"
-                                                @change="
-                                                    () => {
-                                                        if (filteredClasses.includes(className)) {
-                                                            filteredClasses = filteredClasses.filter(
-                                                                (c) => c !== className
-                                                            );
-                                                        } else {
-                                                            filteredClasses.push(className);
-                                                        }
-                                                    }
-                                                "
-                                                class="checkbox checkbox-sm"
-                                            />
-                                            <span class="whitespace-nowrap">{{ className.split('\\').pop() }}</span>
-                                        </label>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
+                        <template v-if="availableClasses.length">
+                            <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">
+                                {{ $t('queries_view.class') }}
+                            </p>
+                            <MenuRow
+                                v-for="className in availableClasses"
+                                :key="'c-' + className"
+                                role="menuitemcheckbox"
+                                :aria-checked="filteredClasses.includes(className)"
+                                :label="className.split('\\').pop() || className"
+                                :title="className"
+                                @click="toggleFilter(filteredClasses, className)"
+                            >
+                                <CheckIcon
+                                    class="size-4 text-primary"
+                                    :class="{ invisible: !filteredClasses.includes(className) }"
+                                />
+                            </MenuRow>
+                        </template>
+
+                        <p
+                            v-if="!availableOrigins.length && !availableClasses.length"
+                            class="px-2 py-2 text-xs text-base-content/45"
+                        >
+                            {{ $t('queries_view.no_filters') }}
+                        </p>
                     </div>
                 </div>
             </template>
 
             <template #right>
-                <!-- YAML Configuration Dropdown -->
+                <!-- Actions Dropdown -->
                 <div class="dropdown dropdown-bottom dropdown-end">
                     <IconButton
                         tabindex="0"
                         role="button"
-                        label="Settings"
-                        variant="base"
-                    >
-                        <CogIcon class="w-4" />
-                    </IconButton>
-                    <div
-                        tabindex="0"
-                        class="p-2 shadow-xl dropdown-content menu bg-base-300 backdrop-blur-xl rounded-xl border-0 z-[100] w-auto min-w-35"
-                    >
-                        <div v-if="yamlQueryOptions.length > 0">
-                            <div class="menu-title mb-2">
-                                <span class="text-[9px] text-base-content/40 font-bold uppercase tracking-widest"
-                                    >Query options</span
-                                >
-                            </div>
-                            <div class="flex flex-col gap-1.5">
-                                <button
-                                    v-for="control in yamlQueryOptions"
-                                    :key="control.key"
-                                    @click="toggleYamlControl('queries', control.key, control.enabled)"
-                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
-                                    :class="
-                                        control.enabled
-                                            ? 'bg-base-content/10 text-base-content font-medium'
-                                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                                    "
-                                >
-                                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
-                                        <span
-                                            v-if="control.enabled"
-                                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                                        ></span>
-                                        <span
-                                            class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                            :class="control.enabled ? 'bg-success' : 'bg-base-content/20'"
-                                        ></span>
-                                    </div>
-                                    <span class="truncate capitalize text-xs whitespace-nowrap">{{
-                                        control.label
-                                    }}</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div
-                            v-if="yamlObservers.length === 0 && yamlQueryOptions.length === 0"
-                            class="text-xs text-base-content/60 p-2"
-                        >
-                            No query configuration available
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Actions Dropdown -->
-                <div
-                    v-if="queries.length > 0"
-                    class="dropdown dropdown-bottom dropdown-end"
-                >
-                    <IconButton
-                        tabindex="0"
-                        role="button"
-                        label="Actions"
+                        :label="$t('queries_view.actions')"
                         variant="base"
                         @click.stop
                     >
-                        <AdjustmentsHorizontalIcon class="size-4" />
+                        <EllipsisHorizontalIcon class="size-4" />
                     </IconButton>
 
-                    <ul
+                    <div
                         tabindex="0"
-                        class="dropdown-content mt-2 z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 w-64"
+                        role="menu"
+                        :aria-label="$t('queries_view.actions')"
+                        class="dropdown-content mt-2 z-[200] w-56 p-1 rounded-lg border border-base-content/10 bg-base-100 shadow-xl"
                     >
-                        <li
-                            @click="formattedQueriesStore.toggle()"
-                            :class="{
-                                'bg-base-content/10 text-base-content font-medium': formattedQueriesStore.formatted,
-                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
-                                    !formattedQueriesStore.formatted
-                            }"
+                        <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">{{ $t('queries_view.sort') }}</p>
+                        <MenuRow
+                            v-for="sort in sortOrders"
+                            :key="sort.order"
+                            role="menuitemradio"
+                            :aria-checked="(timeStore.order || 'default') === sort.order"
+                            :label="$t(`queries_view.${sort.key}`)"
+                            @click="setOrder(sort.order)"
                         >
-                            <a class="!text-xs flex items-center gap-2"> Prettify </a>
-                        </li>
+                            <CheckIcon
+                                class="size-4 text-primary"
+                                :class="{ invisible: (timeStore.order || 'default') !== sort.order }"
+                            />
+                        </MenuRow>
 
-                        <li class="menu-title my-1 uppercase !pl-1">
-                            <span class="!text-xs text-base-content/60 font-light">Sort Order</span>
-                        </li>
+                        <div class="my-1 h-px bg-base-content/10"></div>
 
-                        <li
-                            @click="setOrder('default')"
-                            :class="{
-                                'bg-base-content/10 text-base-content font-medium':
-                                    timeStore.order === 'default' || !timeStore.order,
-                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
-                                    timeStore.order !== 'default' && timeStore.order
-                            }"
+                        <MenuRow
+                            toggle
+                            :label="$t('queries_view.prettify')"
+                            :model-value="formattedQueriesStore.formatted"
+                            @update:model-value="formattedQueriesStore.toggle()"
                         >
-                            <a class="!text-xs">Default</a>
-                        </li>
-                        <li
-                            @click="setOrder('asc')"
-                            :class="{
-                                'bg-base-content/10 text-base-content font-medium': timeStore.order === 'asc',
-                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
-                                    timeStore.order !== 'asc'
-                            }"
+                            <CodeBracketIcon class="size-4" />
+                        </MenuRow>
+                        <MenuRow
+                            v-if="queries.length > 0"
+                            :label="$t('queries_view.export')"
+                            value=".sql"
+                            @click="handleExportQueriesToSQL()"
                         >
-                            <a class="!text-xs">Ascending</a>
-                        </li>
-                        <li
-                            @click="setOrder('desc')"
-                            :class="{
-                                'bg-base-content/10 text-base-content font-medium': timeStore.order === 'desc',
-                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
-                                    timeStore.order !== 'desc'
-                            }"
-                        >
-                            <a class="!text-xs">Descending</a>
-                        </li>
+                            <ArrowDownTrayIcon class="size-4" />
+                        </MenuRow>
 
-                        <li class="menu-title my-1 uppercase !pl-1">
-                            <span class="!text-xs text-base-content/60 font-light">Appearance</span>
-                        </li>
-
-                        <li
-                            @click="toggleChartType('all')"
-                            :class="{
-                                'bg-base-content/10 text-base-content font-medium': queriesChart.type === 'all',
-                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
-                                    queriesChart.type !== 'all'
-                            }"
-                        >
-                            <a class="!text-xs">Chart - All Requests</a>
-                        </li>
-                        <li
-                            @click="toggleChartType('by-request')"
-                            :class="{
-                                'bg-base-content/10 text-base-content font-medium': queriesChart.type === 'by-request',
-                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
-                                    queriesChart.type !== 'by-request'
-                            }"
-                        >
-                            <a class="!text-xs">Chart - By Request</a>
-                        </li>
-                        <li
-                            @click="toggleChartType('percentage-colors')"
-                            :class="{
-                                'bg-base-content/10 text-base-content font-medium':
-                                    queriesChart.type === 'percentage-colors',
-                                'text-base-content/70 hover:bg-base-content/5 hover:text-base-content':
-                                    queriesChart.type !== 'percentage-colors'
-                            }"
-                        >
-                            <a class="!text-xs">Percentage Colors</a>
-                        </li>
-
-                        <li class="menu-title my-1 uppercase !pl-1">
-                            <span class="!text-xs text-base-content/60 font-light">Tools</span>
-                        </li>
-
-                        <li @click="handleExportQueriesToSQL()">
-                            <a
-                                class="!text-xs flex items-center gap-2 text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
-                            >
-                                <ArrowDownTrayIcon class="w-4" />
-                                Export SQL
-                            </a>
-                        </li>
-                    </ul>
+                        <template v-if="yamlQueryOptions.length">
+                            <div class="my-1 h-px bg-base-content/10"></div>
+                            <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">
+                                {{ $t('queries_view.project_config') }}
+                            </p>
+                            <MenuRow
+                                v-for="control in yamlQueryOptions"
+                                :key="control.key"
+                                toggle
+                                :label="control.label"
+                                :model-value="control.enabled"
+                                @update:model-value="toggleYamlControl('queries', control.key, control.enabled)"
+                            />
+                        </template>
+                    </div>
                 </div>
 
                 <!-- Pause -->
@@ -720,8 +563,38 @@ const setOrder = (order: string) => {
                     }}</span>
                     <span class="@lg:hidden">{{ duplicatesStore.totalForCurrentRequest }}</span>
                 </button>
-                <span class="flex gap-1 font-mono text-xs text-base-content/60 tabular-nums whitespace-nowrap">
-                    <span class="@max-xl:hidden">
+                <div
+                    role="radiogroup"
+                    :aria-label="$t('queries_view.mode')"
+                    class="flex p-0.5 rounded-md bg-base-content/5"
+                >
+                    <button
+                        v-for="mode in viewModes"
+                        :key="mode.type"
+                        type="button"
+                        role="radio"
+                        :aria-checked="queriesChart.type === mode.type"
+                        :aria-label="$t(`queries_view.${mode.key}`)"
+                        :title="$t(`queries_view.${mode.key}_title`)"
+                        class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                        :class="
+                            queriesChart.type === mode.type
+                                ? 'bg-base-content/15 text-base-content'
+                                : 'text-base-content/50 hover:text-base-content'
+                        "
+                        @click="queriesChart.setType(mode.type)"
+                    >
+                        <component
+                            :is="mode.icon"
+                            class="w-3"
+                        />
+                        <span class="@max-3xl:hidden">{{ $t(`queries_view.${mode.key}`) }}</span>
+                    </button>
+                </div>
+                <span
+                    class="@max-md:hidden flex gap-1 font-mono text-xs text-base-content/60 tabular-nums whitespace-nowrap"
+                >
+                    <span class="@max-2xl:hidden">
                         {{ $t('switcher.queries', queriesPerRequest.get(timeStore.selected) ?? 0) }} ·
                     </span>
                     <span :class="timeStore.getTotal(timeStore.selected) >= 100 ? 'text-warning' : 'text-base-content'">
@@ -738,7 +611,7 @@ const setOrder = (order: string) => {
 
             <div
                 v-else
-                class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 pb-3"
+                class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
             >
                 <div
                     v-for="(group, groupKey) in groupedQueries"

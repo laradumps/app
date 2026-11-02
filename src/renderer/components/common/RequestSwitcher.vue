@@ -129,7 +129,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
                 {{ current.method }}
             </span>
             <span class="truncate text-xs">{{ current?.label }}</span>
-            <span class="shrink-0 font-mono text-[0.7rem] text-base-content/45 tabular-nums">
+            <span class="@max-md:hidden shrink-0 font-mono text-[0.7rem] text-base-content/45 tabular-nums">
                 {{ items.length - position }}/{{ items.length }}
             </span>
             <ChevronDownIcon class="size-3.5 shrink-0 text-base-content/45" />

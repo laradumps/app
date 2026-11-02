@@ -2,14 +2,7 @@
 import { computed, ref } from 'vue';
 import { useProfileStore, type ProfileEntry } from '@/store/profile';
 import { useCurrentProject } from '@/store/current-project';
-import {
-    ClockIcon,
-    CogIcon,
-    FireIcon,
-    Square3Stack3DIcon,
-    TrashIcon,
-    PlayIcon
-} from '@heroicons/vue/24/outline';
+import { ClockIcon, CogIcon, FireIcon, Square3Stack3DIcon, TrashIcon, PlayIcon } from '@heroicons/vue/24/outline';
 import EmptyState from '@/components/common/EmptyState.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
@@ -300,10 +293,14 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                 @update:model-value="selectProfile"
             >
                 <div class="flex items-center gap-2">
-                    <div class="join">
+                    <div class="flex p-0.5 rounded-md bg-base-content/5">
                         <button
-                            class="btn btn-soft btn-xs join-item gap-1"
-                            :class="viewMode === 'timeline' ? 'btn-active' : 'btn-ghost'"
+                            class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                            :class="
+                                viewMode === 'timeline'
+                                    ? 'bg-base-content/15 text-base-content'
+                                    : 'text-base-content/50 hover:text-base-content'
+                            "
                             :aria-label="$t('profiler.timeline')"
                             :title="$t('profiler.timeline')"
                             @click="viewMode = 'timeline'"
@@ -312,8 +309,12 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                             <span class="@max-xl:hidden">{{ $t('profiler.timeline') }}</span>
                         </button>
                         <button
-                            class="btn btn-soft btn-xs join-item gap-1"
-                            :class="viewMode === 'hotspots' ? 'btn-active' : 'btn-ghost'"
+                            class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                            :class="
+                                viewMode === 'hotspots'
+                                    ? 'bg-base-content/15 text-base-content'
+                                    : 'text-base-content/50 hover:text-base-content'
+                            "
                             :aria-label="$t('profiler.hotspots')"
                             :title="$t('profiler.hotspots')"
                             @click="viewMode = 'hotspots'"
@@ -322,8 +323,12 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                             <span class="@max-xl:hidden">{{ $t('profiler.hotspots') }}</span>
                         </button>
                         <button
-                            class="btn btn-soft btn-xs join-item gap-1"
-                            :class="viewMode === 'flame' ? 'btn-active' : 'btn-ghost'"
+                            class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                            :class="
+                                viewMode === 'flame'
+                                    ? 'bg-base-content/15 text-base-content'
+                                    : 'text-base-content/50 hover:text-base-content'
+                            "
                             :aria-label="$t('profiler.flame')"
                             :title="$t('profiler.flame')"
                             @click="viewMode = 'flame'"

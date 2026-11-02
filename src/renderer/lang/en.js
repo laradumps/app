@@ -48,6 +48,28 @@ export default {
         has_duplicates: 'Has duplicated queries',
         has_explain: 'Has EXPLAIN plan'
     },
+    queries_view: {
+        mode: 'View mode',
+        list: 'List',
+        list_title: 'Show the queries of this request',
+        waterfall: 'Waterfall',
+        waterfall_title: 'Shade each query by its share of the request time',
+        chart: 'Chart',
+        chart_title: 'Chart the query times of this request',
+        chart_all: 'All',
+        chart_all_title: 'Chart the query times of every request',
+        actions: 'Actions',
+        sort: 'Sort by query time',
+        arrival: 'Arrival order',
+        slowest: 'Slowest first',
+        fastest: 'Fastest first',
+        prettify: 'Prettify SQL',
+        export: 'Export this request',
+        filter: 'Filter',
+        class: 'Class',
+        no_filters: 'Nothing to filter in this request',
+        project_config: 'Project config'
+    },
     settings: {
         settings: 'Settings',
         layout: 'Layout',
