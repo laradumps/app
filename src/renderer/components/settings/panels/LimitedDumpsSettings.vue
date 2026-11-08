@@ -124,10 +124,7 @@ const saveNumber = (event: Event, key: NumericSetting) => {
             />
         </SettingsRow>
 
-        <SettingsRow
-            :label="$t('settings.dump_order')"
-            :hint="$t('settings.hints.dump_order')"
-        >
+        <SettingsRow :label="$t('settings.dump_order')">
             <SegmentedInput
                 v-model="settingsStore.settings.dump_order"
                 :label="$t('settings.dump_order')"

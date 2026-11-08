@@ -152,37 +152,21 @@ export default {
         layout_side: 'Side',
         sections: {
             capture: 'Capture & retention',
-            capture_sub: 'Limits, memory, order',
             reading: 'Reading dumps',
-            reading_sub: 'Types, context, grouping',
             appearance: 'Appearance',
-            appearance_sub: 'Theme, layout, transparency',
             notifications: 'Notifications',
-            notifications_sub: 'Badge, system alerts',
             integrations: 'Integrations',
-            integrations_sub: 'IDE, SSH',
             mcp: 'MCP Server',
-            mcp_sub: 'Tools for AI agents',
             shortcuts: 'Shortcuts',
-            shortcuts_sub: 'Key bindings',
-            app: 'App',
-            app_sub: 'Language, updates, launch'
+            app: 'App'
         },
         hints: {
             keep_per_view: 'When a view is full, the oldest entry goes first.',
-            dump_order: 'Where new dumps appear in the list.',
             scroll_direction: 'Where the list jumps when a dump arrives.',
-            show_variable_type: 'PHP type next to the variable name.',
             show_context: 'Request context under each dump.',
             grouped_by_time: 'Dumps from the same second share one time header.',
-            show_tips: 'Tips on the empty welcome screen.',
-            screen_layout: 'Only the views you turned on show up. + adds a view and turns its observer on.',
-            show_screen_icons: 'Icon next to each tab name.',
             show_badge_count: 'Unread dumps on the app icon.',
-            show_dump_notifications: 'A system notification for each dump.',
-            ide_handler: 'Editor that opens files from a dump.',
-            show_ssh_button: 'SSH button in the bottom bar.',
-            auto_launch: 'Open LaraDumps when you log in.'
+            ide_handler: 'Editor that opens files from a dump.'
         }
     },
     copy: 'Copy',

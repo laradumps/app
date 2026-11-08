@@ -63,7 +63,6 @@ const saveAutoLaunch = async () => {
 
         <SettingsRow
             :label="$t('settings.auto_launch')"
-            :hint="$t('settings.hints.auto_launch')"
             :divider="false"
         >
             <div class="w-52">

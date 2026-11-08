@@ -31,7 +31,6 @@ const { save } = useSettingsSave();
 
         <SettingsRow
             :label="$t('settings.show_ssh_button')"
-            :hint="$t('settings.hints.show_ssh_button')"
             :divider="false"
         >
             <input

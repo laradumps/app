@@ -7,6 +7,7 @@ const settingsStore = useSettingsStore();
 const { save } = useSettingsSave();
 
 const toggles = ['show_variable_type', 'show_context', 'grouped_by_time', 'show_tips'] as const;
+const hinted: string[] = ['show_context', 'grouped_by_time'];
 </script>
 
 <template>
@@ -15,7 +16,7 @@ const toggles = ['show_variable_type', 'show_context', 'grouped_by_time', 'show_
             v-for="(key, index) in toggles"
             :key="key"
             :label="$t(`settings.${key}`)"
-            :hint="$t(`settings.hints.${key}`)"
+            :hint="hinted.includes(key) ? $t(`settings.hints.${key}`) : ''"
             :divider="index < toggles.length - 1"
         >
             <input

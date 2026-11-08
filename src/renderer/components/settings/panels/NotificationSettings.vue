@@ -35,7 +35,6 @@ const onBadgeCountChange = () => {
         <SettingsRow
             v-if="isMac"
             :label="$t('settings.show_dump_notifications')"
-            :hint="$t('settings.hints.show_dump_notifications')"
             :divider="false"
         >
             <input
