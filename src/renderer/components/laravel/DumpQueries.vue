@@ -154,7 +154,7 @@ const formattedSql = computed(() => {
 
         <!-- SQL Code without badges (badges moved to metadata line in DumpItem) -->
         <div class="text-left">
-            <pre
+            <div
                 v-if="formattedQueriesStore.formatted || isPrettified"
                 class="relative group overflow-hidden whitespace-pre-wrap wrap-break-word text-left w-full"
             >
@@ -162,7 +162,7 @@ const formattedSql = computed(() => {
                     class="language-sql leading-[1.2rem]! text-base-content !text-xs"
                     v-html="formattedSql"
                 ></code>
-            </pre>
+            </div>
             <div
                 v-else
                 class="relative break-all"

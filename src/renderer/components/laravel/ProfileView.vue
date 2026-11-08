@@ -2,27 +2,19 @@
 import { computed, ref } from 'vue';
 import { useProfileStore, type ProfileEntry } from '@/store/profile';
 import { useCurrentProject } from '@/store/current-project';
-import {
-    ArrowsRightLeftIcon,
-    ClockIcon,
-    CogIcon,
-    FireIcon,
-    Square3Stack3DIcon,
-    TrashIcon,
-    PlayIcon
-} from '@heroicons/vue/24/outline';
+import { ClockIcon, CogIcon, FireIcon, Square3Stack3DIcon, TrashIcon, PlayIcon } from '@heroicons/vue/24/outline';
 import EmptyState from '@/components/common/EmptyState.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
 import PauseBanner from '@/components/common/PauseBanner.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
 import { usePauseProfileStore } from '@/store/pauses';
-import { formatDuration } from './profile/profileHelpers';
+import { formatDuration, parseLabel } from './profile/profileHelpers';
 import ProfileLegend from './profile/ProfileLegend.vue';
 import ProfileTimeline from './profile/ProfileTimeline.vue';
 import ProfileHotspots from './profile/ProfileHotspots.vue';
 import ProfileFlame from './profile/ProfileFlame.vue';
-import ProfileSelectorModal from './profile/ProfileSelectorModal.vue';
+import RequestSwitcher from '@/components/common/RequestSwitcher.vue';
 import ProfileEntryModal from './profile/ProfileEntryModal.vue';
 
 const props = defineProps<{
@@ -40,7 +32,19 @@ const profiles = computed(() => profileStore.profileList);
 
 const selectedEntry = ref<ProfileEntry | null>(null);
 
-const selectorModal = ref<InstanceType<typeof ProfileSelectorModal> | null>(null);
+const profileItems = computed(() =>
+    profiles.value.map((profile) => {
+        const { method, path } = parseLabel(profile.label);
+        return {
+            id: profile.id,
+            method,
+            label: path,
+            date: profile.date_time,
+            count: profile.summary.total_entries,
+            duration: profile.total_duration_ms
+        };
+    })
+);
 
 const hiddenTypes = ref<Set<string>>(new Set());
 const toggleType = (type: string) => {
@@ -61,7 +65,7 @@ const clear = () => {
     profileStore.clear();
 };
 
-const selectProfile = (id: string) => profileStore.selectProfile(id);
+const selectProfile = (id: string | null | undefined) => id && profileStore.selectProfile(id);
 
 const updateYaml = (section: string, values: Record<string, any>) => {
     if (!props.yamlConfig || !currentProjectStore.projectInfo?.path) {
@@ -282,48 +286,65 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
             class="flex-1 flex flex-col overflow-hidden min-h-0"
         >
             <!-- Selector bar -->
-            <div class="shrink-0 flex justify-between items-center gap-3 px-3 h-10 border-b border-base-content/10">
-                <button
-                    class="max-w-1/2 btn btn-soft bg-base-100 btn-sm text-xs font-normal p-2 pr-3 rounded-full"
-                    @click="selectorModal?.open()"
-                >
-                    <ArrowsRightLeftIcon class="w-4 inline-block" />
-                    <span class="badge badge-ghost badge-sm font-mono">{{ profiles.length }}</span>
-                    <span class="truncate">{{ selectedProfile.label }}</span>
-                </button>
-
+            <RequestSwitcher
+                :items="profileItems"
+                :count-label="$t('profiler.entries')"
+                :model-value="profileStore.selectedProfileId"
+                @update:model-value="selectProfile"
+            >
                 <div class="flex items-center gap-2">
-                    <div class="join">
+                    <div class="flex p-0.5 rounded-md bg-base-content/5">
                         <button
-                            class="btn btn-soft btn-xs join-item gap-1"
-                            :class="viewMode === 'timeline' ? 'btn-active' : 'btn-ghost'"
+                            class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                            :class="
+                                viewMode === 'timeline'
+                                    ? 'bg-base-content/15 text-base-content'
+                                    : 'text-base-content/50 hover:text-base-content'
+                            "
+                            :aria-label="$t('profiler.timeline')"
+                            :title="$t('profiler.timeline')"
                             @click="viewMode = 'timeline'"
                         >
                             <ClockIcon class="w-3" />
-                            {{ $t('profiler.timeline') }}
+                            <span class="@max-xl:hidden">{{ $t('profiler.timeline') }}</span>
                         </button>
                         <button
-                            class="btn btn-soft btn-xs join-item gap-1"
-                            :class="viewMode === 'hotspots' ? 'btn-active' : 'btn-ghost'"
+                            class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                            :class="
+                                viewMode === 'hotspots'
+                                    ? 'bg-base-content/15 text-base-content'
+                                    : 'text-base-content/50 hover:text-base-content'
+                            "
+                            :aria-label="$t('profiler.hotspots')"
+                            :title="$t('profiler.hotspots')"
                             @click="viewMode = 'hotspots'"
                         >
                             <FireIcon class="w-3" />
-                            {{ $t('profiler.hotspots') }}
+                            <span class="@max-xl:hidden">{{ $t('profiler.hotspots') }}</span>
                         </button>
                         <button
-                            class="btn btn-soft btn-xs join-item gap-1"
-                            :class="viewMode === 'flame' ? 'btn-active' : 'btn-ghost'"
+                            class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                            :class="
+                                viewMode === 'flame'
+                                    ? 'bg-base-content/15 text-base-content'
+                                    : 'text-base-content/50 hover:text-base-content'
+                            "
+                            :aria-label="$t('profiler.flame')"
+                            :title="$t('profiler.flame')"
                             @click="viewMode = 'flame'"
                         >
                             <Square3Stack3DIcon class="w-3" />
-                            {{ $t('profiler.flame') }}
+                            <span class="@max-xl:hidden">{{ $t('profiler.flame') }}</span>
                         </button>
                     </div>
-                    <div class="badge badge-primary badge-sm font-mono">
+                    <span
+                        class="font-mono text-xs tabular-nums"
+                        :class="selectedProfile.total_duration_ms >= 100 ? 'text-warning' : 'text-base-content'"
+                    >
                         {{ formatDuration(selectedProfile.total_duration_ms) }}
-                    </div>
+                    </span>
                 </div>
-            </div>
+            </RequestSwitcher>
 
             <!-- Legend filters (shared across views) -->
             <ProfileLegend
@@ -363,12 +384,6 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
         </div>
 
         <!-- Modals -->
-        <ProfileSelectorModal
-            ref="selectorModal"
-            :profiles="profiles"
-            :selected-id="selectedProfile?.id ?? null"
-            @select="selectProfile"
-        />
         <ProfileEntryModal v-model="selectedEntry" />
     </div>
 </template>
