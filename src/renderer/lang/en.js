@@ -278,6 +278,10 @@ export default {
     screen_picker: {
         empty: 'Every screen is already open'
     },
+    trace: {
+        vendor_frames: '{n} vendor frame | {n} vendor frames',
+        hide_vendor: 'Hide vendor frame | Hide {n} vendor frames'
+    },
     filter_levels: 'Filter Levels',
     tail_log: {
         select_log_file: 'Select log file',

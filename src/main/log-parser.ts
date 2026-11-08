@@ -360,18 +360,20 @@ export async function parseEntry(lines: string[], seq: number, projectPath: stri
     }
 
     const code_snippet = await parseFrames(lines, projectPath);
-    const firstFrameWithFile = code_snippet.find((frame) => frame.file);
+
+    const isApp = (file: string) => !!file && !/\/vendor\/|eval\(\)'d/.test(file);
+    const origin =
+        (excFile && isApp(excFile)
+            ? { file: excFile, line: excLine }
+            : code_snippet.find((frame) => isApp(frame.file))) ??
+        (excFile ? { file: excFile, line: excLine } : code_snippet.find((frame) => frame.file));
 
     const ide_handle: TailIdeHandle = {
         workdir: '',
         project_path: projectPath,
-        real_path: excFile || firstFrameWithFile?.file || '',
-        line: String(excLine || firstFrameWithFile?.line || ''),
-        class_name: excFile
-            ? path.basename(excFile)
-            : firstFrameWithFile
-              ? path.basename(firstFrameWithFile.file)
-              : 'empty',
+        real_path: origin?.file || '',
+        line: String(origin?.line || ''),
+        class_name: origin ? path.basename(origin.file) : 'empty',
         separator: '/',
         wsl_config: '',
         base_path: ''

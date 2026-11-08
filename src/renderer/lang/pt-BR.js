@@ -276,6 +276,10 @@ export default {
     screen_picker: {
         empty: 'Todas as telas já estão abertas'
     },
+    trace: {
+        vendor_frames: '{n} frame do vendor | {n} frames do vendor',
+        hide_vendor: 'Ocultar frame do vendor | Ocultar {n} frames do vendor'
+    },
     filter_levels: 'Filtrar níveis',
     tail_log: {
         select_log_file: 'Selecionar arquivo de log',

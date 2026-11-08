@@ -6,20 +6,73 @@ import DumpLink from '@/components/dumps/DumpLink.vue';
 import { IdeHandle } from '@/types/IdeHandle';
 import IconChevronRight from '@/components/Icons/IconChevronRight.vue';
 
-const activeFileIndex = ref(0);
-const showAllFrames = ref(false);
-
 const props = defineProps<{
     code_snippet: CodeSnippet[];
     ide_handle: IdeHandle;
 }>();
 
-const toggleFileVisibility = (index: number) => {
-    activeFileIndex.value = activeFileIndex.value === index ? -1 : index;
+const isVendor = (frame: CodeSnippet) => !frame.file || /\/vendor\/|eval\(\)'d/.test(frame.file);
+
+const relative = (file: string) => {
+    const root = props.ide_handle?.project_path?.replace(/\/+$/, '');
+    if (root && file.startsWith(root + '/')) return file.slice(root.length + 1);
+
+    return file.replace(
+        /^.*?\/((?:app|src|vendor|routes|database|config|tests|bootstrap|resources|public|packages|modules)\/)/,
+        '$1'
+    );
+};
+const dirOf = (file: string) => relative(file).slice(0, relative(file).lastIndexOf('/') + 1);
+const baseOf = (file: string) => file.slice(file.lastIndexOf('/') + 1);
+const methodOf = (frame: CodeSnippet) => (frame.route && !frame.route.includes('/') ? frame.route : '');
+
+const frames = computed(() => props.code_snippet ?? []);
+const firstAppFrame = () =>
+    Math.max(
+        0,
+        frames.value.findIndex((frame) => !isVendor(frame))
+    );
+const activeFileIndex = ref(firstAppFrame());
+const openGroups = ref(new Set<number>());
+
+type Row = { index: number; frame: CodeSnippet } | { group: number; count: number; open: boolean };
+
+const rows = computed(() => {
+    const rows: Row[] = [];
+    let run: { index: number; frame: CodeSnippet }[] = [];
+
+    const flush = () => {
+        if (run.length > 1) {
+            const open = openGroups.value.has(run[0].index);
+            rows.push({ group: run[0].index, count: run.length, open });
+            if (open) rows.push(...run);
+        } else {
+            rows.push(...run);
+        }
+        run = [];
+    };
+
+    frames.value.forEach((frame, index) => {
+        if (index > 0 && isVendor(frame)) {
+            run.push({ index, frame });
+            return;
+        }
+        flush();
+        rows.push({ index, frame });
+    });
+    flush();
+
+    return rows;
+});
+
+const toggleGroup = (group: number) => {
+    const groups = new Set(openGroups.value);
+    groups.has(group) ? groups.delete(group) : groups.add(group);
+    openGroups.value = groups;
 };
 
-const getFileLineDisplay = (codeSnippet: any) => {
-    return codeSnippet.route;
+const toggleFileVisibility = (index: number) => {
+    activeFileIndex.value = activeFileIndex.value === index ? -1 : index;
 };
 
 const getLineContent = (lineContent: string) => {
@@ -39,47 +92,27 @@ const getIdeHandleFromStack = (codeSnippet: CodeSnippet, lineNumber: string): Id
     };
 };
 
-const visibleFrames = computed(() => {
-    const list = props.code_snippet || [];
-
-    if (showAllFrames.value) {
-        return list.map((s, i) => ({ codeSnippet: s, index: i }));
-    }
-
-    return list.slice(0, 5).map((s, i) => ({ codeSnippet: s, index: i }));
-});
-
-const navigateToNextFile = () => {
-    if (activeFileIndex.value < props.code_snippet.length - 1) {
-        activeFileIndex.value++;
-    }
-};
-
-const navigateToPreviousFile = () => {
-    if (activeFileIndex.value > 0) {
-        activeFileIndex.value--;
-    }
+const step = (delta: number) => {
+    const shown = rows.value.flatMap((row) => ('index' in row ? [row.index] : []));
+    const at = shown.indexOf(activeFileIndex.value);
+    const next = shown[at === -1 ? 0 : at + delta];
+    if (next !== undefined) activeFileIndex.value = next;
 };
 
 const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-        activeFileIndex.value = 0;
+        activeFileIndex.value = firstAppFrame();
         event.preventDefault();
     } else if (event.key === 'ArrowDown') {
-        navigateToNextFile();
+        step(1);
         event.preventDefault();
     } else if (event.key === 'ArrowUp') {
-        navigateToPreviousFile();
+        step(-1);
         event.preventDefault();
     }
 };
 
-const toggleShowAllFrames = () => {
-    showAllFrames.value = !showAllFrames.value;
-};
-
 onMounted(() => {
-    activeFileIndex.value = 0;
     window.addEventListener('keydown', handleKeyDown);
 });
 
@@ -89,66 +122,79 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="space-y-1">
-        <div
-            v-for="frame in visibleFrames"
-            :key="frame.index"
-            class="border border-base-content/10 rounded-md overflow-hidden"
+    <div class="rounded-lg border border-base-content/10 overflow-hidden divide-y divide-base-content/[0.06]">
+        <template
+            v-for="row in rows"
+            :key="'index' in row ? row.index : `group-${row.group}`"
         >
-            <div
-                :class="{
-                    '!font-semibold !text-primary': activeFileIndex === frame.index
-                }"
-                class="text-xs px-2 py-1 text-base-content tracking-wide font-normal break-all flex items-center gap-2 cursor-pointer hover:bg-base-200 transition-colors"
-                @click="toggleFileVisibility(frame.index)"
+            <button
+                v-if="'group' in row"
+                type="button"
+                class="w-full flex items-center gap-2 px-2.5 h-7 text-[11px] text-base-content/40 hover:text-base-content/70 hover:bg-base-content/[0.03] cursor-pointer select-none"
+                @click.stop="toggleGroup(row.group)"
             >
-                <span
-                    class="transform transition-transform"
-                    :class="{ 'rotate-90': activeFileIndex === frame.index }"
-                >
-                    <IconChevronRight class="!size-3" />
-                </span>
-                <span class="truncate">{{ getFileLineDisplay(frame.codeSnippet) }}</span>
-            </div>
+                <IconChevronRight
+                    class="!size-3 transition-transform"
+                    :class="{ 'rotate-90': row.open }"
+                />
+                {{ $t(row.open ? 'trace.hide_vendor' : 'trace.vendor_frames', row.count) }}
+            </button>
 
-            <div
-                v-if="activeFileIndex === frame.index"
-                class="code-snippet overflow-x-auto"
-            >
+            <div v-else>
                 <div
-                    v-for="(lineContent, lineNumber) in frame.codeSnippet.snippet"
-                    :key="`${lineNumber}-code`"
-                    :class="{ 'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === frame.codeSnippet.line }"
-                    class="flex items-start tracking-widest leading-6 hover:!bg-red-500/20 group/line min-w-max"
+                    class="flex items-center gap-2 px-2.5 h-8 text-xs cursor-pointer transition-colors"
+                    :class="activeFileIndex === row.index ? 'bg-base-content/[0.06]' : 'hover:bg-base-content/[0.03]'"
+                    :title="row.frame.file ? `${row.frame.file}:${row.frame.line}` : row.frame.route"
+                    @click="toggleFileVisibility(row.index)"
                 >
-                    <DumpLink
-                        class="font-normal h-full text-base-content text-xs flex-shrink-0"
-                        :label="lineNumber"
-                        :show-icon="true"
-                        :ide-handler="getIdeHandleFromStack(frame.codeSnippet, lineNumber)"
+                    <IconChevronRight
+                        class="!size-3 shrink-0 text-base-content/40 transition-transform"
+                        :class="{ 'rotate-90': activeFileIndex === row.index }"
                     />
                     <span
-                        class="language-php highlight whitespace-pre hljs h-full text-xs text-primary font-normal flex-1"
-                        v-html="getLineContent(lineContent)"
-                    ></span>
+                        v-if="row.frame.file"
+                        class="flex min-w-0 font-mono"
+                        :class="isVendor(row.frame) ? 'text-base-content/50' : 'text-base-content'"
+                    >
+                        <span class="truncate min-w-0 opacity-60">{{ dirOf(row.frame.file) }}</span>
+                        <span class="shrink-0 font-medium">{{ baseOf(row.frame.file) }}:{{ row.frame.line }}</span>
+                    </span>
+                    <span
+                        v-else
+                        class="truncate min-w-0 font-mono text-base-content/50"
+                        >{{ row.frame.route }}</span
+                    >
+                    <span
+                        v-if="methodOf(row.frame)"
+                        class="ml-auto pl-3 truncate min-w-0 font-mono text-[11px] text-base-content/40"
+                        >{{ methodOf(row.frame) }}</span
+                    >
+                </div>
+
+                <div
+                    v-if="activeFileIndex === row.index"
+                    class="code-snippet overflow-x-auto"
+                >
+                    <div
+                        v-for="(lineContent, lineNumber) in row.frame.snippet"
+                        :key="`${lineNumber}-code`"
+                        :class="{ 'bg-red-500/20 shadow-lg font-normal': parseInt(lineNumber) === row.frame.line }"
+                        class="flex items-start tracking-widest leading-6 hover:!bg-red-500/20 group/line min-w-max"
+                    >
+                        <DumpLink
+                            class="font-normal h-full text-base-content text-xs flex-shrink-0"
+                            :label="lineNumber"
+                            :show-icon="true"
+                            :ide-handler="getIdeHandleFromStack(row.frame, lineNumber)"
+                        />
+                        <span
+                            class="language-php highlight whitespace-pre hljs h-full text-xs text-primary font-normal flex-1"
+                            v-html="getLineContent(lineContent)"
+                        ></span>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- View More / View Less -->
-        <div
-            v-if="props.code_snippet.length > 5"
-            class="text-xs flex justify-center px-2 py-1 text-base-content tracking-wide items-center gap-2 cursor-pointer hover:bg-base-200 rounded-md select-none"
-            @click="toggleShowAllFrames"
-        >
-            <span class="truncate">{{ showAllFrames ? 'View Less' : 'View More' }}</span>
-            <span
-                class="transform transition-transform"
-                :class="{ 'rotate-90': showAllFrames }"
-            >
-                <IconChevronRight class="!size-3" />
-            </span>
-        </div>
+        </template>
     </div>
 </template>
 
