@@ -563,7 +563,10 @@ async function startServer() {
         })
         .on('error', (err) => {
             console.error(`[Preload Server] Error: ${err.message}`, err);
-            setTimeout(() => ipcRenderer.send('preload:server-failed', err), 3000);
+            setTimeout(
+                () => ipcRenderer.send('preload:server-failed', { code: err.code, message: err.message, port }),
+                3000
+            );
         });
 
     ipcRenderer.on('server:close', (event, arg) => {
