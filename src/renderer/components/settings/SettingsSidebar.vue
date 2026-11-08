@@ -4,7 +4,6 @@ import type { Component } from 'vue';
 export interface SettingsNavItem {
     id: string;
     label: string;
-    sub: string;
     icon: Component;
 }
 </script>
@@ -36,7 +35,7 @@ defineEmits<{
                 :aria-current="modelValue === item.id ? 'page' : undefined"
                 @click="$emit('update:modelValue', item.id)"
                 :class="[
-                    'w-full flex items-start gap-2.5 px-2.5 py-1.5 rounded-lg text-left transition-colors',
+                    'w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left text-sm font-medium transition-colors',
                     modelValue === item.id
                         ? 'bg-base-300 text-base-content'
                         : 'text-base-content/70 hover:bg-base-300/50 hover:text-base-content'
@@ -44,12 +43,9 @@ defineEmits<{
             >
                 <component
                     :is="item.icon"
-                    class="w-4 h-4 shrink-0 mt-0.5"
+                    class="w-4 h-4 shrink-0"
                 />
-                <span class="min-w-0 flex flex-col">
-                    <span class="text-sm font-medium truncate">{{ item.label }}</span>
-                    <span class="text-[11px] text-base-content/50 truncate">{{ item.sub }}</span>
-                </span>
+                <span class="truncate">{{ item.label }}</span>
             </button>
         </nav>
     </div>

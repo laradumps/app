@@ -44,8 +44,7 @@ const navItems = computed<SettingsNavItem[]>(() =>
     ).map(([id, icon]) => ({
         id,
         icon,
-        label: t(`settings.sections.${id}`),
-        sub: t(`settings.sections.${id}_sub`)
+        label: t(`settings.sections.${id}`)
     }))
 );
 
@@ -101,11 +100,8 @@ defineExpose({ open, close });
                 />
 
                 <div class="flex-1 flex flex-col min-h-0">
-                    <div class="flex items-start gap-3 px-6 pt-4 pb-2 flex-shrink-0">
-                        <div class="min-w-0 flex-1">
-                            <h2 class="text-base font-semibold">{{ current?.label }}</h2>
-                            <p class="text-xs text-base-content/50">{{ current?.sub }}</p>
-                        </div>
+                    <div class="flex items-center gap-3 px-6 pt-4 pb-2 flex-shrink-0">
+                        <h2 class="min-w-0 flex-1 text-base font-semibold">{{ current?.label }}</h2>
                         <button
                             @click="close"
                             :aria-label="$t('settings.close')"

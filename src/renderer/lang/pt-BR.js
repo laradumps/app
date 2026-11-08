@@ -149,37 +149,21 @@ export default {
         layout_side: 'Lateral',
         sections: {
             capture: 'Captura e retenção',
-            capture_sub: 'Limites, memória, ordem',
             reading: 'Leitura de dumps',
-            reading_sub: 'Tipos, contexto, agrupamento',
             appearance: 'Aparência',
-            appearance_sub: 'Tema, layout, transparência',
             notifications: 'Notificações',
-            notifications_sub: 'Badge, alertas do sistema',
             integrations: 'Integrações',
-            integrations_sub: 'IDE, SSH',
             mcp: 'Servidor MCP',
-            mcp_sub: 'Ferramentas para agentes de IA',
             shortcuts: 'Atalhos',
-            shortcuts_sub: 'Teclas de atalho',
-            app: 'App',
-            app_sub: 'Idioma, updates, inicialização'
+            app: 'App'
         },
         hints: {
             keep_per_view: 'Quando a view enche, a entrada mais antiga sai primeiro.',
-            dump_order: 'Onde os dumps novos aparecem na lista.',
             scroll_direction: 'Para onde a lista rola quando chega um dump.',
-            show_variable_type: 'Tipo PHP ao lado do nome da variável.',
             show_context: 'Contexto da request abaixo de cada dump.',
             grouped_by_time: 'Dumps do mesmo segundo dividem um cabeçalho de horário.',
-            show_tips: 'Dicas na tela de boas-vindas vazia.',
-            screen_layout: 'Só aparecem as views que você ligou. + adiciona uma view e liga o observer dela.',
-            show_screen_icons: 'Ícone ao lado do nome de cada aba.',
             show_badge_count: 'Dumps não lidos no ícone do app.',
-            show_dump_notifications: 'Uma notificação do sistema para cada dump.',
-            ide_handler: 'Editor que abre arquivos a partir de um dump.',
-            show_ssh_button: 'Botão SSH na barra inferior.',
-            auto_launch: 'Abrir o LaraDumps ao fazer login.'
+            ide_handler: 'Editor que abre arquivos a partir de um dump.'
         }
     },
     copy: 'Copiar',

@@ -90,10 +90,7 @@ const saveWindowOpacity = async () => {
             </div>
         </SettingsRow>
 
-        <SettingsRow
-            :label="$t('settings.screen_layout')"
-            :hint="$t('settings.hints.screen_layout')"
-        >
+        <SettingsRow :label="$t('settings.screen_layout')">
             <div
                 role="radiogroup"
                 :aria-label="$t('settings.screen_layout')"
@@ -146,7 +143,6 @@ const saveWindowOpacity = async () => {
 
         <SettingsRow
             :label="$t('settings.show_screen_icons')"
-            :hint="$t('settings.hints.show_screen_icons')"
             :divider="blurSupported"
         >
             <input
@@ -162,21 +158,42 @@ const saveWindowOpacity = async () => {
             <SettingsRow
                 :label="$t('settings.window_blur')"
                 :hint="isWindows ? $t('settings.window_blur_hint_win') : ''"
+                :divider="!settingsStore.settings.window_blur"
             >
                 <input
                     type="checkbox"
                     class="toggle toggle-sm toggle-accent"
+                    :aria-label="$t('settings.window_blur')"
                     v-model="settingsStore.settings.window_blur"
                     @change="saveWindowBlur()"
                 />
             </SettingsRow>
 
-            <template v-if="settingsStore.settings.window_blur">
-                <SettingsRow
-                    v-if="!isWindows"
-                    :label="$t('settings.window_blur_mode')"
+            <div
+                v-if="settingsStore.settings.window_blur"
+                class="mb-3 flex items-center gap-4 rounded-lg border border-base-content/10 bg-base-content/[0.03] p-3"
+            >
+                <div
+                    aria-hidden="true"
+                    class="relative h-20 w-28 shrink-0 overflow-hidden rounded-md ring-1 ring-base-content/10"
+                    :style="{ opacity: settingsStore.settings.window_opacity / 100 }"
                 >
-                    <div class="w-52">
+                    <div class="glass-preview-backdrop absolute -inset-2"></div>
+                    <div
+                        class="absolute inset-2 flex flex-col gap-1 rounded p-1.5 ring-1 ring-base-content/10"
+                        :style="{
+                            backgroundColor: `color-mix(in oklab, var(--color-base-100) ${settingsStore.settings.window_blur_opacity}%, transparent)`
+                        }"
+                    >
+                        <span class="h-1 w-3/4 rounded-sm bg-base-content/50"></span>
+                        <span class="h-1 w-1/2 rounded-sm bg-base-content/30"></span>
+                        <span class="h-1 w-2/3 rounded-sm bg-base-content/30"></span>
+                    </div>
+                </div>
+
+                <div class="grid min-w-0 flex-1 grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2.5 text-xs">
+                    <template v-if="!isWindows">
+                        <span class="text-base-content/70">{{ $t('settings.window_blur_mode') }}</span>
                         <SelectInput
                             v-model="settingsStore.settings.window_blur_mode"
                             @change="saveWindowBlur()"
@@ -186,46 +203,61 @@ const saveWindowOpacity = async () => {
                             <option value="sidebar">{{ $t('settings.window_blur_mode_sidebar') }}</option>
                             <option value="under-window">{{ $t('settings.window_blur_mode_subtle') }}</option>
                         </SelectInput>
-                    </div>
-                </SettingsRow>
+                    </template>
 
-                <SettingsRow :label="$t('settings.window_blur_opacity')">
-                    <div class="flex items-center gap-2 w-52">
+                    <span class="text-base-content/70">{{ $t('settings.window_blur_opacity') }}</span>
+                    <div class="flex items-center gap-2">
                         <input
                             type="range"
                             min="0"
                             max="100"
                             step="5"
-                            class="range range-sm range-accent flex-1"
+                            class="range range-xs range-accent flex-1"
+                            :aria-label="$t('settings.window_blur_opacity')"
                             v-model.number="settingsStore.settings.window_blur_opacity"
                             @change="save()"
                         />
-                        <span class="text-xs w-8 text-right">{{ settingsStore.settings.window_blur_opacity }}%</span>
+                        <span class="w-9 text-right tabular-nums"
+                            >{{ settingsStore.settings.window_blur_opacity }}%</span
+                        >
                     </div>
-                </SettingsRow>
 
-                <SettingsRow
-                    :label="$t('settings.window_opacity')"
-                    :hint="settingsStore.settings.window_opacity < 100 ? $t('settings.window_opacity_hint') : ''"
-                    :divider="false"
-                >
-                    <div class="flex items-center gap-2 w-52">
+                    <span class="text-base-content/70">{{ $t('settings.window_opacity') }}</span>
+                    <div class="flex items-center gap-2">
                         <input
                             type="range"
                             min="30"
                             max="100"
                             step="5"
-                            class="range range-sm range-accent flex-1"
+                            class="range range-xs range-accent flex-1"
+                            :aria-label="$t('settings.window_opacity')"
                             v-model.number="settingsStore.settings.window_opacity"
                             @input="previewWindowOpacity()"
                             @change="saveWindowOpacity()"
                         />
-                        <span class="text-xs w-8 text-right">{{ settingsStore.settings.window_opacity }}%</span>
+                        <span class="w-9 text-right tabular-nums">{{ settingsStore.settings.window_opacity }}%</span>
                     </div>
-                </SettingsRow>
-            </template>
+
+                    <p
+                        v-if="settingsStore.settings.window_opacity < 100"
+                        class="col-span-2 text-warning"
+                    >
+                        {{ $t('settings.window_opacity_hint') }}
+                    </p>
+                </div>
+            </div>
         </template>
 
         <CustomThemeModal ref="customThemeModal" />
     </div>
 </template>
+
+<style scoped>
+.glass-preview-backdrop {
+    background:
+        radial-gradient(circle at 25% 30%, #f87171, transparent 55%),
+        radial-gradient(circle at 80% 25%, #60a5fa, transparent 55%),
+        radial-gradient(circle at 55% 95%, #4ade80, transparent 55%), #64748b;
+    filter: blur(6px);
+}
+</style>
