@@ -76,13 +76,18 @@ onUnmounted(() => {
 
 <template>
     <a
-        class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
+        role="switch"
+        tabindex="0"
+        :aria-checked="isXdebugActive"
+        class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-md transition-colors cursor-pointer outline-none text-base-content/70 hover:bg-base-content/5 hover:text-base-content focus-visible:ring-2 focus-visible:ring-primary/60"
         @click.stop="isXdebugActive = !isXdebugActive"
+        @keydown.enter.prevent="isXdebugActive = !isXdebugActive"
+        @keydown.space.prevent="isXdebugActive = !isXdebugActive"
         :title="isXdebugActive ? 'Disable Xdebug' : 'Enable Xdebug'"
     >
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
             <BugAntIcon
-                class="size-4"
+                class="size-3.5"
                 :class="{ 'text-success': isXdebugActive }"
             />
             <span class="font-medium text-xs">Xdebug</span>

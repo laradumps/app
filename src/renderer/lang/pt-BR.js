@@ -256,13 +256,24 @@ export default {
     installing: 'Instalando',
     installing_wait_message: 'Isso pode levar alguns instantes...',
     no_project_selected: 'Nenhum projeto selecionado',
+    projects: {
+        title: 'Projetos',
+        new: 'Adicionar projeto',
+        connections: 'Conexões',
+        remove_title: 'Remover projeto',
+        remove_message: 'Remover "{name}" da lista? O laradumps.yaml não é alterado.'
+    },
     level: 'Nível',
     message: 'Mensagem',
     origin: 'Origem',
     load_new_entries: 'Carregar novas entradas ({count})',
     load_more: 'Carregar mais ({count})',
-    empty: 'Vazio',
+    empty: 'Nada por aqui ainda',
+    empty_message: 'Novas entradas aparecem aqui assim que sua aplicação enviar.',
     copy_to_markdown: 'Copiar como Markdown',
+    screen_picker: {
+        empty: 'Todas as telas já estão abertas'
+    },
     filter_levels: 'Filtrar níveis',
     tail_log: {
         select_log_file: 'Selecionar arquivo de log',

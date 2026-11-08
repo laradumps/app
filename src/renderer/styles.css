@@ -296,13 +296,6 @@ html:is(.glass-enabled, [data-theme='aurora'])
 /* Form controls: same concept as the tab bar — no filled light box. They stay transparent so
    the blur shows through, with just a defining border so they still read as interactive
    fields. The border firms up on focus. */
-/* The sticky "+" add-tab button sits in its own `bg-base-200` wrapper (used to mask tabs
-   scrolling underneath it). Over the glass that wrapper reads as a misaligned light box, so we
-   drop its fill — the button floats transparently like the rest of the tab bar. */
-html:is(.glass-enabled, [data-theme='aurora']) .tabs-box :has(> [data-add-env-button]) {
-    background-color: transparent !important;
-}
-
 html:is(.glass-enabled, [data-theme='aurora']) :is(.input, .select, .textarea, .file-input) {
     background-color: transparent !important;
     border-color: var(--glass-border) !important;

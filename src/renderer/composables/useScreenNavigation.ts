@@ -133,7 +133,11 @@ export function useScreenNavigation() {
         });
     };
 
+    const closedAt: Record<string, number> = {};
+    const recentlyClosed = (screenName?: string) => !!screenName && Date.now() - (closedAt[screenName] ?? 0) < 3000;
+
     const handleEnvironmentSelected = async (environment: Environment) => {
+        delete closedAt[environment.value];
         environment.selected = true;
 
         if (currentProjectStore.projectInfo) {
@@ -155,6 +159,7 @@ export function useScreenNavigation() {
     };
 
     const handleRemoveEnvironmentScreen = async (screenName: string) => {
+        closedAt[screenName] = Date.now();
         screenStore.remove(screenName);
         payloadStore.clear(screenName);
 
@@ -167,7 +172,7 @@ export function useScreenNavigation() {
             case 'jobs':
                 jobStore.clear();
                 break;
-            case 'log':
+            case 'logs':
                 logStore.clear();
                 break;
             case 'mail':
@@ -308,6 +313,7 @@ export function useScreenNavigation() {
         // environments
         handleEnvironmentSelected,
         handleRemoveEnvironmentScreen,
+        recentlyClosed,
         handleAddScreen,
         // tail log
         startTailLog,

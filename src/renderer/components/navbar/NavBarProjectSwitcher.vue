@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ChevronDownIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { CheckIcon, ChevronUpIcon, FolderIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useCurrentProject } from '@/store/current-project';
 import { IpcRendererEvent } from 'electron';
 import ProjectInstall from '@/components/navbar/ProjectInstall.vue';
@@ -8,8 +9,8 @@ import NavBarMCP from '@/components/navbar/NavBarMCP.vue';
 import NavBarXdebug from '@/components/navbar/NavBarXdebug.vue';
 import { isSpecialEnvironment } from '@/constants';
 
-const emit = defineEmits(['modalOpen', 'modalClose']);
 const currentProjectStore = useCurrentProject();
+const { t } = useI18n();
 
 const IPC_EVENTS = {
     STORAGE_GET: 'storage.get',
@@ -42,6 +43,16 @@ const contextMenuPosition = ref({ x: 0, y: 0 });
 const projectInstallRef = ref<InstanceType<typeof ProjectInstall> | null>(null);
 
 const projectsOrder = ref<string[]>([]);
+const listbox = ref<HTMLElement | null>(null);
+
+const moveFocus = (step: number) => {
+    const options = [...(listbox.value?.querySelectorAll<HTMLElement>('[role="option"]') ?? [])];
+    const current = options.indexOf(document.activeElement as HTMLElement);
+    const next = current === -1 ? options.findIndex((o) => o.ariaSelected === 'true') : current + step;
+    options[(Math.max(next, 0) + options.length) % options.length]?.focus();
+};
+
+const closeMenu = () => (document.activeElement as HTMLElement | null)?.blur();
 
 let handleProjectsOrderReply: ((_: IpcRendererEvent, payload: any) => void) | null = null;
 
@@ -222,9 +233,9 @@ const removeProject = (project: Project) => {
     const projectPath = project.path;
 
     window.ipcRenderer.send(IPC_EVENTS.MAIN_DIALOG, {
-        buttons: ['Yes', 'No'],
-        title: 'Remove Project',
-        message: 'Are you sure you want to remove the configuration from this Project?'
+        buttons: [t('yes'), t('no')],
+        title: t('projects.remove_title'),
+        message: t('projects.remove_message', { name: formattedName(project.project) })
     });
 
     const removeHandler = (_: Event, choice: number) => {
@@ -248,92 +259,106 @@ const removeProject = (project: Project) => {
 </script>
 
 <template>
-    <div class="dropdown dropdown-end">
+    <div
+        class="dropdown dropdown-top dropdown-end"
+        @keydown.esc="closeMenu"
+    >
         <div
             tabindex="0"
             role="button"
-            class="flex items-center font-medium capitalize truncate text-xs btn btn-sm border border-base-content/10 shadow-sm justify-between !px-3 !m-0 !h-8 gap-2 bg-base-100 hover:bg-base-200 hover:border-base-content/10 rounded-lg transition-colors"
+            aria-haspopup="listbox"
+            :aria-label="$t('projects.title')"
+            class="inline-flex items-center gap-1.5 h-6 px-2 rounded-md font-medium capitalize cursor-pointer transition-colors hover:bg-base-content/10 hover:text-base-content focus-visible:outline-2 focus-visible:outline-primary"
+            :class="selectedProject.project ? 'text-base-content/70' : 'text-error'"
+            @keydown.down.prevent="moveFocus(1)"
+            @keydown.up.prevent="moveFocus(-1)"
         >
-            <div class="flex items-center gap-2">
-                <div
-                    v-if="selectedProject.project"
-                    class="size-2 rounded-full bg-success"
-                ></div>
-                <div
-                    v-else
-                    class="size-2 rounded-full bg-error"
-                ></div>
-                <span
-                    v-if="selectedProject.project"
-                    v-text="formattedName(selectedProject.project)"
-                    class="max-w-[140px] truncate"
-                />
-                <span v-else>{{ $t('no_project_selected') }}</span>
-            </div>
-            <ChevronDownIcon class="size-3 opacity-50" />
+            <FolderIcon
+                class="size-3.5 shrink-0"
+                aria-hidden="true"
+            />
+            <span
+                v-if="selectedProject.project"
+                v-text="formattedName(selectedProject.project)"
+                :title="formattedName(selectedProject.project)"
+                class="max-w-40 truncate"
+            />
+            <span v-else>{{ $t('no_project_selected') }}</span>
+            <ChevronUpIcon
+                class="size-3 opacity-50"
+                aria-hidden="true"
+            />
         </div>
 
-        <ul
-            tabindex="0"
-            class="dropdown-content mt-2 z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 w-64"
+        <div
+            tabindex="-1"
+            class="dropdown-content mb-2 z-[200] w-56 p-1.5 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10"
         >
-            <li class="mb-1">
-                <a
-                    @click="addProject()"
-                    class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-primary hover:bg-primary/10"
+            <div class="flex items-center justify-between pl-2 pr-0.5 pb-1">
+                <span
+                    id="project-switcher-label"
+                    class="text-[10px] font-semibold uppercase tracking-wider text-base-content/50"
+                    >{{ $t('projects.title') }}</span
                 >
-                    <PlusIcon class="size-4" />
-                    <span class="font-medium text-xs">New</span>
-                </a>
-            </li>
+                <button
+                    type="button"
+                    class="btn btn-ghost btn-xs btn-square text-base-content/60 hover:text-primary"
+                    :aria-label="$t('projects.new')"
+                    :title="$t('projects.new')"
+                    @click="addProject()"
+                >
+                    <PlusIcon class="size-3.5" />
+                </button>
+            </div>
 
-            <div class="flex flex-col max-h-[32vh] overflow-y-auto overflow-x-hidden xdebug-projects-scroll -mr-1 pr-1">
-                <li
+            <div
+                ref="listbox"
+                role="listbox"
+                aria-labelledby="project-switcher-label"
+                class="flex flex-col gap-px max-h-[32vh] overflow-y-auto overflow-x-hidden xdebug-projects-scroll"
+                @keydown.down.prevent="moveFocus(1)"
+                @keydown.up.prevent="moveFocus(-1)"
+            >
+                <div
                     v-for="(project, index) in orderedProjects"
                     :key="project.path + '-dropdown'"
+                    role="option"
+                    tabindex="0"
+                    :aria-selected="selectedProject.path === project.path"
+                    :title="project.path"
                     draggable="true"
+                    class="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs cursor-pointer outline-none transition-colors hover:bg-base-content/5 focus-visible:bg-base-content/5 focus-visible:ring-2 focus-visible:ring-primary/60"
+                    :class="
+                        selectedProject.path === project.path
+                            ? 'text-base-content font-medium'
+                            : 'text-base-content/70 hover:text-base-content'
+                    "
                     @dragstart="onProjectDragStart(index)"
                     @dragover.prevent
                     @drop="onProjectDrop(index)"
                     @click="setActiveProject(project)"
+                    @keydown.enter.prevent="setActiveProject(project)"
+                    @keydown.space.prevent="setActiveProject(project)"
+                    @keydown.delete.prevent="removeProject(project)"
                     @contextmenu="openContextMenu($event, project)"
-                    class="relative group"
                 >
-                    <a
-                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
-                        :class="
-                            selectedProject.path === project.path
-                                ? 'bg-base-content/10 text-base-content font-medium'
-                                : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                        "
-                    >
-                        <div class="size-2.5 rounded-full relative flex items-center justify-center">
-                            <span
-                                v-if="selectedProject.path === project.path"
-                                class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                            ></span>
-                            <span
-                                class="relative inline-flex rounded-full size-2"
-                                :class="selectedProject.path === project.path ? 'bg-success' : 'bg-transparent'"
-                            ></span>
-                        </div>
-                        <span class="truncate capitalize text-xs">{{ formattedName(project.project) }}</span>
-                    </a>
-                </li>
+                    <span class="flex-1 truncate capitalize">{{ formattedName(project.project) }}</span>
+                    <CheckIcon
+                        v-if="selectedProject.path === project.path"
+                        class="size-3.5 shrink-0 text-success"
+                        aria-hidden="true"
+                    />
+                </div>
             </div>
 
             <div
-                class="px-3 pb-1 pt-3 font-semibold text-[10px] text-base-content/40 uppercase tracking-widest border-t border-base-content/10 mt-1"
+                class="mt-1.5 border-t border-base-content/10 px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-base-content/50"
             >
-                Servers & Connections
+                {{ $t('projects.connections') }}
             </div>
-            <li>
-                <NavBarMCP />
-            </li>
-            <li>
-                <NavBarXdebug />
-            </li>
-        </ul>
+            <NavBarMCP />
+            <NavBarXdebug />
+        </div>
 
         <!-- Context Menu -->
         <Teleport to="body">
@@ -348,7 +373,7 @@ const removeProject = (project: Project) => {
                     class="w-full flex items-center gap-2 px-3 py-2 text-xs text-error hover:bg-error/10 transition-colors"
                 >
                     <TrashIcon class="size-4" />
-                    <span>Remove</span>
+                    <span>{{ $t('remove') }}</span>
                 </button>
             </div>
         </Teleport>
@@ -356,8 +381,6 @@ const removeProject = (project: Project) => {
 
     <ProjectInstall
         ref="projectInstallRef"
-        @modal-open="emit('modalOpen')"
-        @modal-close="emit('modalClose')"
         @project-added="onProjectAdded"
     />
 </template>
