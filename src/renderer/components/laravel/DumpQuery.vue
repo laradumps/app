@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps } from 'vue';
+import { computed } from 'vue';
 import { format } from 'sql-formatter';
 
 import hljs from 'highlight.js/lib/core';
@@ -49,7 +49,7 @@ const formattedSql = computed(() => {
             :class="{
                 'justify-end': !props.query.connectionName
             }"
-            class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400"
+            class="flex justify-between items-center text-xs text-gray-500"
         >
             <span v-if="props.query.connectionName">
                 {{ props.query.connectionName }}

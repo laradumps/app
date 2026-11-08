@@ -78,7 +78,7 @@ export function useDumpDispatch(nav: ScreenNavigation) {
         checkApplicationPath(content, applicationPath);
 
         if (!content.hasOwnProperty('to_screen')) {
-            toastStore.show('Received a malformed payload. Please update the app and laradumps-core.', 'error', 4000);
+            toastStore.show('Received a malformed payload. Please update the app and laradumps-core.', 'error');
             return;
         }
 
@@ -285,7 +285,7 @@ export function useDumpDispatch(nav: ScreenNavigation) {
             content.queries && timeStore.increment(content.request_id, content.id, content.queries);
             checkApplicationPath(content, applicationPath);
             queriesStore.add(content);
-            nav.addScreen(content.to_screen);
+            nav.addScreen({ ...content.to_screen, screen_name: 'queries' });
         });
 
         lastPayloadTimeout = setTimeout(() => {

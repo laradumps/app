@@ -16,6 +16,7 @@ import { PlayIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon as FunnelSolidIcon } from '@heroicons/vue/24/solid';
 import IconPause from '@/components/Icons/IconPause.vue';
+import IconButton from '@/components/common/IconButton.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
@@ -273,10 +274,10 @@ const clear = () => {
             </template>
 
             <template #right>
-                <button
+                <IconButton
+                    :label="pauseStore.is_paused ? $t('resume') : $t('pause')"
+                    variant="base"
                     @click="pauseStore.toggle()"
-                    class="btn btn-ghost btn-circle btn-sm"
-                    :data-tippy-content="$t('pause')"
                 >
                     <PlayIcon
                         v-if="pauseStore.is_paused"
@@ -286,16 +287,15 @@ const clear = () => {
                         v-else
                         class="w-4"
                     />
-                </button>
-
-                <button
+                </IconButton>
+                <IconButton
                     v-if="items.length > 0"
+                    label="Clear all"
+                    variant="danger"
                     @click="clear"
-                    class="btn btn-ghost btn-circle btn-sm text-error/70 hover:text-error"
-                    data-tippy-content="Clear"
                 >
                     <TrashIcon class="w-4" />
-                </button>
+                </IconButton>
             </template>
         </ViewToolbar>
 

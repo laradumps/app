@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { IdeHandle } from '@/types/IdeHandle';
 import IconPencil from '@/components/Icons/IconPencil.vue';
 import { generateLink } from '@/utils/ideHandler';

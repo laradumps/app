@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, defineEmits, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import type { Chart as ChartType } from 'chart.js';
 import { useTimeStore } from '@/store/time';
 import { useQueriesChart } from '@/store/queries-chart';

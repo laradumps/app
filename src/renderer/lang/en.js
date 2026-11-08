@@ -151,6 +151,22 @@ export default {
         whats_new: "What's new"
     },
     pause: 'Pause',
+    resume: 'Resume',
+    status_line: {
+        live: 'live',
+        paused: 'paused',
+        paused_hint: 'Paused: new dumps are ignored. Click to resume.',
+        live_hint: 'Capturing. Click to pause.',
+        filter: 'filter all views',
+        commands: 'Commands'
+    },
+    confirm: {
+        clear_all_title: 'Clear all',
+        clear_all_message:
+            'Remove all dumps, queries, logs, jobs, mails and other captured data? This cannot be undone.',
+        empty_log_title: 'Empty log file',
+        empty_log_message: 'This permanently erases the contents of the log file on disk. Continue?'
+    },
     remove: 'Remove',
     collapse: 'Collapse all dumps',
     ssh: {
@@ -195,7 +211,7 @@ export default {
     },
     no_records_found: 'No records found.',
     app: {
-        inactive_banner: 'Disabled, but LaraDumps still continues capturing which may leave it a bit slow.'
+        inactive_banner: 'Paused: incoming data is NOT captured and will be lost until you resume.'
     },
     install_success: 'Setup Success',
     install_success_message: 'Project has been set up successfully.',

@@ -19,8 +19,9 @@ export const useToastStore = defineStore('toast', {
         all: (state) => state.toasts
     },
     actions: {
-        show(message: string, type: ToastType = 'info', timeout = 2000): number {
+        show(message: string, type: ToastType = 'info', timeout?: number): number {
             const id = ++counter;
+            timeout ??= type === 'error' ? 6000 : 2000;
             this.toasts.push({ id, message, type, timeout });
             if (timeout > 0) {
                 setTimeout(() => this.hide(id), timeout);

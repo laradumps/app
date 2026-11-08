@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, getCurrentInstance, onBeforeUnmount } from 'vue';
+import { onMounted, getCurrentInstance, onBeforeUnmount } from 'vue';
 
 const props = defineProps({
     variableName: String,

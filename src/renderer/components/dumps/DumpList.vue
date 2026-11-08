@@ -44,7 +44,7 @@ const listScreen = computed(() => props.screenName ?? screenStore.screen);
             <div
                 id="dumps-base"
                 class="w-full mb-10"
-                v-if="payloadStore.payload.length > 0"
+                v-if="dumpsBagFiltered.length > 0"
                 :class="{
                     'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal'
                 }"

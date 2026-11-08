@@ -123,6 +123,7 @@ export default {
         whats_new: '更新内容'
     },
     pause: '暂停',
+    resume: '继续',
     remove: '移除',
     collapse: '折叠所有 dumps',
     ssh: {
@@ -171,6 +172,6 @@ export default {
     retry: '重试',
     finish: '完成',
     app: {
-        inactive_banner: 'Disabled, but LaraDumps still continues capturing which may leave it a bit slow.'
+        inactive_banner: 'Paused: incoming data is NOT captured and will be lost until you resume.'
     }
 };

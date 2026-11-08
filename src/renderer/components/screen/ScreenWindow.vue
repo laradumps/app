@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onUpdated, nextTick } from 'vue';
+import { onUpdated, nextTick } from 'vue';
 import DumpItem from '@/components/dumps/DumpItem.vue';
 import { useSettingsStore } from '@/store/settings';
 

@@ -13,8 +13,10 @@ import { useI18n } from 'vue-i18n';
 import { PlusIcon } from '@heroicons/vue/24/outline';
 import Divider from '@/components/common/Divider.vue';
 import { ArrowUpTrayIcon } from '@heroicons/vue/20/solid';
+import { useConfirm } from '@/composables/useConfirm';
 
 const i18n = useI18n();
+const confirmAction = useConfirm();
 const connected = ref(false);
 const sshStore = useSSHStore();
 const form: Ref<ConnectionConfig> = ref({
@@ -108,21 +110,14 @@ const listenResponse = (event: any, response: { connected: boolean }) => {
     window.ipcRenderer.send('ssh:disconnect');
 };
 
-const removeConnection = (id: number) => {
+const removeConnection = async (id: number) => {
+    if (!(await confirmAction(i18n.t('ssh.remove_connection'), i18n.t('ssh.remove_connection_confirm')))) return;
+
     if (listenId.value === id) {
         window.ipcRenderer.send('ssh:disconnect');
         listenId.value = null;
     }
-    window.ipcRenderer.on('main:dialog-choice', (event, arg) => {
-        if (arg === 0) {
-            sshStore.remove(id);
-        }
-    });
-    window.ipcRenderer.send('main:dialog', {
-        buttons: [i18n.t('yes'), i18n.t('no')],
-        title: i18n.t('ssh.remove_connection'),
-        message: i18n.t('ssh.remove_connection_confirm')
-    });
+    sshStore.remove(id);
 };
 
 const addConnection = () => {
@@ -214,22 +209,30 @@ window.ipcRenderer.on('choose-file-response', (_, filePath) => {
                         </label>
                         <div class="flex gap-2 items-center justify-end">
                             <template v-if="sshStore.connecting && connection.id === listenId">
-                                <button class="p-1">
+                                <button
+                                    type="button"
+                                    class="p-1"
+                                    :aria-label="$t('processing')"
+                                >
                                     <ArrowPathIcon class="w-5 animate-spin" />
                                 </button>
                             </template>
                             <template v-else>
-                                <button class="btn btn-sm p-[0.5rem] btn-circle btn-ghost">
-                                    <PencilIcon
-                                        @click="editConnection(connection.id)"
-                                        class="w-4"
-                                    />
+                                <button
+                                    type="button"
+                                    class="btn btn-sm p-[0.5rem] btn-circle btn-ghost"
+                                    :aria-label="$t('settings.edit')"
+                                    @click="editConnection(connection.id)"
+                                >
+                                    <PencilIcon class="w-4" />
                                 </button>
-                                <button class="btn btn-sm p-[0.5rem] btn-circle btn-ghost hover:btn-error">
-                                    <TrashIcon
-                                        @click="removeConnection(connection.id)"
-                                        class="w-4"
-                                    />
+                                <button
+                                    type="button"
+                                    class="btn btn-sm p-[0.5rem] btn-circle btn-ghost hover:btn-error"
+                                    :aria-label="$t('remove')"
+                                    @click="removeConnection(connection.id)"
+                                >
+                                    <TrashIcon class="w-4" />
                                 </button>
                             </template>
                         </div>

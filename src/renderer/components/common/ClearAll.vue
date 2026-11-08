@@ -11,6 +11,8 @@ import { useLivewireStore } from '@/store/livewire';
 import { useBrainStore } from '@/store/brains';
 import { useProfileStore } from '@/store/profile';
 import { useClearAll } from '@/composables/useClearAll';
+import { useConfirm } from '@/composables/useConfirm';
+import { useI18n } from 'vue-i18n';
 
 const payloadStore = usePayloadStore();
 const logStore = useLogStore();
@@ -22,9 +24,22 @@ const brainStore = useBrainStore();
 const profileStore = useProfileStore();
 
 const { clear } = useClearAll();
+const confirmAction = useConfirm();
+const { t } = useI18n();
 
-const clearAll = (): void => {
-    clear();
+let asking = false;
+
+const clearAll = async (): Promise<void> => {
+    if (asking) return;
+    asking = true;
+
+    try {
+        if (await confirmAction(t('confirm.clear_all_title'), t('confirm.clear_all_message'))) {
+            clear();
+        }
+    } finally {
+        asking = false;
+    }
 };
 
 const hasPayload = computed(() => {

@@ -21,6 +21,7 @@ import { usePendingRequestsStore } from '@/store/pending-requests';
 import QueriesRequests from '@/components/laravel/QueriesRequests.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
+import PauseBanner from '@/components/common/PauseBanner.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import IconPause from '@/components/Icons/IconPause.vue';
 import { usePauseQueriesStore } from '@/store/pauses';
@@ -622,7 +623,7 @@ const setOrder = (order: string) => {
 
                 <!-- Pause -->
                 <IconButton
-                    label="Pause"
+                    :label="pauseQueries.is_paused ? $t('resume') : $t('pause')"
                     variant="base"
                     @click="pauseQueries.toggle()"
                 >
@@ -649,13 +650,7 @@ const setOrder = (order: string) => {
         </ViewToolbar>
 
         <!-- Pause Banner -->
-        <div
-            v-if="pauseQueries.is_paused"
-            class="bg-warning/10 text-warning text-[10px] px-3 py-1.5 flex items-center gap-2 border-b border-warning/20 shrink-0"
-        >
-            <PlayIcon class="w-3 h-3" />
-            <span>{{ $t('app.inactive_banner') }}</span>
-        </div>
+        <PauseBanner :paused="pauseQueries.is_paused" />
 
         <BaseDrawer
             id="queries-requests-drawer"

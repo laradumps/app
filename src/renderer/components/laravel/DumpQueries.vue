@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { format } from 'sql-formatter';
 import { Payload } from '@/types/Payload';
 import { useFormattedQueriesStore } from '@/store/formatted-queries';

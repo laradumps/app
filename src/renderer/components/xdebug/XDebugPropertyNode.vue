@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref } from 'vue';
+import { ref } from 'vue';
 import XDebugLoadingChildren from '@/components/xdebug/XDebugLoadingChildren.vue';
 import IconArrowRight from '@/components/Icons/IconArrowRight.vue';
 import IconArrowDown from '@/components/Icons/IconArrowDown.vue';

@@ -9,12 +9,10 @@ const openSettings = () => {
 </script>
 
 <template>
-    <div class="border-l border-base-content/10 pl-2 ml-1 flex items-center">
-        <IconButton
-            label="Settings"
-            @click="openSettings"
-        >
-            <CogIcon class="size-4" />
-        </IconButton>
-    </div>
+    <IconButton
+        label="Settings"
+        @click="openSettings"
+    >
+        <CogIcon class="size-4" />
+    </IconButton>
 </template>

@@ -123,6 +123,7 @@ export default {
         whats_new: '새로운 기능'
     },
     pause: '일시정지',
+    resume: '재개',
     remove: '제거',
     collapse: '모든 덤프 접기',
     ssh: {
@@ -165,6 +166,6 @@ export default {
     },
     no_records_found: 'No records found.',
     app: {
-        inactive_banner: 'Disabled, but LaraDumps still continues capturing which may leave it a bit slow.'
+        inactive_banner: 'Paused: incoming data is NOT captured and will be lost until you resume.'
     }
 };

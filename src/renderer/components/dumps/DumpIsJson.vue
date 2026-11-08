@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps } from 'vue';
+import { computed } from 'vue';
 import { Payload } from '@/types/Payload';
 
 const style = computed(() => (props.payload.is_json ? 'bg-green-500' : 'bg-red-500'));

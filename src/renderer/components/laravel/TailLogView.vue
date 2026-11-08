@@ -29,8 +29,13 @@ import { useCurrentProject } from '@/store/current-project';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import { generateLink } from '@/utils/ideHandler';
 import { copyLogToMarkdown } from '@/utils/logToMarkdown';
+import { levelClasses } from '@/utils/logLevel';
 import { useSettingsStore } from '@/store/settings';
+import { useConfirm } from '@/composables/useConfirm';
+import { useI18n } from 'vue-i18n';
 
+const confirmAction = useConfirm();
+const { t } = useI18n();
 const tailLogStore = useTailLogStore();
 const colorStore = useColorStore();
 const globalSearchStore = useGlobalSearchStore();
@@ -205,8 +210,10 @@ const pickFile = () => {
     (document.activeElement as HTMLElement)?.blur();
 };
 
-const clearFile = () => {
-    window.ipcRenderer.send('tail-log:clear-file');
+const clearFile = async () => {
+    if (await confirmAction(t('confirm.empty_log_title'), t('confirm.empty_log_message'))) {
+        window.ipcRenderer.send('tail-log:clear-file');
+    }
 };
 
 const loadNewEntries = () => {
@@ -221,29 +228,6 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('keydown', handleKeyDown);
 });
-
-type LevelColor = 'success' | 'warning' | 'info' | 'error' | 'neutral';
-
-const colorClasses: Record<LevelColor, { badge: string; dot: string }> = {
-    success: { badge: 'text-success bg-success/10', dot: 'bg-success' },
-    warning: { badge: 'text-warning bg-warning/10', dot: 'bg-warning' },
-    info: { badge: 'text-info bg-info/10', dot: 'bg-info' },
-    error: { badge: 'text-error bg-error/10', dot: 'bg-error' },
-    neutral: { badge: 'text-base-content/80 bg-base-content/10', dot: 'bg-base-content/40' }
-};
-
-const levelColorMap: Record<string, LevelColor> = {
-    error: 'error',
-    critical: 'error',
-    alert: 'error',
-    emergency: 'error',
-    warning: 'warning',
-    notice: 'success',
-    info: 'info',
-    debug: 'neutral'
-};
-
-const levelClasses = (level: string) => colorClasses[levelColorMap[level] ?? 'neutral'];
 
 const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
 </script>
@@ -420,7 +404,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                     <!-- Empty log file (truncate on disk) -->
                     <IconButton
                         v-if="tailLogStore.filePath"
-                        label="Empty log file"
+                        :label="$t('tail_log.clear_log_file_contents')"
                         variant="danger"
                         @click="clearFile()"
                     >

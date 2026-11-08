@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref, onUnmounted, computed } from 'vue';
+import { onMounted, ref, onUnmounted, computed } from 'vue';
 import { CodeSnippet } from '@/types/Payload';
 import hljs from 'highlight.js/lib/core';
 import DumpLink from '@/components/dumps/DumpLink.vue';
@@ -168,42 +168,42 @@ onUnmounted(() => {
 }
 
 .code-snippet .hljs-keyword,
-.hljs-selector-tag,
-.hljs-doctag {
+.code-snippet .hljs-selector-tag,
+.code-snippet .hljs-doctag {
     @apply !text-[#cc7832] font-bold;
 }
 
 .code-snippet .hljs-string,
-.hljs-meta .hljs-string,
-.hljs-attribute {
+.code-snippet .hljs-meta .hljs-string,
+.code-snippet .hljs-attribute {
     @apply !text-[#6a8759];
 }
 
-.code-snippet.hljs-number,
-.hljs-literal,
-.hljs-boolean {
+.code-snippet .hljs-number,
+.code-snippet .hljs-literal,
+.code-snippet .hljs-boolean {
     @apply !text-[#6897BB];
 }
 
 .code-snippet .hljs-title,
-.hljs-function,
-.hljs-built_in {
+.code-snippet .hljs-function,
+.code-snippet .hljs-built_in {
     @apply !text-[#ffc66d];
 }
 
 .code-snippet .hljs-variable,
-.hljs-template-variable {
+.code-snippet .hljs-template-variable {
     @apply !text-[#9876AA];
 }
 
 .code-snippet .hljs-class,
-.hljs-type,
-.hljs-title.class_ {
+.code-snippet .hljs-type,
+.code-snippet .hljs-title.class_ {
     @apply !text-[#a9b7c6];
 }
 
 .code-snippet .hljs-attr,
-.hljs-symbol {
+.code-snippet .hljs-symbol {
     @apply !text-[#b3b3b3];
 }
 
@@ -216,8 +216,8 @@ onUnmounted(() => {
 }
 
 .code-snippet .hljs-tag,
-.hljs-name,
-.hljs-section {
+.code-snippet .hljs-name,
+.code-snippet .hljs-section {
     @apply !text-[#e8bf6a];
 }
 
@@ -237,7 +237,7 @@ onUnmounted(() => {
     @apply inline-block w-[40px] select-none text-gray-500 text-right pr-2 flex-shrink-0;
 }
 
-.scrollable {
+.code-snippet .scrollable {
     @apply overflow-x-auto;
 }
 </style>

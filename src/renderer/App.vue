@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TheNavBar from '@/components/navbar/TheNavBar.vue';
+import StatusLine from '@/components/navbar/StatusLine.vue';
 import { usePayloadStore } from '@/store/payload';
 import { nextTick, onMounted, ref, watch } from 'vue';
 import { useSettingsStore } from '@/store/settings';
@@ -80,7 +81,7 @@ watch(
 );
 
 const readyToLoad = ref(false);
-const screen = ref<string | null>('');
+const screen = ref<string | null>(new URLSearchParams(window.location.search).get('screen'));
 const isNotification = ref(new URLSearchParams(window.location.search).get('notification') === '1');
 
 //* * Convert shortcuts to Electron format **/
@@ -173,7 +174,6 @@ onMounted(() => {
     });
 
     const urlParams = new URLSearchParams(window.location.search);
-    screen.value = urlParams.get('screen');
 
     if (urlParams.has('blur')) {
         settingsStore.applyWindowBlur(true);
@@ -216,7 +216,7 @@ onMounted(() => {
             :class="{
                 '!space-y-0': payloadStore.payload.length > 0
             }"
-            class="bg-base-200 absolute w-full h-full min-h-full"
+            class="bg-base-200 absolute w-full h-full min-h-full flex flex-col"
         >
             <div id="context-menu-portal"></div>
 
@@ -234,12 +234,14 @@ onMounted(() => {
                 </div>
             </div>
 
-            <main class="w-full overflow-auto h-[calc(100vh-42px)]">
+            <main class="relative w-full flex-1 min-h-0 overflow-auto">
                 <RouterView :key="$route.fullPath" />
                 <Toasters />
                 <TheUpdateNotification />
                 <SettingsModal />
             </main>
+
+            <StatusLine v-if="screen === 'default'" />
         </div>
     </div>
 </template>

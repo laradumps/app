@@ -54,6 +54,8 @@ const isDraggingScreen = ref(false);
 const draggedScreenName = ref('');
 
 const isVerticalLayout = computed(() => settingsStore.settings.screen_layout === 'vertical');
+const hasNavbar = new URLSearchParams(window.location.search).get('screen') === 'default';
+const tabsInPlace = computed(() => isVerticalLayout.value || !hasNavbar);
 
 watch(
     () => currentProjectStore.projectInfo,
@@ -94,22 +96,15 @@ onMounted(() => {
     registerListeners();
 });
 
-const groupedDumps = computed(() => {
-    if (!settingsStore.settings.grouped_by_time) {
-        return { ungrouped: dumpsBagFiltered.value };
-    }
-    return groupByTime(dumpsBagFiltered.value);
-});
+const group = (items) => (settingsStore.settings.grouped_by_time ? groupByTime(items) : { ungrouped: items });
+
+const groupedDumps = computed(() => group(dumpsBagFiltered.value));
 
 const groupedSplitDumps = computed(() => {
     if (!splitPanesStore.splitConfig?.screenName) {
         return {};
     }
-    const screenPayloads = payloadStore.get(splitPanesStore.splitConfig.screenName);
-    if (!settingsStore.settings.grouped_by_time) {
-        return { ungrouped: screenPayloads };
-    }
-    return groupByTime(screenPayloads);
+    return group(payloadStore.get(splitPanesStore.splitConfig.screenName));
 });
 
 const screenWindowItems = computed(() => {
@@ -119,8 +114,12 @@ const screenWindowItems = computed(() => {
     if (screen === 'mail') return mailScreen.value;
     if (screen === 'logs') return logScreen.value;
     if (screen === 'brain') return brainScreen.value;
-    return payloadScreen.value;
+    return payloadScreen.value ?? [];
 });
+
+const groupedScreenWindowDumps = computed(() =>
+    isKnownScreen(inScreenWindow.value ?? '') ? {} : group(screenWindowItems.value)
+);
 
 const handleDragScreen = ({ screen, _ }) => {
     draggedScreenName.value = screen;
@@ -199,6 +198,8 @@ const handleDragEnd = () => {
                     extra-class="w-full h-full min-h-0 text-base"
                     :yaml-config="yamlConfig"
                     :screen-window-items="screenWindowItems"
+                    :dumps-bag-filtered="isKnownScreen(inScreenWindow) ? undefined : screenWindowItems"
+                    :grouped-dumps="groupedScreenWindowDumps"
                 />
             </div>
         </div>
@@ -208,7 +209,7 @@ const handleDragEnd = () => {
 
             <div
                 v-else-if="splitPanesStore.splitConfig?.active"
-                class="fixed inset-0 top-10.25 flex flex-col"
+                class="absolute inset-0 flex flex-col"
             >
                 <SplitPanes
                     :orientation="splitPanesStore.splitConfig.orientation"
@@ -218,8 +219,15 @@ const handleDragEnd = () => {
                 >
                     <template #pane-a>
                         <div class="flex flex-col h-full">
-                            <div class="shrink-0 z-380">
-                                <div class="flex h-12 px-1.5 items-center justify-between w-full">
+                            <div
+                                class="shrink-0 z-380"
+                                :class="{ 'flex h-12 px-1.5 items-center': isVerticalLayout }"
+                            >
+                                <Teleport
+                                    defer
+                                    to="#navbar-views"
+                                    :disabled="tabsInPlace"
+                                >
                                     <Screens
                                         class="flex-1 min-w-0"
                                         :environments="environments"
@@ -229,9 +237,8 @@ const handleDragEnd = () => {
                                         @removeEnvironmentScreen="handleRemoveEnvironmentScreen"
                                         @openScreenWindow="openScreenWindow"
                                     />
-                                </div>
+                                </Teleport>
                             </div>
-                            <PauseBanner />
                             <div
                                 class="flex-1 min-h-0"
                                 :class="isKnownScreen(screenStore.screen) ? 'overflow-hidden' : 'overflow-auto'"
@@ -260,8 +267,9 @@ const handleDragEnd = () => {
                     <template #pane-b>
                         <div class="flex flex-col h-full overflow-hidden">
                             <div
-                                class="shrink-0 h-12 flex items-center justify-end px-3 border-b border-base-content/10"
+                                class="shrink-0 h-9 flex items-center justify-between pl-3 pr-1 border-b border-base-content/10 text-[0.8rem] font-medium capitalize"
                             >
+                                {{ splitPanesStore.splitConfig.screenName.replace(/_/g, ' ') }}
                                 <IconButton
                                     label="Close split"
                                     variant="danger"
@@ -300,14 +308,16 @@ const handleDragEnd = () => {
                         :class="isVerticalLayout ? 'flex-row' : 'flex-col'"
                     >
                         <div
-                            class="shrink-0 z-50"
-                            :class="isVerticalLayout ? 'h-full w-48 border-r border-base-content/10' : ''"
+                            :class="
+                                isVerticalLayout
+                                    ? 'shrink-0 z-50 flex flex-col h-full w-48 px-1.5 py-1.5 border-r border-base-content/10'
+                                    : ''
+                            "
                         >
-                            <div
-                                class="flex px-1.5 w-full"
-                                :class="
-                                    isVerticalLayout ? 'flex-col h-full py-1.5' : 'h-12 items-center justify-between'
-                                "
+                            <Teleport
+                                defer
+                                to="#navbar-views"
+                                :disabled="tabsInPlace"
                             >
                                 <Screens
                                     class="flex-1 min-w-0"
@@ -318,10 +328,9 @@ const handleDragEnd = () => {
                                     @removeEnvironmentScreen="handleRemoveEnvironmentScreen"
                                     @openScreenWindow="openScreenWindow"
                                 />
-                            </div>
+                            </Teleport>
                         </div>
                         <div class="flex flex-col flex-1 min-w-0 min-h-0">
-                            <PauseBanner />
                             <div
                                 class="flex flex-col flex-1 min-h-0"
                                 :class="isKnownScreen(screenStore.screen) ? 'overflow-hidden' : 'overflow-y-auto'"
