@@ -16,6 +16,7 @@ import IconStop from '@/components/Icons/IconStop.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
 import IconLoading from '@/components/Icons/IconLoading.vue';
 import { useI18n } from 'vue-i18n';
+import { escapeHtml } from '@/utils/helpers';
 
 const xDebugStore = useXDebug();
 const i18n = useI18n();
@@ -170,7 +171,7 @@ const handleContextGet = (responseElement) => {
 
     nextTick(() =>
         tippy('.pane-code [data-tippy-content]', {
-            allowHTML: true,
+            allowHTML: false,
             theme: 'ld',
             placement: 'top',
             offset: [0, 6],
@@ -496,10 +497,10 @@ const getHighlightedCode = (lineContent) => {
         const classes = variable.type === 'uninitialized' ? 'opacity-60 line-through' : 'cursor-pointer font-normal';
         const tooltip =
             ['int', 'bool', 'float'].includes(variable.type) && variable.value !== null
-                ? ` data-tippy-content="${variable.type}: ${variable.value}"`
+                ? ` data-tippy-content="${escapeHtml(`${variable.type}: ${variable.value}`)}"`
                 : '';
 
-        return `<span class="highlight ${classes}" data-variable="${match}" onclick="modal_property_get.showModal()"${tooltip}>${match}</span>`;
+        return `<span class="highlight ${classes}" data-variable="${match}"${tooltip}>${match}</span>`;
     });
 };
 
@@ -537,6 +538,7 @@ const handleClick = (event) => {
             selectedVariableName.value = variableName;
 
             propertyGet(variableName);
+            modal_property_get.showModal();
         }
     }
 };

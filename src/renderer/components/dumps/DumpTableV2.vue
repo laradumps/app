@@ -75,7 +75,7 @@ const initSfDump = () => {
                                 :id="`sf-dump-${row.val[1]}`"
                                 class="sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line"
                                 data-indent-pad="  "
-                                v-html="row.val[0]"
+                                v-safe-html="row.val[0]"
                             ></pre>
                         </template>
                         <template v-else>

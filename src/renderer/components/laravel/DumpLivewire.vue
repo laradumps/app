@@ -222,7 +222,7 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
                                     role="tabpanel"
                                     class="tab-content p-3 overflow-auto"
                                 >
-                                    <div v-html="selected.properties[0]"></div>
+                                    <div v-safe-html="selected.properties[0]"></div>
                                 </div>
 
                                 <input
@@ -237,7 +237,7 @@ const totalQueriesTime = computed(() => selected.value?.queries.reduce((acc, q) 
                                     role="tabpanel"
                                     class="tab-content bg-base-100 border-base-300 p-4"
                                 >
-                                    <div v-html="selected.errors[0]"></div>
+                                    <div v-safe-html="selected.errors[0]"></div>
                                 </div>
 
                                 <!-- Queries Tab -->

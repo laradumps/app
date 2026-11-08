@@ -2,20 +2,12 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
+import { localhostHostValidation } from '@modelcontextprotocol/sdk/server/middleware/hostHeaderValidation.js';
 import express from 'express';
-import cors from 'cors';
 import { registerTools } from './tools';
 import { registerPrompts } from './prompts';
 import http from 'http';
 import crypto from 'crypto';
-
-process.on('exit', (code) => {
-    console.error(`Process exiting with code: ${code}`);
-});
-
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-});
 
 export interface McpServerInstance {
     server: McpServer | null;
@@ -59,10 +51,10 @@ export async function createMcpServer(
         logger(`HTTP mode - Starting Express app...`);
 
         const app = express();
-        app.use(cors());
+        app.use(localhostHostValidation());
         app.use(express.json({ limit: '10mb' }));
 
-        logger('Express app created, CORS and JSON middleware enabled');
+        logger('Express app created, host validation and JSON middleware enabled');
         logger('Registering endpoints...');
 
         app.use((req: any, res: any, next: any) => {
@@ -147,8 +139,8 @@ export async function createMcpServer(
 
         logger(`Starting HTTP server on port ${port}...`);
 
-        httpServer = app.listen(port, '0.0.0.0', () => {
-            logger(`LaraDumps MCP Server running on Streamable HTTP mode at http://0.0.0.0:${port}/mcp`);
+        httpServer = app.listen(port, '127.0.0.1', () => {
+            logger(`LaraDumps MCP Server running on Streamable HTTP mode at http://127.0.0.1:${port}/mcp`);
         });
 
         logger('HTTP server listening');
@@ -202,6 +194,14 @@ export async function createMcpServer(
 const isStandalone = process.argv[1]?.endsWith('mcp-server.js');
 
 if (isStandalone) {
+    process.on('exit', (code) => {
+        console.error(`Process exiting with code: ${code}`);
+    });
+
+    process.on('uncaughtException', (err) => {
+        console.error('Uncaught Exception:', err);
+    });
+
     const args = process.argv.slice(2);
     const portIndex = args.indexOf('--port');
     const port = portIndex !== -1 ? parseInt(args[portIndex + 1], 10) : 0;

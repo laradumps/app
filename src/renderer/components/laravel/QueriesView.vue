@@ -194,7 +194,7 @@ const clear = () => {
 onMounted(() => {
     nextTick(() => {
         tippy('[data-tippy-content]', {
-            allowHTML: true,
+            allowHTML: false,
             theme: 'light-border',
             placement: 'bottom'
         });

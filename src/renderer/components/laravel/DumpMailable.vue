@@ -12,6 +12,6 @@ defineProps<{
         v-if="payload.mailable"
         class="text-base-content"
     >
-        <div v-html="payload.mailable.html"></div>
+        <div v-safe-html="payload.mailable.html"></div>
     </div>
 </template>

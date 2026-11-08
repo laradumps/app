@@ -21,13 +21,13 @@ onMounted(() => {
             v-text="payload.model?.className"
         ></div>
 
-        <div v-html="payload.model?.attributes[0]"></div>
+        <div v-safe-html="payload.model?.attributes[0]"></div>
         <div
             class="flex flex-col gap-2"
             v-show="payload.model?.relations.length > 0"
         >
             <span>Relations</span>
-            <div v-html="payload.model?.relations[0]"></div>
+            <div v-safe-html="payload.model?.relations[0]"></div>
         </div>
     </div>
 </template>

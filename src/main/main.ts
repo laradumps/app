@@ -9,28 +9,25 @@ import {
     shell
 } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import { download } from 'electron-dl';
 import { selectProjectDirectory } from './project-setup';
 
 import path, { join, resolve } from 'path';
 import fs from 'fs';
 import * as ssh from './ssh';
 
-import storage from 'electron-json-storage';
+import Store from 'electron-store';
 import './watcher';
 import './ipc';
 
 import * as electronStore from './storage';
 import * as electronAutoUpdate from './auto-update';
 import * as electronTray from './tray';
-import * as customWindow from './custom-window';
 import * as electronAutoLaunch from './auto-launch';
 import * as settings from './settings';
 import * as xdebug from './xdebug';
 import * as mcpManager from './mcp-manager';
 import * as logTailer from './log-tailer';
 
-import { CompletedInfo } from '@/types/Updater';
 import { createMenu } from './main-menu';
 import { createScreenWindow } from './window/screen';
 import * as notificationWindow from './window/notification';
@@ -45,7 +42,6 @@ let mainWindow: BrowserWindow;
 let badgeCount = 0;
 let blurActive = false;
 const windowsMap = new Map();
-let downloadCompleted = false;
 
 const electronLocalShortcut = require('electron-localshortcut');
 
@@ -167,9 +163,15 @@ function createWindow(): BrowserWindow {
     return window;
 }
 
+const DUMP_TYPES = new Set([
+    'brain', 'clear', 'color', 'context', 'dump', 'dump_group', 'events', 'html', 'http-client', 'jobs', 'json',
+    'json_validate', 'label', 'livewire', 'log_application', 'mail', 'mailable', 'model', 'profiler', 'queries',
+    'query', 'screen', 'table', 'table_v2', 'time_track', 'validate'
+]);
+
 ipcMain.on('dump', (event: Electron.IpcMainEvent, arg): void => {
-    if (!arg || typeof arg.type !== 'string' || arg.type.length === 0) {
-        console.warn('Ignoring dump with missing or invalid "type":', arg);
+    if (!arg || !DUMP_TYPES.has(arg.type)) {
+        console.warn('Ignoring dump with unknown "type":', arg?.type);
         return;
     }
 
@@ -330,7 +332,6 @@ app.whenReady().then(async (): Promise<void> => {
     await xdebug.init(mainWindow);
     await settings.init();
     await logTailer.init(mainWindow);
-    await customWindow.init();
     await notificationWindow.init(mainWindow);
     await electronAutoLaunch.init();
     await electronStore.init();
@@ -361,10 +362,6 @@ app.whenReady().then(async (): Promise<void> => {
     });
 
     await autoUpdater.checkForUpdates();
-
-    const userDataPath = app.getPath('userData');
-
-    storage.setDataPath(path.join(userDataPath, 'storage'));
 
     await electronTray.init(mainWindow);
 });
@@ -415,9 +412,18 @@ ipcMain.on('main:create-static-tmp-file', (event, value) => {
     mainWindow.webContents.send('preload:create-static-tmp-file', value);
 });
 
+const zoomStore = new Store<{ zoomLevel?: number }>({ name: 'zoom' });
+
+function legacyZoomLevel(): number {
+    try {
+        return Number(JSON.parse(fs.readFileSync(join(app.getPath('userData'), 'storage', 'zoomLevel.json'), 'utf-8')).value);
+    } catch {
+        return 1.0;
+    }
+}
+
 ipcMain.on('main:update-zoom-level', (event, value): void => {
-    // @ts-ignore
-    storage.set('zoomLevel', { value: value });
+    zoomStore.set('zoomLevel', Number(value));
 });
 
 ipcMain.on('get-icon', (event, args) => {
@@ -425,22 +431,57 @@ ipcMain.on('get-icon', (event, args) => {
 });
 
 ipcMain.on('zoom-level', (): void => {
-    let zoomFactor = 1.0;
+    const zoomFactor = zoomStore.get('zoomLevel') ?? legacyZoomLevel();
 
-    const storageZoomValue = () => storage.getSync('zoomLevel');
-
-    // @ts-ignore
-    if (storageZoomValue().value > 0) {
-        // @ts-ignore
-        zoomFactor = storageZoomValue().value;
-    }
-
-    mainWindow.webContents.send('zoom-level.reply', zoomFactor);
+    mainWindow.webContents.send('zoom-level.reply', zoomFactor > 0 ? zoomFactor : 1.0);
 });
 
-ipcMain.on('main:openLink', (event: Electron.IpcMainEvent, url: any): void => {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    shell.openExternal(url).then((): void => {});
+const EXTERNAL_PROTOCOLS = ['http:', 'https:', 'mailto:', 'file:'];
+
+function openExternalSafe(url: unknown): void {
+    try {
+        if (!EXTERNAL_PROTOCOLS.includes(new URL(String(url)).protocol)) {
+            console.warn('Blocked openExternal for', url);
+            return;
+        }
+    } catch {
+        return;
+    }
+
+    shell.openExternal(String(url)).catch((error) => console.error('openExternal failed:', error));
+}
+
+ipcMain.on('main:openLink', (event: Electron.IpcMainEvent, url: unknown): void => {
+    openExternalSafe(url);
+});
+
+app.on('web-contents-created', (_event, contents) => {
+    contents.on('will-navigate', (event, url) => {
+        if (!/^(https?|file|data|blob):/i.test(url)) return;
+
+        const target = new URL(url);
+        const current = URL.canParse(contents.getURL()) ? new URL(contents.getURL()) : null;
+        if (current && target.protocol === current.protocol && target.host === current.host && target.pathname === current.pathname) return;
+
+        event.preventDefault();
+
+        if (/^https?:/i.test(url)) openExternalSafe(url);
+    });
+
+    contents.setWindowOpenHandler(({ url }) => {
+        if (url.startsWith('blob:')) {
+            return {
+                action: 'allow',
+                overrideBrowserWindowOptions: {
+                    webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true, preload: undefined }
+                }
+            };
+        }
+
+        openExternalSafe(url);
+
+        return { action: 'deny' };
+    });
 });
 
 ipcMain.on('main:toggle-always-on-top', (event, arg) => {
@@ -491,44 +532,11 @@ ipcMain.on('main:dialog', async (event, arg): void => {
     await mainWindow.webContents.send('main:dialog-choice', choice);
 });
 
-ipcMain.on('main:download-progress-info', async (event, args) => {
-    const properties: any = {
-        onProgress: (progress: number) => {
-            mainWindow.webContents.send('autoUpdater:download-progress', progress);
-        },
-        onCompleted: (item: CompletedInfo) => {
-            if (downloadCompleted) {
-                console.log('Download already completed, skipping duplicate event.');
-                return;
-            }
-            downloadCompleted = true;
-            mainWindow.webContents.send('autoUpdater:download-complete', item);
-        }
-    };
-
-    await download(mainWindow, args, properties);
-});
-
 ipcMain.on('main:check-upload', async (): Promise<void> => {
     if (!isMac) {
         await autoUpdater.downloadUpdate();
     } else {
         await shell.openExternal('https://github.com/laradumps/app/releases/latest');
-    }
-});
-
-ipcMain.on('main:download-complete', async (event, args) => {
-    const result = await dialog.showMessageBox({
-        type: 'info',
-        title: 'Update completed!',
-        message: 'The download was completed successfully!, do you want to install now?',
-        buttons: ['Yes', 'No']
-    });
-
-    if (result.response === 0) {
-        await shell.openPath(args);
-
-        setTimeout(() => app.quit(), 1000);
     }
 });
 

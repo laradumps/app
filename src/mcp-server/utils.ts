@@ -1,4 +1,4 @@
-const API_BASE = 'http://0.0.0.0:9191/api/mcp';
+const API_BASE = 'http://127.0.0.1:9191/api/mcp';
 
 export async function fetchData(endpoint: string, data?: any) {
     try {

@@ -74,7 +74,7 @@ const display = (id: string) => {
                 <span class="flex-1 min-w-0">
                     <span
                         class="block text-xs font-medium truncate"
-                        v-html="request.label ? request.label : 'Tinker'"
+                        v-safe-html="request.label ? request.label : 'Tinker'"
                     >
                     </span>
                     <span class="block text-[10px] text-base-content/40 mt-0.5">

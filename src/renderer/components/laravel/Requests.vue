@@ -42,7 +42,7 @@ const display = (id: string) => {
             <div class="flex justify-between gap-3 items-start">
                 <span
                     class="line-clamp-2 break-words"
-                    v-html="request.label ? request.label : 'Tinker'"
+                    v-safe-html="request.label ? request.label : 'Tinker'"
                 ></span>
                 <span class="text-sm font-semibold">{{ request.time }}ms</span>
             </div>
