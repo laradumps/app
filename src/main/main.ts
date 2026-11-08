@@ -513,6 +513,28 @@ ipcMain.on('main:relaunch-for-blur', (): void => {
     }
 });
 
+ipcMain.on('preload:server-failed', (_event, { code, message, port }): void => {
+    let detail = `${message}\n\nDumps will not be received until LaraDumps can listen on port ${port}.`;
+
+    if (code === 'EADDRINUSE') {
+        detail = `Another program is already using port ${port}. Close it and restart LaraDumps.`;
+    } else if (code === 'EACCES' && process.platform === 'win32') {
+        detail = [
+            `Port ${port} is inside a range reserved by Windows (WinNAT / Hyper-V).`,
+            'List the reserved ranges with:\nnetsh interface ipv4 show excludedportrange protocol=tcp',
+            'To release them, run as administrator:\nnet stop winnat\nnet start winnat',
+            'Then restart LaraDumps.'
+        ].join('\n\n');
+    }
+
+    dialog.showMessageBox(mainWindow, {
+        type: 'error',
+        title: 'LaraDumps',
+        message: `LaraDumps could not start on port ${port}`,
+        detail
+    });
+});
+
 ipcMain.on('main:app-version', (event): void => {
     event.reply('main:app-version.reply', { version: app.getVersion() });
 });
