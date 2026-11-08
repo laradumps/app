@@ -258,6 +258,10 @@ html:is(.glass-enabled, [data-theme='aurora']) :is(.modal-box, .dropdown-content
 html:is(.glass-enabled, [data-theme='aurora']) :is(.card, .alert, .collapse, .table) {
     background-color: var(--glass-base-100) !important;
 }
+html:is(.glass-enabled, [data-theme='aurora']) .table:has(> .ld-thead) {
+    background-color: transparent !important;
+}
+
 /* Zebra tables (e.g. the Jobs listing) paint their alternating rows with an opaque
    `--color-base-200` fill that isn't a `bg-base-*` utility, so the glass tints above miss them
    and the list reads as a solid block over the blur. Re-tint the striped rows so the listing
@@ -332,6 +336,10 @@ html:is(.glass-enabled, [data-theme='aurora']) .bg-base-200 {
 html:is(.glass-enabled, [data-theme='aurora']) .bg-base-300 {
     background-color: var(--glass-base-300) !important;
 }
+html:is(.glass-enabled, [data-theme='aurora']) .ld-on-surface {
+    background-color: transparent !important;
+}
+
 /* Floating dropdown panels render as `.dropdown-content.menu` and float OVER in-page content
    (settings rows, toggles), so they must stay near-opaque or that content bleeds through. The
    plain `.dropdown-content` rule above ties with the `.bg-base-100` utility these panels also
@@ -570,4 +578,91 @@ html[data-theme='aurora'] body::before {
 html.glass-enabled[data-theme='aurora'] body::before {
     background-color: transparent;
     opacity: 0.6;
+}
+
+.ld-row {
+    cursor: pointer;
+    outline: none;
+}
+
+.ld-row:hover,
+.ld-row:focus-visible {
+    background-color: color-mix(in oklab, var(--color-base-content) 5%, transparent) !important;
+}
+
+.ld-row:focus-visible {
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-primary) 60%, transparent);
+}
+
+.ld-row.is-open {
+    background-color: color-mix(in oklab, var(--color-base-content) 8%, transparent) !important;
+}
+
+.ld-row.is-open,
+.ld-row-detail {
+    box-shadow: inset 2px 0 0 var(--color-primary);
+}
+
+.ld-row-detail {
+    background-color: color-mix(in oklab, var(--color-base-content) 3%, transparent) !important;
+}
+
+.ld-thead th {
+    height: 0;
+    padding-block: 0 !important;
+    border: 0;
+    font-size: 0;
+    line-height: 0;
+    overflow: hidden;
+}
+
+.table:has(> .ld-thead) :is(tr, td) {
+    border-bottom-width: 0;
+}
+.table:has(> .ld-thead) > tbody > .ld-row > td {
+    padding-block: 7px !important;
+}
+.table:has(> .ld-thead) > tbody > tr > td:first-child {
+    padding-left: 16px !important;
+}
+.table:has(> .ld-thead) > tbody > tr > td:last-child {
+    padding-right: 16px !important;
+}
+
+.ld-group > td {
+    padding-top: 14px !important;
+    padding-bottom: 4px !important;
+    background-color: transparent !important;
+}
+.ld-group-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: color-mix(in oklab, var(--color-base-content) 40%, transparent);
+    user-select: none;
+}
+button.ld-group-label {
+    cursor: pointer;
+}
+button.ld-group-label:hover,
+button.ld-group-label:focus-visible {
+    color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+}
+.ld-group-chevron {
+    width: 12px;
+    height: 12px;
+    opacity: 0;
+    transition:
+        opacity 150ms ease,
+        transform 150ms ease;
+}
+.ld-group:hover .ld-group-chevron,
+.ld-group-label:focus-visible .ld-group-chevron,
+.ld-group-chevron.is-collapsed {
+    opacity: 1;
+}
+.ld-group-chevron.is-collapsed {
+    transform: rotate(-90deg);
 }

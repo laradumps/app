@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -20,6 +20,7 @@ import IconButton from '@/components/common/IconButton.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
 import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
+import { useRowExpand } from '@/composables/useRowExpand';
 
 const props = defineProps<{
     screen: 'cache' | 'gate';
@@ -33,16 +34,16 @@ const pauseStore = usePausePayloadStore();
 const globalSearchStore = useGlobalSearchStore();
 
 const typeFilter = ref<string | null>(null);
-const expanded = ref<Record<string, boolean>>({});
+const { openId, isOpen, toggle, onRowKeydown } = useRowExpand();
 
 type EventColor = 'success' | 'warning' | 'info' | 'error' | 'neutral';
 
-const colorClasses: Record<EventColor, { text: string; badge: string; dot: string }> = {
-    success: { text: 'text-success', badge: 'text-success bg-success/10', dot: 'bg-success' },
-    warning: { text: 'text-warning', badge: 'text-warning bg-warning/10', dot: 'bg-warning' },
-    info: { text: 'text-info', badge: 'text-info bg-info/10', dot: 'bg-info' },
-    error: { text: 'text-error', badge: 'text-error bg-error/10', dot: 'bg-error' },
-    neutral: { text: 'text-base-content', badge: 'text-base-content/80 bg-base-content/10', dot: 'bg-base-content/40' }
+const colorClasses: Record<EventColor, { text: string; dot: string }> = {
+    success: { text: 'text-success', dot: 'bg-success' },
+    warning: { text: 'text-warning', dot: 'bg-warning' },
+    info: { text: 'text-info', dot: 'bg-info' },
+    error: { text: 'text-error', dot: 'bg-error' },
+    neutral: { text: 'text-base-content/80', dot: 'bg-base-content/40' }
 };
 
 const eventStyles: Record<string, { color: EventColor; label: string }> = {
@@ -190,11 +191,9 @@ const selectType = (label: string) => {
     typeFilter.value = typeFilter.value === label ? null : label;
 };
 
-const toggleExpand = (payload: Payload) => {
-    const id = payload.id;
-    expanded.value[id] = !expanded.value[id];
-
-    if (!expanded.value[id]) return;
+watch(openId, (id) => {
+    const payload = id && items.value.find((item) => item.id === id);
+    if (!payload) return;
 
     nextTick(() => {
         detailCells(payload)
@@ -209,7 +208,7 @@ const toggleExpand = (payload: Payload) => {
                 }
             });
     });
-};
+});
 
 const clear = () => {
     if (pauseStore.is_paused) {
@@ -237,7 +236,7 @@ const clear = () => {
             </template>
 
             <template #filter>
-                <div class="dropdown dropdown-bottom dropdown-start">
+                <div class="dropdown dropdown-bottom dropdown-end">
                     <button
                         tabindex="0"
                         role="button"
@@ -299,14 +298,17 @@ const clear = () => {
             </template>
         </ViewToolbar>
 
-        <div class="flex-1 min-h-0 pt-3">
+        <div class="flex-1 min-h-0">
             <div
                 v-if="items.length > 0"
-                class="h-full overflow-auto px-3"
+                class="h-full overflow-auto"
             >
-                <table class="table table-pin-rows">
-                    <thead>
-                        <tr class="text-xs bg-base-300! font-light text-base-content">
+                <table
+                    class="table table-pin-rows"
+                    data-row-list
+                >
+                    <thead class="ld-thead">
+                        <tr>
                             <th class="w-[130px]">Type</th>
                             <th>{{ columnLabels[0] }}</th>
                             <th>{{ columnLabels[1] }}</th>
@@ -319,12 +321,9 @@ const clear = () => {
                             v-for="(payloads, timeKey) in groupedByRelativeTime"
                             :key="timeKey"
                         >
-                            <tr class="bg-base-200 text-xs font-semibold">
-                                <td
-                                    colspan="5"
-                                    class="select-none text-base-content/60"
-                                >
-                                    {{ timeKey }}
+                            <tr class="ld-group">
+                                <td colspan="5">
+                                    <span class="ld-group-label">{{ timeKey }}</span>
                                 </td>
                             </tr>
 
@@ -334,17 +333,21 @@ const clear = () => {
                             >
                                 <tr
                                     :id="`ld-anchor-${payload.id}`"
-                                    @click="toggleExpand(payload)"
-                                    class="hover:bg-base-100 cursor-pointer"
-                                    :class="{ 'bg-base-300': expanded[payload.id] }"
+                                    :data-row-id="payload.id"
+                                    tabindex="0"
+                                    :aria-expanded="isOpen(payload.id)"
+                                    class="ld-row"
+                                    :class="{ 'is-open': isOpen(payload.id) }"
+                                    @click="toggle(payload.id)"
+                                    @keydown="onRowKeydown($event, payload.id)"
                                 >
-                                    <td>
+                                    <td class="whitespace-nowrap">
                                         <span
-                                            class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md whitespace-nowrap"
-                                            :class="classesFor(eventLabel(payload)).badge"
+                                            class="inline-flex items-center gap-2 text-xs font-medium whitespace-nowrap capitalize"
+                                            :class="classesFor(eventLabel(payload)).text"
                                         >
                                             <span
-                                                class="w-1.5 h-1.5 rounded-full"
+                                                class="size-1.5 shrink-0 rounded-full"
                                                 :class="classesFor(eventLabel(payload)).dot"
                                             ></span>
                                             {{ styleFor(eventLabel(payload)).label }}
@@ -382,8 +385,8 @@ const clear = () => {
                                 </tr>
 
                                 <tr
-                                    v-if="expanded[payload.id]"
-                                    class="bg-base-200/60"
+                                    v-if="isOpen(payload.id)"
+                                    class="ld-row-detail"
                                 >
                                     <td colspan="5">
                                         <div class="space-y-3 py-1 px-1">
@@ -433,7 +436,7 @@ const clear = () => {
                 v-else
                 class="flex items-center justify-center h-full min-h-[12rem] pointer-events-none"
             >
-                <EmptyState />
+                <EmptyState :screen="screen" />
             </div>
         </div>
     </div>
@@ -441,10 +444,6 @@ const clear = () => {
 
 <style scoped>
 @reference "./../../styles.css";
-
-:deep(.table thead) :where(th, td) {
-    @apply p-2;
-}
 
 :deep(.table tbody) {
     :where(th, td) {

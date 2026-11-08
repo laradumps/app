@@ -4,12 +4,13 @@ import { Attachment, Mail, mimeTypeMap, useMailStore } from '@/store/mail';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import {
-    CloudArrowDownIcon,
     DevicePhoneMobileIcon,
     DeviceTabletIcon,
-    ComputerDesktopIcon
+    ComputerDesktopIcon,
+    PaperClipIcon,
+    XMarkIcon
 } from '@heroicons/vue/24/outline';
 import IconExternalLink from '@/components/Icons/IconExternalLink.vue';
 import DumpLink from '@/components/dumps/DumpLink.vue';
@@ -20,6 +21,7 @@ import EmptyState from '@/components/common/EmptyState.vue';
 import { useCurrentProject } from '@/store/current-project';
 import VueJsonPretty from 'vue-json-pretty';
 import { useGlobalSearchStore } from '@/store/global-search';
+import { useRowExpand } from '@/composables/useRowExpand';
 
 const mailStore = useMailStore();
 const currentProjectStore = useCurrentProject();
@@ -69,9 +71,16 @@ const removeMail = (messageId: string) => {
     mailStore.remove(messageId);
 
     if (visited.value?.message_id === messageId) {
-        visited.value = undefined;
+        openId.value = null;
     }
 };
+
+const { openId, isOpen, onRowKeydown } = useRowExpand();
+watch(openId, (id) => {
+    const mail = id && mails.value.find((item) => item.message_id === id);
+    if (mail) display(mail);
+    else visited.value = undefined;
+});
 
 const mails = computed(() => {
     const items = props.items ? props.items : mailStore.mails;
@@ -157,23 +166,29 @@ const openTmpBrowserPreview = () => {
     window.ipcRenderer.send('main:openLink', `http://localhost:9191/temp/${previewUrl.value}.html`);
 };
 
-const previewSize = computed(() => {
-    return previewMode.value === 'mobile' ? '415px' : previewMode.value === 'tablet' ? '768px' : '1024px';
-});
+const PREVIEW_MODES = [
+    { key: 'mobile', label: 'Mobile', width: '415px', icon: DevicePhoneMobileIcon },
+    { key: 'tablet', label: 'Tablet', width: '768px', icon: DeviceTabletIcon },
+    { key: 'desktop', label: 'Desktop', width: '1024px', icon: ComputerDesktopIcon }
+];
 
-const previewStyle = computed(() => {
-    return `
-        width: ${previewMode.value === 'mobile' ? '415px' : previewMode.value === 'tablet' ? '768px' : '1024px'};
-        height: 100%;
-        transform: scale(1);
-        transform-origin: top left;
-        overflow: hidden;
-    `;
-});
+const previewWidth = computed(() => PREVIEW_MODES.find((mode) => mode.key === previewMode.value)?.width ?? '415px');
 
-const setPreviewMode = (mode: string) => {
-    previewMode.value = mode;
-};
+const headerValue = (mail: Mail, name: string) =>
+    mail.headers
+        ?.find((header) => header.startsWith(`${name}:`))
+        ?.slice(name.length + 1)
+        .trim() ?? '';
+
+const sender = (mail: Mail) => mail.from || mail.from_mail || headerValue(mail, 'From');
+
+const addresses = computed(() =>
+    visited.value
+        ? ['From', 'To', 'Cc', 'Bcc']
+              .map((name) => [name, headerValue(visited.value!, name)])
+              .filter(([, value]) => value)
+        : []
+);
 </script>
 
 <template>
@@ -252,43 +267,57 @@ const setPreviewMode = (mode: string) => {
                     :initial-split="28"
                 >
                     <template #pane-a>
-                        <div class="h-full overflow-auto flex flex-col gap-1 px-3">
+                        <div
+                            class="h-full overflow-auto flex flex-col gap-0.5 p-1.5"
+                            data-row-list
+                        >
                             <div
                                 v-for="mail in mails.slice().reverse()"
                                 :key="mail.message_id"
                                 :id="`ld-anchor-${mail.message_id}`"
-                                :class="{
-                                    'hover:bg-base-300 hover:rounded-md': visited?.message_id !== mail.message_id,
-                                    'opacity-40 !font-normal': mail.is_read && visited?.message_id !== mail.message_id,
-                                    'border-primary text-primary rounded-xs bg-base-300':
-                                        visited?.message_id === mail.message_id
-                                }"
-                                class="p-2 px-3 space-y-2 cursor-pointer focus:bg-primary"
-                                @click="display(mail)"
+                                :data-row-id="mail.message_id"
+                                tabindex="0"
+                                :aria-selected="isOpen(mail.message_id)"
+                                :class="{ 'is-open': isOpen(mail.message_id) }"
+                                class="ld-row group relative pl-4 pr-2 py-2 rounded-md space-y-0.5"
+                                @click="openId = mail.message_id"
+                                @keydown="onRowKeydown($event, mail.message_id)"
                             >
-                                <div class="flex justify-between items-center cursor-pointer">
-                                    <div class="truncate">{{ mail.from_mail }}</div>
-                                    <div class="flex items-center gap-2">
-                                        <RelatedJobButton
-                                            v-if="mail.related_job"
-                                            :related-job="mail.related_job"
-                                            :origin-id="mail.message_id"
-                                        />
-                                        <span class="px-1 text-xs">{{ dayjs(mail.date).format('HH:mm') }}</span>
-                                        <button
-                                            @click.stop="removeMail(mail.message_id)"
-                                            class="text-base-content/50 hover:text-error text-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                            title="Remove mail"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
+                                <span
+                                    v-if="!mail.is_read"
+                                    class="absolute left-1.5 top-[0.9rem] size-1.5 rounded-full bg-primary"
+                                    title="Unread"
+                                />
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="flex-1 truncate"
+                                        :class="mail.is_read ? 'text-base-content/60' : 'font-medium text-base-content'"
+                                        >{{ sender(mail) }}</span
+                                    >
+                                    <PaperClipIcon
+                                        v-if="mail.attachments?.length"
+                                        class="size-3.5 shrink-0 text-base-content/40"
+                                    />
+                                    <RelatedJobButton
+                                        v-if="mail.related_job"
+                                        :related-job="mail.related_job"
+                                        :origin-id="mail.message_id"
+                                    />
+                                    <span class="shrink-0 text-[11px] tabular-nums text-base-content/40">{{
+                                        dayjs(mail.date).format('HH:mm')
+                                    }}</span>
+                                    <button
+                                        type="button"
+                                        @click.stop="removeMail(mail.message_id)"
+                                        class="grid place-items-center size-4 shrink-0 rounded text-base-content/40 hover:text-error hover:bg-error/10 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity cursor-pointer"
+                                        title="Remove mail"
+                                    >
+                                        <XMarkIcon class="size-3" />
+                                    </button>
                                 </div>
                                 <div
-                                    :class="{
-                                        '!font-normal': mail.is_read && visited?.message_id !== mail.message_id
-                                    }"
-                                    class="font-semibold truncate"
+                                    class="truncate text-xs"
+                                    :class="mail.is_read ? 'text-base-content/45' : 'text-base-content/75'"
                                 >
                                     {{ mail.subject }}
                                 </div>
@@ -297,135 +326,120 @@ const setPreviewMode = (mode: string) => {
                     </template>
 
                     <template #pane-b>
-                        <div class="h-full min-h-0 overflow-auto ml-2 text-sm">
-                            <div
-                                v-if="visited"
-                                class="flex flex-col w-full space-y-2 h-full"
-                            >
-                                <!-- header -->
-                                <div class="px-2">
-                                    <DumpLink
-                                        :ide-handler="visited.ide_handle"
-                                        class="text-xs my-2 opacity-80 link"
-                                    />
+                        <div
+                            v-if="visited"
+                            class="flex flex-col h-full min-h-0 text-sm"
+                        >
+                            <header class="shrink-0 px-5 pt-4 pb-3 space-y-2.5">
+                                <h2 class="text-base font-semibold leading-snug select-text">{{ visited.subject }}</h2>
 
-                                    <div class="mt-1 flex flex-col gap-2">
-                                        <div class="flex flex-wrap gap-2 items-center w-full justify-between">
-                                            <span class="font-semibold">{{ visited.subject }}</span>
-                                        </div>
-                                        <div class="flex flex-wrap justify-between gap-3">
-                                            <div class="flex gap-3 items-center">
-                                                <span v-text="visited.headers[0]"></span>
-                                            </div>
-                                            <div class="flex flex-row gap-3 items-center">
-                                                <span v-text="visited.headers[1]"></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="flex px-3 py-2 gap-2 flex-wrap items-center justify-between">
-                                    <div class="flex gap-2 items-center justify-center text-xs">
-                                        <button
-                                            @click="setPreviewMode('mobile')"
-                                            class="btn btn-xs btn-soft"
-                                            :class="{ 'btn-primary': previewMode === 'mobile' }"
-                                        >
-                                            <DevicePhoneMobileIcon class="w-4" />
-                                        </button>
-                                        <button
-                                            @click="setPreviewMode('tablet')"
-                                            class="btn btn-xs btn-soft"
-                                            :class="{ 'btn-primary': previewMode === 'tablet' }"
-                                        >
-                                            <DeviceTabletIcon class="w-4" />
-                                        </button>
-                                        <button
-                                            @click="setPreviewMode('desktop')"
-                                            class="btn btn-xs btn-soft"
-                                            :class="{ 'btn-primary': previewMode === 'desktop' }"
-                                        >
-                                            <ComputerDesktopIcon class="w-4" />
-                                        </button>
-                                        <span class="text-xs">{{ previewSize }}</span>
-                                    </div>
-
-                                    <div class="flex gap-2">
-                                        <button
-                                            v-if="visited.context && Object.values(visited.context).length > 0"
-                                            @click="openContext"
-                                            class="btn btn-xs btn-outline border-base-content/10"
-                                        >
-                                            Context
-                                        </button>
-                                        <button
-                                            @click="openDumps"
-                                            class="btn btn-xs btn-outline border-base-content/10"
-                                        >
-                                            Dumps
-                                        </button>
-                                        <button
-                                            @click="openHeaders"
-                                            class="btn btn-xs btn-outline border-base-content/10"
-                                        >
-                                            Headers
-                                        </button>
-                                        <button
-                                            @click="openTmpBrowserPreview"
-                                            class="btn btn-xs btn-outline border-base-content/10"
-                                        >
-                                            Browser
-                                            <IconExternalLink class="w-4" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- body -->
-                                <div
-                                    v-if="visited"
-                                    class="w-full flex-1 flex flex-col"
-                                >
-                                    <!-- email content iframe -->
-                                    <div class="w-full flex-1 flex justify-center mb-4">
-                                        <div class="group p-2 space-y-2 cursor-pointer focus:bg-primary">
-                                            <iframe
-                                                ref="mailFrame"
-                                                sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
-                                                class="iframe-content"
-                                                :style="previewStyle"
-                                                allowfullscreen
-                                                frameborder="0"
-                                                :src="`http://localhost:9191/temp/${previewUrl}.html`"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <!-- attachments -->
-                                    <div
-                                        v-if="visited.attachments.length > 0"
-                                        class="w-full px-4 py-2 border-t border-base-300"
+                                <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs">
+                                    <template
+                                        v-for="[name, value] in addresses"
+                                        :key="name"
                                     >
-                                        <div class="font-semibold mb-2">Attachments:</div>
-                                        <div class="flex flex-wrap gap-2">
-                                            <button
-                                                v-for="(attachment, index) in visited.attachments"
-                                                :key="`attachment-${index}`"
-                                                class="btn btn-neutral flex gap-2 items-center"
-                                                @click.prevent="openInBrowser(attachment)"
-                                            >
-                                                <CloudArrowDownIcon class="w-4 h-4" />
-                                                {{ attachment.filename }}
-                                            </button>
-                                        </div>
-                                    </div>
+                                        <dt class="text-base-content/40">{{ name }}</dt>
+                                        <dd class="truncate text-base-content/80 select-text">{{ value }}</dd>
+                                    </template>
+                                </dl>
+
+                                <div class="flex items-center gap-1.5 text-[11px] text-base-content/40">
+                                    <span class="tabular-nums">{{
+                                        dayjs(visited.date).format('MMM D, HH:mm:ss')
+                                    }}</span>
+                                    <span>·</span>
+                                    <DumpLink
+                                        :key="visited.message_id"
+                                        :ide-handler="visited.ide_handle"
+                                        class="hover:text-base-content"
+                                    />
+                                </div>
+
+                                <div
+                                    v-if="visited.attachments.length > 0"
+                                    class="flex flex-wrap gap-1.5 pt-1"
+                                >
+                                    <button
+                                        v-for="(attachment, index) in visited.attachments"
+                                        :key="`attachment-${index}`"
+                                        type="button"
+                                        class="inline-flex items-center gap-1.5 h-6 px-2 rounded-md text-xs text-base-content/80 ring-1 ring-base-content/10 hover:bg-base-content/5 cursor-pointer"
+                                        @click.prevent="openInBrowser(attachment)"
+                                    >
+                                        <PaperClipIcon class="size-3.5 text-base-content/40" />
+                                        {{ attachment.filename }}
+                                    </button>
+                                </div>
+                            </header>
+
+                            <div
+                                class="shrink-0 flex items-center justify-between gap-2 px-4 py-1.5 border-y border-base-content/10"
+                            >
+                                <div class="join">
+                                    <button
+                                        v-for="mode in PREVIEW_MODES"
+                                        :key="mode.key"
+                                        type="button"
+                                        class="join-item btn btn-xs btn-ghost px-2"
+                                        :class="
+                                            previewMode === mode.key
+                                                ? 'btn-active text-base-content'
+                                                : 'text-base-content/50'
+                                        "
+                                        :title="`${mode.label} · ${mode.width}`"
+                                        @click="previewMode = mode.key"
+                                    >
+                                        <component
+                                            :is="mode.icon"
+                                            class="size-4"
+                                        />
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center gap-0.5 text-base-content/60">
+                                    <button
+                                        v-if="visited.context && Object.values(visited.context).length > 0"
+                                        type="button"
+                                        class="btn btn-xs btn-ghost font-normal"
+                                        @click="openContext"
+                                    >
+                                        Context
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-xs btn-ghost font-normal"
+                                        @click="openDumps"
+                                    >
+                                        Dumps
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-xs btn-ghost font-normal"
+                                        @click="openHeaders"
+                                    >
+                                        Headers
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-xs btn-ghost font-normal gap-1"
+                                        title="Open in browser"
+                                        @click="openTmpBrowserPreview"
+                                    >
+                                        Browser
+                                        <IconExternalLink class="w-3.5" />
+                                    </button>
                                 </div>
                             </div>
 
-                            <div
-                                v-else
-                                class="w-full h-full"
-                                style="height: -webkit-fill-available"
-                            ></div>
+                            <div class="flex-1 min-h-0 flex justify-center-safe overflow-x-auto p-4 bg-base-content/[0.03]">
+                                <iframe
+                                    ref="mailFrame"
+                                    sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+                                    class="h-full shrink-0 rounded-lg bg-white shadow-sm ring-1 ring-base-content/10"
+                                    :style="{ width: previewWidth }"
+                                    :src="`http://localhost:9191/temp/${previewUrl}.html`"
+                                />
+                            </div>
                         </div>
                     </template>
                 </SplitPanes>
@@ -434,7 +448,7 @@ const setPreviewMode = (mode: string) => {
                     v-else
                     class="flex items-center justify-center h-full pointer-events-none"
                 >
-                    <EmptyState />
+                    <EmptyState screen="mail" />
                 </div>
             </div>
         </div>
@@ -442,100 +456,7 @@ const setPreviewMode = (mode: string) => {
 </template>
 
 <style scoped>
-@reference "./../../styles.css";
-
 iframe {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
     border: none;
-}
-
-.smartphone {
-    position: relative;
-    width: 430px;
-    height: 640px;
-    margin: auto;
-    border: 8px black solid;
-    border-top-width: 40px;
-    border-bottom-width: 40px;
-    border-radius: 36px;
-}
-
-.smartphone:before {
-    content: '';
-    display: block;
-    width: 40px;
-    height: 5px;
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #333;
-    border-radius: 10px;
-}
-
-/* The circle on the bottom of the device */
-.smartphone:after {
-    content: '';
-    display: block;
-    width: 25px;
-    height: 25px;
-    position: absolute;
-    left: 50%;
-    bottom: -45px;
-    transform: translate(-50%, -50%);
-    background: #333;
-    border-radius: 50%;
-}
-
-.smartphone .content {
-    width: 360px;
-    height: 640px;
-    background: white;
-}
-
-.tablet {
-    position: relative;
-    width: 798px;
-    height: -webkit-fill-available;
-    margin: auto;
-    border: 16px black solid;
-    border-top-width: 60px;
-    border-bottom-width: 60px;
-    border-radius: 36px;
-}
-
-.tablet:before {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 5px;
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #333;
-    border-radius: 10px;
-}
-
-.tablet:after {
-    content: '';
-    display: block;
-    width: 35px;
-    height: 35px;
-    position: absolute;
-    left: 50%;
-    bottom: -65px;
-    transform: translate(-50%, -50%);
-    background: #333;
-    border-radius: 50%;
-}
-
-.tablet .content {
-    width: 768px;
-    height: 1024px;
-    background: white;
-    margin: -1px;
 }
 </style>

@@ -249,6 +249,8 @@ export default {
     search: 'Buscar',
     composer_invalid_version: 'App requer laradumps/laradumps-core 3.0 ou superior',
     save_dump: 'Salvar dump',
+    collapse_dump: 'Recolher dump',
+    expand_dump: 'Expandir dump',
     remove_from_saved: 'Remover dump',
     toast_copied_to_clipboard: 'Copiado para a área de transferência.',
     toast_added_to_saved: 'Adicionado aos dumps salvos.',

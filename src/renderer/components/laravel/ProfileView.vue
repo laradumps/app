@@ -29,6 +29,7 @@ const currentProjectStore = useCurrentProject();
 
 const selectedProfile = computed(() => profileStore.selectedProfile);
 const profiles = computed(() => profileStore.profileList);
+const hasProfile = computed(() => profiles.value.length > 0 && !!selectedProfile.value);
 
 const selectedEntry = ref<ProfileEntry | null>(null);
 
@@ -122,11 +123,77 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
     <div class="flex flex-col h-full min-h-0">
         <!-- Actions Bar -->
         <ViewToolbar
-            v-if="!hideHeader"
-            :count="profiles.length"
+            v-if="!hideHeader || hasProfile"
+            :count="hasProfile ? undefined : profiles.length"
             noun="profile"
         >
-            <template #right>
+            <template
+                v-if="hasProfile"
+                #title
+            >
+                <RequestSwitcher
+                    :items="profileItems"
+                    :count-label="$t('profiler.entries')"
+                    :model-value="profileStore.selectedProfileId"
+                    @update:model-value="selectProfile"
+                >
+                    <div class="flex items-center gap-2">
+                        <div class="flex p-0.5 rounded-md bg-base-content/5">
+                            <button
+                                class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                                :class="
+                                    viewMode === 'timeline'
+                                        ? 'bg-base-content/15 text-base-content'
+                                        : 'text-base-content/50 hover:text-base-content'
+                                "
+                                :aria-label="$t('profiler.timeline')"
+                                :title="$t('profiler.timeline')"
+                                @click="viewMode = 'timeline'"
+                            >
+                                <ClockIcon class="w-3" />
+                                <span class="@max-xl:hidden">{{ $t('profiler.timeline') }}</span>
+                            </button>
+                            <button
+                                class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                                :class="
+                                    viewMode === 'hotspots'
+                                        ? 'bg-base-content/15 text-base-content'
+                                        : 'text-base-content/50 hover:text-base-content'
+                                "
+                                :aria-label="$t('profiler.hotspots')"
+                                :title="$t('profiler.hotspots')"
+                                @click="viewMode = 'hotspots'"
+                            >
+                                <FireIcon class="w-3" />
+                                <span class="@max-xl:hidden">{{ $t('profiler.hotspots') }}</span>
+                            </button>
+                            <button
+                                class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
+                                :class="
+                                    viewMode === 'flame'
+                                        ? 'bg-base-content/15 text-base-content'
+                                        : 'text-base-content/50 hover:text-base-content'
+                                "
+                                :aria-label="$t('profiler.flame')"
+                                :title="$t('profiler.flame')"
+                                @click="viewMode = 'flame'"
+                            >
+                                <Square3Stack3DIcon class="w-3" />
+                                <span class="@max-xl:hidden">{{ $t('profiler.flame') }}</span>
+                            </button>
+                        </div>
+                        <span class="text-base-content/25">·</span>
+                        <span>
+                            {{ formatDuration(selectedProfile.total_duration_ms) }}
+                        </span>
+                    </div>
+                </RequestSwitcher>
+            </template>
+
+            <template
+                v-if="!hideHeader"
+                #right
+            >
                 <!-- YAML Configuration Dropdown -->
                 <div class="dropdown dropdown-bottom dropdown-end">
                     <IconButton
@@ -282,70 +349,9 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
 
         <!-- Profile Content -->
         <div
-            v-if="profiles.length > 0 && selectedProfile"
+            v-if="hasProfile"
             class="flex-1 flex flex-col overflow-hidden min-h-0"
         >
-            <!-- Selector bar -->
-            <RequestSwitcher
-                :items="profileItems"
-                :count-label="$t('profiler.entries')"
-                :model-value="profileStore.selectedProfileId"
-                @update:model-value="selectProfile"
-            >
-                <div class="flex items-center gap-2">
-                    <div class="flex p-0.5 rounded-md bg-base-content/5">
-                        <button
-                            class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
-                            :class="
-                                viewMode === 'timeline'
-                                    ? 'bg-base-content/15 text-base-content'
-                                    : 'text-base-content/50 hover:text-base-content'
-                            "
-                            :aria-label="$t('profiler.timeline')"
-                            :title="$t('profiler.timeline')"
-                            @click="viewMode = 'timeline'"
-                        >
-                            <ClockIcon class="w-3" />
-                            <span class="@max-xl:hidden">{{ $t('profiler.timeline') }}</span>
-                        </button>
-                        <button
-                            class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
-                            :class="
-                                viewMode === 'hotspots'
-                                    ? 'bg-base-content/15 text-base-content'
-                                    : 'text-base-content/50 hover:text-base-content'
-                            "
-                            :aria-label="$t('profiler.hotspots')"
-                            :title="$t('profiler.hotspots')"
-                            @click="viewMode = 'hotspots'"
-                        >
-                            <FireIcon class="w-3" />
-                            <span class="@max-xl:hidden">{{ $t('profiler.hotspots') }}</span>
-                        </button>
-                        <button
-                            class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
-                            :class="
-                                viewMode === 'flame'
-                                    ? 'bg-base-content/15 text-base-content'
-                                    : 'text-base-content/50 hover:text-base-content'
-                            "
-                            :aria-label="$t('profiler.flame')"
-                            :title="$t('profiler.flame')"
-                            @click="viewMode = 'flame'"
-                        >
-                            <Square3Stack3DIcon class="w-3" />
-                            <span class="@max-xl:hidden">{{ $t('profiler.flame') }}</span>
-                        </button>
-                    </div>
-                    <span
-                        class="font-mono text-xs tabular-nums"
-                        :class="selectedProfile.total_duration_ms >= 100 ? 'text-warning' : 'text-base-content'"
-                    >
-                        {{ formatDuration(selectedProfile.total_duration_ms) }}
-                    </span>
-                </div>
-            </RequestSwitcher>
-
             <!-- Legend filters (shared across views) -->
             <ProfileLegend
                 :by-type="selectedProfile.summary.by_type"
@@ -380,7 +386,7 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
             v-else
             class="flex-1 flex items-center justify-center p-6"
         >
-            <EmptyState />
+            <EmptyState screen="profiler" />
         </div>
 
         <!-- Modals -->

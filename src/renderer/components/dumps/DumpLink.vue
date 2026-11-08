@@ -11,6 +11,7 @@ const props = defineProps<{
     breakpoint?: boolean;
     truncate?: boolean;
     middleTruncate?: boolean;
+    short?: boolean;
     maxLength?: number;
 }>();
 
@@ -30,7 +31,7 @@ const label = computed(() => {
     if (class_name === 'empty') return '';
     if (class_name.includes('&platform=')) return 'JavaScript';
     if (class_name === 'empty' || !real_path || real_path.includes('ExecutionLoopClosure')) return 'Tinker';
-    if (line?.toString() !== '') return `${class_name}:${line}`;
+    if (line?.toString() !== '') return `${props.short ? class_name.split('\\').pop() : class_name}:${line}`;
 
     return '';
 });

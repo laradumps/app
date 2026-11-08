@@ -26,7 +26,8 @@ import {
     BookmarkIcon,
     SparklesIcon,
     ExclamationTriangleIcon,
-    BoltIcon
+    BoltIcon,
+    ChevronDownIcon
 } from '@heroicons/vue/24/outline';
 import { useTimeStore } from '@/store/time';
 import { useQueryDuplicated } from '@/store/query-duplicated';
@@ -112,7 +113,6 @@ const onOtherContextOpen = (e: Event) => {
 const props = defineProps<{
     payload: Payload;
     showTime: boolean;
-    isFirst?: boolean;
     isPrettified?: boolean;
 }>();
 
@@ -211,12 +211,7 @@ const tone = computed(() => {
     return null;
 });
 
-const TICK = {
-    error: 'shadow-[inset_2px_0_0_var(--color-error)]',
-    info: 'shadow-[inset_2px_0_0_var(--color-info)]',
-    warning: 'shadow-[inset_2px_0_0_var(--color-warning)]',
-    success: 'shadow-[inset_2px_0_0_var(--color-success)]'
-};
+const DOT = { error: 'bg-error', info: 'bg-info', warning: 'bg-warning', success: 'bg-success' };
 
 const TAG = { error: 'text-error', info: 'text-info', warning: 'text-warning', success: 'text-success' };
 
@@ -278,12 +273,15 @@ const openExplainModal = async () => {
     }
 };
 
-const handleDuplicatedClick = (event: MouseEvent) => {
-    if (
+const isDuplicatedQuery = computed(
+    () =>
         props.payload.type === 'queries' &&
-        props.payload.queries?.query?.sql &&
+        !!props.payload.queries?.query?.sql &&
         duplicatesStore.isDuplicated(props.payload.request_id, props.payload.queries.query.sql)
-    ) {
+);
+
+const handleDuplicatedClick = (event: MouseEvent) => {
+    if (isDuplicatedQuery.value && props.payload.queries?.query?.sql) {
         event.stopPropagation();
         duplicatesStore.toggleSelectedSql(props.payload.queries.query.sql);
     }
@@ -413,61 +411,64 @@ onUnmounted(() => {
             (payload.queries && ['none', 'percentage-colors'].includes(queriesChart.type)) || payload.type !== 'queries'
         "
         :id="`ld-anchor-${payload.id}`"
-        :class="{ '-mt-1': isFirst && !payload.dump?.variable_name }"
     >
         <div
             @mouseenter="decrementBadgeCount"
-            :class="[
-                { 'highlight-duplicated': isHighlighted },
-                {
-                    'bg-warning/20 border-warning/40':
-                        payload.type === 'queries' &&
-                        payload.queries?.query?.sql &&
-                        duplicatesStore.isDuplicated(payload.request_id, payload.queries.query.sql)
-                }
-            ]"
+            :class="{ 'highlight-duplicated': isHighlighted }"
             :style="isPercentageColors ? computedBackgroundStyle : {}"
-            class="relative rounded-none group/item border-b border-base-content/10 hover:bg-base-content/[0.03] transition-colors"
+            class="relative group/item pl-10 pr-4 pt-2 pb-1"
             @contextmenu.prevent="onContextMenu($event)"
             @click="
                 handleDuplicatedClick($event);
                 openOptions = false;
             "
         >
-            <div
-                @click="open = !open"
-                class="collapse-title p-0! min-h-0 grid grid-cols-[8rem_minmax(0,1fr)] cursor-default overflow-hidden"
-            >
-                <div
-                    class="relative flex flex-col gap-px min-w-0 py-2.5 pl-4 pr-3 font-mono text-[0.7rem] text-base-content/55"
-                    :class="tone && TICK[tone]"
-                >
+            <span
+                aria-hidden="true"
+                class="absolute left-4 top-[13px] size-[9px] rounded-full"
+                :class="isDuplicatedQuery ? 'bg-warning' : tone ? DOT[tone] : 'bg-base-content/25'"
+            ></span>
+
+            <div class="collapse-title p-0! min-h-0! flex flex-col gap-1.5 cursor-default">
+                <div class="flex items-center gap-2 min-w-0 pr-24 text-xs text-base-content/50">
                     <span
-                        v-if="open && shouldDisplayBadge"
-                        class="absolute top-3.5 left-1.5 size-1.5 rounded-full bg-warning"
-                    ></span>
-                    <span v-if="!settingsStore.settings.grouped_by_time">{{
-                        dayjs(payload.date_time).format('HH:mm:ss')
-                    }}</span>
+                        v-if="!settingsStore.settings.grouped_by_time"
+                        class="shrink-0 font-medium tabular-nums text-base-content/55"
+                        >{{ dayjs(payload.date_time).format('HH:mm:ss') }}</span
+                    >
                     <DumpLink
                         v-if="payload.ide_handle?.real_path"
                         :ide-handler="payload.ide_handle"
                         :truncate="true"
+                        :short="payload.type === 'queries'"
                         class="min-w-0 hover:text-primary"
                     />
-                    <span v-if="payload.type === 'queries' && payload.queries?.query?.time != null"
+                    <span
+                        v-if="payload.type === 'queries' && payload.queries?.query?.time != null"
+                        class="shrink-0 font-mono"
                         >{{ payload.queries.query.time.toFixed(2) }}ms</span
                     >
-                </div>
-
-                <div class="flex flex-col gap-1.5 min-w-0 py-2.5 pr-3">
+                    <span
+                        v-if="payload.type === 'queries' && payload.queries?.query?.connectionName"
+                        class="shrink-0 text-base-content/35"
+                        >{{ payload.queries.query.connectionName }}</span
+                    >
                     <span
                         v-if="getLabel !== payload.type"
-                        class="font-mono text-xs font-semibold"
+                        class="shrink-0 font-mono font-semibold"
                         :class="tone ? TAG[tone] : 'text-base-content/70'"
                         >{{ getLabel }}</span
                     >
+                    <span
+                        v-if="open && shouldDisplayBadge"
+                        class="shrink-0 size-1.5 rounded-full bg-warning"
+                    ></span>
+                </div>
 
+                <div
+                    v-show="open"
+                    class="flex flex-col gap-1.5 min-w-0 px-3 py-2.5 rounded-lg bg-base-content/[0.03] group-hover/item:bg-base-content/[0.05] transition-colors overflow-hidden"
+                >
                     <!-- Model: ClassName + Raw Attributes HTML -->
                     <DumpModel
                         v-if="payload.type === 'model' && payload.model"
@@ -585,16 +586,13 @@ onUnmounted(() => {
                     </div>
 
                     <div
-                        v-if="payload.type === 'queries' || payload.related_job"
+                        v-if="
+                            (payload.type === 'queries' && payload.queries?.explain_nodes?.length) ||
+                            payload.related_job
+                        "
                         class="flex flex-wrap items-center gap-2 text-[0.73rem]"
                     >
                         <template v-if="payload.type === 'queries'">
-                            <span
-                                v-if="payload.queries?.query?.connectionName"
-                                class="badge badge-ghost badge-xs p-1.5 font-mono opacity-70"
-                            >
-                                {{ payload.queries.query.connectionName }}
-                            </span>
                             <button
                                 v-if="payload.queries?.explain_nodes && payload.queries.explain_nodes.length > 0"
                                 @click.stop="openExplainModal()"
@@ -615,14 +613,28 @@ onUnmounted(() => {
             </div>
 
             <div
-                class="absolute top-1.5 right-2 z-10 flex gap-0.5 p-0.5 rounded-md bg-base-200 opacity-0 transition-opacity group-hover/item:opacity-100 focus-within:opacity-100"
+                class="absolute top-1 right-4 z-10 flex gap-0.5 p-0.5 rounded-md bg-base-200 ld-on-surface opacity-0 transition-opacity group-hover/item:opacity-100 focus-within:opacity-100"
+                :class="{ 'opacity-100': !open }"
                 @click.stop
             >
                 <button
                     type="button"
+                    :aria-label="open ? $t('collapse_dump') : $t('expand_dump')"
+                    :title="open ? $t('collapse_dump') : $t('expand_dump')"
+                    :aria-expanded="open"
+                    class="grid place-items-center size-5 rounded text-base-content/55 hover:bg-base-content/10 hover:text-base-content cursor-pointer"
+                    @click="open = !open"
+                >
+                    <ChevronDownIcon
+                        class="size-3.5 transition-transform"
+                        :class="{ '-rotate-90': !open }"
+                    />
+                </button>
+                <button
+                    type="button"
                     :aria-label="$t('copy')"
                     :title="$t('copy')"
-                    class="grid place-items-center size-6.5 rounded-md text-base-content/55 hover:bg-base-content/10 hover:text-base-content cursor-pointer"
+                    class="grid place-items-center size-5 rounded text-base-content/55 hover:bg-base-content/10 hover:text-base-content cursor-pointer"
                     @click="deleteDump(payload.id)"
                 >
                     <ClipboardIcon class="size-3.5" />
@@ -631,7 +643,7 @@ onUnmounted(() => {
                     type="button"
                     :aria-label="isSaved || inSavedWindow ? $t('remove_from_saved') : $t('save_dump')"
                     :title="isSaved || inSavedWindow ? $t('remove_from_saved') : $t('save_dump')"
-                    class="grid place-items-center size-6.5 rounded-md hover:bg-base-content/10 hover:text-base-content cursor-pointer"
+                    class="grid place-items-center size-5 rounded hover:bg-base-content/10 hover:text-base-content cursor-pointer"
                     :class="isSaved ? 'text-primary' : 'text-base-content/55'"
                     @click="isSaved || inSavedWindow ? onRemoveFromSaved() : onSaveDump()"
                 >
@@ -642,7 +654,7 @@ onUnmounted(() => {
                     type="button"
                     :aria-label="$t('delete')"
                     :title="$t('delete')"
-                    class="grid place-items-center size-6.5 rounded-md text-base-content/55 hover:bg-error/10 hover:text-error cursor-pointer"
+                    class="grid place-items-center size-5 rounded text-base-content/55 hover:bg-error/10 hover:text-error cursor-pointer"
                     @click="payloadStore.removePayload(payload.id)"
                 >
                     <TrashIcon class="size-3.5" />
@@ -651,7 +663,7 @@ onUnmounted(() => {
 
             <div
                 v-show="open"
-                class="collapse-content p-0! pl-32! pr-3!"
+                class="collapse-content p-0!"
             >
                 <div
                     class="relative"
