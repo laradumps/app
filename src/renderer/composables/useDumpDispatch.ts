@@ -22,7 +22,8 @@ import {
     usePauseJobsStore,
     usePauseLogsStore,
     usePauseQueriesStore,
-    usePauseProfileStore
+    usePauseProfileStore,
+    usePauseLivewireStore
 } from '@/store/pauses';
 import { Payload } from '@/types/Payload';
 import { deepClone } from '@/utils/deep_clone';
@@ -63,6 +64,7 @@ export function useDumpDispatch(nav: ScreenNavigation) {
     const pauseLogsStore = usePauseLogsStore();
     const pauseQueries = usePauseQueriesStore();
     const pauseProfileStore = usePauseProfileStore();
+    const pauseLivewireStore = usePauseLivewireStore();
 
     const applicationPath = ref('');
 
@@ -173,10 +175,12 @@ export function useDumpDispatch(nav: ScreenNavigation) {
     const handleXdebug: IpcHandler = (_e, { content }: { content: Payload }) => dispatch(content);
 
     const handleLivewire: IpcHandler = (_e, { content }: { content: Payload }) => {
-        if (pausePayloadStore.is_paused) return;
+        const isFocus = Array.isArray(content.livewire?.focus);
+        if (!isFocus && (pausePayloadStore.is_paused || pauseLivewireStore.is_paused)) return;
+        if (nav.recentlyClosed(content.to_screen?.screen_name)) return;
         checkApplicationPath(content, applicationPath);
-        livewireStore.add(content.livewire);
-        dispatch(content);
+        livewireStore.add(content);
+        if (content.to_screen) nav.addScreen(content.to_screen);
     };
 
     const handleJobs = makeScreenHandler({

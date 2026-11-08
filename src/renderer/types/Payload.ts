@@ -168,15 +168,9 @@ export interface ContextPayload {
 }
 
 export interface LivewirePayload {
-    name: string;
-    size: string;
-    request: string;
-    errors: Array<any>;
-    properties: Array<any>;
-    profile: Array<any>;
-    queries: Array<any>;
-    events: Array<any>;
-    original_content?: string;
+    components?: Record<string, unknown>[];
+    focus?: string[];
+    [legacy: string]: unknown;
 }
 
 export interface Payload {
@@ -184,6 +178,7 @@ export interface Payload {
     index: string;
     type: string;
     request_id: never;
+    sent_at?: number;
     ide_handle: IdeHandle;
     xdebug: any; // todo
     date_time: Date;
