@@ -440,7 +440,7 @@ const showOrigin = (log: Log) => log.ide_handle.class_name !== 'empty';
                     <table class="table table-pin-rows table-fixed w-full log-table">
                         <thead>
                             <tr class="text-xs bg-base-300! font-light text-base-content">
-                                <th class="w-[90px]">{{ $t('level') }}</th>
+                                <th class="w-[120px]">{{ $t('level') }}</th>
                                 <th>{{ $t('message') }}</th>
                                 <th class="w-[190px] text-right">{{ $t('origin') }}</th>
                             </tr>

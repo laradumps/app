@@ -1,7 +1,7 @@
 <script setup>
 import { computed, watch } from 'vue';
 import { useSavedDumpsStore } from '@/store/saved-dumps';
-import IconButton from '@/components/common/IconButton.vue';
+import MenuRow from '@/components/navbar/MenuRow.vue';
 import { deepClone } from '@/utils/deep_clone';
 import { BookmarkIcon } from '@heroicons/vue/24/outline';
 
@@ -34,11 +34,12 @@ watch(
 </script>
 
 <template>
-    <IconButton
+    <MenuRow
         v-if="hasSaved"
         :label="$t('menu.saved_dumps')"
+        :value="savedStore.count"
         @click="openSavedWindow"
     >
         <BookmarkIcon class="size-4" />
-    </IconButton>
+    </MenuRow>
 </template>

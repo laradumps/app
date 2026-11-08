@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useSettingsStore } from '@/store/settings';
 import { useSettingsSave } from '@/composables/useSettingsSave';
 import SettingsRow from '../SettingsRow.vue';
@@ -8,6 +9,12 @@ import SelectInput from '@/components/common/SelectInput.vue';
 
 const settingsStore = useSettingsStore();
 const { save } = useSettingsSave();
+const { t } = useI18n();
+
+const layoutOptions = computed(() => [
+    { value: 'horizontal', label: t('settings.layout_top'), side: false },
+    { value: 'vertical', label: t('settings.layout_side'), side: true }
+]);
 
 const customThemeModal = ref<InstanceType<typeof CustomThemeModal> | null>(null);
 
@@ -34,13 +41,6 @@ const saveTheme = async () => {
 
 const editCustomTheme = () => {
     customThemeModal.value?.open();
-};
-
-const onBadgeCountChange = () => {
-    if (!settingsStore.settings.show_badge_count) {
-        window.ipcRenderer.send('badge-icon.increment', { reset: true });
-    }
-    save();
 };
 
 const saveWindowBlur = async () => {
@@ -90,116 +90,70 @@ const saveWindowOpacity = async () => {
             </div>
         </SettingsRow>
 
-        <SettingsRow :label="$t('settings.scroll_direction')">
-            <div class="w-52">
-                <SelectInput
-                    v-model="settingsStore.settings.scroll_direction"
-                    @change="save()"
+        <SettingsRow
+            :label="$t('settings.screen_layout')"
+            :hint="$t('settings.hints.screen_layout')"
+        >
+            <div
+                role="radiogroup"
+                :aria-label="$t('settings.screen_layout')"
+                class="grid grid-cols-2 gap-2 w-64"
+            >
+                <label
+                    v-for="option in layoutOptions"
+                    :key="option.value"
+                    class="flex flex-col gap-1.5 p-1.5 rounded-lg border cursor-pointer transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary"
+                    :class="
+                        settingsStore.settings.screen_layout === option.value
+                            ? 'border-primary'
+                            : 'border-base-300 hover:border-base-content/30'
+                    "
                 >
-                    <option
-                        v-for="(value, key) in settingsStore.scrollDirection"
-                        :value="key"
+                    <input
+                        type="radio"
+                        name="screen_layout"
+                        class="sr-only"
+                        :value="option.value"
+                        v-model="settingsStore.settings.screen_layout"
+                        @change="save()"
+                    />
+                    <span
+                        aria-hidden="true"
+                        class="flex h-14 rounded-md overflow-hidden bg-base-300"
+                        :class="option.side ? 'flex-row' : 'flex-col'"
                     >
-                        {{ value }}
-                    </option>
-                </SelectInput>
+                        <span
+                            class="flex gap-1 p-1.5 border-base-content/10"
+                            :class="option.side ? 'flex-col border-r' : 'flex-row border-b'"
+                        >
+                            <span
+                                v-for="tab in 3"
+                                :key="tab"
+                                class="h-1 rounded-sm"
+                                :class="[option.side ? 'w-5' : 'w-3', tab === 1 ? 'bg-primary' : 'bg-base-content/30']"
+                            ></span>
+                        </span>
+                        <span class="flex-1 flex flex-col gap-1 p-1.5">
+                            <span class="h-1 w-4/5 rounded-sm bg-base-content/15"></span>
+                            <span class="h-1 w-3/5 rounded-sm bg-base-content/15"></span>
+                            <span class="h-1 w-2/3 rounded-sm bg-base-content/15"></span>
+                        </span>
+                    </span>
+                    <span class="text-xs font-medium">{{ option.label }}</span>
+                </label>
             </div>
-        </SettingsRow>
-
-        <SettingsRow :label="$t('settings.dump_order')">
-            <div class="w-52">
-                <SelectInput
-                    v-model="settingsStore.settings.dump_order"
-                    @change="save()"
-                >
-                    <option
-                        v-for="(value, key) in settingsStore.dumpOrder"
-                        :value="key"
-                    >
-                        {{ value }}
-                    </option>
-                </SelectInput>
-            </div>
-        </SettingsRow>
-
-        <SettingsRow :label="$t('settings.screen_layout')">
-            <div class="w-52">
-                <SelectInput
-                    v-model="settingsStore.settings.screen_layout"
-                    @change="save()"
-                >
-                    <option
-                        v-for="(value, key) in settingsStore.screenLayout"
-                        :value="key"
-                    >
-                        {{ value }}
-                    </option>
-                </SelectInput>
-            </div>
-        </SettingsRow>
-
-        <SettingsRow :label="$t('settings.show_screen_icons')">
-            <input
-                type="checkbox"
-                class="toggle toggle-sm toggle-accent"
-                v-model="settingsStore.settings.show_screen_icons"
-                @change="save()"
-            />
-        </SettingsRow>
-
-        <SettingsRow :label="$t('settings.grouped_by_time')">
-            <input
-                type="checkbox"
-                class="toggle toggle-sm toggle-accent"
-                v-model="settingsStore.settings.grouped_by_time"
-                @change="save()"
-            />
-        </SettingsRow>
-
-        <SettingsRow :label="$t('settings.show_context')">
-            <input
-                type="checkbox"
-                class="toggle toggle-sm toggle-accent"
-                v-model="settingsStore.settings.show_context"
-                @change="save()"
-            />
-        </SettingsRow>
-
-        <SettingsRow :label="$t('settings.show_badge_count')">
-            <input
-                type="checkbox"
-                class="toggle toggle-sm toggle-accent"
-                v-model="settingsStore.settings.show_badge_count"
-                @change="onBadgeCountChange()"
-            />
-        </SettingsRow>
-
-        <SettingsRow :label="$t('settings.show_ssh_button')">
-            <input
-                type="checkbox"
-                class="toggle toggle-sm toggle-accent"
-                v-model="settingsStore.settings.show_ssh_button"
-                @change="save()"
-            />
-        </SettingsRow>
-
-        <SettingsRow :label="$t('settings.show_variable_type')">
-            <input
-                type="checkbox"
-                class="toggle toggle-sm toggle-accent"
-                v-model="settingsStore.settings.show_variable_type"
-                @change="save()"
-            />
         </SettingsRow>
 
         <SettingsRow
-            :label="$t('settings.show_tips')"
+            :label="$t('settings.show_screen_icons')"
+            :hint="$t('settings.hints.show_screen_icons')"
             :divider="blurSupported"
         >
             <input
                 type="checkbox"
                 class="toggle toggle-sm toggle-accent"
-                v-model="settingsStore.settings.show_tips"
+                :aria-label="$t('settings.show_screen_icons')"
+                v-model="settingsStore.settings.show_screen_icons"
                 @change="save()"
             />
         </SettingsRow>

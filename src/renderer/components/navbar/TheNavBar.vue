@@ -39,7 +39,7 @@ const modalClose = () => (isListeningModalOpen.value = false);
 
         <div
             @click="modalClose"
-            class="flex-1 self-stretch min-w-6 select-none"
+            class="flex-1 self-stretch min-w-20 select-none"
             :style="{
                 '-webkit-app-region': isListeningModalOpen ? 'no-drag' : 'drag'
             }"

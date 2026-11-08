@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toastHost } from '@/composables/useToastHost';
 import {
     XMarkIcon,
     Cog6ToothIcon,
     RectangleGroupIcon,
-    Bars3Icon,
+    InboxStackIcon,
+    EyeIcon,
+    BellIcon,
+    PuzzlePieceIcon,
     KeyIcon,
     CommandLineIcon
 } from '@heroicons/vue/24/outline';
@@ -14,6 +17,9 @@ import SettingsSidebar, { type SettingsNavItem } from './SettingsSidebar.vue';
 import GeneralSettings from './panels/GeneralSettings.vue';
 import AppearanceSettings from './panels/AppearanceSettings.vue';
 import LimitedDumpsSettings from './panels/LimitedDumpsSettings.vue';
+import ReadingSettings from './panels/ReadingSettings.vue';
+import NotificationSettings from './panels/NotificationSettings.vue';
+import IntegrationSettings from './panels/IntegrationSettings.vue';
 import ShortcutsSettings from './panels/ShortcutsSettings.vue';
 import McpSettings from './panels/McpSettings.vue';
 
@@ -21,15 +27,29 @@ const { t } = useI18n();
 
 const dialog = ref<HTMLDialogElement | null>(null);
 const toastPortal = ref<HTMLElement | null>(null);
-const selected = ref<string>('appearance');
+const selected = ref<string>('capture');
 
-const navItems: SettingsNavItem[] = [
-    { id: 'appearance', label: t('settings.appearance'), icon: RectangleGroupIcon },
-    { id: 'general', label: t('settings.settings'), icon: Cog6ToothIcon },
-    { id: 'limited_dumps', label: t('settings.limited_dumps'), icon: Bars3Icon },
-    { id: 'shortcuts', label: t('settings.shortcuts'), icon: KeyIcon },
-    { id: 'mcp', label: 'MCP Server', icon: CommandLineIcon }
-];
+const navItems = computed<SettingsNavItem[]>(() =>
+    (
+        [
+            ['capture', InboxStackIcon],
+            ['reading', EyeIcon],
+            ['appearance', RectangleGroupIcon],
+            ['notifications', BellIcon],
+            ['integrations', PuzzlePieceIcon],
+            ['mcp', CommandLineIcon],
+            ['shortcuts', KeyIcon],
+            ['app', Cog6ToothIcon]
+        ] as const
+    ).map(([id, icon]) => ({
+        id,
+        icon,
+        label: t(`settings.sections.${id}`),
+        sub: t(`settings.sections.${id}_sub`)
+    }))
+);
+
+const current = computed(() => navItems.value.find((item) => item.id === selected.value));
 
 let openObserver: MutationObserver | null = null;
 
@@ -81,11 +101,15 @@ defineExpose({ open, close });
                 />
 
                 <div class="flex-1 flex flex-col min-h-0">
-                    <!-- Top bar with close -->
-                    <div class="flex items-center justify-end px-4 pt-3 pb-1 flex-shrink-0">
+                    <div class="flex items-start gap-3 px-6 pt-4 pb-2 flex-shrink-0">
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-base font-semibold">{{ current?.label }}</h2>
+                            <p class="text-xs text-base-content/50">{{ current?.sub }}</p>
+                        </div>
                         <button
                             @click="close"
-                            class="btn btn-ghost btn-circle btn-sm text-base-content/50 hover:text-base-content"
+                            :aria-label="$t('settings.close')"
+                            class="btn btn-ghost btn-circle btn-sm text-base-content/50 hover:text-base-content -mr-2"
                         >
                             <XMarkIcon class="w-4 h-4" />
                         </button>
@@ -93,9 +117,12 @@ defineExpose({ open, close });
 
                     <!-- Active panel -->
                     <div class="flex-1 overflow-y-auto px-6 pb-4">
-                        <GeneralSettings v-if="selected === 'general'" />
+                        <LimitedDumpsSettings v-if="selected === 'capture'" />
+                        <ReadingSettings v-else-if="selected === 'reading'" />
                         <AppearanceSettings v-else-if="selected === 'appearance'" />
-                        <LimitedDumpsSettings v-else-if="selected === 'limited_dumps'" />
+                        <NotificationSettings v-else-if="selected === 'notifications'" />
+                        <IntegrationSettings v-else-if="selected === 'integrations'" />
+                        <GeneralSettings v-else-if="selected === 'app'" />
                         <ShortcutsSettings v-else-if="selected === 'shortcuts'" />
                         <McpSettings v-else-if="selected === 'mcp'" />
                     </div>

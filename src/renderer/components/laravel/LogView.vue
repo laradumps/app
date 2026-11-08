@@ -572,7 +572,7 @@ const canCopyToMarkdown = computed(() => {
                     <table class="table table-zebra table-fixed w-full log-table">
                         <thead>
                             <tr class="text-xs font-light text-base-content">
-                                <th class="w-[90px]">{{ $t('level') }}</th>
+                                <th class="w-[120px]">{{ $t('level') }}</th>
                                 <th>{{ $t('message') }}</th>
                                 <th class="w-[190px] text-right">{{ $t('origin') }}</th>
                             </tr>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 import IconPin from '@/components/Icons/IconPin.vue';
-import IconButton from '@/components/common/IconButton.vue';
+import MenuRow from '@/components/navbar/MenuRow.vue';
 
 const isAlwaysOnTop = ref(false);
 
@@ -40,15 +40,16 @@ const toggleAlwaysOnTop = () => {
 </script>
 
 <template>
-    <IconButton
+    <MenuRow
+        toggle
         :label="$t('always_on_top')"
-        :active="isAlwaysOnTop"
-        @click="toggleAlwaysOnTop()"
+        :model-value="isAlwaysOnTop"
+        @update:model-value="toggleAlwaysOnTop()"
     >
         <IconPin
-            class="size-3.5"
+            class="size-4 p-px"
             :fill="isAlwaysOnTop ? 'currentColor' : 'none'"
             :stroke-width="isAlwaysOnTop ? '0' : '8'"
         />
-    </IconButton>
+    </MenuRow>
 </template>

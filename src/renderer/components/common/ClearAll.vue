@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted } from 'vue';
 import { usePayloadStore } from '@/store/payload';
 import { TrashIcon } from '@heroicons/vue/24/outline';
-import IconButton from '@/components/common/IconButton.vue';
+import MenuRow from '@/components/navbar/MenuRow.vue';
 import { useQueriesPayloadStore } from '@/store/queries';
 import { useMailStore } from '@/store/mail';
 import { useJobStore } from '@/store/jobs';
@@ -71,12 +71,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <IconButton
+    <MenuRow
         v-show="hasPayload"
         :label="$t('clear')"
-        variant="danger"
+        danger
         @click="clearAll"
     >
         <TrashIcon class="size-4" />
-    </IconButton>
+    </MenuRow>
 </template>

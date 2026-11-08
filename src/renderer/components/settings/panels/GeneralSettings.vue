@@ -45,22 +45,6 @@ const saveAutoLaunch = async () => {
             </div>
         </SettingsRow>
 
-        <SettingsRow :label="$t('settings.ide_handler')">
-            <div class="w-52">
-                <SelectInput
-                    v-model="settingsStore.settings.ide_handler"
-                    @change="save()"
-                >
-                    <option
-                        v-for="(value, key) in settingsStore.ideHandlerOptions"
-                        :value="key"
-                    >
-                        {{ value }}
-                    </option>
-                </SelectInput>
-            </div>
-        </SettingsRow>
-
         <SettingsRow :label="$t('settings.check_for_updates')">
             <div class="w-52">
                 <SelectInput
@@ -79,6 +63,7 @@ const saveAutoLaunch = async () => {
 
         <SettingsRow
             :label="$t('settings.auto_launch')"
+            :hint="$t('settings.hints.auto_launch')"
             :divider="false"
         >
             <div class="w-52">
