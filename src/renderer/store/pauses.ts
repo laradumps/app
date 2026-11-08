@@ -25,3 +25,4 @@ export const usePauseLogsStore = createPauseStore('pauseLogs');
 export const usePauseJobsStore = createPauseStore('pauseJobs');
 export const usePauseQueriesStore = createPauseStore('pauseQueries');
 export const usePauseProfileStore = createPauseStore('pauseProfile');
+export const usePauseLivewireStore = createPauseStore('pauseLivewire');

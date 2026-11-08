@@ -7,6 +7,7 @@ import TailLogView from '@/components/laravel/TailLogView.vue';
 import QueriesView from '@/components/laravel/QueriesView.vue';
 import BrainView from '@/components/laravel/BrainView.vue';
 import ProfileView from '@/components/laravel/ProfileView.vue';
+import DumpLivewire from '@/components/laravel/DumpLivewire.vue';
 import DumpList from '@/components/dumps/DumpList.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import { Payload } from '@/types/Payload';
@@ -44,6 +45,7 @@ const VIEW_MAP: Record<string, any> = {
     jobs: JobView,
     brain: BrainView,
     profiler: ProfileView,
+    livewire: DumpLivewire,
     mail: MailView,
     logs: LogView,
     tail_logs: TailLogView,
@@ -87,6 +89,7 @@ const viewProps = computed<Record<string, any>>(() => {
                 items: props.screenWindowItems
             };
         case 'profiler':
+        case 'livewire':
         case 'queries':
             return { ...base, yamlConfig: props.yamlConfig };
         default:

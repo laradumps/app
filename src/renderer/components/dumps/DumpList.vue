@@ -4,7 +4,6 @@ import { useScreenStore } from '@/store/screen';
 import { useSettingsStore } from '@/store/settings';
 import { Payload } from '@/types/Payload';
 import DumpItem from '@/components/dumps/DumpItem.vue';
-import DumpLivewire from '@/components/laravel/DumpLivewire.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import WelcomePage from '@/components/app/WelcomePage.vue';
 import { ClockIcon } from '@heroicons/vue/24/outline';
@@ -68,7 +67,7 @@ const showEmpty = computed(
                     :class="groupMarginClass ? { [groupMarginClass]: index === 0 } : {}"
                 >
                     <div
-                        v-if="!['livewire'].includes(listScreen) && settingsStore.settings.grouped_by_time"
+                        v-if="settingsStore.settings.grouped_by_time"
                         class="z-70 flex items-center gap-2.5 pl-10 pr-4 py-2 text-xs bg-base-200 ld-on-surface backdrop-blur-md"
                         :class="groupStickyClass ?? 'sticky top-0'"
                     >
@@ -99,14 +98,11 @@ const showEmpty = computed(
                     >
                         <DumpItem
                             class="w-full group text-sm"
-                            v-show="listScreen !== 'livewire'"
                             :payload="payload"
                             :show-time="!settingsStore.settings.grouped_by_time"
                         />
                     </div>
                 </div>
-
-                <DumpLivewire v-if="listScreen === 'livewire'" />
             </div>
 
             <div

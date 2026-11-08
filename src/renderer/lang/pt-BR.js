@@ -293,6 +293,38 @@ export default {
     app: {
         inactive_banner: 'Pausado: os dados recebidos NÃO são capturados e serão perdidos até você retomar.'
     },
+    livewire: {
+        in_request: '{n} componente neste request: | {n} componentes neste request:',
+        components: 'componentes',
+        action: 'Ação',
+        changed: 'Mudou',
+        validation: 'Validação',
+        events: 'Disparou',
+        time: 'Tempo',
+        inside_render: 'Filhos, dentro do render',
+        queries: 'Queries',
+        state: 'Estado completo',
+        properties: '{n} propriedade · | {n} propriedades ·',
+        listener: 'listener',
+        before: 'Antes',
+        after: 'Depois',
+        filter: 'Filtrar componentes',
+        remove_filter: 'Remover filtro',
+        show_all: 'Mostrar todos',
+        clear: 'Limpar tudo',
+        capture: 'Capturar Livewire',
+        empty_title: 'Nenhum componente Livewire capturado',
+        empty_message:
+            'Ative a captura e escolha componentes na pill LaraDumps da página. Só os escolhidos são enviados.',
+        enable: 'Ativar captura',
+        enable_hint: 'Grava observers.livewire: true no laradumps.yaml do projeto',
+        waiting_title: 'Aguardando Livewire',
+        waiting_message:
+            'Nada é enviado até escolher: abra a pill LaraDumps na página (ou Alt+Shift+L) e clique nos componentes.',
+        focus_empty: 'Nenhum request bate com o filtro',
+        state_too_big: 'Estado acima de 100 KB, não enviado.',
+        no_timing: 'Sem tempos: o Livewire só mede com app.debug ligado.'
+    },
     profiler: {
         yaml_configuration: 'Configuração YAML',
         enable_profiling: 'Ativar Profiling',

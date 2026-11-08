@@ -10,7 +10,8 @@ export const KNOWN_SCREENS = [
     'tail_logs',
     'queries',
     'brain',
-    'profiler'
+    'profiler',
+    'livewire'
 ] as const;
 
 const IN_VIEW_OBSERVERS = ['slow_queries'];
