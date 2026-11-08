@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, toRef, watch } from 'vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -16,11 +16,13 @@ import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light-border.css';
 import 'tippy.js/themes/light.css';
 import DumpLink from '@/components/dumps/DumpLink.vue';
+import { useRowExpand } from '@/composables/useRowExpand';
 
 const brainStore = useBrainStore();
 const globalSearchStore = useGlobalSearchStore();
 
 const forceRerenderCounter = ref(0);
+const { openId, isOpen, toggle, close, onRowKeydown } = useRowExpand();
 
 const selectedWorkflow = ref<{
     id: string;
@@ -49,12 +51,6 @@ defineEmits(['open-screen-window']);
 
 const itemsProp = toRef(props, 'items');
 
-const escapeHandler = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-        closeDrawer();
-    }
-};
-
 onMounted(() => {
     nextTick(() => {
         tippy('[data-tippy-content]', {
@@ -63,12 +59,6 @@ onMounted(() => {
             placement: 'bottom-end'
         });
     });
-
-    window.addEventListener('keydown', escapeHandler);
-});
-
-onUnmounted(() => {
-    window.removeEventListener('keydown', escapeHandler);
 });
 
 watch(
@@ -137,9 +127,13 @@ const toggleGroupVisibility = (groupKey: string) => {
     collapsedWorkflowGroups.value[groupKey] = !collapsedWorkflowGroups.value[groupKey];
 };
 
-const openWorkflowModal = (runId: string) => {
-    const workflowEntry = filteredAndSortedProcesses.value.find((p) => p.run_workflow_id === runId || p.id === runId);
-    if (!workflowEntry) return;
+watch(openId, (runId) => {
+    const workflowEntry =
+        runId && filteredAndSortedProcesses.value.find((p) => p.run_workflow_id === runId || p.id === runId);
+    if (!workflowEntry) {
+        selectedWorkflow.value = null;
+        return;
+    }
 
     const actions = workflowEntry.workflow.actions;
 
@@ -168,16 +162,8 @@ const openWorkflowModal = (runId: string) => {
         workflow: workflowEntry.workflow
     };
 
-    nextTick(() => {
-        const drawer = document.getElementById('brain-drawer') as HTMLInputElement;
-
-        setTimeout(() => {
-            if (drawer) drawer.checked = true;
-
-            initializeSfDump();
-        }, 20);
-    });
-};
+    nextTick(initializeSfDump);
+});
 
 const formatDuration = (firstSeen?: number, lastSeen?: number) => {
     if (firstSeen == null || lastSeen == null || lastSeen < firstSeen) {
@@ -238,7 +224,7 @@ watch(
 );
 
 const initializeSfDump = () => {
-    selectedWorkflow.value.actions.forEach((action) => {
+    selectedWorkflow.value?.actions.forEach((action) => {
         const sfDumpId = action.payload[1];
         try {
             const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
@@ -253,14 +239,8 @@ const initializeSfDump = () => {
 };
 
 const clearAll = () => {
-    selectedWorkflow.value = null;
+    close();
     brainStore.clear();
-};
-
-const closeDrawer = () => {
-    const drawer = document.getElementById('brain-drawer') as HTMLInputElement;
-
-    if (drawer) drawer.checked = false;
 };
 
 const splitClassName = (className: string) => {
@@ -317,156 +297,17 @@ const toggleActionExpanded = (action: any) => {
         </ViewToolbar>
 
         <div class="flex flex-col flex-1 min-h-0">
-            <div class="drawer drawer-end shrink-0">
-                <input
-                    id="brain-drawer"
-                    type="checkbox"
-                    class="drawer-toggle hidden"
-                />
-
-                <div class="drawer-side z-[400]">
-                    <label
-                        for="brain-drawer"
-                        class="drawer-overlay"
-                    ></label>
-
-                    <div
-                        class="menu bg-base-100 text-base-content min-h-full w-[calc(100vw-120px)] p-5 overflow-y-auto"
-                    >
-                        <div
-                            v-if="selectedWorkflow"
-                            class="space-y-6"
-                        >
-                            <div class="flex nav-bar justify-between">
-                                <div class="flex text-left items-start flex-col gap-2">
-                                    <div class="text-sm">
-                                        <span class="opacity-50">{{
-                                            splitClassName(selectedWorkflow.className).prefix
-                                        }}</span>
-                                        <span class="font-bold">{{
-                                            splitClassName(selectedWorkflow.className).suffix
-                                        }}</span>
-                                    </div>
-
-                                    <div class="text-xs opacity-75">
-                                        Started: {{ dayjs(selectedWorkflow.startedAt).format('HH:mm:ss') }} | Duration:
-                                        {{ computeWorkflowDuration(selectedWorkflow) }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="relative mx-auto w-full">
-                                <div
-                                    v-for="(action, index) in selectedWorkflow.actions"
-                                    :key="action.id"
-                                    class="flex flex-col items-center"
-                                >
-                                    <div
-                                        class="w-full rounded-lg bg-base-300 border border-base-content/10 shadow-sm mb-2"
-                                    >
-                                        <div
-                                            class="border-b border-base-content/10 flex items-center justify-between p-2 cursor-pointer select-none text-sm"
-                                            @click="toggleActionExpanded(action)"
-                                        >
-                                            <div class="flex items-center gap-2 break-all">
-                                                <ChevronDownIcon
-                                                    class="w-4 h-4 transition-all"
-                                                    :class="expandedActionMap[action.id] ? 'rotate-0' : '-rotate-90'"
-                                                />
-
-                                                <span
-                                                    class="p-1 rounded-full"
-                                                    :class="{
-                                                        'text-primary': action.status === 'processing',
-                                                        'text-success': action.status === 'processed',
-                                                        'text-error': action.status === 'error',
-                                                        'text-warning':
-                                                            action.status === 'cancelled' ||
-                                                            action.status === 'skipped',
-                                                        'text-info': action.status === 'pending'
-                                                    }"
-                                                    :data-tippy-content="action.status"
-                                                >
-                                                    <CheckIcon
-                                                        v-if="action.status === 'processed'"
-                                                        class="w-4 h-4"
-                                                    />
-                                                    <NoSymbolIcon
-                                                        v-else-if="
-                                                            action.status === 'cancelled' || action.status === 'skipped'
-                                                        "
-                                                        class="w-4 h-4"
-                                                    />
-                                                    <XMarkIcon
-                                                        v-else-if="action.status === 'error'"
-                                                        class="w-4 h-4"
-                                                    />
-                                                    <ArrowPathIcon
-                                                        v-else-if="action.status === 'processing'"
-                                                        class="w-4 h-4 animate-spin"
-                                                    />
-                                                    <NoSymbolIcon
-                                                        v-else
-                                                        class="w-4 h-4"
-                                                    />
-                                                </span>
-
-                                                <div class="text-sm tracking-wide">
-                                                    <span class="opacity-60">{{
-                                                        splitClassName(action.class).prefix
-                                                    }}</span>
-                                                    <span class="font-semibold">{{
-                                                        splitClassName(action.class).suffix
-                                                    }}</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="text-xs opacity-60 whitespace-nowrap ml-2">
-                                                {{ formatDuration(action.firstSeen, action.lastSeen) }}
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            v-show="expandedActionMap[action.id]"
-                                            class="px-4 py-3 bg-base-200 rounded-lg space-y-3"
-                                        >
-                                            <div v-if="action.payload">
-                                                <pre
-                                                    class="sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line"
-                                                    v-safe-html="action.payload[0]"
-                                                ></pre>
-                                            </div>
-
-                                            <div
-                                                v-if="action.meta"
-                                                class="space-y-1"
-                                            >
-                                                <div class="border-t py-2 border-base-content/10 text-sm">Meta</div>
-                                                <VueJsonPretty
-                                                    :show-icon="true"
-                                                    :show-length="true"
-                                                    :show-line="false"
-                                                    :data="action.meta"
-                                                    :deep="2"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-3 flex-1 min-h-0">
+            <div class="flex-1 min-h-0">
                 <div
                     v-if="filteredAndSortedProcesses.length > 0"
                     class="h-full overflow-auto"
                 >
-                    <table class="table table-pin-rows table-zebra">
-                        <thead>
-                            <tr class="text-xs !bg-base-300 font-light text-base-content">
+                    <table
+                        class="table table-pin-rows"
+                        data-row-list
+                    >
+                        <thead class="ld-thead">
+                            <tr>
                                 <th class="w-4">#</th>
                                 <th>Workflow</th>
                                 <th class="w-20 text-center">Actions</th>
@@ -480,86 +321,251 @@ const toggleActionExpanded = (action: any) => {
                                 v-for="(workflowList, timeKey) in groupedWorkflowByRelativeTime"
                                 :key="timeKey"
                             >
-                                <tr class="bg-base-200 text-xs font-semibold text-center">
-                                    <td
-                                        colspan="4"
-                                        class="select-none"
-                                    >
-                                        <span
-                                            class="cursor-pointer link"
+                                <tr class="ld-group">
+                                    <td colspan="5">
+                                        <button
+                                            type="button"
+                                            class="ld-group-label"
+                                            :aria-expanded="!collapsedWorkflowGroups[timeKey]"
                                             @click="toggleGroupVisibility(timeKey)"
                                         >
                                             {{ timeKey }}
-                                            <span class="ml-1">
-                                                {{ collapsedWorkflowGroups[timeKey] ? '▼' : '▲' }}
-                                            </span>
-                                        </span>
+                                            <ChevronDownIcon
+                                                class="ld-group-chevron"
+                                                :class="{ 'is-collapsed': collapsedWorkflowGroups[timeKey] }"
+                                            />
+                                        </button>
                                     </td>
                                 </tr>
 
-                                <tr
-                                    v-for="workflowEntry in workflowList"
-                                    v-if="!collapsedWorkflowGroups[timeKey]"
-                                    :key="workflowEntry.run_workflow_id"
-                                    @click="openWorkflowModal(workflowEntry.run_workflow_id)"
-                                    class="hover:bg-base-100 cursor-pointer"
-                                >
-                                    <td>
-                                        <div class="flex items-center justify-center">
-                                            <CheckIcon
-                                                v-if="workflowEntry.workflow.status === 'processed'"
-                                                class="w-4 h-4 text-success"
-                                            />
-                                            <XMarkIcon
-                                                v-else-if="workflowEntry.workflow.status === 'error'"
-                                                class="w-4 h-4 text-error"
-                                            />
-                                            <ArrowPathIcon
-                                                v-else-if="workflowEntry.workflow.status === 'processing'"
-                                                class="w-4 h-4 text-info animate-spin"
-                                            />
-                                            <NoSymbolIcon
-                                                v-else
-                                                class="w-4 h-4"
-                                            />
-                                        </div>
-                                    </td>
-
-                                    <td class="break-all flex gap-2 flex-col">
-                                        <p>
-                                            <span class="font-normal">
-                                                {{ splitClassName(workflowEntry.className).suffix }}
-                                            </span>
-                                        </p>
-
-                                        <div
-                                            v-if="
-                                                workflowEntry.ide_handle &&
-                                                workflowEntry.ide_handle.class_name !== 'empty'
-                                            "
-                                            class="text-xs opacity-60"
+                                <template v-if="!collapsedWorkflowGroups[timeKey]">
+                                    <template
+                                        v-for="workflowEntry in workflowList"
+                                        :key="workflowEntry.run_workflow_id"
+                                    >
+                                        <tr
+                                            :data-row-id="workflowEntry.run_workflow_id"
+                                            tabindex="0"
+                                            :aria-expanded="isOpen(workflowEntry.run_workflow_id)"
+                                            class="ld-row"
+                                            :class="{ 'is-open': isOpen(workflowEntry.run_workflow_id) }"
+                                            @click="toggle(workflowEntry.run_workflow_id)"
+                                            @keydown="onRowKeydown($event, workflowEntry.run_workflow_id)"
                                         >
-                                            <DumpLink
-                                                class="flex font-normal h-full text-xs"
-                                                :label="`${workflowEntry.ide_handle.class_name}:${workflowEntry.ide_handle.line}`"
-                                                :ide-handler="workflowEntry.ide_handle"
-                                            />
-                                        </div>
-                                    </td>
+                                            <td class="whitespace-nowrap">
+                                                <div class="flex items-center justify-center">
+                                                    <CheckIcon
+                                                        v-if="workflowEntry.workflow.status === 'processed'"
+                                                        class="w-4 h-4 text-success"
+                                                    />
+                                                    <XMarkIcon
+                                                        v-else-if="workflowEntry.workflow.status === 'error'"
+                                                        class="w-4 h-4 text-error"
+                                                    />
+                                                    <ArrowPathIcon
+                                                        v-else-if="workflowEntry.workflow.status === 'processing'"
+                                                        class="w-4 h-4 text-info animate-spin"
+                                                    />
+                                                    <NoSymbolIcon
+                                                        v-else
+                                                        class="w-4 h-4"
+                                                    />
+                                                </div>
+                                            </td>
 
-                                    <td class="whitespace-nowrap text-center">
-                                        {{ workflowEntry.workflow.actions.length }}
-                                    </td>
+                                            <td class="break-all flex gap-2 flex-col">
+                                                <p>
+                                                    <span class="font-normal">
+                                                        {{ splitClassName(workflowEntry.className).suffix }}
+                                                    </span>
+                                                </p>
 
-                                    <td class="text-right">
-                                        {{
-                                            dayjs(workflowEntry.updatedAt ?? workflowEntry.startedAt).format('HH:mm:ss')
-                                        }}
-                                    </td>
-                                    <td class="whitespace-nowrap text-right">
-                                        {{ computeWorkflowDuration(workflowEntry) }}
-                                    </td>
-                                </tr>
+                                                <div
+                                                    v-if="
+                                                        workflowEntry.ide_handle &&
+                                                        workflowEntry.ide_handle.class_name !== 'empty'
+                                                    "
+                                                    class="text-xs opacity-60"
+                                                >
+                                                    <DumpLink
+                                                        class="flex font-normal h-full text-xs"
+                                                        :label="`${workflowEntry.ide_handle.class_name}:${workflowEntry.ide_handle.line}`"
+                                                        :ide-handler="workflowEntry.ide_handle"
+                                                    />
+                                                </div>
+                                            </td>
+
+                                            <td class="whitespace-nowrap text-center">
+                                                {{ workflowEntry.workflow.actions.length }}
+                                            </td>
+
+                                            <td class="text-right">
+                                                {{
+                                                    dayjs(workflowEntry.updatedAt ?? workflowEntry.startedAt).format(
+                                                        'HH:mm:ss'
+                                                    )
+                                                }}
+                                            </td>
+                                            <td class="whitespace-nowrap text-right">
+                                                {{ computeWorkflowDuration(workflowEntry) }}
+                                            </td>
+                                        </tr>
+
+                                        <tr
+                                            v-if="isOpen(workflowEntry.run_workflow_id) && selectedWorkflow"
+                                            class="ld-row-detail"
+                                        >
+                                            <td
+                                                colspan="5"
+                                                class="max-w-0 whitespace-normal break-words"
+                                            >
+                                                <div class="space-y-4 py-1 px-1">
+                                                    <div class="flex nav-bar justify-between">
+                                                        <div class="flex text-left items-start flex-col gap-2">
+                                                            <div class="text-sm">
+                                                                <span class="opacity-50">{{
+                                                                    splitClassName(selectedWorkflow.className).prefix
+                                                                }}</span>
+                                                                <span class="font-bold">{{
+                                                                    splitClassName(selectedWorkflow.className).suffix
+                                                                }}</span>
+                                                            </div>
+
+                                                            <div class="text-xs opacity-75">
+                                                                Started:
+                                                                {{
+                                                                    dayjs(selectedWorkflow.startedAt).format('HH:mm:ss')
+                                                                }}
+                                                                | Duration:
+                                                                {{ computeWorkflowDuration(selectedWorkflow) }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="relative mx-auto w-full">
+                                                        <div
+                                                            v-for="(action, index) in selectedWorkflow.actions"
+                                                            :key="action.id"
+                                                            class="flex flex-col items-center"
+                                                        >
+                                                            <div
+                                                                class="w-full rounded-lg bg-base-300 border border-base-content/10 shadow-sm mb-2"
+                                                            >
+                                                                <div
+                                                                    class="border-b border-base-content/10 flex items-center justify-between p-2 cursor-pointer select-none text-sm"
+                                                                    @click="toggleActionExpanded(action)"
+                                                                >
+                                                                    <div class="flex items-center gap-2 break-all">
+                                                                        <ChevronDownIcon
+                                                                            class="w-4 h-4 transition-all"
+                                                                            :class="
+                                                                                expandedActionMap[action.id]
+                                                                                    ? 'rotate-0'
+                                                                                    : '-rotate-90'
+                                                                            "
+                                                                        />
+
+                                                                        <span
+                                                                            class="p-1 rounded-full"
+                                                                            :class="{
+                                                                                'text-primary':
+                                                                                    action.status === 'processing',
+                                                                                'text-success':
+                                                                                    action.status === 'processed',
+                                                                                'text-error': action.status === 'error',
+                                                                                'text-warning':
+                                                                                    action.status === 'cancelled' ||
+                                                                                    action.status === 'skipped',
+                                                                                'text-info': action.status === 'pending'
+                                                                            }"
+                                                                            :data-tippy-content="action.status"
+                                                                        >
+                                                                            <CheckIcon
+                                                                                v-if="action.status === 'processed'"
+                                                                                class="w-4 h-4"
+                                                                            />
+                                                                            <NoSymbolIcon
+                                                                                v-else-if="
+                                                                                    action.status === 'cancelled' ||
+                                                                                    action.status === 'skipped'
+                                                                                "
+                                                                                class="w-4 h-4"
+                                                                            />
+                                                                            <XMarkIcon
+                                                                                v-else-if="action.status === 'error'"
+                                                                                class="w-4 h-4"
+                                                                            />
+                                                                            <ArrowPathIcon
+                                                                                v-else-if="
+                                                                                    action.status === 'processing'
+                                                                                "
+                                                                                class="w-4 h-4 animate-spin"
+                                                                            />
+                                                                            <NoSymbolIcon
+                                                                                v-else
+                                                                                class="w-4 h-4"
+                                                                            />
+                                                                        </span>
+
+                                                                        <div class="text-sm tracking-wide">
+                                                                            <span class="opacity-60">{{
+                                                                                splitClassName(action.class).prefix
+                                                                            }}</span>
+                                                                            <span class="font-semibold">{{
+                                                                                splitClassName(action.class).suffix
+                                                                            }}</span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div
+                                                                        class="text-xs opacity-60 whitespace-nowrap ml-2"
+                                                                    >
+                                                                        {{
+                                                                            formatDuration(
+                                                                                action.firstSeen,
+                                                                                action.lastSeen
+                                                                            )
+                                                                        }}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div
+                                                                    v-show="expandedActionMap[action.id]"
+                                                                    class="px-4 py-3 bg-base-200 rounded-lg space-y-3"
+                                                                >
+                                                                    <div v-if="action.payload">
+                                                                        <pre
+                                                                            class="sf-dump-debug overflow-auto text-xs break-all whitespace-pre-line"
+                                                                            v-safe-html="action.payload[0]"
+                                                                        ></pre>
+                                                                    </div>
+
+                                                                    <div
+                                                                        v-if="action.meta"
+                                                                        class="space-y-1"
+                                                                    >
+                                                                        <div
+                                                                            class="border-t py-2 border-base-content/10 text-sm"
+                                                                        >
+                                                                            Meta
+                                                                        </div>
+                                                                        <VueJsonPretty
+                                                                            :show-icon="true"
+                                                                            :show-length="true"
+                                                                            :show-line="false"
+                                                                            :data="action.meta"
+                                                                            :deep="2"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
                             </template>
                         </tbody>
                     </table>
@@ -567,8 +573,7 @@ const toggleActionExpanded = (action: any) => {
 
                 <div
                     v-else
-                    class="-mt-[90px] -ml-8 absolute flex items-center justify-center w-full pointer-events-none"
-                    style="height: -webkit-fill-available"
+                    class="flex items-center justify-center h-full min-h-[12rem] pointer-events-none"
                 >
                     <EmptyState />
                 </div>
@@ -580,9 +585,6 @@ const toggleActionExpanded = (action: any) => {
 <style scoped>
 @reference "./../../styles.css";
 
-:deep(.table thead) :where(th, td) {
-    @apply p-2;
-}
 :deep(.table tbody) {
     :where(th, td) {
         @apply p-1.5 px-2;

@@ -24,32 +24,29 @@ const countLabel = computed(() => {
 </script>
 
 <template>
-    <div class="flex items-center justify-between w-full h-9 px-3 gap-3 border-b border-base-content/10">
-        <!-- Left: filter + active chips + count -->
-        <div class="flex items-center gap-2 min-w-0">
-            <div class="shrink-0">
-                <slot name="filter" />
-            </div>
+    <div
+        class="@container relative flex items-center w-full h-10 pl-4 pr-2.5 gap-3 border-b border-base-content/[0.06]"
+    >
+        <div class="flex flex-1 items-center gap-2 min-w-0">
+            <slot name="title" />
+
+            <span
+                v-if="count !== undefined"
+                class="shrink-0 tabular-nums whitespace-nowrap select-none"
+                :class="
+                    $slots.title ? 'text-xs text-base-content/40' : 'text-[13px] font-semibold text-base-content/90'
+                "
+            >
+                {{ countLabel }}
+            </span>
 
             <div class="flex items-center gap-1.5 min-w-0 overflow-hidden">
                 <slot name="chips" />
             </div>
-
-            <div
-                v-if="$slots.filter && count !== undefined"
-                class="w-px h-4 bg-base-content/10 shrink-0"
-            ></div>
-
-            <span
-                v-if="count !== undefined"
-                class="shrink-0 text-xs text-base-content/40 tabular-nums whitespace-nowrap select-none"
-            >
-                {{ countLabel }}
-            </span>
         </div>
 
-        <!-- Right: view-specific actions -->
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="flex items-center gap-0.5 shrink-0">
+            <slot name="filter" />
             <slot name="right" />
         </div>
     </div>

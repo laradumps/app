@@ -57,7 +57,8 @@ const showEmpty = computed(
                 class="w-full mb-10"
                 v-if="dumpsBagFiltered.length > 0"
                 :class="{
-                    'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal'
+                    'flex flex-col-reverse': settingsStore.settings.dump_order === 'normal',
+                    'pt-2': !settingsStore.settings.grouped_by_time
                 }"
             >
                 <div
@@ -68,16 +69,20 @@ const showEmpty = computed(
                 >
                     <div
                         v-if="!['livewire'].includes(listScreen) && settingsStore.settings.grouped_by_time"
-                        class="bg-base-200 flex-1 text-left px-4 py-1.5 z-70 text-xs"
+                        class="z-70 flex items-center gap-2.5 pl-10 pr-4 py-2 text-xs bg-base-200 ld-on-surface backdrop-blur-md"
                         :class="groupStickyClass ?? 'sticky top-0'"
                     >
+                        <ClockIcon class="absolute left-[13.5px] size-3.5 text-base-content/40" />
                         <span
-                            class="flex items-center gap-1 opacity-70"
+                            class="tabular-nums tracking-wider text-base-content/70"
                             :title="groupKey"
+                            >{{ dayjs(groupKey).format('HH:mm:ss') }}</span
                         >
-                            <ClockIcon class="w-3 h-3" />
-                            {{ dayjs(groupKey).format('HH:mm:ss') }}
-                        </span>
+                        <span class="h-px flex-1 bg-base-content/10"></span>
+                        <span
+                            class="shrink-0 rounded-full bg-base-content/10 px-2 py-0.5 font-mono text-[10px] text-base-content/50"
+                            >{{ group.length }}</span
+                        >
                     </div>
 
                     <div
@@ -97,7 +102,6 @@ const showEmpty = computed(
                             v-show="listScreen !== 'livewire'"
                             :payload="payload"
                             :show-time="!settingsStore.settings.grouped_by_time"
-                            :is-first="index === 0"
                         />
                     </div>
                 </div>

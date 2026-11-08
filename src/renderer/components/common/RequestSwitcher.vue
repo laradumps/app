@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/20/solid';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/20/solid';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import { formatDuration, httpMethodColor } from '@/components/laravel/profile/profileHelpers';
 
@@ -99,17 +99,17 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
 <template>
     <div
         ref="rootRef"
-        class="@container relative shrink-0 flex items-center gap-1 px-3 h-10 border-b border-base-content/10"
+        class="flex items-center min-w-0 -ml-1.5"
     >
         <button
             type="button"
             :aria-label="$t('switcher.previous')"
             :title="$t('switcher.previous')"
             :disabled="position >= items.length - 1"
-            class="grid place-items-center size-7 shrink-0 rounded-md text-base-content/60 hover:bg-base-content/10 hover:text-base-content cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+            class="grid place-items-center w-6 h-7 shrink-0 rounded-md text-base-content/45 hover:bg-base-content/[0.06] hover:text-base-content cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
             @click="step(1)"
         >
-            <ChevronLeftIcon class="size-4" />
+            <ChevronLeftIcon class="size-3.5" />
         </button>
 
         <button
@@ -117,22 +117,16 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
             type="button"
             aria-haspopup="listbox"
             :aria-expanded="open"
-            class="flex items-center gap-2 h-7 px-2 min-w-0 max-w-[60%] rounded-md hover:bg-base-content/10 cursor-pointer"
-            :class="{ 'bg-base-content/10': open }"
+            class="flex items-center gap-2 h-7 px-1.5 min-w-0 rounded-md hover:bg-base-content/[0.06] cursor-pointer"
+            :class="{ 'bg-base-content/[0.06]': open }"
             @click="toggle"
         >
-            <span
-                v-if="current?.method"
-                class="shrink-0 px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold"
-                :class="httpMethodColor(current.method)"
-            >
-                {{ current.method }}
+            <span class="truncate text-[13px] font-semibold text-base-content/90">
+                {{ [current?.method, current?.label].filter(Boolean).join(' ') }}
             </span>
-            <span class="truncate text-xs">{{ current?.label }}</span>
-            <span class="@max-md:hidden shrink-0 font-mono text-[0.7rem] text-base-content/45 tabular-nums">
+            <span class="@max-md:hidden shrink-0 text-xs text-base-content/35 tabular-nums">
                 {{ items.length - position }}/{{ items.length }}
             </span>
-            <ChevronDownIcon class="size-3.5 shrink-0 text-base-content/45" />
         </button>
 
         <button
@@ -140,19 +134,19 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
             :aria-label="$t('switcher.next')"
             :title="$t('switcher.next')"
             :disabled="position <= 0"
-            class="grid place-items-center size-7 shrink-0 rounded-md text-base-content/60 hover:bg-base-content/10 hover:text-base-content cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+            class="grid place-items-center w-6 h-7 shrink-0 rounded-md text-base-content/45 hover:bg-base-content/[0.06] hover:text-base-content cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
             @click="step(-1)"
         >
-            <ChevronRightIcon class="size-4" />
+            <ChevronRightIcon class="size-3.5" />
         </button>
 
-        <div class="ml-auto flex items-center gap-2 min-w-0">
+        <div class="flex items-center gap-2 shrink-0 pl-1 text-xs text-base-content/45 tabular-nums whitespace-nowrap">
             <slot />
         </div>
 
         <div
             v-if="open"
-            class="absolute left-3 top-full z-50 mt-1 flex flex-col w-[min(560px,calc(100%-1.5rem))] p-2 rounded-xl border border-base-content/10 bg-base-200 shadow-xl"
+            class="@container absolute left-2 top-full z-50 mt-1 flex flex-col w-[min(560px,calc(100%-1rem))] p-2 rounded-xl border border-base-content/10 bg-base-200 shadow-xl"
             @keydown="onKeydown"
         >
             <label class="input input-sm flex items-center gap-2 w-full h-8 mb-1">

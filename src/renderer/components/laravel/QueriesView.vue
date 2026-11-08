@@ -18,6 +18,7 @@ import {
     Bars3BottomLeftIcon,
     BoltIcon,
     CheckIcon,
+    ChevronDownIcon,
     DocumentDuplicateIcon,
     ListBulletIcon,
     PresentationChartLineIcon,
@@ -233,6 +234,10 @@ const viewModes = [
     { type: 'all', icon: Squares2X2Icon, key: 'chart_all' }
 ];
 
+const hasRequest = computed(() => queriesStore.payload.length > 0 && !!timeStore.selected);
+
+const currentViewMode = computed(() => viewModes.find((mode) => mode.type === queriesChart.type) ?? viewModes[0]);
+
 const sortOrders = [
     { order: 'default', key: 'arrival' },
     { order: 'desc', key: 'slowest' },
@@ -291,10 +296,56 @@ const toggleFilter = (list: string[], value: string) => {
     <div class="flex flex-col h-full min-h-0 min-w-0 overflow-hidden">
         <!-- Actions bar -->
         <ViewToolbar
-            v-if="!hideHeader"
+            v-if="!hideHeader || hasRequest"
             class="shrink-0"
         >
-            <template #chips>
+            <template
+                v-if="hasRequest"
+                #title
+            >
+                <RequestSwitcher
+                    :items="requestItems"
+                    :count-label="$t('switcher.queries_column')"
+                    :model-value="timeStore.selected"
+                    @update:model-value="selectRequest"
+                >
+                    <template #flags="{ item }">
+                        <span
+                            v-if="queriesStore.hasExplainNodes(item.id)"
+                            :title="$t('switcher.has_explain')"
+                        >
+                            <BoltIcon class="size-3.5 text-warning" />
+                        </span>
+                        <span
+                            v-if="duplicatesStore.requestsWithDuplicates.has(item.id)"
+                            :title="$t('switcher.has_duplicates')"
+                        >
+                            <DocumentDuplicateIcon class="size-3.5 text-warning" />
+                        </span>
+                    </template>
+
+                    <span class="@max-md:hidden text-base-content/25">·</span>
+                    <span class="@max-md:hidden">{{ formatDuration(timeStore.getTotal(timeStore.selected)) }}</span>
+                    <template v-if="duplicatesStore.hasDuplicatesInCurrentRequest">
+                        <span class="text-base-content/25">·</span>
+                        <button
+                            type="button"
+                            :aria-pressed="duplicatesStore.showOnlyDuplicated"
+                            :title="$t('switcher.duplicated', { n: duplicatesStore.totalForCurrentRequest })"
+                            class="h-6 -mx-1 px-1 rounded text-warning hover:bg-warning/10 cursor-pointer transition-colors"
+                            :class="{ 'bg-warning/15': duplicatesStore.showOnlyDuplicated }"
+                            @click="duplicatesStore.toggleShowOnlyDuplicated()"
+                        >
+                            {{ $t('switcher.duplicated', { n: duplicatesStore.totalForCurrentRequest }) }}
+                        </button>
+                    </template>
+                </RequestSwitcher>
+            </template>
+
+            <template
+                v-if="!hideHeader"
+                #chips
+            >
                 <FilterChip
                     v-for="o in filteredOrigins"
                     :key="'o-' + o"
@@ -309,8 +360,11 @@ const toggleFilter = (list: string[], value: string) => {
                 />
             </template>
 
-            <template #filter>
-                <div class="dropdown dropdown-bottom dropdown-start">
+            <template
+                v-if="!hideHeader"
+                #filter
+            >
+                <div class="dropdown dropdown-bottom dropdown-end">
                     <IconButton
                         tabindex="0"
                         role="button"
@@ -381,100 +435,144 @@ const toggleFilter = (list: string[], value: string) => {
             </template>
 
             <template #right>
-                <!-- Actions Dropdown -->
-                <div class="dropdown dropdown-bottom dropdown-end">
+                <div
+                    v-if="hasRequest"
+                    class="dropdown dropdown-bottom dropdown-end"
+                >
                     <IconButton
                         tabindex="0"
                         role="button"
-                        :label="$t('queries_view.actions')"
-                        variant="base"
+                        :label="$t('queries_view.mode')"
                         @click.stop
                     >
-                        <EllipsisHorizontalIcon class="size-4" />
+                        <component
+                            :is="currentViewMode.icon"
+                            class="size-4"
+                        />
+                        <ChevronDownIcon class="size-2.5 text-base-content/40" />
                     </IconButton>
 
                     <div
                         tabindex="0"
                         role="menu"
-                        :aria-label="$t('queries_view.actions')"
+                        :aria-label="$t('queries_view.mode')"
                         class="dropdown-content mt-2 z-[200] w-56 p-1 rounded-lg border border-base-content/10 bg-base-100 shadow-xl"
                     >
-                        <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">{{ $t('queries_view.sort') }}</p>
                         <MenuRow
-                            v-for="sort in sortOrders"
-                            :key="sort.order"
+                            v-for="mode in viewModes"
+                            :key="mode.type"
                             role="menuitemradio"
-                            :aria-checked="(timeStore.order || 'default') === sort.order"
-                            :label="$t(`queries_view.${sort.key}`)"
-                            @click="setOrder(sort.order)"
+                            :aria-checked="queriesChart.type === mode.type"
+                            :label="$t(`queries_view.${mode.key}`)"
+                            :title="$t(`queries_view.${mode.key}_title`)"
+                            @click="queriesChart.setType(mode.type)"
                         >
                             <CheckIcon
                                 class="size-4 text-primary"
-                                :class="{ invisible: (timeStore.order || 'default') !== sort.order }"
+                                :class="{ invisible: queriesChart.type !== mode.type }"
                             />
                         </MenuRow>
-
-                        <div class="my-1 h-px bg-base-content/10"></div>
-
-                        <MenuRow
-                            toggle
-                            :label="$t('queries_view.prettify')"
-                            :model-value="formattedQueriesStore.formatted"
-                            @update:model-value="formattedQueriesStore.toggle()"
-                        >
-                            <CodeBracketIcon class="size-4" />
-                        </MenuRow>
-                        <MenuRow
-                            v-if="queries.length > 0"
-                            :label="$t('queries_view.export')"
-                            value=".sql"
-                            @click="handleExportQueriesToSQL()"
-                        >
-                            <ArrowDownTrayIcon class="size-4" />
-                        </MenuRow>
-
-                        <template v-if="yamlQueryOptions.length">
-                            <div class="my-1 h-px bg-base-content/10"></div>
-                            <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">
-                                {{ $t('queries_view.project_config') }}
-                            </p>
-                            <MenuRow
-                                v-for="control in yamlQueryOptions"
-                                :key="control.key"
-                                toggle
-                                :label="control.label"
-                                :model-value="control.enabled"
-                                @update:model-value="toggleYamlControl('queries', control.key, control.enabled)"
-                            />
-                        </template>
                     </div>
                 </div>
 
-                <!-- Pause -->
-                <IconButton
-                    :label="pauseQueries.is_paused ? $t('resume') : $t('pause')"
-                    variant="base"
-                    @click="pauseQueries.toggle()"
-                >
-                    <PlayIcon
-                        v-if="pauseQueries.is_paused"
-                        class="w-4 text-warning"
-                    />
-                    <IconPause
-                        v-else
-                        class="w-4"
-                    />
-                </IconButton>
+                <template v-if="!hideHeader">
+                    <!-- Actions Dropdown -->
+                    <div class="dropdown dropdown-bottom dropdown-end">
+                        <IconButton
+                            tabindex="0"
+                            role="button"
+                            :label="$t('queries_view.actions')"
+                            variant="base"
+                            @click.stop
+                        >
+                            <EllipsisHorizontalIcon class="size-4" />
+                        </IconButton>
 
-                <!-- Clear -->
-                <IconButton
-                    v-if="queries.length > 0"
-                    label="Clear all"
-                    variant="danger"
-                    @click="clear()"
-                >
-                    <TrashIcon class="w-4" />
-                </IconButton>
+                        <div
+                            tabindex="0"
+                            role="menu"
+                            :aria-label="$t('queries_view.actions')"
+                            class="dropdown-content mt-2 z-[200] w-56 p-1 rounded-lg border border-base-content/10 bg-base-100 shadow-xl"
+                        >
+                            <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">
+                                {{ $t('queries_view.sort') }}
+                            </p>
+                            <MenuRow
+                                v-for="sort in sortOrders"
+                                :key="sort.order"
+                                role="menuitemradio"
+                                :aria-checked="(timeStore.order || 'default') === sort.order"
+                                :label="$t(`queries_view.${sort.key}`)"
+                                @click="setOrder(sort.order)"
+                            >
+                                <CheckIcon
+                                    class="size-4 text-primary"
+                                    :class="{ invisible: (timeStore.order || 'default') !== sort.order }"
+                                />
+                            </MenuRow>
+
+                            <div class="my-1 h-px bg-base-content/10"></div>
+
+                            <MenuRow
+                                toggle
+                                :label="$t('queries_view.prettify')"
+                                :model-value="formattedQueriesStore.formatted"
+                                @update:model-value="formattedQueriesStore.toggle()"
+                            >
+                                <CodeBracketIcon class="size-4" />
+                            </MenuRow>
+                            <MenuRow
+                                v-if="queries.length > 0"
+                                :label="$t('queries_view.export')"
+                                value=".sql"
+                                @click="handleExportQueriesToSQL()"
+                            >
+                                <ArrowDownTrayIcon class="size-4" />
+                            </MenuRow>
+
+                            <template v-if="yamlQueryOptions.length">
+                                <div class="my-1 h-px bg-base-content/10"></div>
+                                <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">
+                                    {{ $t('queries_view.project_config') }}
+                                </p>
+                                <MenuRow
+                                    v-for="control in yamlQueryOptions"
+                                    :key="control.key"
+                                    toggle
+                                    :label="control.label"
+                                    :model-value="control.enabled"
+                                    @update:model-value="toggleYamlControl('queries', control.key, control.enabled)"
+                                />
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Pause -->
+                    <IconButton
+                        :label="pauseQueries.is_paused ? $t('resume') : $t('pause')"
+                        variant="base"
+                        @click="pauseQueries.toggle()"
+                    >
+                        <PlayIcon
+                            v-if="pauseQueries.is_paused"
+                            class="w-4 text-warning"
+                        />
+                        <IconPause
+                            v-else
+                            class="w-4"
+                        />
+                    </IconButton>
+
+                    <!-- Clear -->
+                    <IconButton
+                        v-if="queries.length > 0"
+                        label="Clear all"
+                        variant="danger"
+                        @click="clear()"
+                    >
+                        <TrashIcon class="w-4" />
+                    </IconButton>
+                </template>
             </template>
         </ViewToolbar>
 
@@ -520,89 +618,8 @@ const toggleFilter = (list: string[], value: string) => {
 
         <div
             class="flex-1 min-h-0 flex flex-col"
-            v-if="queriesStore.payload.length > 0 && timeStore.selected"
+            v-if="hasRequest"
         >
-            <RequestSwitcher
-                :items="requestItems"
-                :count-label="$t('switcher.queries_column')"
-                :model-value="timeStore.selected"
-                @update:model-value="selectRequest"
-            >
-                <template #flags="{ item }">
-                    <span
-                        v-if="queriesStore.hasExplainNodes(item.id)"
-                        :title="$t('switcher.has_explain')"
-                    >
-                        <BoltIcon class="size-3.5 text-warning" />
-                    </span>
-                    <span
-                        v-if="duplicatesStore.requestsWithDuplicates.has(item.id)"
-                        :title="$t('switcher.has_duplicates')"
-                    >
-                        <DocumentDuplicateIcon class="size-3.5 text-error" />
-                    </span>
-                </template>
-
-                <button
-                    v-if="duplicatesStore.hasDuplicatesInCurrentRequest"
-                    type="button"
-                    :aria-pressed="duplicatesStore.showOnlyDuplicated"
-                    :aria-label="$t('switcher.duplicated', { n: duplicatesStore.totalForCurrentRequest })"
-                    :title="$t('switcher.duplicated', { n: duplicatesStore.totalForCurrentRequest })"
-                    class="flex items-center gap-1 h-6 px-2 rounded-full text-[0.7rem] whitespace-nowrap cursor-pointer transition-colors"
-                    :class="
-                        duplicatesStore.showOnlyDuplicated
-                            ? 'bg-error text-error-content'
-                            : 'bg-error/15 text-error hover:bg-error/25'
-                    "
-                    @click="duplicatesStore.toggleShowOnlyDuplicated()"
-                >
-                    <DocumentDuplicateIcon class="size-3.5" />
-                    <span class="@max-lg:hidden">{{
-                        $t('switcher.duplicated', { n: duplicatesStore.totalForCurrentRequest })
-                    }}</span>
-                    <span class="@lg:hidden">{{ duplicatesStore.totalForCurrentRequest }}</span>
-                </button>
-                <div
-                    role="radiogroup"
-                    :aria-label="$t('queries_view.mode')"
-                    class="flex p-0.5 rounded-md bg-base-content/5"
-                >
-                    <button
-                        v-for="mode in viewModes"
-                        :key="mode.type"
-                        type="button"
-                        role="radio"
-                        :aria-checked="queriesChart.type === mode.type"
-                        :aria-label="$t(`queries_view.${mode.key}`)"
-                        :title="$t(`queries_view.${mode.key}_title`)"
-                        class="inline-flex items-center gap-1 h-6 px-2 rounded text-xs cursor-pointer transition-colors"
-                        :class="
-                            queriesChart.type === mode.type
-                                ? 'bg-base-content/15 text-base-content'
-                                : 'text-base-content/50 hover:text-base-content'
-                        "
-                        @click="queriesChart.setType(mode.type)"
-                    >
-                        <component
-                            :is="mode.icon"
-                            class="w-3"
-                        />
-                        <span class="@max-3xl:hidden">{{ $t(`queries_view.${mode.key}`) }}</span>
-                    </button>
-                </div>
-                <span
-                    class="@max-md:hidden flex gap-1 font-mono text-xs text-base-content/60 tabular-nums whitespace-nowrap"
-                >
-                    <span class="@max-2xl:hidden">
-                        {{ $t('switcher.queries', queriesPerRequest.get(timeStore.selected) ?? 0) }} ·
-                    </span>
-                    <span :class="timeStore.getTotal(timeStore.selected) >= 100 ? 'text-warning' : 'text-base-content'">
-                        {{ formatDuration(timeStore.getTotal(timeStore.selected)) }}
-                    </span>
-                </span>
-            </RequestSwitcher>
-
             <QueriesChart
                 v-if="!['none', 'percentage-colors'].includes(queriesChart.type)"
                 class="shrink-0"
@@ -653,7 +670,7 @@ const toggleFilter = (list: string[], value: string) => {
             v-else
             class="flex-1 min-h-0 flex items-center justify-center pointer-events-none"
         >
-            <EmptyState />
+            <EmptyState screen="queries" />
         </div>
     </div>
 </template>

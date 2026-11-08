@@ -1,11 +1,11 @@
 type LevelColor = 'success' | 'warning' | 'info' | 'error' | 'neutral';
 
-const colorClasses: Record<LevelColor, { badge: string; dot: string }> = {
-    success: { badge: 'text-success bg-success/10', dot: 'bg-success' },
-    warning: { badge: 'text-warning bg-warning/10', dot: 'bg-warning' },
-    info: { badge: 'text-info bg-info/10', dot: 'bg-info' },
-    error: { badge: 'text-error bg-error/10', dot: 'bg-error' },
-    neutral: { badge: 'text-base-content/80 bg-base-content/10', dot: 'bg-base-content/40' }
+const colorClasses: Record<LevelColor, { text: string; dot: string }> = {
+    success: { text: 'text-success', dot: 'bg-success' },
+    warning: { text: 'text-warning', dot: 'bg-warning' },
+    info: { text: 'text-info', dot: 'bg-info' },
+    error: { text: 'text-error', dot: 'bg-error' },
+    neutral: { text: 'text-base-content/80', dot: 'bg-base-content/40' }
 };
 
 const levelColorMap: Record<string, LevelColor> = {

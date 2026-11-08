@@ -5,7 +5,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
-import { PlayIcon, TrashIcon, ClockIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
+import { PlayIcon, TrashIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
 
 import EmptyState from '@/components/common/EmptyState.vue';
@@ -22,6 +22,7 @@ import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
 import PauseBanner from '@/components/common/PauseBanner.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
+import { useRowExpand } from '@/composables/useRowExpand';
 
 const jobStore = useJobStore();
 const screenStore = useScreenStore();
@@ -30,7 +31,8 @@ const globalSearchStore = useGlobalSearchStore();
 const currentProjectStore = useCurrentProject();
 
 const forceUpdate = ref(0);
-const selected = ref();
+const { openId, isOpen, toggle, close, onRowKeydown } = useRowExpand();
+const messageLimit = ref(true);
 const focusedJobId = ref<string | null>(null);
 const statusFilter = ref<string | null>(null);
 const sortBy = ref<'display_name' | 'duration' | 'pushed_time'>('pushed_time');
@@ -197,50 +199,22 @@ const statusCounts = computed(() => {
 
 const isFiltering = computed(() => !!statusFilter.value);
 
-const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-        const drawerToggle = document.getElementById('job-drawer') as HTMLInputElement;
-        if (drawerToggle) {
-            drawerToggle.checked = false;
-        }
-    }
-};
+watch(openId, (id) => {
+    messageLimit.value = true;
 
-const openModal = (id: string) => {
-    const findJob = jobs.value.find((job) => job.job_id === id);
-    if (!findJob) return;
-
-    selected.value = {
-        id: findJob.job_id,
-        html: findJob.job[0],
-        display_name: findJob.display_name,
-        start_time: findJob.start_time,
-        end_time: findJob.end_time,
-        status: findJob.status,
-        code_snippet: findJob.code_snippet ?? null,
-        message_limit: true,
-        exception_message: findJob.exception_message,
-        ide_handle: findJob.ide_handle,
-        created_at: findJob.pushed_time
-    };
+    const job = id && jobs.value.find((item) => item.job_id === id);
+    if (!job) return;
 
     fetchAppUrl();
 
-    const sfDumpId = findJob.job[1];
-
     nextTick(() => {
-        const sfDump = document.getElementById(`sf-dump-${sfDumpId}`);
+        const sfDump = document.getElementById(`sf-dump-${job.job[1]}`);
         if (sfDump && !sfDump.hasAttribute('has-dump-js')) {
             sfDump.setAttribute('has-dump-js', 'true');
-            window.Sfdump(`sf-dump-${sfDumpId}`);
-        }
-
-        const toggle = document.getElementById('job-drawer') as HTMLInputElement;
-        if (toggle) {
-            toggle.checked = true;
+            window.Sfdump(`sf-dump-${job.job[1]}`);
         }
     });
-};
+});
 
 const fetchAppUrl = () => {
     const projectPath = currentProjectStore.projectInfo?.path;
@@ -266,11 +240,11 @@ const statusToHorizonSegment = (status: string) => {
     return segments[status] ?? 'pending';
 };
 
-const openInHorizon = () => {
-    if (!horizonUrl.value || !selected.value) return;
+const openInHorizon = (job: Job) => {
+    if (!horizonUrl.value) return;
 
-    const segment = statusToHorizonSegment(selected.value.status);
-    const url = `${horizonUrl.value.replace(/\/$/, '')}/horizon/jobs/${segment}/${selected.value.id}`;
+    const segment = statusToHorizonSegment(job.status);
+    const url = `${horizonUrl.value.replace(/\/$/, '')}/horizon/jobs/${segment}/${job.job_id}`;
     window.ipcRenderer.send('main:openLink', url);
 };
 
@@ -289,6 +263,7 @@ const focusJob = async (id: string) => {
         visibleLimit.value = (Math.floor(index / jobStore.pageSize) + 1) * jobStore.pageSize;
     }
 
+    openId.value = id;
     await nextTick();
 
     const row = document.querySelector(`[data-job-id="${id}"]`);
@@ -303,7 +278,6 @@ const focusJob = async (id: string) => {
         }
     }, 2500);
 
-    openModal(id);
     jobStore.clearFocus();
 };
 
@@ -319,10 +293,7 @@ watch(
 const backToDump = () => {
     const origin = jobStore.origin;
 
-    const drawer = document.getElementById('job-drawer') as HTMLInputElement;
-    if (drawer) {
-        drawer.checked = false;
-    }
+    close();
 
     if (!origin) {
         return;
@@ -352,7 +323,7 @@ const clear = () => {
         pauseJobsStore.toggle();
     }
 
-    selected.value = '';
+    close();
     jobStore.clear();
     visibleLimit.value = jobStore.pageSize;
 };
@@ -380,7 +351,6 @@ onMounted(() => {
     }
 
     window.addEventListener('resize', handleResize);
-    window.addEventListener('keydown', handleEscape);
 
     refreshInterval = setInterval(() => {
         forceUpdate.value++;
@@ -388,7 +358,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener('keydown', handleEscape);
     window.removeEventListener('resize', handleResize);
     if (refreshInterval) {
         clearInterval(refreshInterval);
@@ -397,170 +366,12 @@ onBeforeUnmount(() => {
 });
 
 const toggleMessageLimit = () => {
-    if (selected.value) {
-        selected.value.message_limit = !selected.value.message_limit;
-    }
+    messageLimit.value = !messageLimit.value;
 };
 </script>
 
 <template>
     <div class="flex flex-col h-full max-h-full min-h-0 min-w-0 overflow-hidden">
-        <!-- Drawer for job details -->
-        <div class="drawer drawer-end">
-            <input
-                id="job-drawer"
-                type="checkbox"
-                class="drawer-toggle hidden"
-            />
-
-            <div class="drawer-side z-400">
-                <label
-                    for="job-drawer"
-                    class="drawer-overlay"
-                ></label>
-                <div class="menu bg-base-200 text-base-content min-h-full w-[calc(100vw-120px)] p-4">
-                    <div
-                        class="space-y-3"
-                        v-if="selected"
-                    >
-                        <!-- Actions -->
-                        <div
-                            v-if="jobStore.origin || horizonUrl"
-                            class="flex items-center gap-2"
-                        >
-                            <button
-                                v-if="horizonUrl"
-                                @click="openInHorizon"
-                                class="btn btn-xs btn-soft gap-1 [-webkit-app-region:no-drag]"
-                                title="Open job in Horizon"
-                            >
-                                <IconHorizon class="w-3.5" />
-                                Horizon
-                            </button>
-                            <button
-                                v-if="jobStore.origin"
-                                @click="backToDump"
-                                class="btn btn-xs btn-soft gap-1 [-webkit-app-region:no-drag] ml-auto"
-                                title="Back to dump"
-                            >
-                                ← Back to dump
-                            </button>
-                        </div>
-
-                        <!-- Header: title + meta -->
-                        <div class="bg-base-100 border border-base-300 p-4 space-y-4">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <div class="shrink-0">
-                                        <ArrowPathIcon
-                                            v-if="selected.status === 'Processing'"
-                                            class="size-4 text-base-content/70 animate-spin [animation-duration:2s]"
-                                        />
-                                        <CheckIcon
-                                            v-else-if="selected.status === 'Processed'"
-                                            class="w-6 text-success"
-                                        />
-                                        <XMarkIcon
-                                            v-else-if="selected.status === 'Failed'"
-                                            class="w-6 text-error"
-                                        />
-                                        <InformationCircleIcon
-                                            v-else
-                                            class="w-6 text-warning"
-                                        />
-                                    </div>
-                                    <div class="min-w-0">
-                                        <div
-                                            class="text-[10px] font-semibold uppercase tracking-widest text-base-content/50"
-                                        >
-                                            Job
-                                        </div>
-                                        <h2 class="font-mono font-semibold text-base truncate">
-                                            {{ selected.display_name }}
-                                        </h2>
-                                    </div>
-                                </div>
-                                <span
-                                    class="shrink-0 inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium"
-                                    :class="statusPill(selected.status)"
-                                >
-                                    {{ selected.status }}
-                                </span>
-                            </div>
-
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 border-t border-base-300 pt-3">
-                                <div class="space-y-1 min-w-0">
-                                    <div
-                                        class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40"
-                                    >
-                                        Job ID
-                                    </div>
-                                    <div class="font-mono text-xs break-all">{{ selected.id }}</div>
-                                </div>
-                                <div class="space-y-1">
-                                    <div
-                                        class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40"
-                                    >
-                                        Start
-                                    </div>
-                                    <div class="font-mono text-xs whitespace-nowrap">
-                                        {{
-                                            selected.start_time ? dayjs(selected.start_time).format('hh:mm:ss a') : '-'
-                                        }}
-                                    </div>
-                                </div>
-                                <div class="space-y-1">
-                                    <div
-                                        class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40"
-                                    >
-                                        End
-                                    </div>
-                                    <div class="font-mono text-xs whitespace-nowrap">
-                                        {{ selected.end_time ? dayjs(selected.end_time).format('hh:mm:ss a') : '-' }}
-                                    </div>
-                                </div>
-                                <div class="space-y-1">
-                                    <div
-                                        class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40"
-                                    >
-                                        Duration
-                                    </div>
-                                    <div class="font-mono text-xs">
-                                        {{ duration(selected.start_time, selected.end_time) }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            v-if="selected.code_snippet && selected.code_snippet.length > 0"
-                            class="relative bg-base-100 border-base-300 p-3"
-                        >
-                            <div class="w-[calc(100vw-200px)] space-y-2">
-                                <span
-                                    v-if="selected.exception_message"
-                                    class="text-sm font-normal"
-                                    @click="toggleMessageLimit"
-                                    :class="{
-                                        'line-clamp-5': selected.message_limit
-                                    }"
-                                    >{{ selected.exception_message }}</span
-                                >
-                                <CodeSnippet
-                                    :code_snippet="selected.code_snippet"
-                                    :ide_handle="selected.ide_handle"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="bg-base-100 border border-base-300 p-4">
-                            <div v-safe-html="selected.html"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Actions Bar -->
         <ViewToolbar
             v-if="!hideHeader"
@@ -577,7 +388,7 @@ const toggleMessageLimit = () => {
             </template>
 
             <template #filter>
-                <div class="dropdown dropdown-bottom dropdown-start">
+                <div class="dropdown dropdown-bottom dropdown-end">
                     <IconButton
                         tabindex="0"
                         role="button"
@@ -684,15 +495,18 @@ const toggleMessageLimit = () => {
         >
             <div
                 v-if="jobs.length > 0"
-                class="px-3 pb-3"
+                class="pb-3"
             >
                 <div ref="listTopRef"></div>
-                <table class="table table-zebra w-full table-fixed">
-                    <thead>
-                        <tr class="text-xs font-light text-base-content">
+                <table
+                    class="table w-full table-fixed"
+                    data-row-list
+                >
+                    <thead class="ld-thead">
+                        <tr>
                             <th
                                 v-if="!isSplit"
-                                class="w-10"
+                                class="w-16"
                             >
                                 #
                             </th>
@@ -723,111 +537,212 @@ const toggleMessageLimit = () => {
                             v-for="(jobsOnRelativeTime, timeKey) in groupedJobsByRelativeTime"
                             :key="timeKey"
                         >
-                            <tr class="bg-base-200/60">
-                                <td
-                                    :colspan="columnCount"
-                                    class="p-0!"
-                                >
-                                    <div
-                                        class="group flex items-center gap-2.5 px-3 py-2 cursor-pointer select-none"
+                            <tr class="ld-group">
+                                <td :colspan="columnCount">
+                                    <button
+                                        type="button"
+                                        class="ld-group-label"
+                                        :aria-expanded="!collapsedGroups[timeKey]"
                                         @click="toggleGroup(timeKey)"
                                     >
-                                        <ClockIcon class="w-3.5 h-3.5 text-base-content/40 shrink-0" />
-                                        <span
-                                            class="text-xs tracking-wider text-base-content/70 group-hover:text-base-content whitespace-nowrap transition-colors"
-                                        >
-                                            {{ timeKey }}
-                                        </span>
-                                        <span class="h-px flex-1 bg-base-content/10"></span>
-                                        <span
-                                            class="font-mono text-[10px] text-base-content/50 bg-base-content/10 rounded-full px-2 py-0.5 shrink-0"
-                                        >
-                                            {{ jobsOnRelativeTime.length }}
-                                        </span>
+                                        {{ timeKey }}
                                         <ChevronDownIcon
-                                            class="w-3.5 h-3.5 text-base-content/40 shrink-0 transition-transform duration-200"
-                                            :class="{ '-rotate-90': collapsedGroups[timeKey] }"
+                                            class="ld-group-chevron"
+                                            :class="{ 'is-collapsed': collapsedGroups[timeKey] }"
                                         />
-                                    </div>
+                                    </button>
                                 </td>
                             </tr>
-                            <tr
+                            <template
                                 v-for="job in jobsOnRelativeTime"
                                 v-if="!collapsedGroups[timeKey]"
                                 :key="job.job_id"
-                                :data-job-id="job.job_id"
-                                @click="openModal(job.job_id)"
-                                class="hover:bg-base-100 cursor-pointer"
-                                :class="{
-                                    'bg-base-300 hover:bg-neutral/70': selected && selected.id === job.job_id,
-                                    'ld-job-focus': focusedJobId === job.job_id
-                                }"
                             >
-                                <td
-                                    v-if="!isSplit"
-                                    class="w-10"
+                                <tr
+                                    :data-job-id="job.job_id"
+                                    :data-row-id="job.job_id"
+                                    tabindex="0"
+                                    :aria-expanded="isOpen(job.job_id)"
+                                    class="ld-row"
+                                    :class="{
+                                        'is-open': isOpen(job.job_id),
+                                        'ld-job-focus': focusedJobId === job.job_id
+                                    }"
+                                    @click="toggle(job.job_id)"
+                                    @keydown="onRowKeydown($event, job.job_id)"
                                 >
-                                    <div class="flex items-center justify-center">
-                                        <ArrowPathIcon
-                                            v-if="job.status === 'Processing'"
-                                            class="size-4 shrink-0 text-base-content/70 animate-spin [animation-duration:2s]"
-                                            title="Processing"
-                                        />
-                                        <CheckIcon
-                                            v-if="job.status === 'Processed'"
-                                            class="size-4 shrink-0 text-success"
-                                            title="Processed"
-                                        />
-                                        <XMarkIcon
-                                            v-if="job.status === 'Failed'"
-                                            class="size-4 shrink-0 text-error"
-                                            title="Failed"
-                                        />
-                                        <InformationCircleIcon
-                                            v-if="job.status === 'Queued'"
-                                            class="size-4 shrink-0 text-warning"
-                                            title="Queued"
-                                        />
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="flex items-center justify-between gap-2 min-w-0">
-                                        <span
-                                            class="truncate min-w-0"
-                                            :title="job.display_name"
-                                            >{{ job.display_name }}</span
-                                        >
-                                        <span
-                                            class="font-mono text-[10px] text-base-content/50 whitespace-nowrap shrink-0"
-                                        >
-                                            {{ dayjs(job.pushed_time ?? job.start_time).format('HH:mm:ss') }}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="whitespace-nowrap text-right">
-                                    {{ duration(job.start_time, job.end_time) }}
-                                </td>
-                                <td
-                                    v-if="!hideOriginColumn"
-                                    class="text-xs truncate text-right"
+                                    <td
+                                        v-if="!isSplit"
+                                        class="w-16 whitespace-nowrap"
+                                    >
+                                        <div class="flex items-center gap-1.5">
+                                            <ArrowPathIcon
+                                                v-if="job.status === 'Processing'"
+                                                class="size-4 shrink-0 text-base-content/70 animate-spin [animation-duration:2s]"
+                                                title="Processing"
+                                            />
+                                            <CheckIcon
+                                                v-if="job.status === 'Processed'"
+                                                class="size-4 shrink-0 text-success"
+                                                title="Processed"
+                                            />
+                                            <XMarkIcon
+                                                v-if="job.status === 'Failed'"
+                                                class="size-4 shrink-0 text-error"
+                                                title="Failed"
+                                            />
+                                            <InformationCircleIcon
+                                                v-if="job.status === 'Queued'"
+                                                class="size-4 shrink-0 text-warning"
+                                                title="Queued"
+                                            />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center justify-between gap-2 min-w-0">
+                                            <span
+                                                class="truncate min-w-0"
+                                                :title="job.display_name"
+                                                >{{ job.display_name }}</span
+                                            >
+                                            <span
+                                                class="font-mono text-[11px] text-base-content/35 whitespace-nowrap shrink-0"
+                                            >
+                                                {{ dayjs(job.pushed_time ?? job.start_time).format('HH:mm:ss') }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="whitespace-nowrap text-right">
+                                        {{ duration(job.start_time, job.end_time) }}
+                                    </td>
+                                    <td
+                                        v-if="!hideOriginColumn"
+                                        class="text-xs truncate text-right"
+                                    >
+                                        <div class="flex justify-end min-w-0">
+                                            <DumpLink
+                                                v-if="job.ide_handle.class_name !== 'empty'"
+                                                :ide-handler="job.ide_handle"
+                                                truncate
+                                                middle-truncate
+                                                :max-length="24"
+                                                class="opacity-70 hover:opacity-100"
+                                            />
+                                            <span
+                                                v-else
+                                                class="opacity-40"
+                                                >—</span
+                                            >
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr
+                                    v-if="isOpen(job.job_id)"
+                                    class="ld-row-detail"
                                 >
-                                    <div class="flex justify-end min-w-0">
-                                        <DumpLink
-                                            v-if="job.ide_handle.class_name !== 'empty'"
-                                            :ide-handler="job.ide_handle"
-                                            truncate
-                                            middle-truncate
-                                            :max-length="24"
-                                            class="opacity-70 hover:opacity-100"
-                                        />
-                                        <span
-                                            v-else
-                                            class="opacity-40"
-                                            >—</span
-                                        >
-                                    </div>
-                                </td>
-                            </tr>
+                                    <td
+                                        :colspan="columnCount"
+                                        class="max-w-0 whitespace-normal break-words"
+                                    >
+                                        <div class="space-y-3 py-1 px-1 min-w-0">
+                                            <div
+                                                v-if="jobStore.origin || horizonUrl"
+                                                class="flex items-center gap-2"
+                                            >
+                                                <button
+                                                    v-if="horizonUrl"
+                                                    @click.stop="openInHorizon(job)"
+                                                    class="btn btn-xs btn-soft gap-1 [-webkit-app-region:no-drag]"
+                                                    title="Open job in Horizon"
+                                                >
+                                                    <IconHorizon class="w-3.5" />
+                                                    Horizon
+                                                </button>
+                                                <button
+                                                    v-if="jobStore.origin"
+                                                    @click.stop="backToDump"
+                                                    class="btn btn-xs btn-soft gap-1 [-webkit-app-region:no-drag] ml-auto"
+                                                    title="Back to dump"
+                                                >
+                                                    ← Back to dump
+                                                </button>
+                                            </div>
+
+                                            <div class="bg-base-100 border border-base-300 p-4 space-y-4">
+                                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3">
+                                                    <div class="space-y-1 min-w-0">
+                                                        <div
+                                                            class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40"
+                                                        >
+                                                            Job ID
+                                                        </div>
+                                                        <div class="font-mono text-xs break-all">{{ job.job_id }}</div>
+                                                    </div>
+                                                    <div class="space-y-1">
+                                                        <div
+                                                            class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40"
+                                                        >
+                                                            Start
+                                                        </div>
+                                                        <div class="font-mono text-xs whitespace-nowrap">
+                                                            {{
+                                                                job.start_time
+                                                                    ? dayjs(job.start_time).format('hh:mm:ss a')
+                                                                    : '-'
+                                                            }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="space-y-1">
+                                                        <div
+                                                            class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40"
+                                                        >
+                                                            End
+                                                        </div>
+                                                        <div class="font-mono text-xs whitespace-nowrap">
+                                                            {{
+                                                                job.end_time
+                                                                    ? dayjs(job.end_time).format('hh:mm:ss a')
+                                                                    : '-'
+                                                            }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="space-y-1">
+                                                        <div
+                                                            class="text-[10px] font-semibold uppercase tracking-wider text-base-content/40"
+                                                        >
+                                                            Duration
+                                                        </div>
+                                                        <div class="font-mono text-xs">
+                                                            {{ duration(job.start_time, job.end_time) }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                v-if="job.code_snippet && job.code_snippet.length > 0"
+                                                class="bg-base-100 border-base-300 p-3 space-y-2 overflow-x-auto"
+                                            >
+                                                <span
+                                                    v-if="job.exception_message"
+                                                    class="block text-sm font-normal"
+                                                    @click.stop="toggleMessageLimit"
+                                                    :class="{ 'line-clamp-5': messageLimit }"
+                                                    >{{ job.exception_message }}</span
+                                                >
+                                                <CodeSnippet
+                                                    :code_snippet="job.code_snippet"
+                                                    :ide_handle="job.ide_handle"
+                                                />
+                                            </div>
+
+                                            <div class="bg-base-100 border border-base-300 p-4 overflow-x-auto">
+                                                <div v-safe-html="job.job[0]"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </template>
                     </tbody>
                 </table>
@@ -850,7 +765,7 @@ const toggleMessageLimit = () => {
                 v-else
                 class="flex items-center justify-center h-full min-h-[12rem] pointer-events-none"
             >
-                <EmptyState />
+                <EmptyState screen="jobs" />
             </div>
         </div>
     </div>
@@ -858,17 +773,6 @@ const toggleMessageLimit = () => {
 
 <style scoped>
 @reference "./../../styles.css";
-
-:deep(.table thead) :where(th, td) {
-    @apply p-2;
-}
-
-:deep(.table thead th) {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background-color: var(--color-base-300);
-}
 
 :deep(.table tbody) {
     :where(th, td) {
