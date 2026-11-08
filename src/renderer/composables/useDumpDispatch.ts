@@ -36,6 +36,18 @@ type BatchArgs = { type?: string; contents?: { content: Payload }[] };
 
 const NON_SCROLLING_SCREENS = ['jobs', 'mail', 'logs', 'queries', 'tail_logs'];
 
+const EDGE_PX = 80;
+
+const isNearEdge = (anchor: HTMLElement, direction: string): boolean => {
+    let el = anchor.parentElement;
+    while (el && !(el.scrollHeight > el.clientHeight && /auto|scroll/.test(getComputedStyle(el).overflowY))) {
+        el = el.parentElement;
+    }
+    if (!el) return true;
+
+    return direction === 'bottom' ? el.scrollHeight - el.clientHeight - el.scrollTop < EDGE_PX : el.scrollTop < EDGE_PX;
+};
+
 /**
  * Dump/payload domain: the `dispatch` pipeline, pause gating, badge/limit rules,
  * screen-window fan-out and every content channel handler. Depends on screen
@@ -127,14 +139,16 @@ export function useDumpDispatch(nav: ScreenNavigation) {
             return;
         }
 
-        if (content.to_screen?.screen_name === screenStore.screen) {
-            nextTick(() => {
-                if (!NON_SCROLLING_SCREENS.includes(screenStore.screen)) {
-                    document
-                        .getElementById(settingsStore.settings.scroll_direction)
-                        ?.scrollIntoView({ behavior: 'auto' });
-                }
-            });
+        if (
+            content.to_screen?.screen_name === screenStore.screen &&
+            !NON_SCROLLING_SCREENS.includes(screenStore.screen)
+        ) {
+            const direction = settingsStore.settings.scroll_direction;
+            const anchor = document.getElementById(direction);
+
+            if (!anchor || isNearEdge(anchor, direction)) {
+                nextTick(() => document.getElementById(direction)?.scrollIntoView({ behavior: 'auto' }));
+            }
         }
     };
 
