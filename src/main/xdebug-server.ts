@@ -33,14 +33,6 @@ class XDebugServer extends EventEmitter {
 
         await watcherPath(mainWindow, args.project_path);
 
-        const processIncomingData = (data) => {
-            const xmlStartIndex = data.indexOf('<?xml');
-            if (xmlStartIndex !== -1) {
-                return data.slice(xmlStartIndex);
-            }
-            return null;
-        };
-
         this.serverSocket = net.createServer((socket: Socket) => {
             if (this.clientSocket && this.clientSocket !== socket) {
                 this.clientSocket.removeAllListeners();
@@ -55,15 +47,23 @@ class XDebugServer extends EventEmitter {
 
             this.emit('connection');
 
-            socket.on('data', (data): void => {
-                const xmlData = processIncomingData(data.toString());
+            let buffer = Buffer.alloc(0);
 
-                if (isDev) {
-                    console.log('Receive XML data:', xmlData);
-                }
+            socket.on('data', (data: Buffer): void => {
+                buffer = Buffer.concat([buffer, data]);
 
-                if (xmlData) {
-                    mainWindow.webContents.send('xdebug-response', xmlData.toString());
+                let end: number;
+                while ((end = buffer.indexOf(0)) !== -1) {
+                    const packet = buffer.subarray(0, end).toString();
+                    buffer = buffer.subarray(end + 1);
+
+                    if (!packet.startsWith('<')) continue;
+
+                    if (isDev) {
+                        console.log('Receive XML data:', packet);
+                    }
+
+                    mainWindow.webContents.send('xdebug-response', packet);
                 }
             });
 
@@ -127,31 +127,6 @@ class XDebugServer extends EventEmitter {
                     error: err.message
                 });
             }
-        });
-    }
-
-    async getResponse(): Promise<string> {
-        if (!this.clientSocket) {
-            throw new Error('No client connected');
-        }
-
-        return new Promise((resolve, reject) => {
-            let message = '';
-
-            const onData = (data: Buffer) => {
-                message += data.toString();
-                if (message.endsWith('\0')) {
-                    this.clientSocket?.removeListener('data', onData);
-                    resolve(message.slice(0, -1));
-                }
-            };
-
-            this.clientSocket && this.clientSocket.on('data', onData);
-
-            this.clientSocket &&
-                this.clientSocket.on('error', (err) => {
-                    reject(new Error('Client socket error: ' + err.message));
-                });
         });
     }
 }

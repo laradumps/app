@@ -3,10 +3,10 @@
         <div class="property-node p-1">
             <div
                 class="flex gap-1 items-center text-gray-400 cursor-pointer whitespace-pre-wrap"
-                @click="handlePropertyClick"
+                @click="toggle"
             >
                 <button v-if="['array', 'object'].includes(property.type)">
-                    <IconArrowRight v-if="!property.expanded" />
+                    <IconArrowRight v-if="!expanded" />
                     <IconArrowDown v-else />
                 </button>
 
@@ -18,16 +18,14 @@
                 <IconListBullet v-show="property.type === 'array'" />
 
                 <div>
-                    <span class="variable-name">{{ displayVariableName(property) }}</span>
+                    <span class="variable-name">{{ property.name }}</span>
 
-                    <span v-if="property.type === 'null'"> = <span class="text-secondary">null</span></span>
-
-                    <span v-if="property.value">
+                    <span v-if="value !== null">
                         =
                         <span
                             class="text-secondary"
                             style="white-space: break-spaces"
-                            >{{ formatValue() }}</span
+                            >{{ value }}</span
                         ></span
                     >
 
@@ -36,95 +34,55 @@
             </div>
         </div>
 
-        <XDebugLoadingChildren
-            v-if="loadingChildren"
-            :variable-name="property.fullname"
-            :transition-id="transitionId"
-            @loaded="onChildrenLoaded"
-        />
-
         <div
-            v-if="property.expanded"
+            v-if="expanded"
             class="children"
         >
             <XDebugPropertyNode
-                v-for="child in property.children"
-                :key="child.fullname"
+                v-for="child in children"
+                :key="child.fullname ?? child.name"
                 :property="child"
-                :transition-id="transitionId"
-                @request-load-children="loadChildren"
             />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import XDebugLoadingChildren from '@/components/xdebug/XDebugLoadingChildren.vue';
+import { computed, inject, ref, watch } from 'vue';
 import IconArrowRight from '@/components/Icons/IconArrowRight.vue';
 import IconArrowDown from '@/components/Icons/IconArrowDown.vue';
 import IconListBullet from '@/components/Icons/IconListBullet.vue';
+import { formatValue, type XDebugProperty } from './dbgp';
 
-const props = defineProps({
-    property: Object,
-    transitionId: Number
-});
+const props = defineProps<{ property: XDebugProperty }>();
 
-const loadingChildren = ref(false);
+const getProperty = inject<(fullname: string) => Promise<XDebugProperty | null>>('xdebug:get-property');
 
-const hasArrayIndexAtEnd = (classname) => {
-    const regex = /\[\d+\]$/;
-    return regex.test(classname);
+const expanded = ref(false);
+const loaded = ref<XDebugProperty[] | null>(null);
+
+const value = computed(() => formatValue(props.property));
+const children = computed(() => loaded.value ?? props.property.children);
+
+const load = async () => {
+    const { fullname, numchildren } = props.property;
+    if (props.property.children.length || !numchildren || !fullname) return;
+
+    loaded.value = (await getProperty(fullname))?.children ?? [];
 };
 
-const formatValue = (): string => {
-    if (['bool', 'int', 'float'].includes(props.property.type)) {
-        return props.property.value;
+const toggle = () => {
+    expanded.value = !expanded.value;
+    if (expanded.value && !loaded.value) load();
+};
+
+watch(
+    () => props.property,
+    () => {
+        loaded.value = null;
+        if (expanded.value) load();
     }
-
-    if (props.property.type === 'null') {
-        return 'null';
-    }
-
-    return `"${props.property.value}"`;
-};
-
-const displayVariableName = (): string => {
-    return props.property.name;
-};
-
-const handlePropertyClick = (): boolean => {
-    if (props.property.expanded) {
-        props.property.expanded = false;
-        return;
-    }
-
-    if (props.property.children.length === 0) {
-        loadingChildren.value = true;
-    }
-
-    props.property.expanded = true;
-};
-
-const onChildrenLoaded = (newChildren): void => {
-    loadingChildren.value = false;
-    props.property.children.push(...newChildren);
-};
-
-const loadChildren = (): void => {
-    loadingChildren.value = true;
-    propertyGet(props.property.fullname);
-};
-
-const propertyGet = (variableName): void => {
-    const id = props.transitionId;
-    sendCommand(`feature_set -i ${id} -n max_children -v 100`);
-    sendCommand(`property_get -i ${id} -n ${variableName} -m 0`);
-};
-
-const sendCommand = (cmd): void => {
-    window.ipcRenderer.send('send-xdebug-command', cmd);
-};
+);
 </script>
 
 <style scoped>

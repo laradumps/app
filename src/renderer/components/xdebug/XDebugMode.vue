@@ -1,7 +1,7 @@
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
 import hljs from 'highlight.js/lib/core';
-import tippy from 'tippy.js';
+import tippy, { delegate } from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light-border.css';
 import 'tippy.js/themes/light.css';
@@ -14,749 +14,491 @@ import IconStepOver from '@/components/Icons/IconStepOver.vue';
 import IconStepInto from '@/components/Icons/IconStepInto.vue';
 import IconStop from '@/components/Icons/IconStop.vue';
 import SplitPanes from '@/components/split/SplitPanes.vue';
-import IconLoading from '@/components/Icons/IconLoading.vue';
 import { useI18n } from 'vue-i18n';
 import { escapeHtml } from '@/utils/helpers';
+import { encodeBase64, formatValue, parseProperty, quoteArg } from './dbgp';
 
 const xDebugStore = useXDebug();
 const i18n = useI18n();
 
+const root = ref(null);
 const error = ref('');
-const transactionId = ref(1);
-const initialized = ref(false);
-
 const evaluate = ref('');
-const fileContent = ref([]);
-const variablesNames = ref([]);
-const currentLine = ref('');
+const lines = ref([]);
+const variables = ref([]);
+const openVariables = ref({});
+const currentLine = ref(0);
 const currentFileName = ref('');
-
-const propertiesTree = ref([]);
-const propertiesContextTree = ref([]);
-const propertiesEvalTree = ref([]);
-
-const inStepCommand = ref(false);
-const inMountEvent = ref(false);
-const variableClicked = ref(true);
-const selectedVariableName = ref('');
-const variablesInSidebar = ref(false);
-
-const expandedProperties = ref({});
-
-const loading = ref(false);
-
+const running = ref(false);
 const breakpoints = ref([]);
+const modal = ref({ title: '', tree: [], error: '' });
+
+const paused = computed(() => currentFileName.value !== '');
+
+let active = false;
+let nextId = 1;
+const pending = new Map();
+const engineBreakpoints = new Map();
+const hiddenIdeBreakpoints = new Set();
+
+const toLocal = (uri) => {
+    const { workdir, project_path } = xDebugStore.current;
+    return workdir ? uri.replace(workdir, project_path) : uri;
+};
+
+const toRemote = (uri) => {
+    const { workdir, project_path } = xDebugStore.current;
+    return workdir ? uri.replace(project_path, workdir) : uri;
+};
+
+const currentFileUrl = computed(() => toLocal(currentFileName.value));
+
+const relativeFileName = computed(() =>
+    currentFileUrl.value.replace(/^file:\/\//, '').replace(xDebugStore.current.project_path, '')
+);
+
+const statusLabel = computed(() => {
+    if (running.value) return 'Running…';
+    if (paused.value) return 'Paused';
+
+    return `Listening on :${xDebugStore.current.client_port}`;
+});
 
 const openXDebugLink = () => {
     window.ipcRenderer.send('main:openLink', 'https://xdebug.org');
 };
 
-const sendCommand = (cmd) => {
-    window.ipcRenderer.send('send-xdebug-command', cmd);
+const command = (name, args = '') => {
+    const id = String(nextId++);
+    window.ipcRenderer.send('send-xdebug-command', `${name} -i ${id} ${args}`.trim());
+
+    return new Promise((resolve) => pending.set(id, resolve));
 };
 
-const getNextTransactionId = () => {
-    return transactionId.value++;
+const getProperty = async (fullname) => {
+    const response = await command('property_get', `-n ${quoteArg(fullname)} -m 0`);
+    const property = response.getElementsByTagName('property')[0];
+
+    return property ? parseProperty(property) : null;
 };
 
-const stepInto = () => {
-    variableClicked.value = true;
-    inStepCommand.value = true;
+provide('xdebug:get-property', getProperty);
 
-    const id = getNextTransactionId();
-    sendCommand(`step_into -i ${id}`);
-    contextGet(id);
+const handleResponse = (_, xml) => {
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+
+    const init = doc.getElementsByTagName('init')[0];
+    if (init) return startSession(init.getAttribute('fileuri'));
+
+    const response = doc.getElementsByTagName('response')[0];
+    const id = response?.getAttribute('transaction_id');
+
+    pending.get(id)?.(response);
+    pending.delete(id);
 };
 
-const stepOver = () => {
-    variableClicked.value = true;
-    inStepCommand.value = true;
+const startSession = (fileuri) => {
+    pending.clear();
+    engineBreakpoints.clear();
+    running.value = false;
 
-    const id = getNextTransactionId();
-    sendCommand(`step_over -i ${id}`);
-    contextGet(id);
+    if (fileuri?.includes('phpcs')) return command('detach');
+
+    active = true;
+    command('feature_set', '-n max_children -v 100');
+    syncBreakpoints();
+    resume('run');
+};
+
+const resume = async (name) => {
+    running.value = true;
+    const response = await command(name);
+    running.value = false;
+
+    const status = response.getAttribute('status');
+
+    if (status === 'stopping') {
+        handleStop();
+        return command('run');
+    }
+
+    if (status !== 'break') return handleStop();
+
+    window.ipcRenderer.send('main:show');
+
+    const message = response.getElementsByTagName('xdebug:message')[0];
+    await showFile(message.getAttribute('filename'), Number(message.getAttribute('lineno')));
+
+    const context = await command('context_get');
+    variables.value = Array.from(context.children).map(parseProperty);
+
+    await nextTick();
+    document.getElementById('trace-line')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
 
 const stop = () => {
-    inStepCommand.value = true;
-
-    const id = getNextTransactionId();
-    sendCommand(`stop -i ${id}`);
-
+    command('stop').then(() => command('run'));
     handleStop();
 };
 
-const contextGet = (id) => {
-    sendCommand(`context_get -i ${id}`);
-};
-
-const continueDebug = () => {
-    variableClicked.value = true;
-    if (!inMountEvent.value) {
-        inStepCommand.value = true;
-    }
-
-    const id = getNextTransactionId();
-
-    sendCommand(`run -i ${id}`);
-};
-
-const propertyGet = (variableName) => {
-    const id = getNextTransactionId();
-    sendCommand(`feature_set -i ${id} -n max_children -v 100`);
-    sendCommand(`property_get -i ${id} -n ${variableName} -m 0`);
-};
-
-const evaluateExpression = () => {
-    propertiesEvalTree.value = [];
-
-    setTimeout(() => {
-        const id = getNextTransactionId();
-        sendCommand(`eval -i ${id} -- ${btoa(evaluate.value)}`);
-
-        setTimeout(() => modal_property_get.showModal(), 200);
-    }, 300);
-};
-
-const handleResponse = (event, response) => {
-    loading.value = true;
-    setTimeout(() => parseResponse(response), 100);
-};
-
-const handlePropertyContextClick = (type, variable) => {
-    if (type === 'uninitialized') return;
-
-    propertiesContextTree.value = [];
-
-    if (expandedProperties.value[variable]) {
-        expandedProperties.value = { ...expandedProperties.value, [variable]: false };
-    } else {
-        expandedProperties.value = { ...expandedProperties.value, [variable]: true };
-    }
-
-    selectedVariableName.value = variable;
-    variablesInSidebar.value = true;
-
-    propertyGet(variable);
-};
-
-const handleContextGet = (responseElement) => {
-    const properties = responseElement.getElementsByTagName('property');
-
-    variablesNames.value = [];
-
-    Array.from(properties).forEach((property) => {
-        const name = property.getAttribute('name');
-        let value = property.getAttribute('value') || property.textContent.trim();
-
-        const encoding = property.getAttribute('encoding');
-        if (encoding === 'base64' && value) {
-            try {
-                value = atob(value);
-            } catch (e) {
-                console.error('Erro ao decodificar base64:', e);
-                value = property.textContent.trim();
-            }
-        }
-
-        if (name.startsWith('$')) {
-            variablesNames.value.push({
-                name,
-                classname: property.getAttribute('classname'),
-                type: property.getAttribute('type'),
-                value
-            });
-        }
-    });
-
-    nextTick(() =>
-        tippy('.pane-code [data-tippy-content]', {
-            allowHTML: false,
-            theme: 'ld',
-            placement: 'top',
-            offset: [0, 6],
-            appendTo: () => document.body
-        })
-    );
-};
-
-const formatValue = (property) => {
-    if (['bool', 'int', 'float'].includes(property.type)) {
-        return property.value;
-    }
-
-    if (property.type === 'null') {
-        return 'null';
-    }
-
-    return `"${property.value}"`;
-};
-
-const handlePropertyGet = (responseElement, evaluate) => {
-    const properties = responseElement.getElementsByTagName('property');
-
-    propertiesTree.value = [];
-    propertiesContextTree.value = [];
-    propertiesEvalTree.value = [];
-
-    const buildPropertyTree = (propertyElement) => {
-        const name = propertyElement.getAttribute('name');
-        const fullname = propertyElement.getAttribute('fullname');
-        const type = propertyElement.getAttribute('type');
-        const facet = propertyElement.getAttribute('facet');
-        const classname = propertyElement.getAttribute('classname');
-
-        if (!['null', 'int', 'string', 'float', 'bool'].includes(type) && name === selectedVariableName.value) {
-            return null;
-        }
-
-        let valueElement = propertyElement.querySelector('cdata') || propertyElement;
-        let value = propertyElement.getAttribute('value') || valueElement.textContent;
-
-        const encoding = propertyElement.getAttribute('encoding');
-        if (encoding === 'base64' && value) {
-            try {
-                value = atob(value);
-            } catch (e) {
-                console.error('Error decoding base64:', e);
-            }
-        }
-
-        function formatValue(type, value) {
-            if (type === 'bool') {
-                return value === '1' ? 'true' : 'false';
-            }
-
-            return value;
-        }
-
-        const propertyObject = {
-            name,
-            fullname,
-            type,
-            classname,
-            facet,
-            value: formatValue(type, value),
-            expanded: false,
-            children: []
-        };
-
-        const childrenCount = parseInt(propertyElement.getAttribute('numchildren'), 10);
-        if (childrenCount > 0) {
-            const childProperties = propertyElement.getElementsByTagName('property');
-            Array.from(childProperties).forEach((childProperty) => {
-                const childPropertyTree = buildPropertyTree(childProperty);
-                if (childPropertyTree) {
-                    propertyObject.children.push(childPropertyTree);
-                }
-            });
-        }
-
-        if (propertyObject.children.length > 0) {
-            propertyObject.children.shift();
-        }
-
-        return propertyObject;
-    };
-
-    Array.from(properties).forEach((property) => {
-        const list = buildPropertyTree(property);
-        if (!list) return;
-
-        if (evaluate) {
-            propertiesEvalTree.value.push(list);
-            return;
-        }
-
-        if (variablesInSidebar.value) {
-            propertiesContextTree.value.push(list);
-            return;
-        }
-
-        propertiesTree.value.push(list);
-    });
-};
-
-const handleFileContent = (messageElement) => {
-    let filename = messageElement.getAttribute('filename');
-    const lineno = parseInt(messageElement.getAttribute('lineno'), 10);
-
+const showFile = async (filename, line) => {
     currentFileName.value = filename;
-    currentLine.value = lineno;
+    currentLine.value = line;
 
-    if (xDebugStore.current.workdir) {
-        const projectPath = xDebugStore.current.project_path;
-
-        filename = filename.replace(xDebugStore.current.workdir, projectPath);
-    }
-
-    const isWindows = process.platform === 'win32';
-
-    ipcRenderer.send('read-file', filename.replace(isWindows ? 'file:///' : 'file://', ''));
-
-    ipcRenderer.on('file-read-success', (event, data) => {
-        nextTick(() => {
-            fileContent.value = convertHTMLTextToArray(data);
-
-            setTimeout(() => {
-                if (document.getElementById('trace-line')) {
-                    document.getElementById('trace-line').scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
-            }, 300);
-        });
-    });
-
-    ipcRenderer.on('file-read-error', (event, errorMessage) => {
-        error.value = errorMessage;
+    try {
+        const path = toLocal(filename).replace(process.platform === 'win32' ? 'file:///' : 'file://', '');
+        lines.value = (await window.ipcRenderer.invoke('read-file', path)).split('\n');
+    } catch (e) {
+        error.value = e.message;
         modal_error.showModal();
-
-        console.error('Error reading file:', errorMessage);
-    });
+    }
 };
-
-window.ipcRenderer.on('send-command-error', (event, args) => {
-    console.log('command err', args.error);
-    handleStop();
-});
 
 const handleStop = () => {
-    variableClicked.value = true;
-    variablesNames.value = [];
-    currentLine.value = '';
+    active = false;
+    running.value = false;
+    variables.value = [];
+    lines.value = [];
+    currentLine.value = 0;
     currentFileName.value = '';
-    propertiesContextTree.value = [];
-    propertiesEvalTree.value = [];
-    propertiesTree.value = [];
 };
 
-const convertHTMLTextToArray = (data) => {
-    const result = {};
-    const fileContent = data.split('\n');
-    const startLine = 0;
-    const endLine = fileContent.length;
+const showProperty = async (title, name, args) => {
+    modal.value = { title, tree: [], error: '' };
+    modal_property_get.showModal();
 
-    for (let i = startLine; i < endLine; i++) {
-        result[i + 1] = fileContent[i];
-    }
+    const response = await command(name, args);
+    const property = response.getElementsByTagName('property')[0];
 
-    return result;
-};
-
-const setBreakpoints = () => {
-    console.log(breakpoints.value);
-    breakpoints.value
-        .filter((breakpoint) => breakpoint.enabled && breakpoint.line !== null)
-        .forEach((breakpoint) => {
-            const id = getNextTransactionId();
-            const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
-            const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
-
-            console.log(cmd);
-            sendCommand(cmd);
-        });
-};
-
-const parseResponse = async (xml) => {
-    if (variableClicked.value === false) {
+    if (!property) {
+        modal.value.error = response.getElementsByTagName('error')[0]?.textContent ?? '';
         return;
     }
 
-    const xmlParts = xml.split(/(?=<\?xml)/);
-
-    for (const xmlPart of xmlParts) {
-        if (!xmlPart.trim()) continue;
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(xmlPart, 'text/xml');
-
-        const initEvent = doc.getElementsByTagName('init');
-
-        if (initEvent.length > 0) {
-            initialized.value = true;
-
-            const fileuri = initEvent[0].getAttribute('fileuri');
-
-            console.log('File URI:', fileuri);
-
-            if (fileuri && fileuri.includes('phpcs')) {
-                console.log('ignore phpcs');
-                continue;
-            }
-
-            if (fileuri && fileuri.includes('pest')) {
-                console.log('running in pest');
-            }
-
-            window.ipcRenderer.send('main:show');
-
-            setTimeout(async () => {
-                setBreakpoints(fileuri);
-                continueDebug();
-            }, 100);
-        }
-
-        const messageElement = doc.getElementsByTagName('xdebug:message');
-
-        if (messageElement.length > 0) {
-            handleFileContent(messageElement[0]);
-        }
-
-        const responseElement = doc.getElementsByTagName('response')[0];
-
-        if (responseElement && !inStepCommand.value) {
-            const errorElement = responseElement.getElementsByTagName('error')[0];
-            if (errorElement) {
-                const errorCode = errorElement.getAttribute('code');
-                const errorMessage = errorElement.getElementsByTagName('message')[0].textContent;
-
-                if (errorCode === '4') {
-                    console.error(`Error: (${errorCode}): ${errorMessage}`);
-
-                    continue;
-                    // return;
-                }
-            }
-
-            const command = responseElement.getAttribute('command');
-            const status = responseElement.getAttribute('status');
-
-            if (command === 'breakpoint_set') {
-                const success = responseElement.getAttribute('reason');
-
-                if (success === 'ok') {
-                    // todo
-                }
-            }
-
-            if (command === 'run' && status === 'stopping') {
-                handleStop();
-                continueDebug();
-            }
-
-            if (command === 'context_get') {
-                handleContextGet(responseElement);
-
-                if (status === 'stopping') {
-                    handleStop();
-                    continueDebug();
-                }
-            }
-
-            if (command === 'property_get') {
-                handlePropertyGet(responseElement);
-            }
-
-            if (command === 'eval') {
-                handlePropertyGet(responseElement, true);
-            }
-        }
-
-        if (responseElement) {
-            const errorElement = responseElement.getElementsByTagName('error')[0];
-            if (errorElement) {
-                const errorCode = errorElement.getAttribute('code');
-                const errorMessage = errorElement.getElementsByTagName('message')[0].textContent;
-
-                if (errorCode === '4') {
-                    console.error(`Error 2 (${errorCode}): ${errorMessage}`);
-                    continue;
-                }
-            }
-
-            const command = responseElement.getAttribute('command');
-            const status = responseElement.getAttribute('status');
-
-            if (command === 'context_get' && status === 'stopping') {
-                handleStop();
-            }
-        }
-    }
-
-    loading.value = false;
+    const node = parseProperty(property);
+    modal.value.tree = node.children.length ? node.children : [node];
 };
 
-const getHighlightedCode = (lineContent) => {
-    const highlightedSyntax = hljs.highlight(lineContent, { language: 'php' }).value;
+const inspect = (name) => showProperty(name, 'property_get', `-n ${quoteArg(name)} -m 0`);
 
-    const regex = new RegExp(
-        [...variablesNames.value]
-            .map((v) => v.name)
-            .sort((a, b) => b.length - a.length)
-            .map((n) => n.replace(/[-\/\\^$.*+?()[\]{}|]/g, '\\$&'))
-            .join('|'),
-        'g'
-    );
+const evaluateExpression = () => {
+    if (evaluate.value) showProperty(evaluate.value, 'eval', `-- ${encodeBase64(evaluate.value)}`);
+};
 
-    return highlightedSyntax.replace(regex, (match) => {
-        const variable = variablesNames.value.find((v) => v.name === match);
-        if (!variable) return match;
+const toggleVariable = (name) => {
+    openVariables.value = { ...openVariables.value, [name]: !openVariables.value[name] };
+};
 
+const highlightedLines = computed(() => lines.value.map((line) => hljs.highlight(line, { language: 'php' }).value));
+
+const variableMatcher = computed(() => {
+    const names = variables.value
+        .map((variable) => variable.name.replace(/[-\/\\^$.*+?()[\]{}|]/g, '\\$&'))
+        .sort((a, b) => b.length - a.length);
+
+    return names.length ? new RegExp(`(${names.join('|')})(?!\\w)`, 'g') : null;
+});
+
+const withVariables = (html) => {
+    if (!variableMatcher.value) return html;
+
+    return html.replace(variableMatcher.value, (name) => {
+        const variable = variables.value.find((v) => v.name === name);
+        const value = formatValue(variable);
         const classes = variable.type === 'uninitialized' ? 'opacity-60 line-through' : 'cursor-pointer font-normal';
-        const tooltip =
-            ['int', 'bool', 'float'].includes(variable.type) && variable.value !== null
-                ? ` data-tippy-content="${escapeHtml(`${variable.type}: ${variable.value}`)}"`
-                : '';
+        const tooltip = value !== null ? ` data-tippy-content="${escapeHtml(`${variable.type}: ${value}`)}"` : '';
 
-        return `<span class="highlight ${classes}" data-variable="${match}"${tooltip}>${match}</span>`;
+        return `<span class="highlight ${classes}" data-variable="${name}"${tooltip}>${name}</span>`;
     });
 };
 
-const handleKeyboardEvent = async (event) => {
-    switch (event.key) {
-        case 'F5':
-            continueDebug();
-            break;
-        case 'F8':
-            stepOver();
-            break;
-        case 'F7':
-            stepInto();
-            break;
-        case 'F2':
-            stop();
-            break;
-        default:
-            return;
-    }
-};
-
-const handleClick = (event) => {
-    inStepCommand.value = false;
-    variableClicked.value = true;
-    variablesInSidebar.value = false;
-    event.preventDefault();
-
-    const target = event.target;
-
-    if (target.tagName === 'SPAN' && target.classList.contains('cursor-pointer')) {
-        const variableName = target.getAttribute('data-variable');
-
-        if (variableName) {
-            selectedVariableName.value = variableName;
-
-            propertyGet(variableName);
-            modal_property_get.showModal();
-        }
-    }
-};
-
-const handleError = (event, err) => {
-    error.value = err;
-    console.error(err);
+const handleCodeClick = (event) => {
+    const name = event.target.closest('.cursor-pointer[data-variable]')?.dataset.variable;
+    if (name) inspect(name);
 };
 
 const handleSelectText = () => {
     evaluate.value = window.getSelection().toString().trim();
 };
 
+const SHORTCUTS = { F5: 'run', F8: 'step_over', F7: 'step_into' };
+
+const handleKeyboardEvent = (event) => {
+    if (!paused.value || running.value) return;
+    if (event.key === 'F2') return stop();
+    if (SHORTCUTS[event.key]) resume(SHORTCUTS[event.key]);
+};
+
+const handleError = (_, err) => {
+    error.value = err;
+    console.error(err);
+    handleStop();
+};
+
+const handleCommandError = (_, args) => {
+    console.error('Xdebug command error:', args.error);
+    handleStop();
+};
+
 const disconnect = () => {
     xDebugStore.current = {};
-    transactionId.value = 0;
-
     window.ipcRenderer.send('disconnect-xdebug');
     modal_error.close();
 };
 
-const shouldShowBreakpoint = (lineNumber) => {
-    return breakpoints.value.some((breakpoint) => breakpoint.enabled && breakpoint.line == lineNumber);
+const breakpointKey = ({ url, line }) => `${url}:${line}`;
+
+const hasBreakpoint = (line) => breakpoints.value.some((bp) => bp.url === currentFileUrl.value && bp.line === line);
+
+const toggleBreakpoint = (line) => {
+    const breakpoint = { url: currentFileUrl.value, line, enabled: true, manual: true };
+    const index = breakpoints.value.findIndex((bp) => breakpointKey(bp) === breakpointKey(breakpoint));
+
+    if (index === -1) {
+        hiddenIdeBreakpoints.delete(breakpointKey(breakpoint));
+        breakpoints.value.push(breakpoint);
+        return;
+    }
+
+    const [removed] = breakpoints.value.splice(index, 1);
+    if (!removed.manual) hiddenIdeBreakpoints.add(breakpointKey(removed));
 };
 
-watch(fileContent, () => {
-    inStepCommand.value = false;
-    contextGet(transactionId.value);
-});
+const setIdeBreakpoints = (_, list = []) => {
+    const ide = list.filter((bp) => !hiddenIdeBreakpoints.has(breakpointKey(bp)));
+    const ideKeys = new Set(ide.map(breakpointKey));
 
-onMounted(() => {
-    inMountEvent.value = true;
+    breakpoints.value = [...ide, ...breakpoints.value.filter((bp) => bp.manual && !ideKeys.has(breakpointKey(bp)))];
+};
 
+const syncBreakpoints = () => {
+    if (!active) return;
+
+    const wanted = new Set(breakpoints.value.map(breakpointKey));
+
+    for (const [key, id] of engineBreakpoints) {
+        if (wanted.has(key)) continue;
+        engineBreakpoints.delete(key);
+        if (id) command('breakpoint_remove', `-d ${id}`);
+    }
+
+    for (const breakpoint of breakpoints.value) {
+        const key = breakpointKey(breakpoint);
+        if (engineBreakpoints.has(key)) continue;
+
+        engineBreakpoints.set(key, null);
+        command('breakpoint_set', `-t line -f ${quoteArg(toRemote(breakpoint.url))} -n ${breakpoint.line}`).then(
+            (response) => {
+                const id = response.getAttribute('id');
+                if (engineBreakpoints.has(key)) engineBreakpoints.set(key, id);
+                else if (id) command('breakpoint_remove', `-d ${id}`);
+            }
+        );
+    }
+};
+
+watch(breakpoints, syncBreakpoints, { deep: true });
+
+let tooltips = [];
+
+onMounted(async () => {
     window.ipcRenderer.on('xdebug-response', handleResponse);
     window.ipcRenderer.on('xdebug-error', handleError);
-
+    window.ipcRenderer.on('send-command-error', handleCommandError);
+    window.ipcRenderer.on('xdebug-breakpoints', setIdeBreakpoints);
     window.addEventListener('keydown', handleKeyboardEvent);
 
-    nextTick(() =>
-        tippy('.xdebug-controls [data-tippy-content]', {
+    tooltips = [
+        ...tippy('.xdebug-controls [data-tippy-content]', {
             theme: 'ld',
             placement: 'bottom',
             delay: [150, 0],
             appendTo: () => document.body
+        }),
+        delegate(root.value, {
+            target: '.hljs [data-tippy-content]',
+            allowHTML: false,
+            theme: 'ld',
+            placement: 'top',
+            offset: [0, 6],
+            appendTo: () => document.body
         })
-    );
+    ];
 
-    window.ipcRenderer.on('xdebug-breakpoints', (_, args) => {
-        const validBreakpoints = (args || []).filter((breakpoint) => breakpoint.enabled && breakpoint.line !== null);
-        breakpoints.value = validBreakpoints;
-
-        validBreakpoints.forEach((breakpoint) => {
-            const id = getNextTransactionId();
-            const url = breakpoint.url.replace(xDebugStore.current.project_path, xDebugStore.current.workdir);
-            const cmd = `breakpoint_set -i ${id} -t line -s enabled -f ${url} -n ${breakpoint.line}`;
-
-            console.log(cmd);
-            sendCommand(cmd);
-        });
-    });
+    setIdeBreakpoints(null, await window.ipcRenderer.invoke('xdebug:get-breakpoints'));
 });
-
-const toggleBreakpoint = (ideHandler) => {
-    let { file, line } = ideHandler;
-
-    file = file.replace(xDebugStore.current.workdir, 'file://' + xDebugStore.current.project_path);
-
-    const breakpointIndex = breakpoints.value.findIndex((bp) => bp.url == file && bp.line == line);
-
-    if (breakpointIndex !== -1) {
-        console.log('Removing breakpoint:', file, line);
-        breakpoints.value.splice(breakpointIndex, 1);
-    } else {
-        console.log('Adding breakpoint:', file, line);
-        breakpoints.value.push({ url: file, line });
-    }
-};
 
 onBeforeUnmount(() => {
     window.ipcRenderer.removeListener('xdebug-response', handleResponse);
     window.ipcRenderer.removeListener('xdebug-error', handleError);
-
+    window.ipcRenderer.removeListener('send-command-error', handleCommandError);
+    window.ipcRenderer.removeListener('xdebug-breakpoints', setIdeBreakpoints);
     window.removeEventListener('keydown', handleKeyboardEvent);
+    tooltips.forEach((tooltip) => tooltip.destroy());
 });
 </script>
 <template>
-    <div>
-        <div class="w-full">
+    <div
+        ref="root"
+        class="absolute inset-0 flex flex-col"
+    >
+        <div class="flex min-h-0 flex-1 flex-col">
             <div
-                class="xdebug-controls w-full z-300 top-0 flex px-3 py-2 flex-row gap-1 items-center uppercase text-xs"
+                class="xdebug-controls flex shrink-0 items-center gap-3 border-b border-base-content/10 px-3 py-1.5 text-xs"
             >
-                <div class="flex w-full gap-1 items-center justify-between">
-                    <div class="flex w-full gap-0.5 items-center">
-                        <button
-                            class="xdebug-btn"
-                            @click="continueDebug"
-                            :disabled="variablesNames.length === 0"
-                            data-tippy-content="Continue (F5)"
-                        >
-                            <IconContinue class="w-4" />
-                        </button>
+                <div class="flex items-center gap-0.5 rounded-lg border border-base-content/10 bg-base-content/5 p-0.5">
+                    <button
+                        class="xdebug-btn"
+                        @click="resume('run')"
+                        :disabled="!paused || running"
+                        data-tippy-content="Continue (F5)"
+                    >
+                        <IconContinue class="w-4" />
+                        <span class="xdebug-btn-label">Continue</span>
+                    </button>
 
-                        <button
-                            class="xdebug-btn"
-                            @click="stepOver"
-                            :disabled="variablesNames.length === 0"
-                            data-tippy-content="Step Over (F8)"
-                        >
-                            <IconStepOver class="w-4 text-info" />
-                        </button>
+                    <button
+                        class="xdebug-btn"
+                        @click="resume('step_over')"
+                        :disabled="!paused || running"
+                        data-tippy-content="Step Over (F8)"
+                    >
+                        <IconStepOver class="w-4 text-info" />
+                        <span class="xdebug-btn-label">Step over</span>
+                    </button>
 
-                        <button
-                            class="xdebug-btn"
-                            @click="stepInto"
-                            :disabled="variablesNames.length === 0"
-                            data-tippy-content="Step Into (F7)"
-                        >
-                            <IconStepInto class="w-4 text-warning" />
-                        </button>
-                    </div>
+                    <button
+                        class="xdebug-btn"
+                        @click="resume('step_into')"
+                        :disabled="!paused || running"
+                        data-tippy-content="Step Into (F7)"
+                    >
+                        <IconStepInto class="w-4 text-warning" />
+                        <span class="xdebug-btn-label">Step into</span>
+                    </button>
 
-                    <div class="flex items-center gap-2">
-                        <IconLoading
-                            class="text-base-content/70 w-4"
-                            :class="{ 'opacity-100': loading }"
-                        />
+                    <span class="mx-0.5 h-4 w-px bg-base-content/10"></span>
 
-                        <button
-                            class="xdebug-btn"
-                            @click="stop"
-                            :disabled="variablesNames.length === 0"
-                            data-tippy-content="Stop (F2)"
-                        >
-                            <IconStop class="w-4 text-error" />
-                        </button>
-                    </div>
+                    <button
+                        class="xdebug-btn"
+                        @click="stop"
+                        :disabled="!paused || running"
+                        data-tippy-content="Stop (F2)"
+                    >
+                        <IconStop class="w-4 text-error" />
+                        <span class="xdebug-btn-label">Stop</span>
+                    </button>
                 </div>
+
+                <div
+                    class="flex min-w-0 items-center gap-2 text-base-content/70"
+                    :title="`${xDebugStore.current.client_host}:${xDebugStore.current.client_port}`"
+                >
+                    <span
+                        class="size-2 shrink-0 rounded-full"
+                        :class="running ? 'bg-info animate-pulse' : paused ? 'bg-warning' : 'bg-success animate-pulse'"
+                    ></span>
+                    <span class="truncate">{{ statusLabel }}</span>
+                </div>
+
+                <button
+                    class="btn btn-ghost btn-xs ml-auto font-normal text-base-content/70"
+                    @click="disconnect"
+                >
+                    Disconnect
+                </button>
             </div>
 
-            <div class="text-xs">
+            <div class="flex min-h-0 flex-1 flex-col text-xs">
                 <input
                     type="text"
-                    v-show="variablesNames.length > 0"
+                    v-show="paused"
                     @keydown.enter="evaluateExpression"
                     v-model="evaluate"
-                    placeholder="evaluate expression"
-                    class="input placeholder-opacity-75 text-xs tracking-wider border-base-content/10 rounded-none input-sm w-full"
+                    placeholder="Evaluate expression (Enter)"
+                    class="input shrink-0 placeholder-opacity-75 text-xs tracking-wider border-base-content/10 rounded-none input-sm w-full"
                 />
 
                 <div
-                    v-if="variablesNames.length === 0"
-                    class="flex h-[calc(100vh-135px)] w-full items-center justify-center"
+                    v-if="!paused"
+                    class="flex min-h-0 flex-1 overflow-auto px-4 py-6"
                 >
-                    <div
-                        type="button"
-                        class="select-none flex gap-7 flex-col items-center text-xs tracking-wide"
-                    >
-                        <SvgXDebug />
-
-                        <div class="flex gap-2">
-                            <span
-                                class="link"
-                                @click="openXDebugLink"
-                            >
-                                https://xdebug.org
+                    <div class="m-auto flex w-full max-w-md select-none flex-col items-center gap-6 text-sm">
+                        <div class="flex flex-col items-center gap-2">
+                            <SvgXDebug />
+                            <span class="text-xs text-base-content/50">
+                                <span
+                                    class="link"
+                                    @click="openXDebugLink"
+                                    >xdebug.org</span
+                                >
+                                · unofficial feature
                             </span>
-
-                            (unofficial feature)
                         </div>
 
-                        <div
-                            class="w-full max-w-md space-y-3 rounded-lg border border-base-content/10 bg-base-content/5 px-6 py-5 text-left text-sm font-normal leading-relaxed text-base-content"
+                        <ol
+                            class="w-full space-y-4 rounded-lg border border-base-content/10 bg-base-content/5 p-5 leading-relaxed text-base-content/70"
                         >
-                            <p class="font-semibold text-base-content/90">How to start a debug session</p>
-
-                            <ul class="list-disc space-y-3 pl-5 text-base-content/80 marker:text-base-content/40">
-                                <li>
-                                    {{ i18n.t('doc.add') }}
-                                    <span class="font-semibold text-base-content">xdebug_break()</span>
-                                    {{ i18n.t('doc.in_any_line_of_code') }}, <span class="italic">or</span>
-                                </li>
-                                <li>
-                                    Set a <span class="font-semibold text-base-content">breakpoint in PhpStorm</span> —
-                                    LaraDumps reads them automatically from
-                                    <span class="rounded bg-base-content/10 px-1 py-0.5 font-mono text-xs"
-                                        >.idea/workspace.xml</span
-                                    >.
-                                    <span class="block mt-1 text-base-content/60">
-                                        The session still has to start on the request: append
-                                        <span class="rounded bg-base-content/10 px-1 py-0.5 font-mono text-xs"
-                                            >?XDEBUG_TRIGGER=1</span
+                            <li class="flex gap-3">
+                                <span
+                                    class="flex size-5 shrink-0 items-center justify-center rounded-full bg-base-content/10 text-xs font-semibold text-base-content"
+                                    >1</span
+                                >
+                                <div class="space-y-1">
+                                    <p class="font-medium text-base-content">Pause your code</p>
+                                    <p>
+                                        {{ i18n.t('doc.add') }}
+                                        <code
+                                            class="rounded bg-base-content/10 px-1 font-mono text-xs text-base-content"
+                                            >xdebug_break()</code
+                                        >
+                                        {{ i18n.t('doc.in_any_line_of_code') }}, or set a breakpoint in PhpStorm (read
+                                        from
+                                        <code
+                                            class="rounded bg-base-content/10 px-1 font-mono text-xs text-base-content"
+                                            >.idea/workspace.xml</code
+                                        >).
+                                    </p>
+                                </div>
+                            </li>
+                            <li class="flex gap-3">
+                                <span
+                                    class="flex size-5 shrink-0 items-center justify-center rounded-full bg-base-content/10 text-xs font-semibold text-base-content"
+                                    >2</span
+                                >
+                                <div class="space-y-1">
+                                    <p class="font-medium text-base-content">Start the request with Xdebug</p>
+                                    <p>
+                                        Append
+                                        <code
+                                            class="rounded bg-base-content/10 px-1 font-mono text-xs text-base-content"
+                                            >?XDEBUG_TRIGGER=1</code
                                         >
                                         to the URL, or set
-                                        <span class="rounded bg-base-content/10 px-1 py-0.5 font-mono text-xs"
-                                            >xdebug.start_with_request=yes</span
+                                        <code
+                                            class="rounded bg-base-content/10 px-1 font-mono text-xs text-base-content"
+                                            >xdebug.start_with_request=yes</code
                                         >.
-                                    </span>
-                                </li>
-                            </ul>
+                                    </p>
+                                </div>
+                            </li>
+                        </ol>
 
-                            <p class="border-t border-base-content/10 pt-3 text-base-content/70">
-                                Shortcuts: <strong>F5</strong> continue · <strong>F8</strong> step over ·
-                                <strong>F7</strong> step into
-                            </p>
+                        <div class="flex flex-col items-center gap-2 text-xs text-base-content/60">
+                            <div class="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                                <span><kbd class="kbd kbd-xs">F5</kbd> Continue</span>
+                                <span><kbd class="kbd kbd-xs">F8</kbd> Step over</span>
+                                <span><kbd class="kbd kbd-xs">F7</kbd> Step into</span>
+                                <span><kbd class="kbd kbd-xs">F2</kbd> Stop</span>
+                            </div>
+                            <span class="text-base-content/50">Click a line number to toggle a breakpoint.</span>
                         </div>
-
-                        <button
-                            @click="disconnect"
-                            class="select-none inline-flex h-6 text-sm w-max min-w-max items-center justify-center badge-outline badge badge-warning p-1 transition hover:bg-opacity-50 disabled:opacity-25 !px-2"
-                        >
-                            <span class="text-xs">Disconnect</span>
-                        </button>
                     </div>
                 </div>
 
                 <div
                     v-else
-                    class="flex xdebug flex-row gap-3 w-full h-[calc(100vh-142px)]"
+                    class="xdebug flex min-h-0 w-full flex-1"
                 >
                     <SplitPanes
                         orientation="vertical"
@@ -764,66 +506,71 @@ onBeforeUnmount(() => {
                     >
                         <template #pane-a>
                             <div
-                                v-show="variablesNames.length > 0"
-                                class="pane-code-container mb-0 border-x border-base-content/10 overflow-auto w-full"
+                                class="flex h-8 shrink-0 items-center border-x border-b border-base-content/10 px-3 text-base-content/70"
+                                :title="`${currentFileName}:${currentLine}`"
+                            >
+                                <span class="truncate">{{ relativeFileName }}</span>
+                                <span class="shrink-0 text-base-content/40">:{{ currentLine }}</span>
+                            </div>
+
+                            <div
+                                class="pane-code-container min-h-0 flex-1 border-x border-base-content/10 overflow-auto"
                             >
                                 <div
-                                    v-for="(lineContent, lineNumber) in fileContent"
-                                    :key="`${lineNumber}-${currentFileName}`"
+                                    v-for="(html, index) in highlightedLines"
+                                    :key="`${index}-${currentFileName}`"
                                     class="flex text-sm font-normal items-center hover:!bg-red-500/10 px-3 group/line"
-                                    :class="{ 'bg-red-500/20': parseInt(lineNumber) === currentLine }"
-                                    :id="parseInt(lineNumber) === currentLine ? `trace-line` : null"
+                                    :class="{ 'bg-red-500/20': index + 1 === currentLine }"
+                                    :id="index + 1 === currentLine ? 'trace-line' : null"
                                 >
                                     <DumpLink
-                                        @toggleBreakpoint="toggleBreakpoint"
-                                        class="flex font-normal h-full text-xs"
-                                        :label="lineNumber"
+                                        class="flex font-normal h-full text-xs cursor-pointer"
+                                        :label="String(index + 1)"
                                         :show-icon="true"
-                                        :breakpoint="shouldShowBreakpoint(lineNumber)"
+                                        :breakpoint="hasBreakpoint(index + 1)"
                                         :ide-handler="{
                                             workdir: xDebugStore.current.workdir,
                                             project_path: xDebugStore.current.project_path,
-                                            real_path: currentFileName.replace('file:\/\/', ''),
-                                            line: lineNumber,
+                                            real_path: currentFileName.replace('file://', ''),
+                                            line: index + 1,
                                             class_name: '',
                                             separator: xDebugStore.current.separator,
                                             wsl_config: xDebugStore.current.wsl_config
                                         }"
+                                        @click="!$event.target.closest('a') && toggleBreakpoint(index + 1)"
                                     />
 
                                     <span
                                         class="language-php tracking-wide whitespace-pre hljs h-full"
-                                        v-if="variablesNames.length > 0"
-                                        v-html="getHighlightedCode(lineContent)"
-                                        @click="handleClick"
+                                        v-html="withVariables(html)"
+                                        @click="handleCodeClick"
                                         @mouseup="handleSelectText"
                                     ></span>
-                                    <div></div>
                                 </div>
                             </div>
                         </template>
 
                         <template #pane-b>
-                            <div class="overflow-auto text-sm h-fill-available">
+                            <div
+                                class="flex h-8 shrink-0 items-center gap-1.5 border-b border-base-content/10 px-3 text-base-content/70"
+                            >
+                                Variables
+                                <span class="text-base-content/40">{{ variables.length }}</span>
+                            </div>
+
+                            <div class="xdebug-variables min-h-0 flex-1 overflow-auto text-sm">
                                 <div
-                                    v-for="property in variablesNames"
-                                    :key="property.name + '-' + property.type"
+                                    v-for="property in variables"
+                                    :key="property.name"
                                 >
                                     <div
                                         :class="{
-                                            'cursor-pointer': !['int', 'bool', 'string'].includes(property.type),
-                                            '!cursor-default flex-wrap': ['string', 'uninitialized'].includes(
-                                                property.type
-                                            ),
-                                            'bg-gray-800 border-l-4 !border-[#d19a66]':
-                                                expandedProperties[property.name]
+                                            'cursor-pointer': property.numchildren > 0,
+                                            'flex-wrap': !property.numchildren,
+                                            'bg-gray-800 !border-[#d19a66]': openVariables[property.name]
                                         }"
                                         class="flex border-l-4 border-transparent hover:bg-gray-700 items-center px-1 py-2 pl-3"
-                                        @click="
-                                            !['int', 'bool', 'string'].includes(property.type)
-                                                ? handlePropertyContextClick(property.type, property.name)
-                                                : null
-                                        "
+                                        @click="property.numchildren > 0 && toggleVariable(property.name)"
                                     >
                                         <span
                                             :class="{ 'opacity-60 line-through': property.type === 'uninitialized' }"
@@ -834,37 +581,24 @@ onBeforeUnmount(() => {
                                             <span class="truncate">{{
                                                 ' {' + (property.classname ?? property.type) + '}'
                                             }}</span>
-                                            <span v-if="!['uninitialized', 'object', 'array'].includes(property.type)">
+                                            <span v-if="formatValue(property) !== null">
                                                 =
                                                 <span class="text-secondary">{{ formatValue(property) }}</span>
                                             </span>
                                         </span>
                                     </div>
 
-                                    <template
-                                        v-if="expandedProperties[property.name]"
-                                        :key="expandedProperties + '-' + property.name"
-                                        class="py-2"
-                                    >
+                                    <div v-if="openVariables[property.name]">
                                         <XDebugPropertyNode
-                                            v-if="propertiesTree"
-                                            v-for="property in propertiesContextTree"
-                                            :key="'child-' + property.name + '-' + property.type"
-                                            :property="property"
-                                            :transition-id="transactionId"
-                                            @click="variableClicked = false"
+                                            v-for="child in property.children"
+                                            :key="child.fullname"
+                                            :property="child"
                                         />
-                                    </template>
+                                    </div>
                                 </div>
                             </div>
                         </template>
                     </SplitPanes>
-
-                    <div
-                        class="fixed bottom-0 break-all border-b mt-1 border-base-content/10 py-1 px-3 text-base-content/60"
-                    >
-                        {{ currentFileName }}:{{ currentLine }}
-                    </div>
                 </div>
             </div>
         </div>
@@ -874,51 +608,22 @@ onBeforeUnmount(() => {
             class="modal modal-middle"
         >
             <div class="modal-box !rounded-md w-9/12 max-w-4xl space-y-3">
-                <div
-                    class="flex gap-3 text-sm"
-                    v-if="selectedVariableName && propertiesEvalTree.length === 0"
-                >
-                    <div class="select-none">
-                        <span class="variable-name text-base">{{ selectedVariableName }}</span>
-                    </div>
+                <div class="flex gap-3 text-sm select-none">
+                    <span class="variable-name text-base">{{ modal.title }}</span>
                 </div>
 
-                <div
-                    class="flex gap-3 text-sm"
-                    v-if="propertiesEvalTree.length > 0"
+                <p
+                    v-if="modal.error"
+                    class="text-error text-xs"
                 >
-                    <span
-                        class="variable-name"
-                        v-text="evaluate"
-                    ></span>
-                </div>
+                    {{ modal.error }}
+                </p>
 
                 <div class="w-full text-xs overflow-auto -mt-1">
                     <XDebugPropertyNode
-                        v-if="propertiesTree"
-                        v-for="property in propertiesTree"
-                        :key="'propertiesTree-' + property.name + '-' + property.type"
+                        v-for="property in modal.tree"
+                        :key="property.fullname ?? property.name"
                         :property="property"
-                        :transition-id="transactionId"
-                        @click="variableClicked = false"
-                    />
-
-                    <XDebugPropertyNode
-                        v-if="propertiesTree"
-                        v-for="property in propertiesContextTree"
-                        :key="'propertiesContextTree-' + property.name + '-' + property.type"
-                        :property="property"
-                        :transition-id="transactionId"
-                        @click="variableClicked = false"
-                    />
-
-                    <XDebugPropertyNode
-                        v-if="propertiesTree"
-                        v-for="property in propertiesEvalTree"
-                        :key="'propertiesEvalTree-' + property.name + '-' + property.type"
-                        :property="property"
-                        :transition-id="transactionId"
-                        @click="variableClicked = false"
                     />
                 </div>
             </div>
@@ -956,6 +661,7 @@ onBeforeUnmount(() => {
         </dialog>
     </div>
 </template>
+
 <style>
 @reference "./../../styles.css";
 
@@ -963,16 +669,14 @@ onBeforeUnmount(() => {
     @apply text-[#61aeee];
 }
 
-:deep(.classname) {
-    @apply text-gray-400;
-}
-
-:deep([data-tippy-root]) {
-    @apply break-all;
-}
-
 .xdebug-btn {
-    @apply inline-flex items-center justify-center rounded-md p-1.5 text-base-content/80 transition-colors;
+    @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-base-content/80 transition-colors;
+}
+
+@media (max-width: 560px) {
+    .xdebug-btn-label {
+        display: none;
+    }
 }
 
 .xdebug-btn:hover:not(:disabled) {
@@ -993,6 +697,7 @@ onBeforeUnmount(() => {
     line-height: 1.4;
     padding: 1px 3px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+    word-break: break-all;
 }
 
 .tippy-box[data-theme~='ld'] > .tippy-arrow {
@@ -1001,73 +706,5 @@ onBeforeUnmount(() => {
 
 .tippy-box[data-theme~='ld'] > .tippy-svg-arrow {
     fill: #1a1f29;
-}
-
-:deep(.xdebug .hljs) {
-    @apply !bg-transparent font-light text-sm leading-8 tracking-wider;
-}
-
-:deep(.xdebug .hljs),
-:deep(.xdebug .hljs-params) {
-    color: rgba(171, 178, 191, 0.9);
-}
-
-:deep(.xdebug .hljs-comment),
-:deep(.xdebug .hljs-quote) {
-    color: #5c6370;
-    font-style: italic;
-}
-
-:deep(.xdebug .hljs-doctag),
-:deep(.xdebug .hljs-formula),
-:deep(.xdebug .hljs-keyword) {
-    color: #c678dd !important;
-}
-
-:deep(.xdebug .hljs-deletion),
-:deep(.xdebug .hljs-name),
-:deep(.xdebug .hljs-section),
-:deep(.xdebug .hljs-selector-tag),
-:deep(.xdebug .hljs-subst) {
-    color: #e06c75 !important;
-}
-
-:deep(.xdebug .hljs-literal) {
-    color: #56b6c2 !important;
-}
-
-:deep(.xdebug .hljs-addition),
-:deep(.xdebug .hljs-attribute),
-:deep(.xdebug .hljs-meta .hljs-string),
-:deep(.xdebug .hljs-regexp),
-:deep(.xdebug .hljs-string) {
-    color: #98c379 !important;
-}
-
-:deep(.xdebug .hljs-bullet),
-:deep(.xdebug .hljs-link),
-:deep(.xdebug .hljs-meta),
-:deep(.xdebug .hljs-selector-id),
-:deep(.xdebug .hljs-symbol),
-:deep(.xdebug .hljs-title) {
-    color: #61aeee !important;
-}
-
-:deep(.xdebug .hljs-built_in),
-:deep(.xdebug .hljs-class .hljs-title),
-:deep(.xdebug .hljs-title.class_) {
-    color: #e6c07b !important;
-}
-
-:deep(.xdebug .hljs-emphasis) {
-    font-style: italic !important;
-}
-
-:deep(.xdebug .hljs-strong) {
-    font-weight: 700 !important;
-}
-
-:deep(.xdebug .hljs-link) {
-    text-decoration: underline !important;
 }
 </style>

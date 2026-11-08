@@ -1,4 +1,4 @@
-import chokidar from 'chokidar';
+import chokidar, { type FSWatcher } from 'chokidar';
 import fs from 'fs';
 import path from 'path';
 import xml2js from 'xml2js';
@@ -6,6 +6,7 @@ import { BrowserWindow } from 'electron';
 import { Breakpoint } from '@/types/XDebug';
 
 let breakpoints: Breakpoint[] = [];
+let watcher: FSWatcher | null = null;
 
 function readPhpStormBreakpoints(projectPath: string, workspacePath: string): Promise<Breakpoint[]> {
     return new Promise((resolve) => {
@@ -29,15 +30,13 @@ function readPhpStormBreakpoints(projectPath: string, workspacePath: string): Pr
                     const breakpointsList = breakpointManager.breakpoints[0]['line-breakpoint'];
 
                     const parsedBreakpoints: Breakpoint[] = breakpointsList
-                        .filter((bp: any) => bp.url[0].includes('$PROJECT_DIR$'))
                         .map((bp: any) => ({
-                            url: bp.url[0].replace('$PROJECT_DIR$/', projectPath),
+                            url: bp.url[0].replace('$PROJECT_DIR$', projectPath.replace(/\/$/, '')),
                             line: bp.line ? parseInt(bp.line[0]) + 1 : null,
                             enabled: bp.$.enabled === 'true'
                         }))
                         .filter((bp: any) => bp.enabled && bp.line !== null);
 
-                    console.log(parsedBreakpoints);
                     resolve(parsedBreakpoints);
                 } catch {
                     resolve([]);
@@ -58,10 +57,19 @@ async function readBreakpointsFromAllSources(
 }
 
 export const watcherPath = async (mainWindow: BrowserWindow, projectPath: string) => {
+    await watcher?.close();
+    watcher = null;
+
+    if (!projectPath) {
+        breakpoints = [];
+        mainWindow.webContents.send('xdebug-breakpoints', breakpoints);
+        return;
+    }
+
     const workspacePath = path.join(projectPath, '.idea', 'workspace.xml');
     await readBreakpointsFromAllSources(mainWindow, projectPath, workspacePath);
 
-    chokidar.watch(workspacePath).on('change', () => {
+    watcher = chokidar.watch(workspacePath).on('change', () => {
         readBreakpointsFromAllSources(mainWindow, projectPath, workspacePath);
     });
 };
