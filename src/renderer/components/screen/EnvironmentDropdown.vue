@@ -6,7 +6,6 @@ import { screenIcon } from './screen-icons';
 const props = defineProps<{
     environments: Environment[];
     visible: boolean;
-    showIcons?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -93,34 +92,36 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <ul
+    <div
         v-if="visible"
         ref="dropdownRef"
-        class="environment-dropdown menu flex-col flex-nowrap p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10 w-max min-w-[140px] max-h-[340px] overflow-y-auto fixed mt-1"
+        class="environment-dropdown fixed mt-1 w-[264px] max-h-[70vh] overflow-y-auto p-1 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10"
         :style="{ ...dropdownStyle, zIndex: 99999 }"
     >
-        <li
-            v-for="env in environments"
-            :key="env.id"
-        >
-            <a
-                @click="selectEnvironment(env)"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-base-content/70 hover:bg-base-content/5 hover:text-base-content"
+        <ul class="grid grid-cols-3">
+            <li
+                v-for="env in environments"
+                :key="env.value"
             >
-                <component
-                    :is="screenIcon(env.value)"
-                    v-if="showIcons"
-                    class="w-4 h-4 shrink-0"
-                />
-                <span class="truncate capitalize text-xs">{{ formattedName(env.value) }}</span>
-            </a>
-        </li>
+                <button
+                    type="button"
+                    class="w-full flex flex-col items-center gap-1 px-1 py-1.5 rounded-lg text-[11px] leading-tight text-center capitalize transition-colors cursor-pointer text-base-content/60 hover:bg-base-content/[0.07] hover:text-base-content"
+                    @click="selectEnvironment(env)"
+                >
+                    <component
+                        :is="screenIcon(env.value)"
+                        class="size-5"
+                    />
+                    {{ formattedName(env.value) }}
+                </button>
+            </li>
+        </ul>
 
-        <!-- Empty state -->
-        <li v-if="environments.length === 0">
-            <span class="flex items-center gap-3 px-3 py-2 text-xs text-base-content/40 cursor-default"
-                >No environments available</span
-            >
-        </li>
-    </ul>
+        <p
+            v-if="!environments.length"
+            class="px-3 py-3 text-xs text-center text-base-content/40"
+        >
+            {{ $t('screen_picker.empty') }}
+        </p>
+    </div>
 </template>

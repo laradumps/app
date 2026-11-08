@@ -231,6 +231,7 @@ const handleDragEnd = () => {
                                     <Screens
                                         class="flex-1 min-w-0"
                                         :environments="environments"
+                                        :in-navbar="!tabsInPlace"
                                         @toggleScreen="toggleScreen"
                                         @dragScreen="handleDragScreen"
                                         @environmentSelected="handleEnvironmentSelected"
@@ -322,6 +323,7 @@ const handleDragEnd = () => {
                                 <Screens
                                     class="flex-1 min-w-0"
                                     :environments="environments"
+                                    :in-navbar="!tabsInPlace"
                                     @toggleScreen="toggleScreen"
                                     @dragScreen="handleDragScreen"
                                     @environmentSelected="handleEnvironmentSelected"

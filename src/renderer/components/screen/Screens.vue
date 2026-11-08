@@ -18,13 +18,14 @@ import { useGlobalSearchStore } from '@/store/global-search';
 import { useSettingsStore } from '@/store/settings';
 import EnvironmentDropdown from './EnvironmentDropdown.vue';
 import type { Environment } from '../../../main/storage';
-import { PlusIcon, XMarkIcon } from '@heroicons/vue/20/solid';
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, XMarkIcon } from '@heroicons/vue/20/solid';
 import { screenIcon } from './screen-icons';
 import { isSpecialEnvironment } from '@/constants';
 import { matchesScreenSearch } from '@/utils/searchMatchers';
 
 const props = defineProps<{
     environments?: Environment[];
+    inNavbar?: boolean;
 }>();
 
 const emit = defineEmits([
@@ -159,9 +160,9 @@ const availableEnvironments = computed(() => {
     if (!props.environments) return [];
 
     const ignoredEnvironment = isSpecialEnvironment;
-    return props.environments.filter(
-        (env) => !env.selected && !ignoredEnvironment(env.value) && !screenStore.get(env.value)
-    );
+    return props.environments
+        .filter((env) => !env.selected && !ignoredEnvironment(env.value) && !screenStore.get(env.value))
+        .sort((a, b) => a.value.localeCompare(b.value));
 });
 
 const toggleEnvironmentDropdown = () => {
@@ -198,6 +199,11 @@ const removeEnvironmentScreen = (screenName) => {
     emit('removeEnvironmentScreen', screenName);
 };
 
+const isClosable = (screenName) => screenName === 'tail_logs' || isEnvironmentScreen(screenName);
+const closeTab = (screenName) => (screenName === 'tail_logs' ? disableTailLog() : removeEnvironmentScreen(screenName));
+const closeTitle = (screenName) =>
+    screenName === 'tail_logs' ? 'Disable tail log' : 'Close view · turns the observer off';
+
 const onDragStart = (index, event, screen) => {
     isDraggingIndex.value = index;
     showTooltip.value = true;
@@ -225,7 +231,7 @@ window.ipcRenderer.on('screen-window:closed', (event, args) => {
     }, 200);
 });
 
-const screenCounts = computed(() => {
+const screenLists = computed(() => {
     const stores: Record<string, any> = {
         jobs: { ...jobStore.jobs, ...jobStore.incoming },
         mail: mailStore.mails,
@@ -236,31 +242,26 @@ const screenCounts = computed(() => {
         profiler: profileStore.profiles
     };
 
+    const result: Record<string, any[]> = {};
+
+    for (const screen of screenStore.allVisible()) {
+        const items = stores[screen.screen_name] || payloadStore.get(screen.screen_name);
+        result[screen.screen_name] = Array.isArray(items)
+            ? items
+            : items && typeof items === 'object'
+              ? Object.values(items)
+              : [];
+    }
+
+    return result;
+});
+
+const screenCounts = computed(() => {
     const term = globalSearchStore.search.toLowerCase().trim();
     const result: Record<string, string> = {};
 
-    for (const screen of screenStore.allVisible()) {
-        const name = screen.screen_name;
-        const items = stores[name] || payloadStore.get(name);
-        let list: any[] = [];
-
-        if (Array.isArray(items)) {
-            list = items;
-        } else if (items && typeof items === 'object') {
-            list = Object.values(items);
-        }
-
-        if (list.length === 0) {
-            result[name] = '';
-            continue;
-        }
-
-        if (!term) {
-            result[name] = `${list.length}`;
-            continue;
-        }
-
-        const count = list.filter((item) => matchesScreenSearch(name, item, term)).length;
+    for (const [name, list] of Object.entries(screenLists.value)) {
+        const count = term ? list.filter((item) => matchesScreenSearch(name, item, term)).length : list.length;
         result[name] = count > 0 ? `${count}` : '';
     }
 
@@ -281,6 +282,84 @@ const formattedScreenName = (name: string) => {
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(' ');
 };
+
+const seenCounts = ref<Record<string, number>>({});
+
+const screenSizes = computed(() =>
+    Object.fromEntries(Object.entries(screenLists.value).map(([name, list]) => [name, list.length]))
+);
+
+watch(
+    [screenSizes, () => screenStore.screen, splitScreenName],
+    () => {
+        for (const [name, size] of Object.entries(screenSizes.value)) {
+            const seen = seenCounts.value[name];
+            const onScreen = name === screenStore.screen || name === splitScreenName.value;
+
+            if (seen === undefined || onScreen || size < seen) {
+                seenCounts.value[name] = size;
+            }
+        }
+    },
+    { immediate: true }
+);
+
+const hasUnseen = (name: string) => (screenSizes.value[name] ?? 0) > (seenCounts.value[name] ?? 0);
+
+const hiddenUnseen = ref<{ left: string | null; right: string | null }>({ left: null, right: null });
+
+const updateHiddenUnseen = () => {
+    const list = tablistRef.value;
+    const hidden: { left: string | null; right: string | null } = { left: null, right: null };
+
+    if (list && !isVertical.value) {
+        const box = list.getBoundingClientRect();
+
+        for (const tab of list.querySelectorAll<HTMLElement>('[data-screen]')) {
+            const name = tab.dataset.screen!;
+            if (!hasUnseen(name)) continue;
+
+            const rect = tab.getBoundingClientRect();
+            const middle = rect.left + rect.width / 2;
+
+            if (middle < box.left) hidden.left = name;
+            else if (middle > box.right - 12 && !hidden.right) hidden.right = name;
+        }
+    }
+
+    hiddenUnseen.value = hidden;
+};
+
+const tablistMask = computed(() => {
+    const left = hiddenUnseen.value.left ? 'transparent 22px, #000 34px' : '#000 0px';
+    const right = hiddenUnseen.value.right
+        ? '#000 calc(100% - 34px), transparent calc(100% - 22px)'
+        : '#000 calc(100% - 12px), transparent';
+
+    return `linear-gradient(to right, ${left}, ${right})`;
+});
+
+const revealTab = (name: string | null) =>
+    name &&
+    tablistRef.value
+        ?.querySelector<HTMLElement>(`[data-screen="${CSS.escape(name)}"]`)
+        ?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+
+watch(
+    [
+        () => Object.keys(screenSizes.value).filter(hasUnseen).join(),
+        () =>
+            screenStore
+                .allVisible()
+                .map((screen) => screen.screen_name)
+                .join(),
+        isVertical
+    ],
+    () => nextTick(updateHiddenUnseen)
+);
+
+onMounted(() => window.addEventListener('resize', updateHiddenUnseen));
+onUnmounted(() => window.removeEventListener('resize', updateHiddenUnseen));
 </script>
 
 <template>
@@ -290,82 +369,137 @@ const formattedScreenName = (name: string) => {
         @wheel="onWheelScroll"
     >
         <div
-            ref="tablistRef"
-            role="tablist"
-            class="flex no-scrollbar flex-nowrap flex-1 min-w-0"
-            :class="
-                isVertical ? 'flex-col items-stretch overflow-y-auto w-full gap-0.5' : 'items-stretch overflow-x-auto'
-            "
+            class="relative flex min-w-0 min-h-0"
+            :class="{ 'flex-col w-full': isVertical }"
         >
-            <template
-                v-for="(screen, index) in screenStore.allVisible()"
-                :key="screen.screen_name"
+            <div
+                ref="tablistRef"
+                role="tablist"
+                class="flex no-scrollbar flex-nowrap min-w-0"
+                :class="
+                    isVertical
+                        ? 'flex-col items-stretch overflow-y-auto w-full min-h-0 gap-0.5'
+                        : 'items-stretch overflow-x-auto ld-tablist-fade'
+                "
+                :style="isVertical ? undefined : { maskImage: tablistMask }"
+                @scroll.passive="updateHiddenUnseen"
             >
-                <button
-                    v-show="!isScreenInSplit(screen.screen_name)"
-                    type="button"
-                    role="tab"
-                    :aria-selected="screen.screen_name === screenStore.screen"
-                    :tabindex="screen.screen_name === screenStore.screen ? 0 : -1"
-                    draggable="true"
-                    class="ld-tab group flex items-center gap-1.5 shrink-0 px-2 whitespace-nowrap select-none cursor-default! text-[0.8rem] transition-colors"
-                    :class="{
-                        'is-active text-base-content font-medium': screen.screen_name === screenStore.screen,
-                        'text-base-content/60 hover:text-base-content': screen.screen_name !== screenStore.screen,
-                        'is-vertical h-8 w-full justify-between rounded-md hover:bg-base-content/5': isVertical,
-                        dragging: isDraggingIndex === index
-                    }"
-                    @click="$emit('toggleScreen', screen.screen_name, true)"
-                    @contextmenu="onTabContextMenu($event, screen.screen_name)"
-                    @dragstart="onDragStart(index, $event, screen)"
-                    @dragover.prevent
-                    @dragend="onDragEnd($event, screen)"
+                <template
+                    v-for="(screen, index) in screenStore.allVisible()"
+                    :key="screen.screen_name"
                 >
-                    <span class="inline-flex items-center gap-2 min-w-0">
-                        <component
-                            :is="screenIcon(screen.screen_name)"
-                            v-if="showIcons"
-                            class="w-4 h-4 shrink-0"
-                        />
-                        <span class="leading-none whitespace-nowrap">
-                            {{ formattedScreenName(screen.screen_name) }}
+                    <button
+                        v-show="!isScreenInSplit(screen.screen_name)"
+                        type="button"
+                        role="tab"
+                        :data-screen="screen.screen_name"
+                        :aria-selected="screen.screen_name === screenStore.screen"
+                        :tabindex="screen.screen_name === screenStore.screen ? 0 : -1"
+                        draggable="true"
+                        class="ld-tab group flex items-center gap-1.5 shrink-0 px-2 whitespace-nowrap select-none cursor-default! text-[0.8rem] transition-colors"
+                        :class="{
+                            'is-active text-base-content font-medium': screen.screen_name === screenStore.screen,
+                            'text-base-content/60 hover:text-base-content': screen.screen_name !== screenStore.screen,
+                            'is-vertical h-8 w-full justify-between rounded-md hover:bg-base-content/5': isVertical,
+                            dragging: isDraggingIndex === index
+                        }"
+                        @click="$emit('toggleScreen', screen.screen_name, true)"
+                        @contextmenu="onTabContextMenu($event, screen.screen_name)"
+                        @dragstart="onDragStart(index, $event, screen)"
+                        @dragover.prevent
+                        @dragend="onDragEnd($event, screen)"
+                    >
+                        <span class="inline-flex items-center gap-1.5 min-w-0">
+                            <span
+                                v-if="showIcons"
+                                class="relative grid size-4 shrink-0 place-items-center"
+                            >
+                                <component
+                                    :is="screenIcon(screen.screen_name)"
+                                    class="size-4"
+                                    :class="{ 'ld-tab-icon': isClosable(screen.screen_name) }"
+                                />
+                                <span
+                                    v-if="hasUnseen(screen.screen_name)"
+                                    class="absolute -top-0.5 -right-1 size-1.5 rounded-full bg-primary"
+                                />
+                                <button
+                                    v-if="isClosable(screen.screen_name)"
+                                    @click.stop="closeTab(screen.screen_name)"
+                                    class="ld-tab-x absolute inset-0 grid place-items-center rounded text-base-content/60 hover:text-error hover:bg-error/10 cursor-pointer"
+                                    :aria-label="`Close ${formattedScreenName(screen.screen_name)}`"
+                                    :title="closeTitle(screen.screen_name)"
+                                >
+                                    <XMarkIcon class="size-3.5" />
+                                </button>
+                            </span>
+                            <span
+                                v-if="!showIcons && hasUnseen(screen.screen_name)"
+                                class="size-1.5 shrink-0 rounded-full bg-primary"
+                            />
+                            <span class="leading-none whitespace-nowrap">
+                                {{ formattedScreenName(screen.screen_name) }}
+                            </span>
+                            <span
+                                v-if="hasUnseen(screen.screen_name)"
+                                class="sr-only"
+                                >, new items</span
+                            >
                         </span>
-                    </span>
 
-                    <span class="inline-flex items-center gap-1 shrink-0">
-                        <span
-                            v-if="screenCounts[screen.screen_name]"
-                            class="font-mono text-[0.7rem] font-normal text-base-content/50 leading-none"
-                        >
-                            {{ screenCounts[screen.screen_name] }}
+                        <span class="inline-flex items-center gap-1.5 shrink-0">
+                            <span
+                                v-if="screenCounts[screen.screen_name]"
+                                class="font-mono text-[0.7rem] font-normal tabular-nums leading-none"
+                                :class="hasUnseen(screen.screen_name) ? 'text-primary' : 'text-base-content/50'"
+                            >
+                                {{ screenCounts[screen.screen_name] }}
+                            </span>
+
+                            <button
+                                v-if="!showIcons && isClosable(screen.screen_name)"
+                                @click.stop="closeTab(screen.screen_name)"
+                                class="ld-tab-x grid place-items-center size-4 rounded text-base-content/50 hover:text-error hover:bg-error/10 cursor-pointer"
+                                :aria-label="`Close ${formattedScreenName(screen.screen_name)}`"
+                                :title="closeTitle(screen.screen_name)"
+                            >
+                                <XMarkIcon class="size-3" />
+                            </button>
                         </span>
+                    </button>
+                </template>
+            </div>
 
-                        <button
-                            v-if="isEnvironmentScreen(screen.screen_name)"
-                            @click.stop="removeEnvironmentScreen(screen.screen_name)"
-                            class="ld-tab-x grid place-items-center size-4 rounded text-base-content/50 hover:text-error hover:bg-error/10 cursor-pointer"
-                            :aria-label="`Close ${formattedScreenName(screen.screen_name)}`"
-                            title="Close view · turns the observer off"
-                        >
-                            <XMarkIcon class="size-3" />
-                        </button>
+            <button
+                v-for="side in ['left', 'right'] as const"
+                v-show="hiddenUnseen[side]"
+                :key="side"
+                type="button"
+                class="absolute inset-y-0 grid w-6 place-items-center text-base-content/60 hover:text-base-content cursor-pointer"
+                :class="side === 'left' ? 'left-0' : 'right-0'"
+                :title="`${formattedScreenName(hiddenUnseen[side] ?? '')} has new items`"
+                :aria-label="`Show ${formattedScreenName(hiddenUnseen[side] ?? '')}, new items`"
+                @click="revealTab(hiddenUnseen[side])"
+            >
+                <span class="relative">
+                    <component
+                        :is="side === 'left' ? ChevronLeftIcon : ChevronRightIcon"
+                        class="size-4"
+                    />
+                    <span class="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-primary" />
+                </span>
+            </button>
+        </div>
 
-                        <button
-                            v-if="screen.screen_name === 'tail_logs'"
-                            @click.stop="disableTailLog"
-                            class="ld-tab-x grid place-items-center size-4 rounded text-base-content/50 hover:text-error hover:bg-error/10 cursor-pointer"
-                            title="Disable tail log"
-                        >
-                            <XMarkIcon class="size-3" />
-                        </button>
-                    </span>
-                </button>
-            </template>
-
+        <Teleport
+            defer
+            to="#navbar-actions"
+            :disabled="!inNavbar"
+        >
             <div
                 v-if="availableEnvironments.length > 0"
                 class="flex items-center shrink-0"
-                :class="isVertical ? 'w-full pt-1' : 'sticky right-0 pl-1 bg-base-200'"
+                :class="{ 'w-full pt-1': isVertical }"
             >
                 <button
                     type="button"
@@ -379,14 +513,13 @@ const formattedScreenName = (name: string) => {
                     <PlusIcon class="size-4" />
                 </button>
             </div>
-        </div>
+        </Teleport>
     </div>
 
     <Teleport to="#context-menu-portal">
         <EnvironmentDropdown
             :environments="availableEnvironments"
             :visible="showEnvironmentDropdown"
-            :show-icons="showIcons"
             @environment-selected="onEnvironmentSelected"
             @close="showEnvironmentDropdown = false"
         />
@@ -426,12 +559,21 @@ const formattedScreenName = (name: string) => {
 
 .ld-tab .ld-tab-x {
     opacity: 0;
+    pointer-events: none;
 }
 
-.ld-tab.is-active .ld-tab-x,
-.ld-tab:hover .ld-tab-x,
-.ld-tab:focus-within .ld-tab-x {
+.ld-tablist-fade {
+    padding-right: 12px;
+}
+
+.ld-tab.is-active:is(:hover, :focus-visible, :has(:focus-visible)) .ld-tab-x {
     opacity: 1;
+    pointer-events: auto;
+    transition: pointer-events 0s 350ms allow-discrete;
+}
+
+.ld-tab.is-active:is(:hover, :focus-visible, :has(:focus-visible)) .ld-tab-icon {
+    opacity: 0;
 }
 
 [draggable='true'] {

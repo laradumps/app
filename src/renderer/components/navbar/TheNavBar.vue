@@ -1,16 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
-import NavBarProjectSwitcher from '@/components/navbar/NavBarProjectSwitcher.vue';
 
 const platform = ref('');
-const isListeningModalOpen = ref(false);
-
-defineProps({
-    inSavedDumpsWindow: {
-        type: Boolean,
-        default: false
-    }
-});
 
 const onPlatformReply = (_event: unknown, args: any) => {
     platform.value = args;
@@ -24,9 +15,6 @@ onMounted(() => {
 onUnmounted(() => {
     window.ipcRenderer.removeListener('platform.reply', onPlatformReply);
 });
-
-const modalOpen = () => (isListeningModalOpen.value = true);
-const modalClose = () => (isListeningModalOpen.value = false);
 </script>
 
 <template>
@@ -37,18 +25,11 @@ const modalClose = () => (isListeningModalOpen.value = false);
             :class="{ 'ml-[4.6rem]': platform === 'darwin' }"
         ></div>
 
-        <div
-            @click="modalClose"
-            class="flex-1 self-stretch min-w-20 select-none"
-            :style="{
-                '-webkit-app-region': isListeningModalOpen ? 'no-drag' : 'drag'
-            }"
-        ></div>
+        <div class="flex-1 self-stretch min-w-20 select-none [-webkit-app-region:drag]"></div>
 
-        <NavBarProjectSwitcher
-            v-if="!inSavedDumpsWindow"
-            @modal-open="modalOpen"
-            @modal-close="modalClose"
-        />
+        <div
+            id="navbar-actions"
+            class="flex items-center"
+        ></div>
     </div>
 </template>

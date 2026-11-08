@@ -7,6 +7,7 @@ import NavBarSettings from '@/components/navbar/NavBarSettings.vue';
 import NavBarAlwaysOnTop from '@/components/navbar/NavBarAlwaysOnTop.vue';
 import NavBarSavedDumps from '@/components/navbar/NavBarSavedDumps.vue';
 import NavBarEnvironments from '@/components/navbar/NavBarEnvironments.vue';
+import NavBarProjectSwitcher from '@/components/navbar/NavBarProjectSwitcher.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { usePausePayloadStore } from '@/store/pauses';
 import { useSettingsStore } from '@/store/settings';
@@ -141,11 +142,18 @@ onUnmounted(() => {
             <XMarkIcon class="size-3.5" />
         </button>
 
+        <div
+            class="contents"
+            @click="menuOpen = false"
+        >
+            <NavBarProjectSwitcher />
+        </div>
+
         <button
             type="button"
             :aria-label="$t('status_line.commands')"
             :aria-expanded="menuOpen"
-            class="h-6 px-2 rounded-md border border-base-content/10 font-mono text-[0.7rem] text-base-content/60 hover:bg-base-content/10 hover:text-base-content cursor-pointer"
+            class="inline-flex h-6 items-center gap-px px-2 rounded-md border border-base-content/10 font-sans text-[0.7rem] font-medium leading-none text-base-content/60 hover:bg-base-content/10 hover:text-base-content cursor-pointer"
             @click="menuOpen ? (menuOpen = false) : openMenu()"
         >
             {{ shortcut.replace(/(?<=[⌘⌥⇧⌃])\+/g, '') }}
@@ -180,4 +188,3 @@ onUnmounted(() => {
         </div>
     </footer>
 </template>
-

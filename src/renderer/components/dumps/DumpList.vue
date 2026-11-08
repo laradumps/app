@@ -34,13 +34,24 @@ const payloadStore = usePayloadStore();
 const screenStore = useScreenStore();
 const settingsStore = useSettingsStore();
 const listScreen = computed(() => props.screenName ?? screenStore.screen);
+const showEmpty = computed(
+    () =>
+        props.dumpsBagFiltered.length === 0 &&
+        !props.emptyScreenExclude.includes(listScreen.value) &&
+        !(listScreen.value === 'home' && payloadStore.payload.length === 0)
+);
 </script>
 
 <template>
     <div :class="[containerClass ?? 'flex flex-col rounded-sm text-base w-full h-full']">
         <div id="top"></div>
 
-        <div :class="{ 'w-full': dumpsBagFiltered.length === 0 && listScreen !== 'home' }">
+        <div
+            :class="{
+                'w-full': dumpsBagFiltered.length === 0 && listScreen !== 'home',
+                'flex flex-1 flex-col': showEmpty
+            }"
+        >
             <div
                 id="dumps-base"
                 class="w-full mb-10"
@@ -95,14 +106,10 @@ const listScreen = computed(() => props.screenName ?? screenStore.screen);
             </div>
 
             <div
-                v-if="
-                    dumpsBagFiltered.length === 0 &&
-                    !(emptyScreenExclude ?? []).includes(listScreen) &&
-                    !(listScreen === 'home' && payloadStore.payload.length === 0)
-                "
-                class="flex items-center justify-center w-full py-20"
+                v-if="showEmpty"
+                class="flex flex-1 items-center justify-center w-full py-20"
             >
-                <EmptyState />
+                <EmptyState :screen="listScreen" />
             </div>
         </div>
 

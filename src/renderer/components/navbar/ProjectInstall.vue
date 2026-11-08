@@ -7,8 +7,6 @@ import { LogEntry } from '../../../main/logger/logger';
 const { t } = useI18n();
 
 const emit = defineEmits<{
-    (e: 'modalOpen'): void;
-    (e: 'modalClose'): void;
     (e: 'projectAdded'): void;
 }>();
 
@@ -69,13 +67,11 @@ const resetInstallState = () => {
 const closeModal = () => {
     if (installActive.value && !installFinished.value && !installFailed.value) return;
     modal_navbar_listening.close();
-    emit('modalClose');
 };
 
 const finishInstallation = () => {
     resetInstallState();
     modal_navbar_listening.close();
-    emit('modalClose');
 };
 
 const retry = () => {
@@ -85,7 +81,6 @@ const retry = () => {
 const show = () => {
     resetInstallState();
     modal_navbar_listening.showModal();
-    emit('modalOpen');
 };
 
 defineExpose({ show, closeModal });
@@ -104,7 +99,6 @@ onMounted(() => {
             installFailed.value = false;
             document.activeElement?.blur();
             modal_navbar_listening.showModal();
-            emit('modalOpen');
         }
 
         if (payload.error) {
@@ -149,7 +143,7 @@ onUnmounted(() => {
     <dialog
         @close.prevent="closeModal"
         id="modal_navbar_listening"
-        class="modal z-[200]"
+        class="modal z-[200] [-webkit-app-region:no-drag]"
     >
         <div
             class="modal-box max-w-4xl p-0! bg-base-100 shadow-2xl border border-base-content/10 rounded-2xl overflow-hidden"

@@ -127,7 +127,7 @@ const isGenericDumpScreen = computed(
             v-if="payloadStore.get(screenName).length === 0"
             class="flex items-center justify-center h-full py-20"
         >
-            <EmptyState />
+            <EmptyState :screen="screenName" />
         </div>
     </div>
 </template>

@@ -71,7 +71,7 @@ export function useDumpDispatch(nav: ScreenNavigation) {
     };
 
     const dispatch = (content: any): void => {
-        if (pausePayloadStore.is_paused) return;
+        if (pausePayloadStore.is_paused || nav.recentlyClosed(content.to_screen?.screen_name)) return;
 
         content.rendered = false;
 
@@ -148,7 +148,7 @@ export function useDumpDispatch(nav: ScreenNavigation) {
         key: 'jobs' | 'logs' | 'brains' | 'profiles';
     }): IpcHandler => {
         return (_e, { content }: { content: Payload }) => {
-            if (opts.paused()) return;
+            if (opts.paused() || nav.recentlyClosed(content.to_screen?.screen_name)) return;
             checkApplicationPath(content, applicationPath);
             opts.apply(content);
 
@@ -260,7 +260,7 @@ export function useDumpDispatch(nav: ScreenNavigation) {
     let lastPayloadReceivedTime = 0;
 
     const handleDumpBatches: IpcHandler = (_e, args: BatchArgs) => {
-        if (pausePayloadStore.is_paused || pauseQueries.is_paused) return;
+        if (pausePayloadStore.is_paused || pauseQueries.is_paused || nav.recentlyClosed('queries')) return;
         if (args.type !== 'batch' || !args.contents) return;
 
         lastPayloadReceivedTime = Date.now();

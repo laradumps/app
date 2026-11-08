@@ -94,12 +94,12 @@ const navigate = () => {
 <template>
     <a
         v-if="settingsStore.settings.mcp_enabled"
-        class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg transition-colors text-base-content/70 cursor-default"
+        class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-md transition-colors text-base-content/70 cursor-default"
         :title="title"
     >
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
             <CpuChipIcon
-                class="size-4"
+                class="size-3.5"
                 :class="{ 'text-error': mcpStatus === 'error', 'text-success': mcpStatus === 'connected' }"
             />
             <span class="font-medium text-xs">MCP Status</span>

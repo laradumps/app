@@ -258,13 +258,24 @@ export default {
     installing: 'Installing',
     installing_wait_message: 'This may take a few moments...',
     no_project_selected: 'No Project selected',
+    projects: {
+        title: 'Projects',
+        new: 'Add project',
+        connections: 'Connections',
+        remove_title: 'Remove project',
+        remove_message: 'Remove "{name}" from the list? Its laradumps.yaml stays untouched.'
+    },
     level: 'Level',
     message: 'Message',
     origin: 'Origin',
     load_new_entries: 'Load new entries ({count})',
     load_more: 'Load more ({count})',
-    empty: 'Empty',
+    empty: 'Nothing here yet',
+    empty_message: 'New entries show up here as your app sends them.',
     copy_to_markdown: 'Copy to Markdown',
+    screen_picker: {
+        empty: 'Every screen is already open'
+    },
     filter_levels: 'Filter Levels',
     tail_log: {
         select_log_file: 'Select log file',
