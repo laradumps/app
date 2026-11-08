@@ -26,52 +26,48 @@
         caramellatte;
 }
 
-/* Laravel 12 Dark DaisyUI Theme */
 @plugin "daisyui/theme" {
-    name: laravel12;
+    name: laravel13;
     default: false;
-    prefersdark: true;
+    prefersdark: false;
     color-scheme: dark;
-    /* Base surfaces derived from Zinc dark scale */
-    --color-base-100: #262626; /* neutral-900 */
-    --color-base-200: #171717; /* neutral-800 */
-    --color-base-300: #404040; /* neutral-700 */
-    --color-base-content: #eeeeec; /* sand-dark-12, high-contrast text */
+    --color-base-100: oklch(20.5% 0 0);
+    --color-base-200: oklch(14.5% 0 0);
+    --color-base-300: oklch(26.9% 0 0);
+    --color-base-content: oklch(97% 0 0);
 
-    /* Brand and semantic colors based on Laravel dark palette */
-    --color-primary: oklch(58.6% 0.253 17.585); /* primary per request */
-    --color-primary-content: #fff; /* white text on primary */
+    --color-primary: #f53003;
+    --color-primary-content: #fff;
 
-    --color-secondary: oklch(54.6% 0.245 262.881); /* blue-600 */
-    --color-secondary-content: #fff;
+    --color-secondary: #ffa485;
+    --color-secondary-content: #111110;
 
-    --color-accent: #18b69b; /* Forge */
-    --color-accent-content: #0b1a16; /* dark teal-ish for contrast */
+    --color-accent: #10b981;
+    --color-accent-content: #111110;
 
-    --color-neutral: oklch(44.6% 0.03 256.802); /* gray-600 */
+    --color-neutral: #222221;
     --color-neutral-content: #eeeeec;
 
     --color-info: oklch(74.6% 0.16 232.661); /* sky-400 */
-    --color-info-content: oklch(29% 0.066 243.157); /* darker info content */
+    --color-info-content: oklch(29% 0.066 243.157);
 
-    --color-success: oklch(62.7% 0.194 149.214); /* green-600 */
-    --color-success-content: oklch(26% 0.051 172.552);
+    --color-success: oklch(69.6% 0.17 162.48);
+    --color-success-content: oklch(26.2% 0.051 172.552);
 
-    --color-warning: oklch(55.3% 0.195 38.402); /* orange-700 */
-    --color-warning-content: oklch(26% 0.079 36.259);
+    --color-warning: oklch(76.9% 0.188 70.08);
+    --color-warning-content: oklch(27.9% 0.077 45.635);
 
-    --color-error: oklch(57.7% 0.245 27.325); /* red-600 */
-    --color-error-content: oklch(28% 0.109 3.907);
+    --color-error: oklch(63.7% 0.237 25.331);
+    --color-error-content: #fff;
 
-    /* Shape and control sizes inspired by provided example */
-    --radius-selector: 2rem;
-    --radius-field: 0rem;
-    --radius-box: 1rem;
+    --radius-selector: 0.5rem;
+    --radius-field: 0.5rem;
+    --radius-box: 0.75rem;
     --size-selector: 0.25rem;
     --size-field: 0.25rem;
     --border: 1px;
-    --depth: 1;
-    --noise: 1;
+    --depth: 0;
+    --noise: 0;
 }
 
 @plugin "daisyui/theme" {
@@ -109,6 +105,41 @@
     --noise: 0;
 }
 
+@plugin "daisyui/theme" {
+    name: 'aurora';
+    default: false;
+    prefersdark: false;
+    color-scheme: 'dark';
+    --color-base-100: oklch(30.857% 0.023 264.149);
+    --color-base-200: oklch(28.036% 0.019 264.182);
+    --color-base-300: oklch(26.346% 0.018 262.177);
+    --color-base-content: oklch(82.901% 0.031 222.959);
+    --color-primary: oklch(86.133% 0.141 139.549);
+    --color-primary-content: oklch(17.226% 0.028 139.549);
+    --color-secondary: oklch(73.375% 0.165 35.353);
+    --color-secondary-content: oklch(14.675% 0.033 35.353);
+    --color-accent: oklch(74.229% 0.133 311.379);
+    --color-accent-content: oklch(14.845% 0.026 311.379);
+    --color-neutral: oklch(24.731% 0.02 264.094);
+    --color-neutral-content: oklch(82.901% 0.031 222.959);
+    --color-info: oklch(86.078% 0.142 206.182);
+    --color-info-content: oklch(17.215% 0.028 206.182);
+    --color-success: oklch(86.171% 0.142 166.534);
+    --color-success-content: oklch(17.234% 0.028 166.534);
+    --color-warning: oklch(86.163% 0.142 94.818);
+    --color-warning-content: oklch(17.232% 0.028 94.818);
+    --color-error: oklch(82.418% 0.099 33.756);
+    --color-error-content: oklch(16.483% 0.019 33.756);
+    --radius-selector: 1rem;
+    --radius-field: 0.5rem;
+    --radius-box: 1rem;
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 0;
+    --noise: 0;
+}
+
 @layer base {
     button:not(:disabled),
     [role='button']:not(:disabled) {
@@ -132,7 +163,7 @@ body {
  * so the native OS blur (macOS vibrancy / Windows 11 acrylic) shows behind the UI.
  *
  * These rules are the single source of truth for the effect. They win the cascade through
- * the `html.glass-enabled` prefix — specificity (0,2,x) plus `!important` beats DaisyUI's
+ * the `html:is(.glass-enabled, [data-theme='aurora'])` prefix — specificity (0,2,x) plus `!important` beats DaisyUI's
  * low-specificity `:where()` component styles — and they apply at first paint, before any
  * JS runs, which prevents an opaque flash.
  *
@@ -150,8 +181,8 @@ body {
  *   - `transition: var(--page-scroll-transition)` on :root (can cause opaque fade-in)
  *   - `animation` on :root for scroll-driven gutter behaviour
  */
-html.glass-enabled,
-html.glass-enabled body {
+html:is(.glass-enabled, [data-theme='aurora']),
+html:is(.glass-enabled, [data-theme='aurora']) body {
     background: transparent !important;
     background-color: transparent !important;
     background-image: none !important;
@@ -159,7 +190,7 @@ html.glass-enabled body {
 
 /* Neutralize all DaisyUI v5 root-background mechanisms on :root itself, and define the
    shared tint palette every glass surface draws from. */
-html.glass-enabled {
+html:is(.glass-enabled, [data-theme='aurora']) {
     --root-bg: transparent !important;
     --page-scroll-bg: transparent !important;
     --page-scroll-bg-on: transparent !important;
@@ -205,7 +236,7 @@ html.glass-enabled {
 }
 
 /* Neutralize DaisyUI's [data-theme] background rule (same mechanism, different selector) */
-html.glass-enabled [data-theme] {
+html:is(.glass-enabled, [data-theme='aurora']) [data-theme] {
     --root-bg: transparent !important;
     --page-scroll-bg: transparent !important;
     --page-scroll-bg-on: transparent !important;
@@ -216,7 +247,7 @@ html.glass-enabled [data-theme] {
 
 /* Floating overlays: kept near-opaque so their text stays legible over the blur (DaisyUI
    modals and some dropdowns ship their own opaque/`/95` fill — this standardizes them). */
-html.glass-enabled :is(.modal-box, .dropdown-content) {
+html:is(.glass-enabled, [data-theme='aurora']) :is(.modal-box, .dropdown-content) {
     background-color: var(--glass-overlay) !important;
     border: 1px solid var(--glass-border) !important;
 }
@@ -224,15 +255,14 @@ html.glass-enabled :is(.modal-box, .dropdown-content) {
 /* In-page surfaces that paint a base color through their own CSS (not the bg-base-* utility).
    `.menu`/`.navbar` are intentionally excluded: they either carry an explicit `bg-base-*`
    utility or sit inside `.dropdown-content`, so they already inherit a tint. */
-html.glass-enabled :is(.card, .alert, .collapse, .table) {
+html:is(.glass-enabled, [data-theme='aurora']) :is(.card, .alert, .collapse, .table) {
     background-color: var(--glass-base-100) !important;
 }
-
 /* Zebra tables (e.g. the Jobs listing) paint their alternating rows with an opaque
    `--color-base-200` fill that isn't a `bg-base-*` utility, so the glass tints above miss them
    and the list reads as a solid block over the blur. Re-tint the striped rows so the listing
    stays translucent like the dumps/logs tables. */
-html.glass-enabled .table-zebra tbody tr:nth-child(2n) {
+html:is(.glass-enabled, [data-theme='aurora']) .table-zebra tbody tr:nth-child(2n) {
     background-color: var(--glass-base-200) !important;
 }
 
@@ -240,43 +270,44 @@ html.glass-enabled .table-zebra tbody tr:nth-child(2n) {
    dark background. Our glass tint lightens that fill, so the light text washes out and becomes
    unreadable. Give it a slightly firmer base-200 surface and pin the text/children back to the
    theme's base content so the JSON snippet stays legible over the blur. */
-html.glass-enabled .mockup-code {
+html:is(.glass-enabled, [data-theme='aurora']) .mockup-code {
     background-color: var(--glass-base-200) !important;
     color: var(--color-base-content) !important;
 }
-html.glass-enabled .mockup-code :is(pre, code) {
+html:is(.glass-enabled, [data-theme='aurora']) .mockup-code :is(pre, code) {
     color: var(--color-base-content) !important;
 }
 
 /* Tab bar: the container's filled box reads as a distinct lighter strip over the blur, which
    breaks the seamless glass look — so it stays transparent and the tabs float directly on the
    window. Only the active tab gets a tinted "raised pill" fill to mark selection. */
-html.glass-enabled .tabs-box {
+html:is(.glass-enabled, [data-theme='aurora']) .tabs-box {
     background-color: transparent !important;
     box-shadow: none !important;
 }
-html.glass-enabled :is(.tabs-box .tab-active, .tabs-box .tab:checked, .tabs-box [aria-selected='true']) {
+html:is(.glass-enabled, [data-theme='aurora'])
+    :is(.tabs-box .tab-active, .tabs-box .tab:checked, .tabs-box [aria-selected='true']) {
     /* Selected screen tab: use the near-opaque overlay (same fill as the switch-project dropdown)
        plus a defining border, so the active pill reads as a solid, clearly-selected chip over the
        blur instead of a faint tint that vanishes against the dark glass. */
     background-color: var(--glass-overlay) !important;
     border: 1px solid var(--glass-border) !important;
 }
-/* The sticky "+" add-tab button sits in its own `bg-base-200` wrapper (used to mask tabs
-   scrolling underneath it). Over the glass that wrapper reads as a misaligned light box, so we
-   drop its fill — the button floats transparently like the rest of the tab bar. */
-html.glass-enabled .tabs-box :has(> [data-add-env-button]) {
-    background-color: transparent !important;
-}
-
 /* Form controls: same concept as the tab bar — no filled light box. They stay transparent so
    the blur shows through, with just a defining border so they still read as interactive
    fields. The border firms up on focus. */
-html.glass-enabled :is(.input, .select, .textarea, .file-input) {
+/* The sticky "+" add-tab button sits in its own `bg-base-200` wrapper (used to mask tabs
+   scrolling underneath it). Over the glass that wrapper reads as a misaligned light box, so we
+   drop its fill — the button floats transparently like the rest of the tab bar. */
+html:is(.glass-enabled, [data-theme='aurora']) .tabs-box :has(> [data-add-env-button]) {
+    background-color: transparent !important;
+}
+
+html:is(.glass-enabled, [data-theme='aurora']) :is(.input, .select, .textarea, .file-input) {
     background-color: transparent !important;
     border-color: var(--glass-border) !important;
 }
-html.glass-enabled
+html:is(.glass-enabled, [data-theme='aurora'])
     :is(.input:focus, .select:focus, .textarea:focus, .file-input:focus, .input:focus-within, .select:focus-within) {
     border-color: color-mix(in oklab, var(--color-base-content) 30%, transparent) !important;
 }
@@ -284,7 +315,7 @@ html.glass-enabled
    transparent, the dropdown list goes see-through and the page bleeds through it. Pin the
    options to a SOLID theme color so the open list renders as a proper opaque overlay while the
    closed field stays transparent. */
-html.glass-enabled .select option {
+html:is(.glass-enabled, [data-theme='aurora']) .select option {
     background-color: var(--color-base-100) !important;
     color: var(--color-base-content) !important;
 }
@@ -292,29 +323,28 @@ html.glass-enabled .select option {
 /* Selected menu item (settings sidebar, dropdown menus). DaisyUI's `.menu-active` also swaps in
    an inverted foreground color meant for a saturated active bg — over our light glass tint that
    washes the label out, so we pin the text back to the theme's base content. */
-html.glass-enabled :is(.menu-active, .menu [aria-current='page']) {
+html:is(.glass-enabled, [data-theme='aurora']) :is(.menu-active, .menu [aria-current='page']) {
     background-color: var(--glass-base-300) !important;
     color: var(--color-base-content) !important;
 }
 
 /* Base surfaces (utilities). Declared last so an explicit `bg-base-*` always wins over the
    component defaults above when both land on the same element. */
-html.glass-enabled .bg-base-100 {
+html:is(.glass-enabled, [data-theme='aurora']) .bg-base-100 {
     background-color: var(--glass-base-100) !important;
 }
-html.glass-enabled .bg-base-200 {
+html:is(.glass-enabled, [data-theme='aurora']) .bg-base-200 {
     background-color: var(--glass-base-200) !important;
 }
-html.glass-enabled .bg-base-300 {
+html:is(.glass-enabled, [data-theme='aurora']) .bg-base-300 {
     background-color: var(--glass-base-300) !important;
 }
-
 /* Floating dropdown panels render as `.dropdown-content.menu` and float OVER in-page content
    (settings rows, toggles), so they must stay near-opaque or that content bleeds through. The
    plain `.dropdown-content` rule above ties with the `.bg-base-100` utility these panels also
    carry (and loses on source order), leaving them at the translucent surface tint. This higher-
    specificity rule pins them to the opaque overlay. Declared after the `bg-base-*` block. */
-html.glass-enabled .dropdown-content.menu {
+html:is(.glass-enabled, [data-theme='aurora']) .dropdown-content.menu {
     background-color: var(--glass-overlay) !important;
 }
 
@@ -324,7 +354,7 @@ html.glass-enabled .dropdown-content.menu {
    the `bg-base-200` utility the menu also carries. Scoped with `:not(.dropdown-content)` so
    floating dropdown panels (which ARE `.menu .dropdown-content`) keep their opaque overlay
    fill and don't go see-through. */
-html.glass-enabled .menu:not(.dropdown-content) {
+html:is(.glass-enabled, [data-theme='aurora']) .menu:not(.dropdown-content) {
     background-color: transparent !important;
     box-shadow: none !important;
 }
@@ -334,7 +364,7 @@ html.glass-enabled .menu:not(.dropdown-content) {
    through and the payload text becomes unreadable. Pin them to the same near-opaque overlay the
    switch-project modal uses so the content stays legible while a hint of blur shows through.
    Declared after the `.menu` rule to win on source order (equal specificity). */
-html.glass-enabled .drawer-side .menu {
+html:is(.glass-enabled, [data-theme='aurora']) .drawer-side .menu {
     background-color: var(--glass-overlay) !important;
 }
 
@@ -342,7 +372,7 @@ html.glass-enabled .drawer-side .menu {
    carries no `.dropdown-content` class, so the transparent `.menu` rule above lets the page bleed
    through it. It floats OVER content like the other dropdowns, so pin it to the same opaque
    overlay. The compound `.menu.environment-dropdown` outspecs `.menu:not(.dropdown-content)`. */
-html.glass-enabled .menu.environment-dropdown {
+html:is(.glass-enabled, [data-theme='aurora']) .menu.environment-dropdown {
     background-color: var(--glass-overlay) !important;
 }
 
@@ -350,7 +380,7 @@ html.glass-enabled .menu.environment-dropdown {
    concept as the form controls — drop the solid box, keep it as a bordered transparent control
    so it blends into the glass. The compound selector outspecs the `.bg-base-*` utility rules.
    Hover still tints subtly through the button's own `hover:bg-base-200` utility. */
-html.glass-enabled :is(.btn.bg-base-100, .btn.bg-base-200) {
+html:is(.glass-enabled, [data-theme='aurora']) :is(.btn.bg-base-100, .btn.bg-base-200) {
     background-color: transparent !important;
 }
 
@@ -526,4 +556,25 @@ html:not([data-theme='light']) .hljs-meta .hljs-string {
 .ld-dump-focus {
     animation: ld-dump-focus-blink 1.6s ease-in-out 1;
     border-radius: 0.375rem;
+}
+
+html[data-theme='aurora'] {
+    --glass-pct: 55%;
+}
+html[data-theme='aurora'] body::before {
+    content: '';
+    position: fixed;
+    inset: -60px;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 20% 30%, #ff6b6b, transparent 40%),
+        radial-gradient(circle at 80% 20%, #4dabf7, transparent 45%),
+        radial-gradient(circle at 60% 80%, #51cf66, transparent 45%),
+        radial-gradient(circle at 10% 90%, #fcc419, transparent 40%), #2b2d42;
+    filter: blur(30px);
+}
+html.glass-enabled[data-theme='aurora'] body::before {
+    background-color: transparent;
+    opacity: 0.6;
 }

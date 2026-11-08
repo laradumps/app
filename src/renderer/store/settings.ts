@@ -10,6 +10,7 @@ const themeColors = {
     dark: 'Dark',
     dracula: 'Dracula',
     dim: 'Dim',
+    aurora: 'Aurora',
     retro: 'Retro',
     halloween: 'Halloween',
     cyberpunk: 'Cyberpunk',
@@ -25,7 +26,7 @@ const themeColors = {
     cupcake: 'Cupcake',
     caramellatte: 'Caramel Latte',
     custom: 'Custom',
-    laravel12: 'Laravel 12 Dark',
+    laravel13: 'Laravel 13',
     tokyonight: 'Tokyo Night'
 };
 
@@ -79,6 +80,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const settings = ref<Settings>({ ...DEFAULT_SETTINGS, ...initial });
 
     if (settings.value.theme === 'midnight') settings.value.theme = 'light';
+    if (settings.value.theme === 'laravel12') settings.value.theme = 'laravel13';
 
     document.documentElement.setAttribute('data-theme', settings.value.theme);
 
