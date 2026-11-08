@@ -38,6 +38,17 @@ const isMac: boolean = process.platform === 'darwin';
 
 app.commandLine.appendSwitch('js-flags', '--expose-gc');
 
+// Native Wayland has no always-on-top, so run under XWayland unless the user picked a platform.
+if (
+    process.platform === 'linux' &&
+    process.env.XDG_SESSION_TYPE === 'wayland' &&
+    process.env.DISPLAY &&
+    !app.commandLine.hasSwitch('ozone-platform')
+) {
+    app.relaunch({ execPath: process.env.APPIMAGE, args: [...process.argv.slice(1), '--ozone-platform=x11'] });
+    app.exit(0);
+}
+
 let mainWindow: BrowserWindow;
 let badgeCount = 0;
 let blurActive = false;
