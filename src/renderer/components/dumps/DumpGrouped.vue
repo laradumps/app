@@ -29,12 +29,12 @@ onMounted(() => {
             class="flex flex-col"
         >
             <!-- variable name + ide link on the same row -->
-            <div class="flex items-center justify-between gap-2 mb-0.5">
+            <div class="flex items-center gap-2 min-w-0 mb-0.5">
                 <span class="font-mono text-[0.78rem] font-semibold text-base-content/70"> ${{ item.name }} </span>
                 <DumpLink
                     :ide-handler="ideHandlerForItem(item.line)"
                     :truncate="true"
-                    class="text-[0.65rem] opacity-50 hover:opacity-100 transition-opacity shrink-0"
+                    class="min-w-0 text-[0.65rem] opacity-50 hover:opacity-100 transition-opacity"
                 />
             </div>
 
