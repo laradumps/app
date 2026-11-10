@@ -30,7 +30,7 @@ const saveAutoLaunch = async () => {
         </SettingsRow>
 
         <SettingsRow :label="$t('settings.language')">
-            <div class="w-52">
+            <div class="w-52 max-w-full">
                 <SelectInput
                     v-model="settingsStore.settings.language"
                     @change="saveLanguage()"
@@ -46,7 +46,7 @@ const saveAutoLaunch = async () => {
         </SettingsRow>
 
         <SettingsRow :label="$t('settings.check_for_updates')">
-            <div class="w-52">
+            <div class="w-52 max-w-full">
                 <SelectInput
                     v-model="settingsStore.settings.check_for_updates"
                     @change="save()"
@@ -65,7 +65,7 @@ const saveAutoLaunch = async () => {
             :label="$t('settings.auto_launch')"
             :divider="false"
         >
-            <div class="w-52">
+            <div class="w-52 max-w-full">
                 <SelectInput
                     v-model="settingsStore.settings.auto_launch"
                     @change="saveAutoLaunch()"

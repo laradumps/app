@@ -66,7 +66,7 @@ const saveWindowOpacity = async () => {
 <template>
     <div>
         <SettingsRow :label="$t('settings.theme')">
-            <div class="flex items-center gap-2 w-52">
+            <div class="flex items-center gap-2 w-52 max-w-full">
                 <SelectInput
                     class="flex-1"
                     v-model="settingsStore.settings.theme"
@@ -94,7 +94,7 @@ const saveWindowOpacity = async () => {
             <div
                 role="radiogroup"
                 :aria-label="$t('settings.screen_layout')"
-                class="grid grid-cols-2 gap-2 w-64"
+                class="grid grid-cols-2 gap-2 w-64 max-w-full"
             >
                 <label
                     v-for="option in layoutOptions"
@@ -171,11 +171,11 @@ const saveWindowOpacity = async () => {
 
             <div
                 v-if="settingsStore.settings.window_blur"
-                class="mb-3 flex items-center gap-4 rounded-lg border border-base-content/10 bg-base-content/[0.03] p-3"
+                class="mb-3 flex flex-wrap items-center gap-4 rounded-lg border border-base-content/10 bg-base-content/[0.03] p-3"
             >
                 <div
                     aria-hidden="true"
-                    class="relative h-20 w-28 shrink-0 overflow-hidden rounded-md ring-1 ring-base-content/10"
+                    class="relative mx-auto h-20 w-28 shrink-0 overflow-hidden rounded-md ring-1 ring-base-content/10"
                     :style="{ opacity: settingsStore.settings.window_opacity / 100 }"
                 >
                     <div class="glass-preview-backdrop absolute -inset-2"></div>
@@ -191,9 +191,9 @@ const saveWindowOpacity = async () => {
                     </div>
                 </div>
 
-                <div class="grid min-w-0 flex-1 grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2.5 text-xs">
+                <div class="grid min-w-[min(14rem,100%)] flex-1 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-2.5 text-xs">
                     <template v-if="!isWindows">
-                        <span class="text-base-content/70">{{ $t('settings.window_blur_mode') }}</span>
+                        <span class="whitespace-nowrap text-base-content/70">{{ $t('settings.window_blur_mode') }}</span>
                         <SelectInput
                             v-model="settingsStore.settings.window_blur_mode"
                             @change="saveWindowBlur()"
@@ -205,7 +205,7 @@ const saveWindowOpacity = async () => {
                         </SelectInput>
                     </template>
 
-                    <span class="text-base-content/70">{{ $t('settings.window_blur_opacity') }}</span>
+                    <span class="whitespace-nowrap text-base-content/70">{{ $t('settings.window_blur_opacity') }}</span>
                     <div class="flex items-center gap-2">
                         <input
                             type="range"
@@ -222,7 +222,7 @@ const saveWindowOpacity = async () => {
                         >
                     </div>
 
-                    <span class="text-base-content/70">{{ $t('settings.window_opacity') }}</span>
+                    <span class="whitespace-nowrap text-base-content/70">{{ $t('settings.window_opacity') }}</span>
                     <div class="flex items-center gap-2">
                         <input
                             type="range"

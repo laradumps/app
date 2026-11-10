@@ -20,12 +20,12 @@ defineEmits<{
 </script>
 
 <template>
-    <div class="w-52 shrink-0 bg-base-200/60 border-r border-base-300 flex flex-col">
+    <div class="w-14 sm:w-52 shrink-0 bg-base-200/60 border-r border-base-300 flex flex-col">
         <nav
             :aria-label="$t('settings.settings')"
             class="flex-1 p-2 pt-4 overflow-y-auto flex flex-col gap-0.5"
         >
-            <p class="text-[11px] font-semibold text-base-content/40 uppercase tracking-wider px-2 py-2">
+            <p class="hidden sm:block text-[11px] font-semibold text-base-content/40 uppercase tracking-wider px-2 py-2">
                 {{ $t('settings.settings') }}
             </p>
 
@@ -33,9 +33,10 @@ defineEmits<{
                 v-for="item in items"
                 :key="item.id"
                 :aria-current="modelValue === item.id ? 'page' : undefined"
+                :title="item.label"
                 @click="$emit('update:modelValue', item.id)"
                 :class="[
-                    'w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left text-sm font-medium transition-colors',
+                    'w-full flex items-center justify-center sm:justify-start gap-2.5 px-2.5 py-1.5 rounded-lg text-left text-sm font-medium transition-colors',
                     modelValue === item.id
                         ? 'bg-base-300 text-base-content'
                         : 'text-base-content/70 hover:bg-base-300/50 hover:text-base-content'
@@ -45,7 +46,7 @@ defineEmits<{
                     :is="item.icon"
                     class="w-4 h-4 shrink-0"
                 />
-                <span class="truncate">{{ item.label }}</span>
+                <span class="sr-only sm:not-sr-only sm:truncate">{{ item.label }}</span>
             </button>
         </nav>
     </div>

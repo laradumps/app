@@ -51,7 +51,7 @@ const saveNumber = (event: Event, key: NumericSetting) => {
             :label="$t('settings.keep_per_view')"
             :hint="$t('settings.hints.keep_per_view')"
         >
-            <div class="grid grid-cols-2 gap-2 w-64">
+            <div class="grid grid-cols-2 gap-2 w-64 max-w-full">
                 <label
                     v-for="limit in limits"
                     :key="limit.key"

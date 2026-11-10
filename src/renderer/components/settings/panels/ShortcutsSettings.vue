@@ -97,7 +97,7 @@ const saveShortcuts = async () => {
                 :name="key"
                 :data-label="shortcut.label"
                 :id="key"
-                class="js-shortcut disabled:text-base-content/80 input input-bordered input-sm w-52"
+                class="js-shortcut disabled:text-base-content/80 input input-bordered input-sm w-52 max-w-full"
                 :value="shortcut.originalValue"
             />
         </SettingsRow>
