@@ -13,7 +13,7 @@ withDefaults(
 
 <template>
     <div
-        class="flex justify-between items-center gap-4 py-3"
+        class="flex flex-wrap justify-between items-center gap-x-4 gap-y-2 py-3"
         :class="{ 'border-b border-base-300/50': divider }"
     >
         <div class="min-w-0 flex items-center gap-1.5">
@@ -33,7 +33,7 @@ withDefaults(
                 />
             </span>
         </div>
-        <div class="shrink-0">
+        <div class="ml-auto max-w-full">
             <slot />
         </div>
     </div>

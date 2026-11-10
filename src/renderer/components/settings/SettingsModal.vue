@@ -99,7 +99,7 @@ defineExpose({ open, close });
                     :items="navItems"
                 />
 
-                <div class="flex-1 flex flex-col min-h-0">
+                <div class="flex-1 min-w-0 flex flex-col min-h-0">
                     <div class="flex items-center gap-3 px-6 pt-4 pb-2 flex-shrink-0">
                         <h2 class="min-w-0 flex-1 text-base font-semibold">{{ current?.label }}</h2>
                         <button
@@ -112,7 +112,7 @@ defineExpose({ open, close });
                     </div>
 
                     <!-- Active panel -->
-                    <div class="flex-1 overflow-y-auto px-6 pb-4">
+                    <div class="flex-1 overflow-y-auto overflow-x-hidden px-6 pb-4">
                         <LimitedDumpsSettings v-if="selected === 'capture'" />
                         <ReadingSettings v-else-if="selected === 'reading'" />
                         <AppearanceSettings v-else-if="selected === 'appearance'" />

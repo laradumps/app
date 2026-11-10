@@ -14,7 +14,7 @@ const { save } = useSettingsSave();
             :label="$t('settings.ide_handler')"
             :hint="$t('settings.hints.ide_handler')"
         >
-            <div class="w-52">
+            <div class="w-52 max-w-full">
                 <SelectInput
                     v-model="settingsStore.settings.ide_handler"
                     @change="save()"
