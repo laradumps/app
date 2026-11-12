@@ -5,12 +5,10 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 import EmptyState from '@/components/common/EmptyState.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
-import IconButton from '@/components/common/IconButton.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 import { useBrainStore, BrainWorkflow, BrainAction } from '@/store/brains';
 import { CheckIcon, NoSymbolIcon, XMarkIcon, ArrowPathIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
 import VueJsonPretty from 'vue-json-pretty';
-import { TrashIcon } from '@heroicons/vue/24/outline';
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light-border.css';
@@ -280,20 +278,12 @@ const toggleActionExpanded = (action: any) => {
     <div class="flex flex-col h-full min-h-0">
         <!-- Actions bar -->
         <ViewToolbar
+            :can-clear="totalProcesses > 0"
+            @clear="clearAll"
             v-if="!hideHeader"
             :count="filteredAndSortedProcesses.length"
             noun="workflow"
         >
-            <template #right>
-                <IconButton
-                    v-if="totalProcesses > 0"
-                    label="Clear all"
-                    variant="danger"
-                    @click="clearAll"
-                >
-                    <TrashIcon class="size-4" />
-                </IconButton>
-            </template>
         </ViewToolbar>
 
         <div class="flex flex-col flex-1 min-h-0">

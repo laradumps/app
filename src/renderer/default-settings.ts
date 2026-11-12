@@ -22,6 +22,11 @@ export const DEFAULT_SETTINGS: Settings = {
             keys: process.platform === 'darwin' ? 'Alt+Shift+K' : 'Ctrl+Shift+K',
             label: 'settings.shortcut.clear'
         },
+        clear_screen: {
+            originalValue: process.platform === 'darwin' ? '⌘+L' : 'Ctrl+L',
+            keys: 'CommandOrControl+L',
+            label: 'settings.shortcut.clearScreen'
+        },
         global_search: {
             originalValue: process.platform === 'darwin' ? '⌘+K' : 'Ctrl+K',
             keys: 'CommandOrControl+K',

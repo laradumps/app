@@ -10,7 +10,6 @@ import {
     FunnelIcon,
     PlayIcon,
     EllipsisHorizontalIcon,
-    TrashIcon,
     ArrowDownTrayIcon,
     CodeBracketIcon
 } from '@heroicons/vue/24/outline';
@@ -296,6 +295,8 @@ const toggleFilter = (list: string[], value: string) => {
     <div class="flex flex-col h-full min-h-0 min-w-0 overflow-hidden">
         <!-- Actions bar -->
         <ViewToolbar
+            :can-clear="queries.length > 0"
+            :on-clear="hideHeader ? undefined : clear"
             v-if="!hideHeader || hasRequest"
             class="shrink-0"
         >
@@ -561,16 +562,6 @@ const toggleFilter = (list: string[], value: string) => {
                             v-else
                             class="w-4"
                         />
-                    </IconButton>
-
-                    <!-- Clear -->
-                    <IconButton
-                        v-if="queries.length > 0"
-                        label="Clear all"
-                        variant="danger"
-                        @click="clear()"
-                    >
-                        <TrashIcon class="w-4" />
                     </IconButton>
                 </template>
             </template>

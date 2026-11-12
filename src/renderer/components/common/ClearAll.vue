@@ -73,7 +73,7 @@ onUnmounted(() => {
 <template>
     <MenuRow
         v-show="hasPayload"
-        :label="$t('clear')"
+        :label="$t('clear_all_screens')"
         danger
         @click="clearAll"
     >

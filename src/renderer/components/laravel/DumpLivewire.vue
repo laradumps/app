@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import dayjs from 'dayjs';
 import VueJsonPretty from 'vue-json-pretty';
-import { BoltIcon, ChevronRightIcon, FunnelIcon, PlayIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { BoltIcon, ChevronRightIcon, FunnelIcon, PlayIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { useLivewireStore, type LivewireComponent } from '@/store/livewire';
 import { usePauseLivewireStore } from '@/store/pauses';
 import { useCurrentProject } from '@/store/current-project';
@@ -158,7 +158,11 @@ const clear = () => {
 
 <template>
     <div class="flex flex-col h-full min-h-0 text-sm">
-        <ViewToolbar v-if="!hideHeader || request">
+        <ViewToolbar
+            :can-clear="store.requests.length > 0"
+            :on-clear="hideHeader ? undefined : clear"
+            v-if="!hideHeader || request"
+        >
             <template
                 v-if="request"
                 #title
@@ -273,15 +277,6 @@ const clear = () => {
                         v-else
                         class="w-4"
                     />
-                </IconButton>
-
-                <IconButton
-                    v-if="store.requests.length"
-                    :label="$t('livewire.clear')"
-                    variant="danger"
-                    @click="clear"
-                >
-                    <TrashIcon class="w-4" />
                 </IconButton>
             </template>
         </ViewToolbar>

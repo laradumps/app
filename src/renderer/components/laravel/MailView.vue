@@ -18,6 +18,7 @@ import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import { modifyHtml } from '@/utils/helpers';
 import { matchesMailSearch } from '@/utils/searchMatchers';
 import EmptyState from '@/components/common/EmptyState.vue';
+import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import { useCurrentProject } from '@/store/current-project';
 import VueJsonPretty from 'vue-json-pretty';
 import { useGlobalSearchStore } from '@/store/global-search';
@@ -193,6 +194,14 @@ const addresses = computed(() =>
 
 <template>
     <div class="flex flex-col h-full min-h-0 min-w-0 overflow-hidden">
+        <ViewToolbar
+            v-if="!hideHeader"
+            class="shrink-0"
+            :count="mails.length"
+            noun="mail"
+            :can-clear="mailStore.mails.length > 0"
+            @clear="(mailStore.clear(), (openId = null))"
+        />
         <div class="text-sm flex flex-col flex-1 min-h-0">
             <dialog
                 id="modal_context"
@@ -431,7 +440,9 @@ const addresses = computed(() =>
                                 </div>
                             </div>
 
-                            <div class="flex-1 min-h-0 flex justify-center-safe overflow-x-auto p-4 bg-base-content/[0.03]">
+                            <div
+                                class="flex-1 min-h-0 flex justify-center-safe overflow-x-auto p-4 bg-base-content/[0.03]"
+                            >
                                 <iframe
                                     ref="mailFrame"
                                     sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"

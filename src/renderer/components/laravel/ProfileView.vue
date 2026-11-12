@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useProfileStore, type ProfileEntry } from '@/store/profile';
 import { useCurrentProject } from '@/store/current-project';
-import { ClockIcon, CogIcon, FireIcon, Square3Stack3DIcon, TrashIcon, PlayIcon } from '@heroicons/vue/24/outline';
+import { ClockIcon, CogIcon, FireIcon, Square3Stack3DIcon, PlayIcon } from '@heroicons/vue/24/outline';
 import EmptyState from '@/components/common/EmptyState.vue';
 import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
@@ -15,6 +15,7 @@ import ProfileTimeline from './profile/ProfileTimeline.vue';
 import ProfileHotspots from './profile/ProfileHotspots.vue';
 import ProfileFlame from './profile/ProfileFlame.vue';
 import RequestSwitcher from '@/components/common/RequestSwitcher.vue';
+import MenuRow from '@/components/navbar/MenuRow.vue';
 import ProfileEntryModal from './profile/ProfileEntryModal.vue';
 
 const props = defineProps<{
@@ -123,6 +124,8 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
     <div class="flex flex-col h-full min-h-0">
         <!-- Actions Bar -->
         <ViewToolbar
+            :can-clear="profiles.length > 0"
+            :on-clear="hideHeader ? undefined : clear"
             v-if="!hideHeader || hasProfile"
             :count="hasProfile ? undefined : profiles.length"
             noun="profile"
@@ -206,113 +209,55 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                     </IconButton>
                     <div
                         tabindex="0"
-                        class="p-2 shadow-xl dropdown-content menu bg-base-300 backdrop-blur-xl rounded-xl border-0 z-[100] w-auto min-w-44"
+                        role="menu"
+                        :aria-label="$t('settings.settings')"
+                        class="dropdown-content mt-2 z-[200] w-56 max-h-[70vh] overflow-y-auto p-1 rounded-lg border border-base-content/10 bg-base-100 shadow-xl"
                     >
                         <template v-if="hasProfileConfig">
-                            <!-- Master switch -->
-                            <button
-                                @click="toggleProfiling"
-                                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
-                                :class="
-                                    profilingEnabled
-                                        ? 'bg-base-content/10 text-base-content font-medium'
-                                        : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                                "
-                            >
-                                <span class="size-2.5 rounded-full relative flex items-center justify-center">
-                                    <span
-                                        v-if="profilingEnabled"
-                                        class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                                    ></span>
-                                    <span
-                                        class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                        :class="profilingEnabled ? 'bg-success' : 'bg-base-content/20'"
-                                    ></span>
-                                </span>
-                                <span class="truncate text-xs whitespace-nowrap">{{
-                                    $t('profiler.enable_profiling')
-                                }}</span>
-                            </button>
+                            <MenuRow
+                                toggle
+                                :label="$t('profiler.enable_profiling')"
+                                :model-value="profilingEnabled"
+                                @update:model-value="toggleProfiling"
+                            />
 
-                            <!-- Profile options -->
-                            <div v-if="yamlProfileOptions.length > 0">
-                                <div class="menu-title mt-2 mb-2">
-                                    <span class="text-[9px] text-base-content/40 font-bold uppercase tracking-widest">{{
-                                        $t('profiler.options')
-                                    }}</span>
-                                </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <button
-                                        v-for="control in yamlProfileOptions"
-                                        :key="control.key"
-                                        @click="toggleProfileOption(control.key, control.enabled)"
-                                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
-                                        :class="
-                                            control.enabled
-                                                ? 'bg-base-content/10 text-base-content font-medium'
-                                                : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                                        "
-                                    >
-                                        <span class="size-2.5 rounded-full relative flex items-center justify-center">
-                                            <span
-                                                v-if="control.enabled"
-                                                class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                                            ></span>
-                                            <span
-                                                class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                                :class="control.enabled ? 'bg-success' : 'bg-base-content/20'"
-                                            ></span>
-                                        </span>
-                                        <span class="truncate capitalize text-xs whitespace-nowrap">{{
-                                            control.label
-                                        }}</span>
-                                    </button>
-                                </div>
-                            </div>
+                            <template v-if="yamlProfileOptions.length > 0">
+                                <div class="my-1 h-px bg-base-content/10"></div>
+                                <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">
+                                    {{ $t('profiler.options') }}
+                                </p>
+                                <MenuRow
+                                    v-for="control in yamlProfileOptions"
+                                    :key="control.key"
+                                    toggle
+                                    :label="control.label"
+                                    :model-value="control.enabled"
+                                    @update:model-value="toggleProfileOption(control.key, control.enabled)"
+                                />
+                            </template>
 
-                            <!-- Capture options -->
-                            <div v-if="yamlCaptureOptions.length > 0">
-                                <div class="menu-title mt-2 mb-2">
-                                    <span class="text-[9px] text-base-content/40 font-bold uppercase tracking-widest">{{
-                                        $t('profiler.capture')
-                                    }}</span>
-                                </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <button
-                                        v-for="control in yamlCaptureOptions"
-                                        :key="control.key"
-                                        @click="toggleCapture(control.key, control.enabled)"
-                                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
-                                        :class="
-                                            control.enabled
-                                                ? 'bg-base-content/10 text-base-content font-medium'
-                                                : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                                        "
-                                    >
-                                        <span class="size-2.5 rounded-full relative flex items-center justify-center">
-                                            <span
-                                                v-if="control.enabled"
-                                                class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                                            ></span>
-                                            <span
-                                                class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                                :class="control.enabled ? 'bg-success' : 'bg-base-content/20'"
-                                            ></span>
-                                        </span>
-                                        <span class="truncate capitalize text-xs whitespace-nowrap">{{
-                                            control.label
-                                        }}</span>
-                                    </button>
-                                </div>
-                            </div>
+                            <template v-if="yamlCaptureOptions.length > 0">
+                                <div class="my-1 h-px bg-base-content/10"></div>
+                                <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">
+                                    {{ $t('profiler.capture') }}
+                                </p>
+                                <MenuRow
+                                    v-for="control in yamlCaptureOptions"
+                                    :key="control.key"
+                                    toggle
+                                    :label="control.label"
+                                    :model-value="control.enabled"
+                                    @update:model-value="toggleCapture(control.key, control.enabled)"
+                                />
+                            </template>
                         </template>
 
-                        <div
+                        <p
                             v-else
-                            class="text-xs text-base-content/60 p-2"
+                            class="px-2 py-2 text-xs text-base-content/45"
                         >
                             {{ $t('profiler.no_configuration') }}
-                        </div>
+                        </p>
                     </div>
                 </div>
 
@@ -330,16 +275,6 @@ const yamlConfigActive = computed(() => profilingEnabled.value || yamlProfileOpt
                         v-else
                         class="w-4"
                     />
-                </IconButton>
-
-                <!-- Clear -->
-                <IconButton
-                    v-if="profiles.length > 0"
-                    label="Clear all"
-                    variant="danger"
-                    @click="clear"
-                >
-                    <TrashIcon class="w-4" />
                 </IconButton>
             </template>
         </ViewToolbar>

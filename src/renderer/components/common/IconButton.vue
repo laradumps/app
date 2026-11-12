@@ -17,7 +17,7 @@ withDefaults(
         type="button"
         :aria-label="label"
         :title="label"
-        class="inline-flex items-center justify-center size-8 rounded-lg shrink-0 cursor-pointer transition-colors"
+        class="inline-flex items-center justify-center size-8 rounded-lg shrink-0 cursor-pointer transition-colors disabled:opacity-30 disabled:pointer-events-none"
         :class="
             variant === 'active' || active
                 ? 'text-primary bg-primary/10 hover:bg-primary/15'

@@ -13,7 +13,7 @@ import EmptyState from '@/components/common/EmptyState.vue';
 import { Payload } from '@/types/Payload';
 import { usePayloadStore } from '@/store/payload';
 import { isKnownScreen } from '@/constants';
-import { computed } from 'vue';
+import { computed, provide, toRef } from 'vue';
 
 const props = withDefaults(
     defineProps<{
@@ -51,6 +51,9 @@ const VIEW_MAP: Record<string, any> = {
     tail_logs: TailLogView,
     queries: QueriesView
 };
+
+// ViewToolbar reads this to answer the clear-screen shortcut only for its own tab.
+provide('screenName', toRef(props, 'screenName'));
 
 const activeView = computed(() => VIEW_MAP[props.screenName] ?? null);
 
