@@ -6,6 +6,7 @@ export interface Shortcut {
 
 export interface Shortcuts {
     clear_all: Shortcut;
+    clear_screen: Shortcut;
     always_on_top: Shortcut;
     global_search: Shortcut;
 }

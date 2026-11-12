@@ -5,7 +5,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
-import { PlayIcon, TrashIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
+import { PlayIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { CheckIcon, XMarkIcon, ArrowPathIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
 
 import EmptyState from '@/components/common/EmptyState.vue';
@@ -374,6 +374,8 @@ const toggleMessageLimit = () => {
     <div class="flex flex-col h-full max-h-full min-h-0 min-w-0 overflow-hidden">
         <!-- Actions Bar -->
         <ViewToolbar
+            :can-clear="jobs.length > 0"
+            @clear="clear"
             v-if="!hideHeader"
             class="relative z-20 shrink-0 bg-base-200"
             :count="jobs.length"
@@ -460,14 +462,6 @@ const toggleMessageLimit = () => {
                         v-else
                         class="w-4"
                     />
-                </IconButton>
-                <IconButton
-                    v-if="jobs.length > 0"
-                    label="Clear all"
-                    variant="danger"
-                    @click="clear"
-                >
-                    <TrashIcon class="w-4" />
                 </IconButton>
             </template>
         </ViewToolbar>

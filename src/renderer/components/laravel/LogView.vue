@@ -6,7 +6,6 @@ dayjs.extend(relativeTime);
 import {
     FunnelIcon,
     PlayIcon,
-    TrashIcon,
     ClipboardDocumentIcon,
     CheckIcon,
     CogIcon,
@@ -20,6 +19,7 @@ import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import IconButton from '@/components/common/IconButton.vue';
 import PauseBanner from '@/components/common/PauseBanner.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
+import MenuRow from '@/components/navbar/MenuRow.vue';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import RelatedJobButton from '@/components/shared/RelatedJobButton.vue';
 import { useColorStore } from '@/store/colors';
@@ -337,6 +337,8 @@ const canCopyToMarkdown = computed(() => {
         <div class="flex flex-col h-full min-h-0">
             <!-- Actions Bar -->
             <ViewToolbar
+                :can-clear="totalLogs > 0"
+                @clear="clear"
                 v-if="!hideHeader"
                 class="relative z-20 shrink-0 bg-base-200"
                 :count="logs.length"
@@ -371,45 +373,33 @@ const canCopyToMarkdown = computed(() => {
                         </IconButton>
                         <div
                             tabindex="0"
-                            class="dropdown-content z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10"
+                            role="menu"
+                            aria-label="Filter"
+                            class="dropdown-content mt-2 z-[200] w-56 max-h-[70vh] overflow-y-auto p-1 rounded-lg border border-base-content/10 bg-base-100 shadow-xl"
                         >
-                            <div class="flex flex-col gap-1.5">
-                                <button
-                                    v-for="level in [
-                                        'debug',
-                                        'info',
-                                        'notice',
-                                        'warning',
-                                        'error',
-                                        'critical',
-                                        'alert',
-                                        'emergency'
-                                    ]"
-                                    :key="level"
-                                    @click="selectedLevel(level)"
-                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left"
-                                    :class="
-                                        levelFilter.includes(level)
-                                            ? 'bg-base-content/10 text-base-content font-medium'
-                                            : 'text-base-content/70 hover:bg-base-content/5 hover:text-base-content'
-                                    "
-                                >
-                                    <div class="size-2.5 rounded-full relative flex items-center justify-center">
-                                        <span
-                                            v-if="levelFilter.includes(level)"
-                                            class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                                        ></span>
-                                        <span
-                                            class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                            :class="levelFilter.includes(level) ? 'bg-success' : 'bg-base-content/20'"
-                                        ></span>
-                                    </div>
-                                    <span class="truncate capitalize text-xs whitespace-nowrap">{{ level }}</span>
-                                    <span class="ml-auto text-base-content/40 text-[10px]">{{
-                                        levelCounts[level] || 0
-                                    }}</span>
-                                </button>
-                            </div>
+                            <MenuRow
+                                v-for="level in [
+                                    'debug',
+                                    'info',
+                                    'notice',
+                                    'warning',
+                                    'error',
+                                    'critical',
+                                    'alert',
+                                    'emergency'
+                                ]"
+                                :key="level"
+                                role="menuitemcheckbox"
+                                :aria-checked="levelFilter.includes(level)"
+                                :label="level.charAt(0).toUpperCase() + level.slice(1)"
+                                :value="levelCounts[level] || 0"
+                                @click="selectedLevel(level)"
+                            >
+                                <CheckIcon
+                                    class="size-4 text-primary"
+                                    :class="{ invisible: !levelFilter.includes(level) }"
+                                />
+                            </MenuRow>
                         </div>
                     </div>
                 </template>
@@ -443,42 +433,21 @@ const canCopyToMarkdown = computed(() => {
                         </IconButton>
                         <div
                             tabindex="0"
-                            class="dropdown-content z-[200] menu p-2 shadow-lg bg-base-200/95 backdrop-blur-xl rounded-xl border border-base-content/10"
+                            role="menu"
+                            :aria-label="$t('settings.settings')"
+                            class="dropdown-content mt-2 z-[200] w-56 max-h-[70vh] overflow-y-auto p-1 rounded-lg border border-base-content/10 bg-base-100 shadow-xl"
                         >
-                            <div v-if="yamlLogLevels.length > 0">
-                                <div class="menu-title mb-2">
-                                    <span class="text-[9px] text-base-content/40 font-bold uppercase tracking-widest"
-                                        >Levels to observe</span
-                                    >
-                                </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <button
-                                        v-for="control in yamlLogLevels"
-                                        :key="control.key"
-                                        @click="toggleYamlControl('logs', control.key, control.enabled)"
-                                        class="flex items-center gap-3 px-3 hover:bg-base-content/5 py-2 rounded-lg transition-colors text-left"
-                                        :class="
-                                            control.enabled
-                                                ? 'text-base-content font-medium'
-                                                : 'text-base-content/70 hover:text-base-content'
-                                        "
-                                    >
-                                        <div class="size-2.5 rounded-full relative flex items-center justify-center">
-                                            <span
-                                                v-if="control.enabled"
-                                                class="absolute inline-flex h-full w-full rounded-full bg-success opacity-20"
-                                            ></span>
-                                            <span
-                                                class="relative inline-flex rounded-full size-2 transition-all duration-200"
-                                                :class="control.enabled ? 'bg-success' : 'bg-base-content/20'"
-                                            ></span>
-                                        </div>
-                                        <span class="truncate capitalize text-xs whitespace-nowrap">{{
-                                            control.label
-                                        }}</span>
-                                    </button>
-                                </div>
-                            </div>
+                            <template v-if="yamlLogLevels.length > 0">
+                                <p class="px-2 pt-1 pb-0.5 text-[0.7rem] text-base-content/45">Levels to observe</p>
+                                <MenuRow
+                                    v-for="control in yamlLogLevels"
+                                    :key="control.key"
+                                    toggle
+                                    :label="control.label"
+                                    :model-value="control.enabled"
+                                    @update:model-value="toggleYamlControl('logs', control.key, control.enabled)"
+                                />
+                            </template>
                         </div>
                     </div>
 
@@ -498,16 +467,6 @@ const canCopyToMarkdown = computed(() => {
                             v-else
                             class="w-4"
                         />
-                    </IconButton>
-
-                    <!-- Clear -->
-                    <IconButton
-                        v-if="totalLogs > 0"
-                        label="Clear all"
-                        variant="danger"
-                        @click="clear()"
-                    >
-                        <TrashIcon class="w-4" />
                     </IconButton>
                 </template>
             </ViewToolbar>

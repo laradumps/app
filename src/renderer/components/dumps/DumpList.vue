@@ -6,6 +6,7 @@ import { Payload } from '@/types/Payload';
 import DumpItem from '@/components/dumps/DumpItem.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import WelcomePage from '@/components/app/WelcomePage.vue';
+import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import { ClockIcon } from '@heroicons/vue/24/outline';
 import { computed } from 'vue';
 import dayjs from 'dayjs';
@@ -39,11 +40,24 @@ const showEmpty = computed(
         !props.emptyScreenExclude.includes(listScreen.value) &&
         !(listScreen.value === 'home' && payloadStore.payload.length === 0)
 );
+const showWelcomePage = computed(
+    () => props.showWelcome && payloadStore.payload.length === 0 && listScreen.value === 'home'
+);
+const screenDumpCount = computed(() => payloadStore.get(listScreen.value).length);
 </script>
 
 <template>
     <div :class="[containerClass ?? 'flex flex-col rounded-sm text-base w-full h-full']">
         <div id="top"></div>
+
+        <ViewToolbar
+            v-if="!showWelcomePage"
+            class="sticky top-0 z-80 shrink-0 bg-base-200"
+            :count="dumpsBagFiltered.length"
+            noun="dump"
+            :can-clear="screenDumpCount > 0"
+            @clear="payloadStore.clear(listScreen)"
+        />
 
         <div
             :class="{
@@ -69,7 +83,7 @@ const showEmpty = computed(
                     <div
                         v-if="settingsStore.settings.grouped_by_time"
                         class="z-70 flex items-center gap-2.5 pl-10 pr-4 py-2 text-xs bg-base-200 ld-on-surface backdrop-blur-md"
-                        :class="groupStickyClass ?? 'sticky top-0'"
+                        :class="groupStickyClass ?? (showWelcomePage ? 'sticky top-0' : 'sticky top-10')"
                     >
                         <ClockIcon class="absolute left-[13.5px] size-3.5 text-base-content/40" />
                         <span
@@ -116,7 +130,7 @@ const showEmpty = computed(
         <div id="bottom"></div>
 
         <WelcomePage
-            v-if="props.showWelcome && payloadStore.payload.length === 0 && listScreen === 'home'"
+            v-if="showWelcomePage"
             class="w-full h-full"
         />
     </div>

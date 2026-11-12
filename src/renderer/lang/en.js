@@ -27,6 +27,8 @@ export default {
         use_ds_in_browser: 'Use `ds(...)` in the browser console'
     },
     clear: 'Clear',
+    clear_screen: 'Clear screen',
+    clear_all_screens: 'Clear all screens',
     menu: {
         saved_dumps: 'Saved Dumps',
         ssh: 'SSH',
@@ -79,7 +81,8 @@ export default {
         shortcuts: 'Shortcuts',
         servers: 'Servers',
         shortcut: {
-            clear: 'Clear',
+            clear: 'Clear all screens',
+            clearScreen: 'Clear screen',
             alwaysOnTop: 'Always On Top',
             globalSearch: 'Global Search',
             save_message: 'Shortcuts saved successfully'

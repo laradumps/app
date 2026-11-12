@@ -12,7 +12,7 @@ import ViewToolbar from '@/components/common/ViewToolbar.vue';
 import FilterChip from '@/components/common/FilterChip.vue';
 import { useGlobalSearchStore } from '@/store/global-search';
 
-import { PlayIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { PlayIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon } from '@heroicons/vue/24/outline';
 import { FunnelIcon as FunnelSolidIcon } from '@heroicons/vue/24/solid';
 import IconPause from '@/components/Icons/IconPause.vue';
@@ -222,6 +222,8 @@ const clear = () => {
 <template>
     <div class="flex flex-col h-full min-h-0 min-w-0 overflow-hidden">
         <ViewToolbar
+            :can-clear="items.length > 0"
+            @clear="clear"
             v-if="!hideHeader"
             class="shrink-0"
             :count="items.length"
@@ -286,14 +288,6 @@ const clear = () => {
                         v-else
                         class="w-4"
                     />
-                </IconButton>
-                <IconButton
-                    v-if="items.length > 0"
-                    label="Clear all"
-                    variant="danger"
-                    @click="clear"
-                >
-                    <TrashIcon class="w-4" />
                 </IconButton>
             </template>
         </ViewToolbar>

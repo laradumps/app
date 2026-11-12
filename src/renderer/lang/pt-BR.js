@@ -27,6 +27,8 @@ export default {
         use_ds_in_browser: 'Use `ds(...)` no console do navegador'
     },
     clear: 'Limpar',
+    clear_screen: 'Limpar tela',
+    clear_all_screens: 'Limpar todas as telas',
     menu: {
         saved_dumps: 'Dumps salvos',
         ssh: 'SSH',
@@ -79,7 +81,8 @@ export default {
         shortcuts: 'Atalhos',
         servers: 'Servidores',
         shortcut: {
-            clear: 'Limpar',
+            clear: 'Limpar todas as telas',
+            clearScreen: 'Limpar tela',
             alwaysOnTop: 'App sempre no primeiro plano',
             globalSearch: 'Busca global',
             save_message: 'Atalhos salvos com sucesso'
