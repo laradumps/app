@@ -119,17 +119,39 @@ jobs:
             - name: Install dependencies
               run: npm install --force
 
-            - name: Install Snapcraft
-              run: |
-                  sudo snap install snapcraft --classic
-
             - name: 🐧 Release Linux (GitHub AppImage)
               run: npm run publish-linux
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
+    # Own job so a Snap Store outage never blocks the other platforms; a failure here does not fail the run.
+    snap:
+        needs: prepare
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        timeout-minutes: 30
+        env:
+            VERSION: ${{ needs.prepare.outputs.version }}
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v7
+              with:
+                  ref: v${{ needs.prepare.outputs.version }}
+
+            - name: Install Node.js and npm
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '22.x'
+
+            - name: Install dependencies
+              run: npm install --force
+
+            - name: Install Snapcraft
+              run: |
+                  for i in 1 2 3; do sudo snap install snapcraft --classic && exit 0; sleep 30; done
+                  exit 1
+
             - name: 📦 Publish Snap
-              continue-on-error: true
               run: npm run publish-snap
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}

@@ -29,11 +29,6 @@ jobs:
             - name: Install NPM Dependencies
               run: npm install --force
 
-            - name: Install Snapcraft
-              if: matrix.os == 'ubuntu-latest'
-              run: |
-                  sudo snap install snapcraft --classic
-
             - name:  Build Mac
               if: matrix.os == 'macos-latest'
               run: npm run build-mac
@@ -45,7 +40,6 @@ jobs:
               run: npm run build-linux
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
-                  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
 
             - name: 💻 Build Windows
               if: matrix.os == 'windows-latest'
