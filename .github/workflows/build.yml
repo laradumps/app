@@ -32,6 +32,12 @@ jobs:
                   VERSION="${{ github.event.inputs.version }}"
                   echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
+                  # Running a release again for an existing tag rebuilds that tag instead of failing on the push.
+                  if git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" > /dev/null; then
+                      echo "Tag v${VERSION} already exists; building it again."
+                      exit 0
+                  fi
+
                   git config user.name "laradumps-bot"
                   git config user.email "laradumps@proton.me"
 
