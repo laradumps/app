@@ -6,7 +6,7 @@ import SettingsRow from '../SettingsRow.vue';
 const settingsStore = useSettingsStore();
 const { save } = useSettingsSave();
 
-const toggles = ['show_variable_type', 'show_context', 'grouped_by_time', 'show_tips'] as const;
+const toggles = ['show_variable_type', 'show_context', 'grouped_by_time'] as const;
 const hinted: string[] = ['show_context', 'grouped_by_time'];
 </script>
 

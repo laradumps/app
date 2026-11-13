@@ -121,7 +121,6 @@ export default {
         show_pause_button: 'Show Pause Button',
         show_ssh_button: 'Show SSH Button',
         show_variable_type: 'Show variable type',
-        show_tips: 'Show Tips',
         dumps: 'Dumps',
         laravel_queries: 'Laravel Queries',
         laravel_logs: 'Laravel Logs',
@@ -257,6 +256,12 @@ export default {
     collapse_dump: 'Collapse dump',
     expand_dump: 'Expand dump',
     remove_from_saved: 'Remove from saved dumps',
+    welcome: {
+        title: 'Waiting for your first dump',
+        subtitle: 'Add this to your code and run it.',
+        copy: 'Copy',
+        install_guide: 'Install guide'
+    },
     toast_copied_to_clipboard: 'Copied to clipboard.',
     toast_added_to_saved: 'Added to Saved dumps.',
     toast_removed_successfully: 'Removed successfully.',

@@ -120,7 +120,6 @@ export default {
         show_pause_button: 'Mostrar botão de pausar',
         show_ssh_button: 'Mostrar botão SSH',
         show_variable_type: 'Mostrar tipo da variável',
-        show_tips: 'Mostrar dicas',
         dumps: 'Dumps',
         laravel_queries: 'Laravel Queries',
         laravel_logs: 'Laravel Logs',
@@ -255,6 +254,12 @@ export default {
     collapse_dump: 'Recolher dump',
     expand_dump: 'Expandir dump',
     remove_from_saved: 'Remover dump',
+    welcome: {
+        title: 'Esperando o primeiro dump',
+        subtitle: 'Coloque isto no seu código e rode.',
+        copy: 'Copiar',
+        install_guide: 'Guia de instalação'
+    },
     toast_copied_to_clipboard: 'Copiado para a área de transferência.',
     toast_added_to_saved: 'Adicionado aos dumps salvos.',
     toast_removed_successfully: 'Removido com sucesso.',
