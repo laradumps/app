@@ -76,7 +76,6 @@ export default {
         show_pause_button: '显示暂停按钮',
         show_ssh_button: '显示 SSH 按钮',
         show_variable_type: '显示变量类型',
-        show_tips: '显示提示',
         dumps: 'Dumps',
         laravel_queries: 'Laravel 查询',
         laravel_logs: 'Laravel 日志',

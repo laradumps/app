@@ -77,7 +77,6 @@ export default {
         show_pause_button: 'Show Pause Button',
         show_ssh_button: 'Show SSH Button',
         show_variable_type: 'Show variable type',
-        show_tips: 'Show Tips',
         dumps: 'Dumps',
         laravel_queries: 'Laravel Queries',
         laravel_logs: 'Laravel Logs',

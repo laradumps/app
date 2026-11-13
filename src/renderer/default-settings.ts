@@ -54,7 +54,6 @@ export const DEFAULT_SETTINGS: Settings = {
     custom_css: '/* // Example: \n [data-theme="custom"] .header { \n    background-color: red; \n } \n */',
     show_badge_count: true,
     show_context: true,
-    show_tips: true,
     split_pane_screen: null,
     grouped_by_time: true,
     display_last_log: false,

@@ -42,7 +42,6 @@ export interface Settings {
     custom_css: string;
     show_badge_count: boolean;
     show_context: boolean;
-    show_tips: boolean;
     split_pane_screen?: string | null;
     split_pane_orientation?: 'vertical' | 'horizontal';
     split_pane_size?: number;
