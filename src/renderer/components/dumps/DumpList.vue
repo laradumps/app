@@ -47,7 +47,7 @@ const screenDumpCount = computed(() => payloadStore.get(listScreen.value).length
 </script>
 
 <template>
-    <div :class="[containerClass ?? 'flex flex-col rounded-sm text-base w-full h-full']">
+    <div :class="[containerClass ?? 'flex flex-col shrink-0 rounded-sm text-base w-full min-h-full']">
         <div id="top"></div>
 
         <ViewToolbar
@@ -131,7 +131,7 @@ const screenDumpCount = computed(() => payloadStore.get(listScreen.value).length
 
         <WelcomePage
             v-if="showWelcomePage"
-            class="w-full h-full"
+            class="w-full flex-1"
         />
     </div>
 </template>
