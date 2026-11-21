@@ -30,6 +30,7 @@ jobs:
               id: set-version
               run: |
                   VERSION="${{ github.event.inputs.version }}"
+                  if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo "::error::Version must be X.Y.Z, got $VERSION"; exit 1; fi
                   echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
                   # Running a release again for an existing tag rebuilds that tag instead of failing on the push.
@@ -45,8 +46,8 @@ jobs:
                   git add package.json
                   git diff --cached --quiet || git commit -m "v${VERSION}"
                   git tag "v${VERSION}"
-                  git push
-                  git push --tags
+                  git push origin "HEAD:${GITHUB_REF_NAME}"
+                  git push origin "v${VERSION}"
 
     windows:
         needs: prepare
