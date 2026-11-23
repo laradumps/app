@@ -372,7 +372,7 @@ app.whenReady().then(async (): Promise<void> => {
         app.exit(0);
     });
 
-    await autoUpdater.checkForUpdates();
+    if (!process.windowsStore) await autoUpdater.checkForUpdates();
 
     await electronTray.init(mainWindow);
 });

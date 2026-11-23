@@ -30,6 +30,7 @@ jobs:
               id: set-version
               run: |
                   VERSION="${{ github.event.inputs.version }}"
+                  if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo "::error::Version must be X.Y.Z, got $VERSION"; exit 1; fi
                   echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
                   # Running a release again for an existing tag rebuilds that tag instead of failing on the push.
@@ -45,8 +46,8 @@ jobs:
                   git add package.json
                   git diff --cached --quiet || git commit -m "v${VERSION}"
                   git tag "v${VERSION}"
-                  git push
-                  git push --tags
+                  git push origin "HEAD:${GITHUB_REF_NAME}"
+                  git push origin "v${VERSION}"
 
     windows:
         needs: prepare
@@ -76,6 +77,36 @@ jobs:
               run: npm run publish-win
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+    store:
+        needs: prepare
+        runs-on: windows-latest
+        continue-on-error: true
+        env:
+            VERSION: ${{ needs.prepare.outputs.version }}
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v7
+              with:
+                  ref: v${{ needs.prepare.outputs.version }}
+
+            - name: Install Node.js and npm
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '22.x'
+
+            - name: Install dependencies
+              run: npm install --force
+
+            - name: 🏪 Build MSIX
+              run: npm run build-appx
+
+            - name: Upload MSIX
+              uses: actions/upload-artifact@v4
+              with:
+                  name: LaraDumps-${{ needs.prepare.outputs.version }}-store
+                  path: release/*.appx
+                  if-no-files-found: error
 
     mac:
         needs: prepare

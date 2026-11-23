@@ -46,3 +46,15 @@ jobs:
               run: npm run build-win
               env:
                   GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            - name: 🏪 Build MSIX
+              if: matrix.os == 'windows-latest'
+              run: npx electron-builder --win appx --x64 --publish never
+
+            - name: Upload MSIX
+              if: matrix.os == 'windows-latest'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: LaraDumps-store-test
+                  path: release/*.appx
+                  if-no-files-found: error

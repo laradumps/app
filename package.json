@@ -1,6 +1,6 @@
 {
     "name": "laradumps",
-    "version": "4.19.2",
+    "version": "4.20.0",
     "private": false,
     "description": "LaraDumps is a friendly app designed to boost your PHP coding and debugging experience. https://github.com/laradumps/app",
     "author": "Luan Freitas <luanfreitas10@protonmail.com>",
@@ -13,6 +13,7 @@
         "build-mac": "npm run build && electron-builder --mac --universal",
         "build-linux": "npm run build && electron-builder --linux AppImage",
         "build-snap": "npm run build && electron-builder --linux snap",
+        "build-appx": "npm run build && electron-builder --win appx --x64 --publish never",
         "publish-win": "npm run build && electron-builder --publish always --win",
         "publish-mac": "npm run build && electron-builder --publish always --mac --universal",
         "publish-linux": "npm run build && electron-builder --publish always --linux AppImage",
@@ -104,6 +105,17 @@
         },
         "directories": {
             "output": "release"
+        },
+        "appx": {
+            "identityName": "luanfreitasdev.LaraDumps",
+            "publisher": "CN=82C34863-DCDE-4291-92F9-298516711D30",
+            "publisherDisplayName": "luanfreitasdev",
+            "applicationId": "LaraDumps",
+            "displayName": "LaraDumps",
+            "backgroundColor": "transparent",
+            "languages": [
+                "en-US"
+            ]
         },
         "nsis": {
             "oneClick": false,
