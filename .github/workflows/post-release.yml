@@ -4,36 +4,49 @@ on:
     release:
         types: [published]
 
+permissions:
+    contents: read
+
 jobs:
     post-release:
         runs-on: ubuntu-latest
+        env:
+            GH_TOKEN: ${{ secrets.GH_TOKEN }}
         steps:
-            - name: Extract version from tag
-              run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
-
-            - name: Update Homebrew tap
+            - name: Update Homebrew tap and docs
               run: |
-                  git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/laradumps/homebrew-app.git homebrew-app
-                  cd homebrew-app
-                  git config user.name "laradumps-bot"
-                  git config user.email "laradumps@proton.me"
-                  bash update_cask.sh "${VERSION}" "${{ secrets.GH_TOKEN }}"
+                  VERSION="${GITHUB_REF_NAME#v}"
 
-            - name: Update docs
-              run: |
-                  git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/laradumps/laradumps-docs.git laradumps-docs
-                  cd laradumps-docs
+                  # GitHub signs commits made with createCommitOnBranch, so they pass the signed-commit rule.
+                  # Usage (inside a clone): commit_files <owner/repo> <message> <path>...
+                  commit_files() {
+                      local repo=$1 message=$2; shift 2
+                      if git diff --quiet -- "$@"; then echo "No changes in $repo"; return 0; fi
+                      local additions
+                      additions=$(for f in "$@"; do jq -n --arg p "$f" --arg c "$(base64 < "$f" | tr -d '\n')" '{path: $p, contents: $c}'; done | jq -s .)
+                      jq -n --arg r "$repo" --arg b "$(git rev-parse --abbrev-ref HEAD)" --arg h "$(git rev-parse HEAD)" --arg m "$message" --argjson a "$additions" \
+                          '{query: "mutation($i: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $i) { commit { oid url } } }",
+                            variables: {i: {branch: {repositoryNameWithOwner: $r, branchName: $b}, expectedHeadOid: $h, message: {headline: $m}, fileChanges: {additions: $a}}}}' \
+                          | gh api graphql --input - --jq .data.createCommitOnBranch.commit.url
+                  }
 
-                  FILE="docs/get-started/installation.md"
-                  OLD_VERSION=$(grep -oE 'releases/download/v[0-9]+\.[0-9]+\.[0-9]+' "$FILE" | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+                  git clone --depth 1 https://github.com/laradumps/homebrew-app.git homebrew-app
+                  (
+                      cd homebrew-app
+                      bash update_cask.sh "${VERSION}" "${GH_TOKEN}"
+                      commit_files laradumps/homebrew-app "v${VERSION}" Casks/laradumps.rb
+                  )
 
-                  sed -i "s/v${OLD_VERSION}\/LaraDumps-${OLD_VERSION}-universal\.dmg/v${VERSION}\/LaraDumps-${VERSION}-universal.dmg/g" "$FILE"
-                  sed -i "s/v${OLD_VERSION}\/LaraDumps-${OLD_VERSION}\.AppImage/v${VERSION}\/LaraDumps-${VERSION}.AppImage/g" "$FILE"
-                  sed -i "s/LaraDumps-${OLD_VERSION}\.AppImage/LaraDumps-${VERSION}.AppImage/g" "$FILE"
-                  sed -i "s/v${OLD_VERSION}\/LaraDumps-Setup-${OLD_VERSION}\.exe/v${VERSION}\/LaraDumps-Setup-${VERSION}.exe/g" "$FILE"
+                  git clone --depth 1 https://github.com/laradumps/laradumps-docs.git laradumps-docs
+                  (
+                      cd laradumps-docs
+                      FILE="docs/get-started/installation.md"
+                      OLD_VERSION=$(grep -oE 'releases/download/v[0-9]+\.[0-9]+\.[0-9]+' "$FILE" | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 
-                  git config user.name "laradumps-bot"
-                  git config user.email "laradumps@proton.me"
-                  git add "$FILE"
-                  git commit -m "v${VERSION}"
-                  git push
+                      sed -i "s/v${OLD_VERSION}\/LaraDumps-${OLD_VERSION}-universal\.dmg/v${VERSION}\/LaraDumps-${VERSION}-universal.dmg/g" "$FILE"
+                      sed -i "s/v${OLD_VERSION}\/LaraDumps-${OLD_VERSION}\.AppImage/v${VERSION}\/LaraDumps-${VERSION}.AppImage/g" "$FILE"
+                      sed -i "s/LaraDumps-${OLD_VERSION}\.AppImage/LaraDumps-${VERSION}.AppImage/g" "$FILE"
+                      sed -i "s/v${OLD_VERSION}\/LaraDumps-Setup-${OLD_VERSION}\.exe/v${VERSION}\/LaraDumps-Setup-${VERSION}.exe/g" "$FILE"
+
+                      commit_files laradumps/laradumps-docs "v${VERSION}" "$FILE"
+                  )
