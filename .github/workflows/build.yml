@@ -18,8 +18,6 @@ jobs:
         steps:
             - name: Check out Git repository
               uses: actions/checkout@v7
-              with:
-                  token: ${{ secrets.GH_TOKEN }}
 
             - name: Install Node.js and npm
               uses: actions/setup-node@v7
@@ -28,8 +26,11 @@ jobs:
 
             - name: Bump version, commit and tag
               id: set-version
+              env:
+                  VERSION: ${{ github.event.inputs.version }}
+                  # Commits made through the API as github-actions[bot] are signed by GitHub, so they pass the signed-commit rule.
+                  GH_TOKEN: ${{ github.token }}
               run: |
-                  VERSION="${{ github.event.inputs.version }}"
                   if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then echo "::error::Version must be X.Y.Z, got $VERSION"; exit 1; fi
                   echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
@@ -39,15 +40,17 @@ jobs:
                       exit 0
                   fi
 
-                  git config user.name "laradumps-bot"
-                  git config user.email "laradumps@proton.me"
-
+                  SHA=$(git rev-parse HEAD)
                   jq --indent 4 --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
-                  git add package.json
-                  git diff --cached --quiet || git commit -m "v${VERSION}"
-                  git tag "v${VERSION}"
-                  git push origin "HEAD:${GITHUB_REF_NAME}"
-                  git push origin "v${VERSION}"
+                  if ! git diff --quiet package.json; then
+                      SHA=$(gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/package.json" \
+                          -f message="v${VERSION}" \
+                          -f content="$(base64 -w0 package.json)" \
+                          -f sha="$(git rev-parse HEAD:package.json)" \
+                          -f branch="${GITHUB_REF_NAME}" \
+                          --jq .commit.sha)
+                  fi
+                  gh api "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/tags/v${VERSION}" -f sha="$SHA" --silent
 
     windows:
         needs: prepare
