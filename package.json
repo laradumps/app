@@ -65,7 +65,7 @@
         "electron": "^43.8.4",
         "electron-builder": "26.15.3",
         "esbuild": "^0.28.1",
-        "prettier": "3.9.10",
+        "prettier": "3.10.1",
         "tailwindcss": "^4.3.3",
         "typescript": "^6.0.3",
         "vite": "^8.3.4"
