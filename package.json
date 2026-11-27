@@ -26,7 +26,7 @@
         "@modelcontextprotocol/sdk": "^1.32.1",
         "@tailwindcss/vite": "^4.3.5",
         "auto-launch": "^5.0.6",
-        "chart.js": "^4.6.1",
+        "chart.js": "^4.6.2",
         "chokidar": "^4.0.3",
         "cors": "^2.8.6",
         "dayjs": "^1.11.23",
